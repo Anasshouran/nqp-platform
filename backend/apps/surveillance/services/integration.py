@@ -28,12 +28,17 @@ class SurveillanceIntegrationService:
         if not case:
             return
 
-        # تحديث حالة سير العمل
+        # تحديث حالة سير العمل (مسار قانوني: مفتوحة → قيد التحقيق → مؤكدة)
         if case.workflow_state != CaseWorkflowState.CONFIRMED:
             from apps.surveillance.services.workflows import CaseWorkflowService
+            actor = lab_result_specimen.entered_by or case.assigned_to
+            if case.workflow_state == CaseWorkflowState.OPEN:
+                CaseWorkflowService.transition(
+                    case, CaseWorkflowState.UNDER_INVESTIGATION, actor,
+                    'فتح تحقيق الحالة نتيجة نتيجة مختبر إيجابية'
+                )
             CaseWorkflowService.transition(
-                case, CaseWorkflowState.CONFIRMED,
-                lab_result_specimen.entered_by or case.assigned_to,
+                case, CaseWorkflowState.CONFIRMED, actor,
                 f'نتيجة مختبر إيجابية: {lab_result_specimen.result_qualitative}'
             )
 

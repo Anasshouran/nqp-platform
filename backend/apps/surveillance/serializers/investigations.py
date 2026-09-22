@@ -28,7 +28,7 @@ class InvestigationFindingSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvestigationFinding
         fields = ['id', 'finding_type', 'finding_type_display', 'title', 'description',
-                  'evidence', 'confidence_level', 'tags']
+                  'evidence', 'confidence_level']
         read_only_fields = ['id']
 
 

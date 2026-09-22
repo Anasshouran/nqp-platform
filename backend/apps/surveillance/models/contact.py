@@ -163,6 +163,7 @@ class ContactTrace(BaseModel):
             start = self.follow_up_start
             if isinstance(start, str):
                 start = _date.fromisoformat(start[:10]) if len(start) >= 10 else _date.fromisoformat(start)
+                self.follow_up_start = start
             self.follow_up_end = start + timedelta(days=int(self.follow_up_days or 0))
         super().save(*args, **kwargs)
 

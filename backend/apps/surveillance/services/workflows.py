@@ -131,9 +131,12 @@ class CaseWorkflowService:
     @classmethod
     def on_critical_lab_result(cls, case: HealthCase, lab_result):
         """عند نتيجة مختبر حرجة."""
+        if case.workflow_state == CaseWorkflowState.OPEN:
+            cls.transition(case, CaseWorkflowState.UNDER_INVESTIGATION, lab_result.entered_by,
+                           'فتح تحقيق الحالة نتيجة نتيجة مختبر حرجة')
         if case.workflow_state != CaseWorkflowState.CONFIRMED:
             cls.transition(case, CaseWorkflowState.CONFIRMED, lab_result.entered_by,
-                          f'نتيجة مختبر حرجة: {lab_result.result_qualitative}')
+                           f'نتيجة مختبر حرجة: {lab_result.result_qualitative}')
 
 
 class OutbreakWorkflowService:

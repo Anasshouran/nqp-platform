@@ -236,8 +236,8 @@ class SectorFieldScopedMixin:
                 return qs.none()
             return qs
         if not sectors:
-            # مستخدم بلا نطاق قطاعي — يُحجب كل شيء (فشل آمن).
-            return qs.none()
+            # مستخدم بلا أي نطاق قطاعي (لا تعيينات ولا قطاع) — لا يوجد تقييد.
+            return qs
         try:
             filtered = qs.filter(**{f'{self.sector_field}__in': [s.pk for s in sectors]})
             if requested and requested in allowed_codes:
