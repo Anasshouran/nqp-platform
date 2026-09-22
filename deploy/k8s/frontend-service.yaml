@@ -1,0 +1,20 @@
+# ============================================================
+# k8s/frontend-service.yaml - Frontend Service
+# بيئة: الإنتاج (Production)
+# ============================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: nqp
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  type: ClusterIP

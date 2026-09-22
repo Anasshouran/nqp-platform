@@ -1,0 +1,60 @@
+# نظرة عامة على قاعدة البيانات (Database Overview) - NQP
+
+## 1. الهدف من قاعدة البيانات
+تمثل قاعدة البيانات **المستودع المركزي (Single Source of Truth)** لجميع بيانات منصة الحجر الصحي القومي (NQP). تم تصميمها لتكون:
+- **علائقية (Relational)**: لضمان سلامة البيانات (ACID) في المعاملات الحرجة (مثل: تسجيل الفحوصات، إصدار الشهادات).
+- **قابلة للتوسع (Scalable)**: لدعم ملايين السجلات (المسافرين، الفحوصات، العينات) مع الحفاظ على الأداء.
+- **آمنة (Secure)**: مع تشفير البيانات الحساسة وسجلات التدقيق غير القابلة للتعديل.
+
+## 2. تقنية قاعدة البيانات
+- **النظام**: PostgreSQL (الإصدار 16 أو أحدث).
+- **الميزات المستخدمة**:
+  - `JSONB` لتخزين البيانات غير المنتظمة (مثل: استمارات الفحص الديناميكية، بيانات الأجهزة القابلة للارتداء).
+  - `UUID` كمفاتيح أساسية لتجنب التصادم في البيئات الموزعة.
+  - `Triggers` و `Functions` لتحديث الطوابع الزمنية (Updated At) تلقائياً.
+  - `Row-Level Security (RLS)` لتطبيق سياسات الصلاحيات على مستوى الصف (للمستخدمين العاديين).
+
+## 3. مبادئ التصميم الرئيسية
+- **التطبيع (Normalization)**: حتى المستوى الثالث (3NF) لتجنب التكرار غير الضروري.
+- **الفهرسة (Indexing)**: إنشاء فهارس على جميع المفاتيح الخارجية والحقول المستخدمة في عمليات البحث المتكررة (مثل: `passport_number`, `case_id`).
+- **التقسيم (Partitioning)**: سيتم تقسيم جداول السجلات الكبيرة (مثل: `daily_health_logs`, `audit_logs`) حسب التاريخ (شهرياً أو سنوياً) لتحسين الأداء.
+
+## 4. خريطة الجداول الرئيسية (Categories)
+| الفئة (Category) | الجداول الرئيسية | الغرض |
+| :--- | :--- | :--- |
+| **الحوكمة والأمان** | `users`, `roles`, `permissions`, `audit_logs` | إدارة المستخدمين والصلاحيات وتسجيل النشاطات. |
+| **البيانات الأساسية** | `countries`, `ports`, `airports`, `diseases`, `medications` | البيانات المرجعية (Master Data). |
+| **المسافرون والرحلات** | `travelers`, `travel_documents`, `carriers`, `flights`, `passenger_manifests` | إدارة بيانات المسافرين والرحلات. |
+| **الفحص والتقييم** | `health_screenings`, `risk_assessments`, `symptom_logs` | عمليات الفحص عند الوصول وتقييم المخاطر. |
+| **الرعاية الصحية** | `clinic_visits`, `emr_records`, `prescriptions`, `lab_samples`, `lab_results` | العيادات والمختبرات. |
+| **المتابعة المنزلية** | `follow_up_patients`, `daily_health_logs`, `medication_adherence`, `recovery_certificates` | متابعة المرضى بعد الخروج. |
+| **الحجر الغذائي** | `food_shipments`, `food_inspections`, `food_samples`, `food_release_certificates` | إدارة الواردات الغذائية. |
+| **الطوارئ والترصد** | `emergency_alerts`, `eoc_actions`, `surveillance_reports` | غرفة العمليات والإنذار المبكر. |
+| **التكامل الخارجي** | `external_integration_logs`, `who_reports` | تتبع عمليات التكامل مع الجهات الخارجية. |
+
+## 5. الاتصال من Django
+```python
+# nqp_backend/settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require',  # في الإنتاج
+        }
+    }
+}
+
+6. التخزين المؤقت (Caching)
+
+يتم استخدام Redis كطبقة تخزين مؤقت لتسريع الاستعلامات المتكررة:
+
+    تصنيفات الدول (مدة الصلاحية: 1 ساعة).
+
+    تعريفات الأمراض (مدة الصلاحية: 6 ساعات).
+
+    نتائج تقييم المخاطر (مدة الصلاحية: 5 دقائق). 

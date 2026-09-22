@@ -1,0 +1,20 @@
+# ============================================================
+# k8s/postgres-service.yaml - PostgreSQL Service
+# بيئة: الإنتاج (Production)
+# ============================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: nqp
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  type: ClusterIP

@@ -1,0 +1,29 @@
+# معايير واجهات البرمجة (API Standards) - NQP
+
+## 1. المعايير العامة
+### 1.1. التنسيق (Format)
+- **الطلبات (Requests)**: `Content-Type: application/json` (ما عدا رفع الملفات `multipart/form-data`).
+- **الاستجابات (Responses)**: `Content-Type: application/json`.
+- **التاريخ والوقت**: استخدام `ISO 8601` مع المنطقة الزمنية (مثال: `2024-07-26T14:30:00+03:00`).
+
+### 1.2. الترقيم (Pagination)
+| المعامل (Parameter) | النوع | الوصف | القيمة الافتراضية |
+| :--- | :--- | :--- | :--- |
+| `page` | Integer | رقم الصفحة المطلوبة. | `1` |
+| `limit` | Integer | عدد العناصر في الصفحة الواحدة. | `20` (الحد الأقصى 100) |
+| `sort` | String | حقل الفرز مع الاتجاه (مثال: `-created_at` للتنازلي). | `-created_at` |
+
+**مثال على الاستجابة المرقمة:**
+```json
+{
+  "status": "success",
+  "data": {
+    "results": [...],
+    "pagination": {
+      "total": 150,
+      "page": 1,
+      "limit": 20,
+      "total_pages": 8
+    }
+  }
+}

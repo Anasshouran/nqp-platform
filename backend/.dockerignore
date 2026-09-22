@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+.env
+.env.*
+!.env.example
+media
+static
+logs
+.pytest_cache
+.coverage
+htmlcov
+Dockerfile
+Dockerfile.dev

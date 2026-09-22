@@ -1,0 +1,562 @@
+بما أن ملفات `.drawio` هي ملفات XML خاصة ببرنامج **diagrams.net** (كان يُعرف بـ draw.io)، لا يمكنني إنشاء ملفات `.drawio` فعلية مباشرة. لكن يمكنني تقديم **وصف نصي مفصل** و **كود Mermaid** يمكن استخدامه لإنشاء المخططات، بالإضافة إلى **هيكل XML** يمكن نسخه ولصقه في diagrams.net لإنشاء المخطط تلقائياً.
+
+سأقوم بتقديم المحتوى التالي لكلا الملفين:
+
+1. **وصف نصي تفصيلي** للمخطط.
+2. **كود Mermaid** (للرؤية التفاعلية).
+3. **هيكل XML** (للتصدير المباشر إلى diagrams.net).
+
+---
+
+## 📄 1. `Network_Diagram.drawio` (مخطط الشبكة)
+
+### الوصف النصي التفصيلي
+
+يمثل مخطط الشبكة البنية التحتية لمنصة NQP، موضحاً طبقات الأمان، توزيع الخدمات، والاتصالات بين المكونات. تم تصميم الشبكة وفق نموذج (DMZ + الشبكة الداخلية + الشبكة المعزولة).
+
+**المكونات الرئيسية**:
+
+1.  **الإنترنت (Internet)**: المصدر الخارجي للطلبات.
+2.  **جدار حماية (Firewall)**: خط الدفاع الأول، يسمح فقط بالمنافذ المطلوبة (443 HTTPS، 22 SSH).
+3.  **DMZ (منطقة منزوعة السلاح)**:
+    - **WAF (جدار حماية تطبيقات الويب)**: الحماية من هجمات (SQL Injection, XSS, DDoS).
+    - **Nginx (Reverse Proxy + Load Balancer)**: توزيع الطلبات بين خوادم (Frontend) و (Backend)، وإدارة SSL/TLS.
+4.  **الشبكة الداخلية (Internal Network)**:
+    - **خوادم الواجهة الأمامية (Frontend Servers)**: تشغيل تطبيق React (Vite) - مثيلات متعددة.
+    - **خوادم التطبيق (Application Servers)**: تشغيل Django + Gunicorn - مثيلات متعددة.
+    - **خوادم المهام الخلفية (Celery Workers)**: تنفيذ المهام غير المتزامنة - مثيلات متعددة.
+5.  **الشبكة المعزولة (Secure Network)**:
+    - **قاعدة البيانات (PostgreSQL)**: التخزين الرئيسي - (Master + Replica).
+    - **التخزين المؤقت (Redis)**: Cache و Broker.
+    - **تخزين الملفات (MinIO / S3)**: تخزين المستندات والملفات.
+
+**التدفق الأساسي**:
+1.  طلب HTTPS ← جدار حماية ← WAF ← Nginx.
+2.  إذا كان الطلب لملفات ثابتة (JS, CSS, Images) ← Nginx يقدمها مباشرة.
+3.  إذا كان الطلب لـ API ← Nginx يوزع الحمل على خوادم Django.
+4.  Django يستعلم من PostgreSQL (مع استخدام Redis Cache).
+5.  المهام الثقيلة ← تذهب إلى طابور Redis ← Celery Workers تنفذها.
+6.  الملفات المرفوعة ← تُخزن في MinIO/S3.
+
+---
+
+### كود Mermaid (للمخطط التفاعلي)
+
+```mermaid
+flowchart TD
+    subgraph Internet["🌍 الإنترنت"]
+        User[المستخدمون]
+    end
+
+    subgraph DMZ["🛡️ DMZ (منطقة منزوعة السلاح)"]
+        WAF[جدار حماية التطبيقات (WAF)]
+        Nginx[Nginx (Reverse Proxy + Load Balancer)]
+    end
+
+    subgraph Internal["🔒 الشبكة الداخلية"]
+        Frontend1[خادم Frontend 1 (React)]
+        Frontend2[خادم Frontend 2 (React)]
+        Frontend3[خادم Frontend 3 (React)]
+        Backend1[خادم Backend 1 (Django + Gunicorn)]
+        Backend2[خادم Backend 2 (Django + Gunicorn)]
+        Backend3[خادم Backend 3 (Django + Gunicorn)]
+        Celery1[Celery Worker 1]
+        Celery2[Celery Worker 2]
+    end
+
+    subgraph Secure["🔐 الشبكة المعزولة (Secure Network)"]
+        PostgreSQL[PostgreSQL (Master + Replica)]
+        Redis[Redis (Cache + Broker)]
+        Storage[MinIO / S3 (تخزين الملفات)]
+    end
+
+    User -->|HTTPS (443)| WAF
+    WAF --> Nginx
+    Nginx -->|ملفات ثابتة| Frontend1
+    Nginx -->|ملفات ثابتة| Frontend2
+    Nginx -->|ملفات ثابتة| Frontend3
+    Nginx -->|API طلبات| Backend1
+    Nginx -->|API طلبات| Backend2
+    Nginx -->|API طلبات| Backend3
+
+    Backend1 -->|استعلامات| PostgreSQL
+    Backend2 -->|استعلامات| PostgreSQL
+    Backend3 -->|استعلامات| PostgreSQL
+
+    Backend1 -->|Cache| Redis
+    Backend2 -->|Cache| Redis
+    Backend3 -->|Cache| Redis
+
+    Backend1 -->|مهام غير متزامنة| Redis
+    Backend2 -->|مهام غير متزامنة| Redis
+    Backend3 -->|مهام غير متزامنة| Redis
+    Redis -->|سحب مهام| Celery1
+    Redis -->|سحب مهام| Celery2
+
+    Backend1 -->|رفع/تحميل ملفات| Storage
+    Backend2 -->|رفع/تحميل ملفات| Storage
+    Backend3 -->|رفع/تحميل ملفات| Storage
+    Celery1 -->|تخزين تقارير| Storage
+    Celery2 -->|تخزين تقارير| Storage
+```
+
+---
+
+### هيكل XML لـ diagrams.net
+
+```xml
+<mxfile host="app.diagrams.net" modified="2024-07-26T00:00:00.000Z" agent="5.0" version="24.0.0">
+  <diagram id="network-diagram" name="Network Diagram">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Internet -->
+        <mxCell id="2" value="🌍 الإنترنت" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="المستخدمون" style="shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;aspect=fixed;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzhlYmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPjwvc3ZnPg==";fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="90" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- DMZ -->
+        <mxCell id="4" value="🛡️ DMZ" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="250" y="40" width="400" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="جدار حماية التطبيقات (WAF)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="4">
+          <mxGeometry x="30" y="40" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Nginx (Reverse Proxy + Load Balancer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="4">
+          <mxGeometry x="220" y="40" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal Network -->
+        <mxCell id="7" value="🔒 الشبكة الداخلية" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="50" y="280" width="700" height="250" as="geometry"/>
+        </mxCell>
+
+        <!-- Frontend Servers -->
+        <mxCell id="8" value="خادم Frontend 1 (React)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="30" y="40" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="خادم Frontend 2 (React)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="190" y="40" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="خادم Frontend 3 (React)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="350" y="40" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend Servers -->
+        <mxCell id="11" value="خادم Backend 1 (Django + Gunicorn)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="30" y="120" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="خادم Backend 2 (Django + Gunicorn)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="210" y="120" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="خادم Backend 3 (Django + Gunicorn)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="390" y="120" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Celery Workers -->
+        <mxCell id="14" value="Celery Worker 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="570" y="40" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Celery Worker 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="7">
+          <mxGeometry x="570" y="120" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Secure Network -->
+        <mxCell id="16" value="🔐 الشبكة المعزولة" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="790" y="40" width="350" height="490" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="17" value="PostgreSQL (Master + Replica)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="16">
+          <mxGeometry x="60" y="50" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="18" value="Redis (Cache + Broker)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="16">
+          <mxGeometry x="60" y="170" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="19" value="MinIO / S3 (تخزين الملفات)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="16">
+          <mxGeometry x="60" y="290" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections -->
+        <mxCell id="20" value="HTTPS (443)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="2" target="5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="5" target="6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="22" value="Static Files" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="6" target="8">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6" target="11">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="24" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="11" target="17">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="Cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="11" target="18">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="26" value="Tasks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="11" target="18">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="27" value="Pull Tasks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="18" target="14">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="28" value="Files" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="11" target="19">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+```
+
+---
+
+## 📄 2. `Deployment_Diagram.drawio` (مخطط التوزيع)
+
+### الوصف النصي التفصيلي
+
+يمثل مخطط التوزيع (Deployment Diagram) كيفية نشر مكونات منصة NQP في بيئة الإنتاج باستخدام **Kubernetes (K8s)** مع (Docker) كأساس للحاويات. يوضح المخطط العقد (Nodes) لكل خدمة، وعدد النسخ (Replicas)، والموارد الموصى بها، والاتصالات بينها.
+
+**المكونات الرئيسية**:
+
+1.  **Ingress Controller**: يدير حركة المرور الواردة من الإنترنت.
+2.  **Service Layer**: (Nginx + Load Balancer) لتوزيع الطلبات على خدمات (Frontend) و (Backend).
+3.  **Frontend Deployment**: (React + Vite) - عدد النسخ: 3.
+4.  **Backend Deployment**: (Django + Gunicorn) - عدد النسخ: 3.
+5.  **Celery Deployment**: (Celery Workers) - عدد النسخ: 2.
+6.  **PostgreSQL StatefulSet**: (Master + Replica) - عدد النسخ: 2 (1 Master, 1 Replica).
+7.  **Redis Deployment**: (Cache + Broker) - عدد النسخ: 3 (Cluster).
+8.  **MinIO Deployment**: (S3 Storage) - عدد النسخ: 2 (وزعت).
+9.  **Monitoring Stack**: (Prometheus + Grafana) - عدد النسخ: 1 لكل منها.
+10. **Logging Stack**: (ELK) - عدد النسخ: 1 لكل منها.
+
+**الموارد الموصى بها (لكل Pod)**:
+- **Frontend**: CPU: 0.5, Memory: 512Mi
+- **Backend (Django)**: CPU: 1.0, Memory: 2Gi
+- **Celery Worker**: CPU: 1.0, Memory: 2Gi
+- **PostgreSQL**: CPU: 2.0, Memory: 4Gi
+- **Redis**: CPU: 0.5, Memory: 1Gi
+- **MinIO**: CPU: 1.0, Memory: 2Gi
+
+---
+
+### كود Mermaid (للمخطط التفاعلي)
+
+```mermaid
+flowchart TD
+    subgraph Kubernetes["☸️ Kubernetes Cluster (Production)"]
+        subgraph Ingress["🚪 Ingress Controller"]
+            LB[Load Balancer]
+        end
+
+        subgraph Services["🔗 Service Layer"]
+            Nginx[Nginx Service]
+        end
+
+        subgraph Frontend["🖥️ Frontend Deployment (React + Vite)"]
+            FE1[Frontend Pod 1]
+            FE2[Frontend Pod 2]
+            FE3[Frontend Pod 3]
+        end
+
+        subgraph Backend["⚙️ Backend Deployment (Django + Gunicorn)"]
+            BE1[Backend Pod 1]
+            BE2[Backend Pod 2]
+            BE3[Backend Pod 3]
+        end
+
+        subgraph Celery["⏳ Celery Deployment"]
+            CE1[Celery Worker 1]
+            CE2[Celery Worker 2]
+        end
+
+        subgraph Database["💾 PostgreSQL StatefulSet"]
+            DB_Master[PostgreSQL Master]
+            DB_Replica[PostgreSQL Replica]
+        end
+
+        subgraph Cache["📦 Redis Deployment (Cluster)"]
+            RD1[Redis Node 1]
+            RD2[Redis Node 2]
+            RD3[Redis Node 3]
+        end
+
+        subgraph Storage["📁 MinIO Deployment (S3)"]
+            MN1[MinIO Node 1]
+            MN2[MinIO Node 2]
+        end
+
+        subgraph Monitoring["📊 Monitoring Stack"]
+            PR[Prometheus]
+            GF[Grafana]
+        end
+
+        subgraph Logging["📝 Logging Stack"]
+            ES[Elasticsearch]
+            KB[Kibana]
+        end
+
+        LB --> Nginx
+        Nginx -->|Static Files| FE1
+        Nginx -->|Static Files| FE2
+        Nginx -->|Static Files| FE3
+        Nginx -->|API| BE1
+        Nginx -->|API| BE2
+        Nginx -->|API| BE3
+
+        BE1 -->|SQL| DB_Master
+        BE2 -->|SQL| DB_Master
+        BE3 -->|SQL| DB_Master
+        DB_Master -->|Replication| DB_Replica
+
+        BE1 -->|Cache| RD1
+        BE2 -->|Cache| RD2
+        BE3 -->|Cache| RD3
+
+        BE1 -->|Tasks| RD1
+        BE2 -->|Tasks| RD2
+        BE3 -->|Tasks| RD3
+        RD1 -->|Pull| CE1
+        RD2 -->|Pull| CE2
+
+        BE1 -->|Files| MN1
+        BE2 -->|Files| MN2
+        BE3 -->|Files| MN1
+        CE1 -->|Files| MN2
+        CE2 -->|Files| MN1
+
+        PR -->|Metrics| BE1
+        PR -->|Metrics| BE2
+        PR -->|Metrics| BE3
+        PR -->|Metrics| DB_Master
+        PR -->|Metrics| RD1
+        GF -->|Dashboard| PR
+
+        ES -->|Logs| BE1
+        ES -->|Logs| BE2
+        ES -->|Logs| BE3
+        KB -->|Dashboard| ES
+    end
+
+    subgraph External["🌍 External"]
+        Internet[Internet Users]
+    end
+
+    Internet --> LB
+```
+
+---
+
+### هيكل XML لـ diagrams.net
+
+```xml
+<mxfile host="app.diagrams.net" modified="2024-07-26T00:00:00.000Z" agent="5.0" version="24.0.0">
+  <diagram id="deployment-diagram" name="Deployment Diagram">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1200" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- External -->
+        <mxCell id="2" value="🌍 الإنترنت" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="المستخدمون" style="shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;aspect=fixed;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzhlYmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPjwvc3ZnPg==;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="160" width="80" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Kubernetes Cluster -->
+        <mxCell id="4" value="☸️ Kubernetes Cluster (Production)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="30" width="1100" height="950" as="geometry"/>
+        </mxCell>
+
+        <!-- Ingress -->
+        <mxCell id="5" value="🚪 Ingress Controller" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="20" y="40" width="300" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Load Balancer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="5">
+          <mxGeometry x="50" y="30" width="180" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="7" value="🔗 Service Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="350" y="40" width="300" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Nginx Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="7">
+          <mxGeometry x="50" y="30" width="180" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Frontend -->
+        <mxCell id="9" value="🖥️ Frontend Deployment (React + Vite)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="20" y="180" width="400" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Pod 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="9">
+          <mxGeometry x="30" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="Pod 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="9">
+          <mxGeometry x="150" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Pod 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="9">
+          <mxGeometry x="270" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="Replicas: 3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;" vertex="1" parent="9">
+          <mxGeometry x="150" y="120" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend -->
+        <mxCell id="14" value="⚙️ Backend Deployment (Django + Gunicorn)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="460" y="180" width="400" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Pod 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="14">
+          <mxGeometry x="30" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="Pod 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="14">
+          <mxGeometry x="150" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="Pod 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="14">
+          <mxGeometry x="270" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="Replicas: 3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="150" y="120" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Celery -->
+        <mxCell id="19" value="⏳ Celery Deployment" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="900" y="180" width="250" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Worker 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="19">
+          <mxGeometry x="30" y="50" width="90" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="Worker 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="19">
+          <mxGeometry x="140" y="50" width="90" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="22" value="Replicas: 2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;" vertex="1" parent="19">
+          <mxGeometry x="75" y="110" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- PostgreSQL -->
+        <mxCell id="23" value="💾 PostgreSQL StatefulSet" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="20" y="420" width="350" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="24" value="Master" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="23">
+          <mxGeometry x="30" y="50" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="Replica" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="23">
+          <mxGeometry x="190" y="50" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Redis -->
+        <mxCell id="26" value="📦 Redis Deployment (Cluster)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="410" y="420" width="400" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="27" value="Node 1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="26">
+          <mxGeometry x="20" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="28" value="Node 2" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="26">
+          <mxGeometry x="150" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="29" value="Node 3" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="26">
+          <mxGeometry x="280" y="50" width="100" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- MinIO -->
+        <mxCell id="30" value="📁 MinIO Deployment (S3)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="850" y="420" width="300" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="31" value="Node 1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="30">
+          <mxGeometry x="20" y="50" width="110" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="32" value="Node 2" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="30">
+          <mxGeometry x="160" y="50" width="110" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Monitoring -->
+        <mxCell id="33" value="📊 Monitoring Stack" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="20" y="650" width="300" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="34" value="Prometheus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="33">
+          <mxGeometry x="30" y="40" width="110" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="35" value="Grafana" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="33">
+          <mxGeometry x="160" y="40" width="110" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Logging -->
+        <mxCell id="36" value="📝 Logging Stack (ELK)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="4">
+          <mxGeometry x="360" y="650" width="300" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="37" value="Elasticsearch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="36">
+          <mxGeometry x="30" y="40" width="110" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="38" value="Kibana" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="36">
+          <mxGeometry x="160" y="40" width="110" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections -->
+        <mxCell id="39" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="2" target="6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="40" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6" target="8">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="41" value="Static" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="8" target="10">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="42" value="API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="8" target="15">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="43" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="15" target="24">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="44" value="Replication" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="24" target="25">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="45" value="Cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="15" target="27">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="46" value="Tasks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="15" target="27">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="47" value="Pull" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="27" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="48" value="Files" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="15" target="31">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="49" value="Metrics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="15" target="34">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="50" value="Dashboard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="34" target="35">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="51" value="Logs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="15" target="37">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="52" value="Dashboard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="37" target="38">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+```
+
+---
+
+## كيفية استخدام ملفات XML في diagrams.net
+
+1.  افتح [diagrams.net](https://app.diagrams.net/).
+2.  اختر **"فتح الرسم البياني الحالي"** أو **"إنشاء رسم بياني جديد"**.
+3.  اختر **"استيراد"** ← **"استيراد من..."** ← **"XML"**.
+4.  الصق محتوى XML الخاص بالمخطط المطلوب.
+5.  اضغط **"استيراد"** لعرض المخطط وتعديله.
+
+---

@@ -1,0 +1,81 @@
+
+---
+
+### 📄 3. `Sequence.drawio` (مخطط التسلسل)
+
+```markdown
+# مخطط التسلسل (Sequence Diagram) - NQP
+
+## 1. الهدف
+يوضح هذا المخطط التفاعلات بين المكونات المختلفة (المستخدمين، البوابات، الخدمات، قواعد البيانات) لتسلسل زمني محدد، وهو **عملية الفحص الصحي الكاملة** (من مسح QR إلى الإحالة للعيادة).
+
+## 2. مخطط Mermaid
+
+```mermaid
+sequenceDiagram
+    participant Traveler as 🧑 المسافر
+    participant Officer as 👮 موظف الحجر
+    participant Frontend as 🖥️ بوابة الفحص (React)
+    participant Backend as 🧠 Django API
+    participant RiskEngine as 📊 محرك المخاطر
+    participant Cache as 💾 Redis (Cache)
+    participant DB as 💾 PostgreSQL
+    participant Clinic as 🏥 بوابة العيادات
+
+    %% ====== 1. مسح QR ======
+    Traveler->>Officer: 1. يصل وعرض QR Code
+    Officer->>Frontend: 2. مسح QR (أو إدخال رقم الجواز)
+    Frontend->>Backend: 3. POST /api/v1/screening/scan-qr/
+    Backend->>Cache: 4. البحث عن بيانات المسافر في Cache
+    alt البيانات موجودة في Cache
+        Cache-->>Backend: 5. إرجاع البيانات المخزنة مؤقتاً
+    else البيانات غير موجودة
+        Backend->>DB: 6. استعلام قاعدة البيانات
+        DB-->>Backend: 7. إرجاع بيانات المسافر
+        Backend->>Cache: 8. تخزين البيانات في Cache (TTL: 5 دقائق)
+    end
+    Backend-->>Frontend: 9. عرض بيانات المسافر
+    Frontend-->>Officer: 10. عرض بيانات المسافر (اسم، صورة، تاريخ)
+
+    %% ====== 2. الفحص الظاهري ======
+    Officer->>Frontend: 11. إدخال القراءات (حرارة، SpO2، أعراض)
+    Frontend->>Backend: 12. POST /api/v1/screening/
+    Backend->>DB: 13. إنشاء سجل الفحص (health_screenings)
+    DB-->>Backend: 14. تأكيد الحفظ
+
+    %% ====== 3. تقييم المخاطر ======
+    Backend->>RiskEngine: 15. استدعاء محرك المخاطر (Service)
+    RiskEngine->>Cache: 16. جلب تصنيف الدولة (من Cache)
+    Cache-->>RiskEngine: 17. إرجاع تصنيف الدولة
+    RiskEngine->>RiskEngine: 18. حساب درجة المخاطر
+    RiskEngine-->>Backend: 19. إرجاع (risk_level, risk_score, recommendation)
+    Backend->>DB: 20. إنشاء سجل التقييم (risk_assessments)
+    DB-->>Backend: 21. تأكيد الحفظ
+
+    alt التصنيف == "GREEN"
+        Backend-->>Frontend: 22. إرجاع (GREEN, ADMIT)
+        Frontend-->>Officer: 23. عرض بطاقة خضراء + زر "إفراج"
+        Officer->>Frontend: 24. الضغط على زر "إفراج"
+        Frontend->>Backend: 25. POST /api/v1/screening/{id}/release/
+        Backend->>DB: 26. تحديث حالة المسافر إلى "RELEASED"
+        Backend-->>Frontend: 27. تأكيد الإفراج
+        Frontend-->>Traveler: 28. "مرحباً، يمكنك الدخول"
+    else التصنيف == "YELLOW" OR "RED"
+        Backend-->>Frontend: 22. إرجاع (YELLOW/RED, REFER)
+        Frontend-->>Officer: 23. عرض بطاقة ملونة + زر "إحالة"
+        Officer->>Frontend: 24. الضغط على زر "إحالة"
+        Frontend->>Backend: 25. POST /api/v1/screening/{id}/refer/
+        Backend->>DB: 26. إنشاء إحالة (referral)
+        DB-->>Backend: 27. تأكيد الحفظ
+        Backend->>Clinic: 28. إرسال إشعار (WebSocket) بوجود إحالة جديدة
+        Backend-->>Frontend: 29. تأكيد الإحالة + رقم الإحالة
+        Frontend-->>Officer: 30. "تم الإحالة إلى العيادة رقم 3"
+        Frontend-->>Traveler: 31. "يرجى التوجه إلى العيادة رقم 3"
+    end
+
+3. شرح التسلسل
+الخطوة	الوصف	البروتوكول
+1-10	مسح QR واسترجاع بيانات المسافر (من Cache أو DB).	REST API + Redis
+11-14	إدخال الفحص الظاهري وحفظه في قاعدة البيانات.	REST API
+15-21	حساب درجة المخاطر (استدعاء Service، استخدام Cache، حفظ النتيجة).	Service Call + DB
+22-31	إما الإفراج (إذا كان أخضر) أو الإحالة للعيادة (إذا كان أصفر/أحمر).	REST API + WebSocket

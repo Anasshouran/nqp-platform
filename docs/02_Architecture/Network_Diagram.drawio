@@ -1,0 +1,165 @@
+1. مخطط الشبكة (Mermaid)
+flowchart TD
+    subgraph Internet["🌍 الإنترنت"]
+        Users["المستخدمون (مسافرين، موظفين، أطباء، إدارة)"]
+        Airlines["شركات الطيران"]
+        MOH["وزارة الصحة"]
+        WHO["منظمة الصحة العالمية"]
+        Customs["الجمارك"]
+        Hospitals["المستشفيات"]
+    end
+
+    subgraph DMZ["🛡️ المنطقة المنزوعة السلاح (DMZ)"]
+        WAF["جدار حماية التطبيقات (WAF)"]
+        LB["موازن التحميل (Nginx)"]
+        FE["خوادم Frontend (React SPA)"]
+        SSL["شهادات SSL/TLS (Let's Encrypt)"]
+    end
+
+    subgraph LAN["🔒 الشبكة الداخلية (LAN)"]
+        subgraph App["طبقة التطبيقات (Application Layer)"]
+            BE1["خادم Backend 1 (Django + Gunicorn)"]
+            BE2["خادم Backend 2 (Django + Gunicorn)"]
+            BE3["خادم Backend 3 (Django + Gunicorn)"]
+            Celery["Celery Workers"]
+        end
+        
+        subgraph Data["طبقة البيانات (Data Layer)"]
+            DB_Master["PostgreSQL (Master)"]
+            DB_Replica["PostgreSQL (Replica)"]
+            Redis["Redis (Cache + Broker)"]
+            Storage["MinIO / S3 (Storage)"]
+        end
+        
+        subgraph Mgmt["طبقة الإدارة (Management)"]
+            Admin["لوحة الإدارة (Django Admin)"]
+            Monitoring["Prometheus + Grafana"]
+            Logging["ELK Stack"]
+        end
+    end
+
+    Users -->|"HTTPS (443)"| WAF
+    Airlines -->|"HTTPS (API)"| WAF
+    MOH -->|"HTTPS (API)"| WAF
+    WHO -->|"HTTPS (API)"| WAF
+    Customs -->|"HTTPS (API) / SFTP"| WAF
+    Hospitals -->|"HTTPS (API)"| WAF
+
+    WAF -->|"فحص الطلبات"| LB
+    LB -->|"توزيع الحمل"| FE
+    FE -->|"استدعاء API"| LB
+    LB -->|"توزيع الحمل"| BE1
+    LB -->|"توزيع الحمل"| BE2
+    LB -->|"توزيع الحمل"| BE3
+
+    BE1 -->|"قراءة/كتابة"| DB_Master
+    BE2 -->|"قراءة/كتابة"| DB_Master
+    BE3 -->|"قراءة/كتابة"| DB_Master
+    
+    DB_Master -->|"تكرار (Replication)"| DB_Replica
+    BE1 -->|"قراءة (Read)"| DB_Replica
+    
+    BE1 -->|"تخزين مؤقت (Cache)"| Redis
+    BE1 -->|"مهام غير متزامنة"| Celery
+    Celery -->|"Broker"| Redis
+    Celery -->|"تخزين"| Storage
+    BE1 -->|"تخزين الملفات"| Storage
+
+    BE1 -->|"إدارة"| Admin
+    BE1 -->|"سجلات (Logs)"| Logging
+    BE1 -->|"مقاييس (Metrics)"| Monitoring
+
+    BE1 -->|"تكامل خارجي"| MOH
+    BE1 -->|"تكامل خارجي"| Airlines
+    BE1 -->|"تكامل خارجي"| WHO
+    BE1 -->|"تكامل خارجي"| Customs
+    BE1 -->|"تكامل خارجي"| Hospitals
+
+    2. وصف العقد والاتصالات (للـ drawio)
+2.1. العقد (Nodes)
+العقدة	الوصف	الموقع	IP (مثال)	المنافذ المفتوحة
+WAF (جدار حماية التطبيقات)	يحمي من هجمات (SQL Injection, XSS, DDoS).	DMZ	203.0.113.10	443 (HTTPS)
+Load Balancer (Nginx)	يوزع الحمل على خوادم Frontend و Backend.	DMZ	203.0.113.20	443 (HTTPS), 80 (HTTP → إعادة توجيه)
+Frontend Servers (React SPA)	تخدم تطبيق React (Vite) و الملفات الثابتة.	DMZ	203.0.113.30 - .32	80 (HTTP, داخلي)
+Backend Servers (Django + Gunicorn)	تنفيذ منطق الأعمال عبر Django REST Framework.	LAN (App)	10.0.1.10 - .12	8000 (HTTP, داخلي)
+Celery Workers	تنفيذ المهام غير المتزامنة (خلفية).	LAN (App)	10.0.1.20 - .21	-
+PostgreSQL (Master)	قاعدة البيانات الرئيسية (كتابة وقراءة).	LAN (Data)	10.0.2.10	5432 (PostgreSQL)
+PostgreSQL (Replica)	نسخة متماثلة للقراءة فقط (للتقارير والتحليلات).	LAN (Data)	10.0.2.11	5432 (PostgreSQL)
+Redis	تخزين مؤقت (Cache) وطابور رسائل (Broker لـ Celery).	LAN (Data)	10.0.2.20	6379 (Redis)
+MinIO / S3 Storage	تخزين الملفات (المستندات، الصور، التقارير).	LAN (Data)	10.0.2.30	9000 (API), 9001 (Console)
+Admin Server (Django Admin)	لوحة الإدارة للمسؤولين (مقيدة).	LAN (Mgmt)	10.0.3.10	8000 (HTTP, داخلي)
+Monitoring Server (Prometheus + Grafana)	جمع وعرض مقاييس النظام.	LAN (Mgmt)	10.0.3.20	9090 (Prometheus), 3000 (Grafana)
+Logging Server (ELK Stack)	تجميع وتحليل سجلات النظام.	LAN (Mgmt)	10.0.3.30	9200 (Elasticsearch), 5601 (Kibana)
+2.2. الاتصالات (Connections)
+المصدر	الوجهة	البروتوكول	المنفذ	الغرض
+المستخدمون	WAF	HTTPS	443	طلبات المستخدمين (موقع، بوابات، تطبيق جوال).
+شركات الطيران	WAF	HTTPS	443	رفع قوائم الركاب عبر API.
+وزارة الصحة	WAF	HTTPS	443	تبادل التقارير والتنبيهات.
+منظمة الصحة العالمية	WAF	HTTPS	443	مزامنة ICD-11 وتقارير IHR.
+الجمارك	WAF	HTTPS / SFTP	443 / 22	شهادات الإفراج الغذائي.
+المستشفيات	WAF	HTTPS	443	إحالات طبية (FHIR).
+WAF	Load Balancer	HTTPS	443	تمرير الطلبات الآمنة.
+Load Balancer	Frontend Servers	HTTP	80	توزيع طلبات (Static Files) و (SPA).
+Load Balancer	Backend Servers	HTTP	8000	توزيع طلبات (API).
+Backend Servers	PostgreSQL (Master)	PostgreSQL (SSL)	5432	عمليات (CRUD) الرئيسية.
+Backend Servers	PostgreSQL (Replica)	PostgreSQL (SSL)	5432	استعلامات (القراءة) للتقارير.
+Backend Servers	Redis	Redis	6379	التخزين المؤقت (Cache) وطابور الرسائل.
+Backend Servers	Celery Workers	-	-	إيداع مهام في الطابور (عبر Redis).
+Backend Servers	MinIO / S3	HTTP / HTTPS	9000	تخزين واسترجاع الملفات (المستندات، الصور).
+Backend Servers	Admin Server	HTTP	8000	(داخلي) إدارة المحتوى والإعدادات.
+Backend Servers	Monitoring Server	HTTP	9090	إرسال مقاييس الأداء (Metrics) إلى Prometheus.
+Backend Servers	Logging Server	HTTP	9200	إرسال سجلات (Logs) إلى Elasticsearch.
+Celery Workers	Redis	Redis	6379	سحب المهام من الطابور.
+Celery Workers	MinIO / S3	HTTP / HTTPS	9000	تخزين الملفات (التقارير، الشهادات).
+PostgreSQL (Master)	PostgreSQL (Replica)	PostgreSQL (SSL)	5432	التكرار (Replication) للنسخ الاحتياطي.
+3. إعدادات الأمان (Firewall Rules)
+الـ Rule	المصدر	الوجهة	المنفذ	الإجراء
+1	أي (0.0.0.0/0)	WAF	443 (HTTPS)	السماح
+2	أي (0.0.0.0/0)	WAF	80 (HTTP)	إعادة توجيه إلى 443
+3	Load Balancer (DMZ)	Backend Servers	8000	السماح (داخلي)
+4	Backend Servers (LAN)	PostgreSQL (Master)	5432	السماح (داخلي)
+5	Backend Servers (LAN)	Redis	6379	السماح (داخلي)
+6	Backend Servers (LAN)	MinIO	9000	السماح (داخلي)
+7	أي (0.0.0.0/0)	SSH (22)	22	رفض (ما عدا IPs المصرح بها)
+8	Admin IPs	SSH (22)	22	السماح (مقيد)
+4. تعليمات استخدام المخطط في drawio
+
+    افتح draw.io (app.diagrams.net).
+
+    اختر "Blank Diagram".
+
+    استخدم الأدوات التالية:
+
+        Shapes:
+
+            Rounded Rectangle للخوادم (Servers).
+
+            Cloud للإنترنت والأنظمة الخارجية.
+
+            Cylinder لقواعد البيانات (Databases).
+
+            Hexagon لجدار الحماية (Firewall).
+
+        Connectors: استخدم Arrow مع تسميات توضح البروتوكول والمنفذ.
+
+        Groups: استخدم Rectangle (مع خلفية شفافة) لتجميع العقد في (DMZ, LAN, App, Data, Mgmt).
+
+    الألوان المقترحة:
+
+        DMZ: خلفية برتقالية فاتحة.
+
+        LAN (App): خلفية زرقاء فاتحة.
+
+        LAN (Data): خلفية خضراء فاتحة.
+
+        LAN (Mgmt): خلفية بنفسجية فاتحة.
+
+        الإنترنت: خلفية رمادية فاتحة.
+
+5. 📌 ملخص المكونات الأساسية في الشبكة
+المنطقة	المكونات	الهدف
+الإنترنت	المستخدمون، شركات الطيران، وزارة الصحة، WHO، الجمارك، المستشفيات	المصادر الخارجية التي تتفاعل مع المنصة.
+DMZ	WAF، Load Balancer (Nginx)، Frontend Servers (React)	الطبقة الأولى للدفاع، استقبال الطلبات وتوزيعها.
+LAN (App)	Backend Servers (Django + Gunicorn)، Celery Workers	تنفيذ منطق الأعمال والمهام الخلفية.
+LAN (Data)	PostgreSQL (Master/Replica)، Redis، MinIO/S3	تخزين البيانات، التخزين المؤقت، وإدارة الملفات.
+LAN (Mgmt)	Admin Server، Monitoring (Prometheus/Grafana)، Logging (ELK)	الإدارة، المراقبة، وتحليل السجلات.

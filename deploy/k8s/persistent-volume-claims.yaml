@@ -1,0 +1,50 @@
+# ============================================================
+# k8s/persistent-volume-claims.yaml - PersistentVolumeClaims
+# بيئة: الإنتاج (Production)
+# ============================================================
+# ملاحظة: static/media يُشار إليها من عدة نسخ من الـ backend.
+# إذا كانت الـ StorageClass الخاصة بالمجموعة لا تدعم ReadWriteMany (RWX)
+# فقلل النسخ (replicas) إلى 1 أو فعّل Provisioner يدعم RWX (مثل NFS).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nqp-static-pvc
+  namespace: nqp
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nqp-media-pvc
+  namespace: nqp
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nqp-redis-pvc
+  namespace: nqp
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nqp-minio-pvc
+  namespace: nqp
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 10Gi

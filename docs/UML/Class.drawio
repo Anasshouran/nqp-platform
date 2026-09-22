@@ -1,0 +1,294 @@
+
+---
+
+### 📄 2. `Class.drawio` (مخطط الفئات)
+
+```markdown
+# مخطط الفئات (Class Diagram) - NQP
+
+## 1. الهدف
+يوضح هذا المخطط الفئات (النماذج - Models) الرئيسية في نظام NQP والعلاقات بينها. يعتمد على نماذج Django المستخدمة في تطبيق Backend.
+
+## 2. مخطط Mermaid
+
+```mermaid
+classDiagram
+    %% ====== نماذج الحوكمة ======
+    class User {
+        +UUID id
+        +String email
+        +String phone
+        +String full_name
+        +String hashed_password
+        +String national_id
+        +UUID port_id
+        +String role
+        +Boolean is_active
+        +DateTime created_at
+        +DateTime updated_at
+        +login()
+        +logout()
+        +change_password()
+    }
+
+    class Role {
+        +UUID id
+        +String name
+        +String description
+    }
+
+    class Permission {
+        +UUID id
+        +String name
+        +String resource
+        +String action
+    }
+
+    class AuditLog {
+        +UUID id
+        +UUID user_id
+        +String action_type
+        +String resource_type
+        +String resource_id
+        +JSON old_value
+        +JSON new_value
+        +String ip_address
+        +String user_agent
+        +DateTime timestamp
+    }
+
+    User "1" -- "0..*" AuditLog : creates
+    User "1" -- "0..*" Role : has
+    Role "1" -- "0..*" Permission : has
+
+    %% ====== البيانات الأساسية ======
+    class Country {
+        +UUID id
+        +String code_alpha_2
+        +String code_alpha_3
+        +String name_ar
+        +String name_en
+        +String risk_level
+        +DateTime updated_at
+    }
+
+    class Port {
+        +UUID id
+        +String code
+        +String name_ar
+        +String name_en
+        +String type
+        +UUID country_id
+        +JSON location_geo
+        +Boolean is_active
+    }
+
+    class Disease {
+        +UUID id
+        +String icd_11_code
+        +String name_ar
+        +String name_en
+        +JSON symptoms
+        +Int incubation_period_min
+        +Int incubation_period_max
+        +JSON treatment_protocol
+        +Boolean is_public_health_emergency
+        +DateTime updated_at
+    }
+
+    class Medication {
+        +UUID id
+        +String name
+        +String generic_name
+        +JSON interactions
+        +String unit
+    }
+
+    Country "1" -- "0..*" Port : has
+    Country "1" -- "0..*" Traveler : nationality
+
+    %% ====== المسافرين والرحلات ======
+    class Traveler {
+        +UUID id
+        +String passport_number
+        +String first_name
+        +String last_name
+        +Date date_of_birth
+        +UUID nationality_id
+        +String phone
+        +String email
+        +JSON medical_history
+        +DateTime created_at
+        +DateTime updated_at
+    }
+
+    class Carrier {
+        +UUID id
+        +String name
+        +String iata_code
+        +JSON contact_info
+    }
+
+    class Flight {
+        +UUID id
+        +String flight_number
+        +UUID carrier_id
+        +String origin_code
+        +UUID origin_country_id
+        +UUID destination_port_id
+        +DateTime scheduled_arrival
+        +String status
+    }
+
+    class PassengerManifest {
+        +UUID id
+        +UUID flight_id
+        +UUID traveler_id
+        +String seat_number
+        +DateTime submitted_at
+    }
+
+    Carrier "1" -- "0..*" Flight : operates
+    Flight "1" -- "0..*" PassengerManifest : has
+    Traveler "1" -- "0..*" PassengerManifest : listed_on
+
+    %% ====== الفحص والتقييم ======
+    class HealthScreening {
+        +UUID id
+        +UUID traveler_id
+        +UUID port_id
+        +UUID officer_id
+        +Float body_temperature
+        +Int oxygen_saturation
+        +Int systolic_bp
+        +Int diastolic_bp
+        +JSON observed_symptoms
+        +DateTime screened_at
+    }
+
+    class RiskAssessment {
+        +UUID id
+        +UUID screening_id
+        +String risk_level
+        +Float risk_score
+        +JSON decision_factors
+        +String recommendation
+        +DateTime assessed_at
+    }
+
+    Traveler "1" -- "0..*" HealthScreening : undergoes
+    Port "1" -- "0..*" HealthScreening : performed_at
+    User "1" -- "0..*" HealthScreening : performed_by
+    HealthScreening "1" -- "0..1" RiskAssessment : has
+
+    %% ====== العيادات والمختبرات ======
+    class ClinicVisit {
+        +UUID id
+        +UUID traveler_id
+        +UUID referral_id
+        +UUID doctor_id
+        +String diagnosis
+        +String visit_status
+        +DateTime visited_at
+    }
+
+    class EMRRecord {
+        +UUID id
+        +UUID visit_id
+        +JSON clinical_notes
+        +JSON vital_signs
+        +JSON physical_exam
+        +DateTime created_at
+    }
+
+    class Prescription {
+        +UUID id
+        +UUID visit_id
+        +UUID medication_id
+        +String dosage
+        +String frequency
+        +Int duration_days
+        +Text instructions
+        +DateTime prescribed_at
+    }
+
+    class LabSample {
+        +UUID id
+        +UUID visit_id
+        +String sample_barcode
+        +String sample_type
+        +UUID collector_id
+        +DateTime collected_at
+        +String status
+    }
+
+    class LabResult {
+        +UUID id
+        +UUID sample_id
+        +UUID disease_id
+        +String result
+        +Float value
+        +UUID entered_by_id
+        +UUID approved_by_id
+        +String approval_status
+        +DateTime result_date
+    }
+
+    Traveler "1" -- "0..*" ClinicVisit : has
+    ClinicVisit "1" -- "0..1" EMRRecord : has
+    ClinicVisit "1" -- "0..*" Prescription : has
+    ClinicVisit "1" -- "0..*" LabSample : requests
+    LabSample "1" -- "0..1" LabResult : produces
+    Disease "1" -- "0..*" LabResult : tested_for
+
+    %% ====== المتابعة المنزلية ======
+    class FollowUpPatient {
+        +UUID id
+        +UUID traveler_id
+        +UUID clinic_visit_id
+        +Date enrollment_date
+        +Date expected_end_date
+        +String status
+    }
+
+    class DailyHealthLog {
+        +UUID id
+        +UUID follow_up_id
+        +Float temperature
+        +Int oxygen_saturation
+        +JSON symptoms
+        +Int mood_score
+        +DateTime logged_date
+    }
+
+    class RecoveryCertificate {
+        +UUID id
+        +UUID follow_up_id
+        +UUID approved_by_id
+        +String certificate_hash
+        +JSON qr_data
+        +Date issue_date
+        +Date expiry_date
+        +String status
+    }
+
+    Traveler "1" -- "0..*" FollowUpPatient : has
+    FollowUpPatient "1" -- "0..*" DailyHealthLog : has
+    FollowUpPatient "1" -- "0..1" RecoveryCertificate : has
+
+    %% ====== العلاقات العامة ======
+    User "1" -- "0..*" ClinicVisit : doctor
+    User "1" -- "0..*" LabSample : collector
+    User "1" -- "0..*" LabResult : entered_by
+    User "1" -- "0..*" LabResult : approved_by
+
+    3. شرح العلاقات
+العلاقة	الوصف
+User → Role	كل مستخدم له دور واحد (Many-to-One).
+Role → Permission	كل دور له صلاحيات متعددة (Many-to-Many).
+Traveler → HealthScreening	كل مسافر يمكن أن يكون له عدة فحوصات (One-to-Many).
+HealthScreening → RiskAssessment	كل فحص له تقييم مخاطر واحد (One-to-One).
+ClinicVisit → EMRRecord	كل زيارة لها سجل طبي واحد (One-to-One).
+ClinicVisit → LabSample	كل زيارة يمكن أن تطلب عدة عينات (One-to-Many).
+LabSample → LabResult	كل عينة لها نتيجة واحدة (One-to-One).
+FollowUpPatient → DailyHealthLog	كل مريض متابعة له عدة سجلات يومية (One-to-Many).

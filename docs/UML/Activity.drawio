@@ -1,0 +1,64 @@
+
+---
+
+### 📄 4. `Activity.drawio` (مخطط النشاط)
+
+```markdown
+# مخطط النشاط (Activity Diagram) - NQP
+
+## 1. الهدف
+يوضح هذا المخطط تدفق العملية (Workflow) خطوة بخطوة لعملية **تقييم المخاطر واتخاذ القرار** (من الفحص الظاهري إلى الإفراج أو الإحالة).
+
+## 2. مخطط Mermaid
+
+```mermaid
+flowchart TD
+    Start([بداية: وصول المسافر]) --> Step1[موظف الحجر يمسح QR]
+    Step1 --> Step2[عرض بيانات المسافر]
+    Step2 --> Step3[قياس الحرارة و SpO2 والأعراض]
+    Step3 --> Step4[إدخال القراءات في النظام]
+    Step4 --> Step5[النظام يستدعي محرك المخاطر]
+    
+    Step5 --> Decision1{الحرارة > 39°؟}
+    Decision1 -- نعم --> Red[تصنيف أحمر فوري]
+    Decision1 -- لا --> Decision2{SpO2 < 90%؟}
+    Decision2 -- نعم --> Red
+    Decision2 -- لا --> Decision3{بلد القدوم أحمر؟}
+    Decision3 -- نعم --> Score[حساب درجة المخاطر + 10 نقاط]
+    Decision3 -- لا --> Score2[حساب درجة المخاطر العادية]
+    Score --> CheckChronic{أمراض مزمنة؟}
+    Score2 --> CheckChronic
+    CheckChronic -- نعم --> AddRisk[إضافة 5 نقاط]
+    CheckChronic -- لا --> FinalScore[الدرجة النهائية]
+    AddRisk --> FinalScore
+    
+    FinalScore --> Classify{الدرجة}
+    Classify -- < 15 --> Green[تصنيف أخضر]
+    Classify -- 15 - 30 --> Yellow[تصنيف أصفر]
+    Classify -- > 30 --> Red[تصنيف أحمر]
+    
+    Green --> Action1[الإفراج الفوري]
+    Action1 --> End1([النهاية: دخول آمن])
+    
+    Yellow --> Action2[الإحالة للعيادة]
+    Red --> Action2
+    Action2 --> Step6[الطبيب يستقبل الإحالة]
+    Step6 --> Step7[الفحص السريري]
+    Step7 --> Step8{هل يحتاج فحوصات؟}
+    Step8 -- نعم --> Step9[طلب فحوصات مخبرية]
+    Step9 --> Step10[انتظار النتيجة]
+    Step10 --> Step11[استلام النتيجة]
+    Step11 --> Decision4{النتيجة}
+    Decision4 -- سلبية --> Discharge[الإفراج + متابعة منزلية]
+    Decision4 -- إيجابية --> Treat[العلاج والعزل]
+    Step8 -- لا --> Treat
+    
+    Discharge --> End2([النهاية: تعافي])
+    Treat --> End2
+
+    3. شرح النشاط
+الرمز	الوصف
+المستطيل ذو الحواف الدائرية	بداية أو نهاية العملية.
+المستطيل	خطوة / إجراء يقوم به المستخدم أو النظام.
+المعين (الماسي)	نقطة قرار (نعم / لا).
+المستطيل الملون	تصنيف المخاطر (أخضر، أصفر، أحمر).

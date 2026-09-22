@@ -1,0 +1,435 @@
+
+
+## 📄 `Component_Diagram.drawio` (مخطط المكونات)
+
+### الوصف النصي التفصيلي
+
+يمثل مخطط المكونات (Component Diagram) البنية الداخلية لمنصة NQP من منظور **الوحدات البرمجية (Components)** والعلاقات (التبعيات والاتصالات) بينها. يوضح المخطط:
+
+1.  **طبقة العرض (Presentation Layer)**: تطبيقات React (SPA) لكل بوابة، ومكتباتها الأساسية.
+2.  **طبقة التطبيق (Application Layer)**: تطبيقات Django (Apps) المنظمة حسب الميزات، والخدمات المشتركة (Core).
+3.  **طبقة الوصول إلى البيانات (Data Layer)**: نماذج Django (Models) وقاعدة البيانات.
+4.  **طبقة التكامل (Integration Layer)**: وحدات التكامل مع الأنظمة الخارجية.
+5.  **البنية التحتية المشتركة (Cross-Cutting)**: المصادقة، الصلاحيات، سجلات التدقيق، المراقبة.
+
+**العلاقات الرئيسية**:
+- **تبعية (Dependency)**: سهم متقطع يشير من المكون المعتمد إلى المكون المعتمد عليه.
+- **اتصال (Association)**: سهم صلب يشير إلى تدفق البيانات أو استدعاء API.
+- **تضمين (Containment)**: توضع المكونات داخل حدود المكون الأكبر (مثل: React Components داخل React SPA).
+
+---
+
+### كود Mermaid (للمخطط التفاعلي)
+
+```mermaid
+flowchart TD
+    subgraph Frontend["🖥️ طبقة العرض (Presentation Layer)"]
+        direction TB
+        subgraph React_SPA["React SPA (Vite)"]
+            PublicWebsite["الموقع العام\n(Public Website)"]
+            TravelerPortal["بوابة المسافرين\n(Traveler Portal)"]
+            CarrierPortal["بوابة شركات الطيران\n(Carrier Portal)"]
+            PortHealth["بوابة موظفي الحجر\n(Port Health)"]
+            ClinicPortal["بوابة العيادات\n(Clinic Portal)"]
+            LaboratoryPortal["بوابة المختبرات\n(Laboratory Portal)"]
+            FoodQuarantine["بوابة الحجر الغذائي\n(Food Quarantine)"]
+            FederalAdmin["بوابة الإدارة الاتحادية\n(Federal Admin)"]
+            EmergencyEOC["بوابة الطوارئ\n(Emergency EOC)"]
+            MobileApp["تطبيق الجوال (PWA)\n(Mobile App)"]
+        end
+        
+        subgraph Libs["📚 مكتبات React"]
+            Redux["Redux Toolkit\n(State Management)"]
+            RHF["React Hook Form + Zod\n(Forms & Validation)"]
+            Router["React Router\n(Routing)"]
+            MUI["Material UI + Tailwind CSS\n(UI Components)"]
+            AG["AG Grid\n(Tables)"]
+            Recharts["Recharts\n(Charts)"]
+            Axios["Axios\n(API Client)"]
+            PWA["Vite PWA Plugin\n(PWA)"]
+        end
+        
+        React_SPA --> Libs
+    end
+
+    subgraph Backend["⚙️ طبقة التطبيق (Application Layer - Django)"]
+        direction TB
+        subgraph Django_Apps["تطبيقات Django (Apps)"]
+            Accounts["accounts\n(المصادقة والمستخدمين)"]
+            Travelers["travelers\n(المسافرين)"]
+            Carriers["carriers\n(شركات الطيران)"]
+            Screening["screening\n(الفحص الصحي)"]
+            RiskEngine["risk_engine\n(محرك المخاطر)"]
+            Clinic["clinic\n(العيادات و EMR)"]
+            Laboratory["laboratory\n(المختبرات)"]
+            FoodQuarantine_App["food_quarantine\n(الحجر الغذائي)"]
+            Emergency["emergency_eoc\n(غرفة الطوارئ)"]
+            Notifications["notifications\n(محرك الإشعارات)"]
+            Reporting["reporting\n(التقارير)"]
+            Integration["integration\n(التكامل الخارجي)"]
+            CMS["cms\n(إدارة المحتوى)"]
+        end
+        
+        subgraph Core["Core (المشترك)"]
+            Models["Base Models"]
+            Permissions["Permissions (RBAC)"]
+            Serializers["Common Serializers"]
+            Utils["Utilities (QR, Encryption)"]
+            Exceptions["Custom Exceptions"]
+        end
+        
+        subgraph Services["🧠 خدمات الأعمال"]
+            RiskService["Risk Calculation Service"]
+            ManifestService["Manifest Processing Service"]
+            CertificateService["Certificate Generation Service"]
+            NotificationService["Notification Dispatcher"]
+            ReportService["Report Generation Service"]
+        end
+        
+        subgraph Async["⏳ المهام غير المتزامنة (Celery)"]
+            Tasks["Celery Tasks"]
+            Beat["Celery Beat (Scheduler)"]
+        end
+        
+        Django_Apps --> Core
+        Django_Apps --> Services
+        Django_Apps --> Async
+    end
+
+    subgraph Data["💾 طبقة البيانات (Data Layer)"]
+        direction TB
+        PostgreSQL["PostgreSQL\n(قاعدة البيانات)"]
+        Redis["Redis\n(Cache + Broker)"]
+        Storage["MinIO / S3\n(تخزين الملفات)"]
+    end
+
+    subgraph External["🔗 طبقة التكامل الخارجي (External Integration)"]
+        MOH["وزارة الصحة API"]
+        Customs["الجمارك API/SFTP"]
+        WHO["WHO API/SFTP"]
+        Airlines["شركات الطيران API"]
+        Hospitals["المستشفيات API (FHIR)"]
+        ReferenceLabs["المختبرات المرجعية API"]
+        Immigration["الجوازات API"]
+        Standards["هيئة المواصفات API"]
+    end
+
+    subgraph CrossCutting["🛡️ الطبقات الشاملة (Cross-Cutting)"]
+        Auth["JWT Authentication"]
+        RBAC["Role-Based Access Control"]
+        Audit["Audit Logging"]
+        Monitoring["Monitoring (Prometheus + Grafana)"]
+        Logging["Logging (ELK Stack)"]
+    end
+
+    Frontend -->|REST API (JSON)| Backend
+    Backend -->|ORM/SQL| PostgreSQL
+    Backend -->|Cache| Redis
+    Backend -->|Async Tasks| Redis
+    Redis -->|Broker| Async
+    Backend -->|Files| Storage
+    Backend -->|REST/SFTP| External
+    
+    CrossCutting --> Frontend
+    CrossCutting --> Backend
+    CrossCutting --> External
+```
+
+---
+
+### هيكل XML لـ diagrams.net
+
+```xml
+<mxfile host="app.diagrams.net" modified="2024-07-26T00:00:00.000Z" agent="5.0" version="24.0.0">
+  <diagram id="component-diagram" name="Component Diagram">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1300" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ==================== Frontend Layer ==================== -->
+        <mxCell id="2" value="🖥️ طبقة العرض (Presentation Layer)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="40" width="700" height="380" as="geometry"/>
+        </mxCell>
+
+        <!-- React SPA -->
+        <mxCell id="3" value="React SPA (Vite)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="2">
+          <mxGeometry x="20" y="40" width="400" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="الموقع العام" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="20" y="30" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="بوابة المسافرين" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="150" y="30" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="بوابة شركات الطيران" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="280" y="30" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="بوابة موظفي الحجر" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="20" y="80" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="بوابة العيادات" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="150" y="80" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="بوابة المختبرات" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="280" y="80" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="بوابة الحجر الغذائي" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="20" y="130" width="110" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="بوابة الإدارة الاتحادية" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="150" y="130" width="130" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="بوابة الطوارئ (EOC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="300" y="130" width="90" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="تطبيق الجوال (PWA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="120" y="180" width="140" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- React Libraries -->
+        <mxCell id="14" value="📚 مكتبات React" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" vertex="1" parent="2">
+          <mxGeometry x="440" y="40" width="240" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Redux Toolkit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="30" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="React Hook Form + Zod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="70" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="React Router" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="110" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="Material UI + Tailwind CSS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="150" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="AG Grid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="190" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Recharts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="230" width="200" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="Axios" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="14">
+          <mxGeometry x="20" y="270" width="200" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== Backend Layer ==================== -->
+        <mxCell id="22" value="⚙️ طبقة التطبيق (Application Layer - Django)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="460" width="1100" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- Django Apps -->
+        <mxCell id="23" value="تطبيقات Django (Apps)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="22">
+          <mxGeometry x="20" y="40" width="400" height="340" as="geometry"/>
+        </mxCell>
+        <mxCell id="24" value="accounts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="10" y="30" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="travelers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="150" y="30" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="26" value="carriers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="290" y="30" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="27" value="screening" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="10" y="80" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="28" value="risk_engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="23">
+          <mxGeometry x="150" y="80" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="29" value="clinic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="290" y="80" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="30" value="laboratory" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="10" y="130" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="31" value="food_quarantine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="150" y="130" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="32" value="emergency_eoc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="23">
+          <mxGeometry x="290" y="130" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="33" value="notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="10" y="180" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="34" value="reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="150" y="180" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="35" value="integration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="290" y="180" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="36" value="cms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="23">
+          <mxGeometry x="10" y="230" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Core -->
+        <mxCell id="37" value="Core (المشترك)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="22">
+          <mxGeometry x="440" y="40" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="38" value="Base Models" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="37">
+          <mxGeometry x="10" y="30" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="39" value="Permissions (RBAC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="37">
+          <mxGeometry x="10" y="65" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="40" value="Common Serializers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="37">
+          <mxGeometry x="10" y="100" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="41" value="Utilities (QR, Encryption)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="37">
+          <mxGeometry x="10" y="135" width="170" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="42" value="🧠 خدمات الأعمال (Services)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" vertex="1" parent="22">
+          <mxGeometry x="660" y="40" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="43" value="Risk Calculation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="42">
+          <mxGeometry x="10" y="30" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="44" value="Manifest Processing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="42">
+          <mxGeometry x="10" y="65" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="45" value="Certificate Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="42">
+          <mxGeometry x="10" y="100" width="170" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="46" value="Notification Dispatcher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="42">
+          <mxGeometry x="10" y="135" width="170" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Async -->
+        <mxCell id="47" value="⏳ المهام غير المتزامنة (Celery)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="22">
+          <mxGeometry x="880" y="40" width="200" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="48" value="Celery Tasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="47">
+          <mxGeometry x="15" y="30" width="170" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="49" value="Celery Beat (Scheduler)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="47">
+          <mxGeometry x="15" y="75" width="170" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== Data Layer ==================== -->
+        <mxCell id="50" value="💾 طبقة البيانات (Data Layer)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="900" width="600" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="51" value="PostgreSQL (قاعدة البيانات)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="50">
+          <mxGeometry x="30" y="40" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="52" value="Redis (Cache + Broker)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="50">
+          <mxGeometry x="220" y="40" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="53" value="MinIO / S3 (تخزين الملفات)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="50">
+          <mxGeometry x="410" y="40" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== External Integration Layer ==================== -->
+        <mxCell id="54" value="🔗 طبقة التكامل الخارجي (External Integration)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="900" width="450" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="55" value="وزارة الصحة API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="20" y="30" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="56" value="الجمارك API/SFTP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="160" y="30" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="57" value="WHO API/SFTP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="300" y="30" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="58" value="شركات الطيران API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="20" y="80" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="59" value="المستشفيات API (FHIR)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="160" y="80" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="60" value="المختبرات المرجعية API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="54">
+          <mxGeometry x="300" y="80" width="120" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== Cross-Cutting ==================== -->
+        <mxCell id="61" value="🛡️ الطبقات الشاملة (Cross-Cutting)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1120" width="1100" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="62" value="JWT Authentication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="30" y="30" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="63" value="RBAC (Roles/Permissions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="200" y="30" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="64" value="Audit Logging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="390" y="30" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="65" value="Monitoring (Prometheus+Grafana)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="560" y="30" width="190" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="66" value="Logging (ELK Stack)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="780" y="30" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="67" value="API Documentation (Swagger)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="61">
+          <mxGeometry x="950" y="30" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== Connections ==================== -->
+        <!-- Frontend to Backend -->
+        <mxCell id="68" value="REST API (JSON)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;strokeWidth=2;" edge="1" parent="1" source="2" target="22">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="420" as="sourcePoint"/>
+            <mxPoint x="400" y="460" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Backend to Data -->
+        <mxCell id="69" value="ORM/SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="22" target="50">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="70" value="Cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="22" target="52">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="71" value="Broker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="22" target="52">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="72" value="Files" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="22" target="53">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend to External -->
+        <mxCell id="73" value="REST/SFTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;" edge="1" parent="1" source="22" target="54">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Cross-Cutting -->
+        <mxCell id="74" value="Applies to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="61" target="2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="75" value="Applies to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="61" target="22">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="76" value="Applies to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="61" target="54">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Dependencies -->
+        <mxCell id="77" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="27" target="28">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="78" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="29" target="28">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="79" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="30" target="33">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="80" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="29" target="34">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="81" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="35" target="55">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="82" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;dashed=1;" edge="1" parent="1" source="35" target="56">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+```
+
+---
+

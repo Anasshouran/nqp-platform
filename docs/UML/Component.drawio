@@ -1,0 +1,143 @@
+
+---
+
+### 📄 6. `Component.drawio` (مخطط المكونات)
+
+```markdown
+# مخطط المكونات (Component Diagram) - NQP
+
+## 1. الهدف
+يوضح هذا المخطط المكونات الرئيسية للنظام (Frontend، Backend، قاعدة البيانات، التخزين، المهام الخلفية) والعلاقات (التبعيات والاتصالات) بينها.
+
+## 2. مخطط Mermaid
+
+```mermaid
+flowchart TD
+    subgraph Frontend["🖥️ طبقة العرض (Presentation Layer)"]
+        direction TB
+        React["React SPA (Vite)"]
+        
+        subgraph ReactLibs["📚 مكتبات React"]
+            Redux["Redux Toolkit"]
+            RHF["React Hook Form + Zod"]
+            Router["React Router"]
+            MUI["Material UI + Tailwind"]
+            AG["AG Grid"]
+            Recharts["Recharts"]
+            Axios["Axios"]
+        end
+        
+        React --> Redux
+        React --> RHF
+        React --> Router
+        React --> MUI
+        React --> AG
+        React --> Recharts
+        React --> Axios
+        
+        subgraph Portals["بوابات React"]
+            Public["الموقع العام"]
+            Traveler["المسافرين"]
+            Carrier["شركات الطيران"]
+            Port["موظفي الحجر"]
+            Clinic["العيادات"]
+            Lab["المختبرات"]
+            Food["الحجر الغذائي"]
+            Admin["الإدارة الاتحادية"]
+            EOC["الطوارئ"]
+            Mobile["تطبيق الجوال (PWA)"]
+        end
+        
+        React --> Portals
+    end
+
+    subgraph Gateway["🚪 طبقة الدخول (Entry Layer)"]
+        Nginx["Nginx (Reverse Proxy)"]
+        Gunicorn["Gunicorn (WSGI)"]
+    end
+
+    subgraph Backend["⚙️ طبقة التطبيق (Application Layer)"]
+        direction TB
+        
+        subgraph DjangoApps["تطبيقات Django (Apps)"]
+            Accounts["accounts"]
+            Travelers["travelers"]
+            Carriers["carriers"]
+            Screening["screening"]
+            RiskEngine["risk_engine"]
+            ClinicApp["clinic"]
+            LabApp["laboratory"]
+            FoodApp["food_quarantine"]
+            EOCApp["emergency_eoc"]
+            Notifications["notifications"]
+            Reporting["reporting"]
+            Integration["integration"]
+            CMS["cms"]
+        end
+        
+        subgraph Core["Core (المشترك)"]
+            Models["Base Models"]
+            Permissions["RBAC"]
+            Serializers["Common Serializers"]
+            Utils["Utilities"]
+        end
+        
+        subgraph Services["🧠 خدمات الأعمال"]
+            RiskService["Risk Calculation"]
+            ManifestService["Manifest Processing"]
+            CertificateService["Certificate Generation"]
+            NotificationService["Notification Dispatcher"]
+        end
+        
+        subgraph Async["⏳ المهام الخلفية"]
+            Celery["Celery Workers"]
+            Beat["Celery Beat (Scheduler)"]
+        end
+        
+        DjangoApps --> Core
+        DjangoApps --> Services
+        DjangoApps --> Async
+    end
+
+    subgraph Data["💾 طبقة البيانات (Data Layer)"]
+        PostgreSQL["PostgreSQL\n(قاعدة البيانات)"]
+        Redis["Redis\n(Cache + Broker)"]
+        Storage["MinIO / S3\n(تخزين الملفات)"]
+    end
+
+    subgraph External["🔗 طبقة التكامل الخارجي"]
+        MOH["وزارة الصحة"]
+        Customs["الجمارك"]
+        WHO["WHO"]
+        Airlines["شركات الطيران"]
+        Hospitals["المستشفيات"]
+    end
+
+    %% الاتصالات
+    Frontend -->|REST API (JSON)| Gateway
+    Gateway -->|طلب| Backend
+    Backend -->|ORM/SQL| PostgreSQL
+    Backend -->|Cache| Redis
+    Backend -->|Async Tasks| Redis
+    Redis -->|Broker| Async
+    Backend -->|Files| Storage
+    Backend -->|REST/SFTP| External
+    
+    %% الاتصالات الداخلية
+    Screening --> RiskEngine
+    ClinicApp --> Screening
+    LabApp --> ClinicApp
+    EOCApp --> Screening
+    EOCApp --> LabApp
+    Reporting --> DjangoApps
+
+3. شرح المكونات
+المكون	الوصف	التقنية
+React SPA (Vite)	واجهة المستخدم الأساسية.	React 19, Vite, TypeScript
+Nginx	Reverse Proxy وموازن التحميل.	Nginx 1.24+
+Gunicorn	خادم WSGI لتشغيل Django.	Gunicorn 22+
+Django Apps	تطبيقات Django المنظمة حسب الميزة.	Django 4.2+, DRF
+Celery	تنفيذ المهام غير المتزامنة.	Celery 5.4+
+PostgreSQL	قاعدة البيانات الرئيسية.	PostgreSQL 16+
+Redis	تخزين مؤقت وطابور رسائل.	Redis 7+
+MinIO / S3	تخزين الملفات.	MinIO / S3

@@ -1,0 +1,60 @@
+# ============================================================
+# docker-compose.db.yml - تشغيل قاعدة البيانات فقط
+# بيئة: التطوير المحلي (لتشغيل قاعدة البيانات بشكل منفصل)
+# ============================================================
+
+version: '3.9'
+
+services:
+  # ===== قاعدة البيانات (PostgreSQL) =====
+  postgres:
+    image: postgres:16-alpine
+    container_name: nqp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-nqp_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-nqp_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nqp-network
+
+  # ===== التخزين المؤقت (Redis) =====
+  redis:
+    image: redis:7-alpine
+    container_name: nqp-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nqp-network
+
+# ===== الشبكات =====
+networks:
+  nqp-network:
+    driver: bridge
+
+# ===== وحدات التخزين (Volumes) =====
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

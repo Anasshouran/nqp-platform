@@ -1,0 +1,2598 @@
+### 📄 10. OpenAPI.yaml (الملف الجامع الكامل)
+
+هذا هو الملف الأهم والأكبر، والذي يجمع جميع المسارات المذكورة أعلاه في مواصفة واحدة قابلة للاستيراد في Swagger أو Postman. 
+
+```yaml
+openapi: 3.0.0
+info:
+  title: National Quarantine Platform (NQP) API
+  description: |
+    الواجهات البرمجية الموحدة لمنصة الحجر الصحي القومي.
+    تشمل جميع البوابات وأنظمة الدعم (المصادقة، المسافرين، الفحص، العيادات، المختبرات، التقارير، والحجر الغذائي).
+  version: 1.0.0
+  contact:
+    name: NQP Technical Team
+    email: dev@nqp.gov.sd
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.nqp.gov.sd/api/v1
+    description: Production Server
+  - url: https://staging-api.nqp.gov.sd/api/v1
+    description: Staging Server
+
+tags:
+  - name: Authentication
+    description: تسجيل الدخول وإدارة الرموز المميزة
+  - name: Traveler
+    description: تسجيل المسافرين وإدارة ملفاتهم
+  - name: Screening
+    description: الفحص الصحي وتقييم المخاطر
+  - name: Clinic
+    description: العيادات والسجلات الطبية الإلكترونية
+  - name: Laboratory
+    description: إدارة العينات والنتائج المخبرية
+  - name: Reports
+    description: التقارير ومؤشرات الأداء
+  - name: Food Quarantine
+    description: إدارة الحجر الصحي الغذائي
+  - name: CMS
+    description: إدارة المحتوى للموقع العام
+  - name: Vaccination
+    description: إدارة شهادات التطعيم والتحقق منها (نظام التطعيم)
+  - name: Hospital
+    description: إدارة الإحالات والتكامل مع المستشفيات
+  - name: Emergency
+    description: نظام إدارة الطوارئ والأزمات (الإبلاغ، الخطط، إدارة الأزمات)
+  - name: Diseases
+    description: نظام إدارة الأمراض (ICD-11، البروتوكولات، تعريفات الحالات، IHR)
+  - name: Mobile
+    description: واجهات التطبيق الجوال (الإبلاغ اليومي، الأدوية، الشهادات، SOS)
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    # ==== مشتركة (Common) ====
+    ApiResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        message:
+          type: string
+        data:
+          type: object
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data: { type: array }
+        meta:
+          type: object
+          properties:
+            total: { type: integer }
+            page: { type: integer }
+            limit: { type: integer }
+            total_pages: { type: integer }
+
+    # ==== المستخدمين والمصادقة ====
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: "admin@nqp.gov.sd" }
+        password: { type: string, format: password, example: "SecurePass123!" }
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                access_token: { type: string }
+                refresh_token: { type: string }
+                expires_in: { type: integer }
+                user:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    full_name: { type: string }
+                    role: { type: string }
+                    port_id: { type: string, format: uuid }
+
+    RefreshTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string }
+
+    # ==== المسافرون ====
+    TravelerRegisterRequest:
+      type: object
+      required: [passport_number, first_name, last_name, date_of_birth, nationality_code, phone]
+      properties:
+        passport_number: { type: string, example: "A1234567" }
+        first_name: { type: string, example: "محمد" }
+        last_name: { type: string, example: "أحمد" }
+        date_of_birth: { type: string, format: date, example: "1990-05-15" }
+        nationality_code: { type: string, example: "SD" }
+        phone: { type: string, example: "+249123456789" }
+        email: { type: string, format: email, example: "mohamed@example.com" }
+        medical_history:
+          type: object
+          properties:
+            diabetes: { type: boolean }
+            hypertension: { type: boolean }
+
+    TravelerResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        passport_number: { type: string }
+        full_name: { type: string }
+        status: { type: string, enum: [PENDING_DOCUMENTS, UNDER_REVIEW, COMPLETED, REJECTED] }
+
+    QrCodeResponse:
+      type: object
+      properties:
+        qr_code: { type: string, description: "Base64 encoded PNG image" }
+        qr_data:
+          type: object
+          properties:
+            traveler_id: { type: string, format: uuid }
+            passport: { type: string }
+            issued_at: { type: string, format: date-time }
+
+    # ==== الفحص والمخاطر ====
+    ScreeningSubmitRequest:
+      type: object
+      required: [traveler_id, port_id, body_temperature]
+      properties:
+        traveler_id: { type: string, format: uuid }
+        port_id: { type: string, format: uuid }
+        body_temperature: { type: number, format: float, example: 38.5 }
+        oxygen_saturation: { type: integer, minimum: 50, maximum: 100, example: 95 }
+        systolic_bp: { type: integer, example: 120 }
+        diastolic_bp: { type: integer, example: 80 }
+        observed_symptoms:
+          type: array
+          items: { type: string }
+          example: ["cough", "headache"]
+        officer_notes: { type: string }
+
+    RiskAssessmentResponse:
+      type: object
+      properties:
+        screening_id: { type: string, format: uuid }
+        risk_assessment:
+          type: object
+          properties:
+            level: { type: string, enum: [GREEN, YELLOW, RED] }
+            score: { type: number, format: float }
+            recommendation: { type: string, enum: [ADMIT, QUARANTINE, REFER] }
+            factors:
+              type: object
+              properties:
+                origin_risk: { type: number }
+                symptoms_risk: { type: number }
+                vitals_risk: { type: number }
+
+    # ==== العيادات والمختبرات ====
+    EmrCreateRequest:
+      type: object
+      required: [clinical_notes]
+      properties:
+        clinical_notes:
+          type: object
+          properties:
+            diagnosis: { type: string }
+            severity: { type: string, enum: [MILD, MODERATE, SEVERE] }
+        vital_signs:
+          type: object
+          properties:
+            heart_rate: { type: integer }
+            respiratory_rate: { type: integer }
+        physical_exam:
+          type: object
+
+    LabSampleRequest:
+      type: object
+      required: [sample_type, disease_id]
+      properties:
+        sample_type: { type: string, enum: [BLOOD, SWAB, URINE] }
+        disease_id: { type: string, format: uuid }
+        priority: { type: string, enum: [NORMAL, HIGH] }
+
+    LabResultRequest:
+      type: object
+      required: [result]
+      properties:
+        disease_id: { type: string, format: uuid }
+        result: { type: string, enum: [POSITIVE, NEGATIVE, INCONCLUSIVE] }
+        value: { type: number, format: float, description: "مثل Ct value للـ PCR" }
+
+    # ==== التقارير ====
+    KPIsResponse:
+      type: object
+      properties:
+        total_screenings_today: { type: integer }
+        positive_cases_today: { type: integer }
+        occupancy_rate: { type: number, format: float }
+        avg_processing_time: { type: number, format: float }
+        pending_lab_results: { type: integer }
+        active_followups: { type: integer }
+
+    # ==== الحجر الغذائي ====
+    FoodShipmentRequest:
+      type: object
+      required: [manifest_number, port_id, supplier_name, origin_country, arrival_date]
+      properties:
+        manifest_number: { type: string, example: "SHIP-2024-100" }
+        port_id: { type: string, format: uuid }
+        supplier_name: { type: string, example: "Global Meat Co." }
+        origin_country: { type: string, example: "البرازيل" }
+        product_list:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              quantity: { type: number }
+              unit: { type: string }
+        arrival_date: { type: string, format: date }
+
+    FoodInspectionRequest:
+      type: object
+      required: [decision]
+      properties:
+        inspection_notes: { type: string }
+        decision: { type: string, enum: [COMPLIANT, NON_COMPLIANT] }
+
+    FoodReleaseResponse:
+      type: object
+      properties:
+        certificate_number: { type: string, example: "FQ-2024-001" }
+        issued_at: { type: string, format: date-time }
+    # ---------- Vaccination ----------
+    VaccinationCertificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        traveler_id:
+          type: string
+          format: uuid
+        disease_id:
+          type: string
+          format: uuid
+        disease_name:
+          type: string
+          example: "كوفيد-19"
+        vaccine_name:
+          type: string
+          example: "Pfizer-BioNTech"
+        batch_number:
+          type: string
+          example: "ABC123"
+        dose_number:
+          type: integer
+          example: 2
+        dose_date:
+          type: string
+          format: date
+          example: "2024-07-01"
+        expiry_date:
+          type: string
+          format: date
+          example: "2025-01-01"
+        issuing_country:
+          type: string
+          example: "SD"
+        issuing_authority:
+          type: string
+          example: "وزارة الصحة السودانية"
+        file_url:
+          type: string
+          format: uri
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED, EXPIRED]
+          example: "VERIFIED"
+        verified_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    VaccinationUploadRequest:
+      type: object
+      required: [traveler_id, disease_id, vaccine_name, dose_number, dose_date]
+      properties:
+        traveler_id:
+          type: string
+          format: uuid
+        disease_id:
+          type: string
+          format: uuid
+        vaccine_name:
+          type: string
+          example: "Pfizer-BioNTech"
+        batch_number:
+          type: string
+          example: "ABC123"
+        dose_number:
+          type: integer
+          minimum: 1
+          example: 2
+        dose_date:
+          type: string
+          format: date
+          example: "2024-07-01"
+        issuing_country:
+          type: string
+          example: "SD"
+        issuing_authority:
+          type: string
+          example: "وزارة الصحة السودانية"
+        file:
+          type: string
+          format: binary
+          description: "ملف الشهادة (JPEG, PNG, PDF - حد أقصى 5 ميجابايت)"
+
+    VaccinationVerifyRequest:
+      type: object
+      required: [verification_status]
+      properties:
+        verification_status:
+          type: string
+          enum: [VERIFIED, REJECTED]
+        rejection_reason:
+          type: string
+          description: "سبب الرفض (مطلوب إذا كان REJECTED)"
+          example: "انتهت صلاحية الشهادة"
+
+    VaccinationVerifyResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        expiry_date:
+          type: string
+          format: date
+
+    VaccinationScanRequest:
+      type: object
+      required: [qr_code_data]
+      properties:
+        qr_code_data:
+          type: string
+          description: "البيانات المشفرة من QR Code"
+
+    VaccinationScanResponse:
+      type: object
+      properties:
+        traveler:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            full_name:
+              type: string
+        vaccination_summary:
+          type: object
+          properties:
+            is_fully_vaccinated:
+              type: boolean
+            last_dose_date:
+              type: string
+              format: date
+            valid_until:
+              type: string
+              format: date
+        verification_result:
+          type: string
+          enum: [VALID, EXPIRED, REVOKED, SUSPICIOUS]
+
+    VaccinationUpdateRequest:
+      type: object
+      properties:
+        dose_date:
+          type: string
+          format: date
+        batch_number:
+          type: string
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED, EXPIRED]
+
+        # ---------- Hospital ----------
+    Hospital:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "مستشفى الخرطوم التعليمي"
+        code:
+          type: string
+          example: "KH-001"
+        type:
+          type: string
+          enum: [GOVERNMENT, PRIVATE, MILITARY, FIELD]
+        address:
+          type: string
+        contact_phone:
+          type: string
+        is_active:
+          type: boolean
+
+    ReferralCreateRequest:
+      type: object
+      required: [traveler_id, clinic_visit_id, hospital_id, priority, reason]
+      properties:
+        traveler_id:
+          type: string
+          format: uuid
+        clinic_visit_id:
+          type: string
+          format: uuid
+        hospital_id:
+          type: string
+          format: uuid
+        department:
+          type: string
+          example: "العناية المركزة"
+        priority:
+          type: string
+          enum: [ROUTINE, URGENT, EMERGENCY, CRITICAL]
+        reason:
+          type: string
+          example: "فشل تنفسي حاد"
+        clinical_summary:
+          type: object
+          description: "ملخص سريري (JSON)"
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    ReferralStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED, IN_TREATMENT, DISCHARGED, CANCELLED]
+        note:
+          type: string
+        performed_by:
+          type: string
+        external_reference_id:
+          type: string
+
+    ReferralStatusResponse:
+      type: object
+      properties:
+        referral_id:
+          type: string
+          format: uuid
+        current_status:
+          type: string
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              note:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+
+    MedicalReportResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [DISCHARGE_SUMMARY, OPERATION_REPORT, CONSULTATION]
+        file_url:
+          type: string
+          format: uri
+        received_at:
+          type: string
+          format: date-time
+        reviewed:
+          type: boolean
+    
+        # ---------- Emergency ----------
+    EmergencyEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_number:
+          type: string
+          example: "E-2024-001"
+        title:
+          type: string
+        description:
+          type: string
+        event_type:
+          type: string
+        severity:
+          type: string
+          enum: [LOW, MODERATE, HIGH, CRITICAL]
+        status:
+          type: string
+          enum: [IDENTIFIED, VERIFIED, RESPONDING, CONTROLLED, CLOSED, REJECTED]
+        reported_at:
+          type: string
+          format: date-time
+        location:
+          type: string
+
+    EventReportRequest:
+      type: object
+      required: [event_type_id, title, description, source_type, severity]
+      properties:
+        event_type_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "اشتباه بفيروس نزفي"
+        description:
+          type: string
+        source_type:
+          type: string
+          enum: [SCREENING, LAB, CLINIC, PUBLIC, OTHER]
+        source_id:
+          type: string
+          format: uuid
+        location_port_id:
+          type: string
+          format: uuid
+        severity:
+          type: string
+          enum: [LOW, MODERATE, HIGH, CRITICAL]
+        affected_travelers:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    ResponsePlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        event_type_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            type: string
+        required_resources:
+          type: object
+        is_active:
+          type: boolean
+
+    CrisisTeamRequest:
+      type: object
+      required: [team_members]
+      properties:
+        team_members:
+          type: array
+          items:
+            type: object
+            required: [user_id, role]
+            properties:
+              user_id:
+                type: string
+                format: uuid
+              role:
+                type: string
+                enum: [INCIDENT_COMMANDER, LOGISTICS, MEDICAL_TEAM, COMMUNICATIONS]
+
+    CloseCrisisRequest:
+      type: object
+      required: [summary]
+      properties:
+        summary:
+          type: string
+        lessons_learned:
+          type: string
+        recommendations:
+          type: string
+
+ # ---------- Diseases ----------
+    Disease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        icd_11_code:
+          type: string
+          example: "RA01"
+        name_ar:
+          type: string
+        name_en:
+          type: string
+        description:
+          type: string
+        symptoms:
+          type: array
+          items:
+            type: string
+        incubation_period_min:
+          type: integer
+        incubation_period_max:
+          type: integer
+        transmission_methods:
+          type: array
+          items:
+            type: string
+        is_public_health_emergency:
+          type: boolean
+        ihr_category:
+          type: string
+          enum: [PHEIC, TARGETED_ERADICATION, SURVEILLANCE_ONLY, NOT_IHR]
+        is_active:
+          type: boolean
+
+    DiseaseCreateRequest:
+      type: object
+      required: [icd_11_code, name_ar, name_en, symptoms]
+      properties:
+        icd_11_code:
+          type: string
+        name_ar:
+          type: string
+        name_en:
+          type: string
+        description:
+          type: string
+        symptoms:
+          type: array
+          items:
+            type: string
+        incubation_period_min:
+          type: integer
+        incubation_period_max:
+          type: integer
+        transmission_methods:
+          type: array
+          items:
+            type: string
+        is_public_health_emergency:
+          type: boolean
+        ihr_category:
+          type: string
+          enum: [PHEIC, TARGETED_ERADICATION, SURVEILLANCE_ONLY, NOT_IHR]
+
+    CaseDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_type:
+          type: string
+          enum: [SUSPECTED, PROBABLE, CONFIRMED, NOT_A_CASE]
+        clinical_criteria:
+          type: object
+        lab_criteria:
+          type: object
+        epidemiological_criteria:
+          type: object
+        version:
+          type: integer
+
+    TreatmentProtocol:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        severity_level:
+          type: string
+          enum: [MILD, MODERATE, SEVERE, CRITICAL]
+        medications:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              dosage:
+                type: string
+              frequency:
+                type: string
+              duration:
+                type: integer
+        supportive_care:
+          type: array
+          items:
+            type: string
+        duration_days:
+          type: integer
+        version:
+          type: integer
+        is_active:
+          type: boolean
+
+  # ---------- Mobile ----------
+    DailyLogRequest:
+      type: object
+      required: [temperature, oxygen_saturation, symptoms]
+      properties:
+        temperature:
+          type: number
+          format: float
+          example: 37.2
+        oxygen_saturation:
+          type: integer
+          example: 98
+        symptoms:
+          type: array
+          items:
+            type: string
+          example: ["cough", "headache"]
+        mood_score:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 7
+        notes:
+          type: string
+
+    DailyLogResponse:
+      type: object
+      properties:
+        risk_level:
+          type: string
+          enum: [GREEN, YELLOW, RED]
+        message:
+          type: string
+        next_check_in:
+          type: string
+          format: date-time
+
+    Medication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        dosage:
+          type: string
+        scheduled_time:
+          type: string
+        is_taken:
+          type: boolean
+
+    SOSRequest:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        notes:
+          type: string
+
+    CertificateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        qr_code:
+          type: string
+          description: "Base64 encoded QR Code image"
+        download_url:
+          type: string
+          format: uri
+        issued_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
+paths:
+  # ===================== AUTH =====================
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: تسجيل الدخول
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: نجاح تسجيل الدخول
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: بيانات الدخول غير صحيحة
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: تحديث الرمز المميز
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: تم تحديث الرمز بنجاح
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: تسجيل الخروج
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: تم تسجيل الخروج بنجاح
+
+  /auth/change-password:
+    post:
+      tags: [Authentication]
+      summary: تغيير كلمة المرور
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [old_password, new_password]
+              properties:
+                old_password: { type: string, format: password }
+                new_password: { type: string, format: password, minLength: 8 }
+      responses:
+        '200':
+          description: تم تغيير كلمة المرور
+
+  # ===================== TRAVELER =====================
+  /travelers/register:
+    post:
+      tags: [Traveler]
+      summary: تسجيل مسافر جديد
+      operationId: registerTraveler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TravelerRegisterRequest'
+      responses:
+        '201':
+          description: تم التسجيل بنجاح
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/TravelerResponse' }
+
+  /travelers/{traveler_id}/documents:
+    post:
+      tags: [Traveler]
+      summary: رفع مستند (جواز/تطعيم)
+      operationId: uploadDocument
+      parameters:
+        - in: path
+          name: traveler_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [document_type, file]
+              properties:
+                document_type:
+                  type: string
+                  enum: [PASSPORT, VACCINE]
+                file:
+                  type: string
+                  format: binary
+                expiry_date:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: تم رفع المستند
+
+  /travelers/{traveler_id}/qr-code:
+    get:
+      tags: [Traveler]
+      summary: الحصول على رمز QR
+      operationId: getQrCode
+      parameters:
+        - in: path
+          name: traveler_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: رمز QR
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/QrCodeResponse' }
+
+  /travelers/{traveler_id}/status:
+    get:
+      tags: [Traveler]
+      summary: متابعة حالة الطلب
+      operationId: getTravelerStatus
+      parameters:
+        - in: path
+          name: traveler_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: حالة الطلب
+
+  # ===================== SCREENING =====================
+  /screening/scan-qr:
+    post:
+      tags: [Screening]
+      summary: مسح رمز QR للمسافر
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qr_data]
+              properties:
+                qr_data: { type: string }
+      responses:
+        '200':
+          description: بيانات المسافر
+
+  /screening:
+    post:
+      tags: [Screening]
+      summary: إدخال الفحص الظاهري وتقييم المخاطر
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScreeningSubmitRequest'
+      responses:
+        '201':
+          description: تم الفحص والتقييم
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/RiskAssessmentResponse' }
+
+  /screening/{traveler_id}/latest-risk:
+    get:
+      tags: [Screening]
+      summary: الحصول على آخر تقييم مخاطر
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: traveler_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: آخر تقييم مخاطر
+
+  /screening/{screening_id}/refer:
+    post:
+      tags: [Screening]
+      summary: إحالة المسافر للعيادة
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: screening_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: تمت الإحالة
+
+  # ===================== CLINIC =====================
+  /clinic/referrals:
+    get:
+      tags: [Clinic]
+      summary: قائمة الإحالات الواردة
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [PENDING, IN_PROGRESS, COMPLETED]
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: قائمة الإحالات المرقمة
+
+  /clinic/visits/{visit_id}/emr:
+    post:
+      tags: [Clinic]
+      summary: إنشاء سجل طبي إلكتروني
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: visit_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmrCreateRequest'
+      responses:
+        '201':
+          description: تم إنشاء السجل الطبي
+
+  /clinic/visits/{visit_id}/lab-requests:
+    post:
+      tags: [Clinic]
+      summary: طلب فحص مخبري
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: visit_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabSampleRequest'
+      responses:
+        '201':
+          description: تم إرسال الطلب
+
+  /clinic/visits/{visit_id}/prescriptions:
+    post:
+      tags: [Clinic]
+      summary: وصف دواء
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: visit_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [medication_id, dosage, frequency, duration_days]
+              properties:
+                medication_id: { type: string, format: uuid }
+                dosage: { type: string, example: "500mg" }
+                frequency: { type: string, example: "EVERY_8_HOURS" }
+                duration_days: { type: integer, example: 7 }
+                instructions: { type: string }
+      responses:
+        '201':
+          description: تم وصف الدواء
+
+  # ===================== LABORATORY =====================
+  /lab/samples:
+    post:
+      tags: [Laboratory]
+      summary: تسجيل عينة جديدة
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabSampleRequest'
+      responses:
+        '201':
+          description: تم تسجيل العينة
+
+  /lab/samples/{sample_id}/track:
+    get:
+      tags: [Laboratory]
+      summary: تتبع العينة
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: sample_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: حالة العينة
+
+  /lab/samples/{sample_id}/results:
+    post:
+      tags: [Laboratory]
+      summary: إدخال نتيجة الفحص
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: sample_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabResultRequest'
+      responses:
+        '201':
+          description: تم إدخال النتيجة
+
+  /lab/samples/{sample_id}/approve:
+    post:
+      tags: [Laboratory]
+      summary: اعتماد النتيجة
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: sample_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: تم اعتماد النتيجة وإرسالها للأنظمة المعنية
+
+  # ===================== REPORTS =====================
+  /reports/kpis:
+    get:
+      tags: [Reports]
+      summary: مؤشرات الأداء الرئيسية
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: port_id
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: مؤشرات الأداء
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/KPIsResponse' }
+
+  /reports/surveillance:
+    get:
+      tags: [Reports]
+      summary: إحصائيات الترصد الوبائي
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: disease_id
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: بيانات الترصد المجمعة
+
+  /reports/export:
+    get:
+      tags: [Reports]
+      summary: تصدير تقرير (PDF/Excel)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          required: true
+          schema: { type: string, enum: [PDF, EXCEL] }
+        - in: query
+          name: report_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: ملف التقرير
+          content:
+            application/pdf: { }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: { }
+
+  /reports/ihr:
+    get:
+      tags: [Reports]
+      summary: تقرير IHR للتبليغ الدولي
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: تقرير بصيغة JSON/XML متوافق مع منظمة الصحة العالمية
+
+  # ===================== FOOD QUARANTINE =====================
+  /food/shipments:
+    post:
+      tags: [Food Quarantine]
+      summary: تسجيل شحنة غذائية واردة
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodShipmentRequest'
+      responses:
+        '201':
+          description: تم تسجيل الشحنة
+
+  /food/shipments/{shipment_id}/inspection:
+    post:
+      tags: [Food Quarantine]
+      summary: بدء عملية التفتيش
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: shipment_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodInspectionRequest'
+      responses:
+        '201':
+          description: تم تسجيل التفتيش
+
+  /food/shipments/{shipment_id}/release:
+    post:
+      tags: [Food Quarantine]
+      summary: إصدار شهادة الإفراج الصحي
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: shipment_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: تم إصدار الشهادة
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/FoodReleaseResponse' }
+
+  
+  # ---------- التطعيم ----------
+  /vaccinations/certificates/:
+    post:
+      tags: [Vaccination]
+      summary: رفع شهادة تطعيم جديدة
+      operationId: uploadVaccinationCertificate
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VaccinationUploadRequest'
+      responses:
+        '201':
+          description: تم رفع الشهادة بنجاح، في انتظار التحقق
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          certificate_id:
+                            type: string
+                            format: uuid
+                          verification_status:
+                            type: string
+                            example: "PENDING"
+                          message:
+                            type: string
+                            example: "تم رفع الشهادة. سيتم التحقق منها خلال 24 ساعة."
+        '400':
+          description: طلب غير صحيح (ملف غير مدعوم، بيانات ناقصة)
+
+  /vaccinations/certificates/{id}/verify/:
+    post:
+      tags: [Vaccination]
+      summary: التحقق من صحة شهادة (يدوي/آلي)
+      operationId: verifyVaccinationCertificate
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: معرف الشهادة
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaccinationVerifyRequest'
+      responses:
+        '200':
+          description: تم التحقق من الشهادة
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VaccinationVerifyResponse'
+        '404':
+          description: الشهادة غير موجودة
+
+  /vaccinations/travelers/{traveler_id}/certificates/:
+    get:
+      tags: [Vaccination]
+      summary: الحصول على سجل تطعيمات مسافر معين
+      operationId: getTravelerVaccinationRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: traveler_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: معرف المسافر
+      responses:
+        '200':
+          description: سجل التطعيمات
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/VaccinationCertificate'
+        '404':
+          description: المسافر غير موجود
+
+  /vaccinations/scan-qr/:
+    post:
+      tags: [Vaccination]
+      summary: مسح QR Code والتحقق الفوري (للمنافذ)
+      operationId: scanVaccinationQR
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaccinationScanRequest'
+      responses:
+        '200':
+          description: نتيجة التحقق من QR
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VaccinationScanResponse'
+        '400':
+          description: QR غير صالح أو بيانات مشفرة غير صحيحة
+        '404':
+          description: المسافر غير موجود
+
+  /vaccinations/certificates/{id}/:
+    put:
+      tags: [Vaccination]
+      summary: تحديث بيانات شهادة التطعيم (للأطباء/المسؤولين)
+      operationId: updateVaccinationCertificate
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: معرف الشهادة
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaccinationUpdateRequest'
+      responses:
+        '200':
+          description: تم تحديث الشهادة بنجاح
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VaccinationCertificate'
+        '403':
+          description: صلاحية غير كافية (ليس طبيباً أو مسؤولاً)
+        '404':
+          description: الشهادة غير موجودة
+
+    /hospital/referrals/:
+    post:
+      tags: [Hospital]
+      summary: إنشاء إحالة جديدة لمستشفى
+      operationId: createReferral
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferralCreateRequest'
+      responses:
+        '201':
+          description: تم إنشاء الإحالة وإرسالها
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          referral_id:
+                            type: string
+                            format: uuid
+                          status:
+                            type: string
+                            example: "PENDING"
+        '400':
+          description: طلب غير صحيح
+
+  /hospital/referrals/{id}/update/:
+    post:
+      tags: [Hospital]
+      summary: تحديث حالة الإحالة (من المستشفى)
+      operationId: updateReferralStatus
+      security:
+        - apiKeyAuth: []  # مفتاح API خاص بالمستشفى
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferralStatusUpdateRequest'
+      responses:
+        '200':
+          description: تم تحديث الحالة بنجاح
+        '404':
+          description: الإحالة غير موجودة
+
+  /hospital/referrals/{id}/status/:
+    get:
+      tags: [Hospital]
+      summary: الحصول على حالة الإحالة مع السجل الزمني
+      operationId: getReferralStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: حالة الإحالة
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReferralStatusResponse'
+
+  /hospital/referrals/:
+    get:
+      tags: [Hospital]
+      summary: قائمة الإحالات (مع تصفية)
+      operationId: listReferrals
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [PENDING, ACCEPTED, REJECTED, IN_TREATMENT, DISCHARGED, COMPLETED]
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum: [ROUTINE, URGENT, EMERGENCY, CRITICAL]
+        - in: query
+          name: hospital_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: قائمة الإحالات المرقمة
+
+  /hospital/referrals/{id}/reports/:
+    post:
+      tags: [Hospital]
+      summary: استلام تقرير طبي من المستشفى
+      operationId: uploadMedicalReport
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [report_type, file]
+              properties:
+                report_type:
+                  type: string
+                  enum: [DISCHARGE_SUMMARY, OPERATION_REPORT, CONSULTATION]
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: تم استلام التقرير
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MedicalReportResponse'
+
+  /hospital/referrals/{id}/reports/:
+    get:
+      tags: [Hospital]
+      summary: عرض التقارير الطبية المستلمة لإحالة معينة
+      operationId: getMedicalReports
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: قائمة التقارير
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MedicalReportResponse'
+
+  /hospital/reports/{report_id}/review/:
+    post:
+      tags: [Hospital]
+      summary: مراجعة التقرير من قبل الطبيب (تحديث الحالة)
+      operationId: reviewMedicalReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: report_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: تم اعتماد المراجعة
+
+/emergency/events/:
+    post:
+      tags: [Emergency]
+      summary: الإبلاغ عن حدث صحي طارئ جديد
+      operationId: reportEmergencyEvent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventReportRequest'
+      responses:
+        '201':
+          description: تم الإبلاغ عن الحدث بنجاح
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          event_id:
+                            type: string
+                            format: uuid
+                          event_number:
+                            type: string
+                          status:
+                            type: string
+                            example: "IDENTIFIED"
+
+    get:
+      tags: [Emergency]
+      summary: قائمة الأحداث (مع تصفية)
+      operationId: listEmergencyEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [IDENTIFIED, VERIFIED, RESPONDING, CONTROLLED, CLOSED, REJECTED]
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum: [LOW, MODERATE, HIGH, CRITICAL]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: قائمة الأحداث
+
+  /emergency/events/{id}/verify/:
+    post:
+      tags: [Emergency]
+      summary: التحقق من الحدث (بواسطة EOC)
+      operationId: verifyEmergencyEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [VERIFIED, REJECTED]
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: تم تحديث حالة الحدث
+
+  /emergency/events/{id}/activate-plan/:
+    post:
+      tags: [Emergency]
+      summary: تفعيل خطة استجابة للحدث
+      operationId: activateResponsePlan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [response_plan_id]
+              properties:
+                response_plan_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: تم تفعيل الخطة
+
+  /emergency/events/{id}/team/:
+    post:
+      tags: [Emergency]
+      summary: تعيين فريق إدارة الأزمة
+      operationId: assignCrisisTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrisisTeamRequest'
+      responses:
+        '201':
+          description: تم تعيين الفريق
+
+  /emergency/events/{id}/status/:
+    patch:
+      tags: [Emergency]
+      summary: تحديث حالة الأزمة
+      operationId: updateCrisisStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [IDENTIFIED, VERIFIED, RESPONDING, CONTROLLED, CLOSED]
+                severity:
+                  type: string
+                  enum: [LOW, MODERATE, HIGH, CRITICAL]
+      responses:
+        '200':
+          description: تم تحديث الحالة
+
+  /emergency/events/{id}/close/:
+    post:
+      tags: [Emergency]
+      summary: إغلاق الأزمة وإصدار تقرير ما بعد الأزمة
+      operationId: closeCrisis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseCrisisRequest'
+      responses:
+        '201':
+          description: تم إغلاق الأزمة
+
+  /emergency/plans/:
+    get:
+      tags: [Emergency]
+      summary: قائمة خطط الاستجابة
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: قائمة الخطط
+
+    post:
+      tags: [Emergency]
+      summary: إنشاء خطة استجابة جديدة (للمسؤولين)
+      operationId: createResponsePlan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResponsePlan'
+      responses:
+        '201':
+          description: تم إنشاء الخطة
+
+  /emergency/plans/{id}/:
+    put:
+      tags: [Emergency]
+      summary: تحديث خطة استجابة
+      operationId: updateResponsePlan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResponsePlan'
+      responses:
+        '200':
+          description: تم تحديث الخطة
+
+/diseases/:
+    get:
+      tags: [Diseases]
+      summary: قائمة الأمراض (مع تصفية)
+      operationId: listDiseases
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: icd_code
+          schema:
+            type: string
+        - in: query
+          name: name_ar
+          schema:
+            type: string
+        - in: query
+          name: ihr_category
+          schema:
+            type: string
+            enum: [PHEIC, TARGETED_ERADICATION, SURVEILLANCE_ONLY, NOT_IHR]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: قائمة الأمراض
+
+    post:
+      tags: [Diseases]
+      summary: إنشاء مرض جديد (للمسؤولين الصحيين)
+      operationId: createDisease
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiseaseCreateRequest'
+      responses:
+        '201':
+          description: تم إنشاء المرض
+
+  /diseases/{id}/:
+    get:
+      tags: [Diseases]
+      summary: تفاصيل مرض معين
+      operationId: getDiseaseDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: تفاصيل المرض
+
+    put:
+      tags: [Diseases]
+      summary: تحديث بيانات مرض
+      operationId: updateDisease
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiseaseCreateRequest'
+      responses:
+        '200':
+          description: تم تحديث المرض
+
+  /diseases/{id}/case-definitions/:
+    get:
+      tags: [Diseases]
+      summary: عرض تعريفات الحالات لمرض معين
+      operationId: getCaseDefinitions
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: قائمة تعريفات الحالات
+
+    post:
+      tags: [Diseases]
+      summary: إضافة تعريف حالة جديد
+      operationId: addCaseDefinition
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_type]
+              properties:
+                case_type:
+                  type: string
+                  enum: [SUSPECTED, PROBABLE, CONFIRMED, NOT_A_CASE]
+                clinical_criteria:
+                  type: object
+                lab_criteria:
+                  type: object
+                epidemiological_criteria:
+                  type: object
+      responses:
+        '201':
+          description: تم إضافة تعريف الحالة
+
+  /diseases/{id}/protocols/:
+    get:
+      tags: [Diseases]
+      summary: عرض البروتوكولات العلاجية لمرض معين
+      operationId: getTreatmentProtocols
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: قائمة البروتوكولات
+
+    post:
+      tags: [Diseases]
+      summary: إضافة بروتوكول علاجي جديد
+      operationId: addTreatmentProtocol
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, severity_level, medications]
+              properties:
+                name:
+                  type: string
+                severity_level:
+                  type: string
+                  enum: [MILD, MODERATE, SEVERE, CRITICAL]
+                medications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      dosage:
+                        type: string
+                      frequency:
+                        type: string
+                      duration:
+                        type: integer
+                supportive_care:
+                  type: array
+                  items:
+                    type: string
+                duration_days:
+                  type: integer
+      responses:
+        '201':
+          description: تم إضافة البروتوكول
+
+  /diseases/export/icd11/:
+    get:
+      tags: [Diseases]
+      summary: تصدير الأمراض بصيغة ICD-11 للتكامل مع WHO
+      operationId: exportICD11
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ملف ICD-11 (JSON/XML)
+
+  /diseases/import/icd11/:
+    post:
+      tags: [Diseases]
+      summary: استيراد تحديثات ICD-11 من منظمة الصحة العالمية
+      operationId: importICD11
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: ملف ICD-11 (XML/JSON)
+      responses:
+        '200':
+          description: تم استيراد التحديثات
+
+  /diseases/updates/:
+    get:
+      tags: [Diseases]
+      summary: سجل التغييرات (Audit Log)
+      operationId: getDiseaseUpdates
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: disease_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: update_type
+          schema:
+            type: string
+            enum: [CASE_DEFINITION, PROTOCOL, GENERAL_INFO]
+      responses:
+        '200':
+          description: سجل التغييرات
+
+ /mobile/daily-log/:
+    post:
+      tags: [Mobile]
+      summary: إرسال الإبلاغ اليومي
+      operationId: submitDailyLog
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyLogRequest'
+      responses:
+        '201':
+          description: تم إرسال الإبلاغ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DailyLogResponse'
+
+  /mobile/status/:
+    get:
+      tags: [Mobile]
+      summary: الحصول على حالة المتابعة الحالية
+      operationId: getMyStatus
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: حالة المتابعة
+
+  /mobile/medications/:
+    get:
+      tags: [Mobile]
+      summary: الحصول على قائمة الأدوية اليومية
+      operationId: getMyMedications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: قائمة الأدوية
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Medication'
+
+  /mobile/medications/{id}/confirm/:
+    post:
+      tags: [Mobile]
+      summary: تأكيد تناول الدواء
+      operationId: confirmMedication
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: تم تأكيد التناول
+
+  /mobile/certificate/:
+    get:
+      tags: [Mobile]
+      summary: الحصول على شهادة التعافي
+      operationId: getMyCertificate
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: شهادة التعافي
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CertificateResponse'
+
+  /mobile/sos/:
+    post:
+      tags: [Mobile]
+      summary: إرسال طلب إسعاف فوري (SOS)
+      operationId: sendSOS
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SOSRequest'
+      responses:
+        '200':
+          description: تم إرسال طلب الإسعاف
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "تم إرسال طلب الإسعاف. سيتم الاتصال بك فوراً."
+
+  /mobile/profile/:
+    get:
+      tags: [Mobile]
+      summary: الحصول على الملف الشخصي للمريض
+      operationId: getMyProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: بيانات الملف الشخصي
+
+    put:
+      tags: [Mobile]
+      summary: تحديث بيانات الملف الشخصي
+      operationId: updateMyProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: تم تحديث الملف الشخصي
+
+  /mobile/history/:
+    get:
+      tags: [Mobile]
+      summary: تاريخ الإبلاغات اليومية
+      operationId: getDailyLogHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 30
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: تاريخ الإبلاغات
+
+  /mobile/notifications/:
+    get:
+      tags: [Mobile]
+      summary: الحصول على الإشعارات والرسائل
+      operationId: getMyNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: قائمة الإشعارات
+
+    post:
+      tags: [Mobile]
+      summary: تسجيل جهاز الإشعارات (Device Token)
+      operationId: registerDeviceToken
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_token, platform]
+              properties:
+                device_token:
+                  type: string
+                platform:
+                  type: string
+                  enum: [ios, android]
+      responses:
+        '200':
+          description: تم تسجيل الجهاز
+  # ============================================================
+  # 18. نظام سلامة الغذاء (Food Safety System)
+  # ============================================================
+  /food/shipments:
+    post:
+      tags: [Food Safety]
+      summary: تسجيل شحنة غذائية جديدة
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest_number, port_id, supplier_name, origin_country]
+              properties:
+                manifest_number: { type: string }
+                port_id: { type: string, format: uuid }
+                supplier_name: { type: string }
+                origin_country: { type: string }
+                product_list: { type: array, items: { type: object } }
+                arrival_date: { type: string, format: date }
+      responses:
+        '201': { description: تم تسجيل الشحنة }
+
+  /food/shipments/{id}/release:
+    post:
+      tags: [Food Safety]
+      summary: إصدار شهادة إفراج صحي
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201': { description: تم إصدار الشهادة }
+
+  # ============================================================
+  # 19. نظام صحة الموانئ (Port Health System)
+  # ============================================================
+  /port/vessels:
+    get:
+      tags: [Port Health]
+      summary: قائمة السفن
+      responses:
+        '200': { description: قائمة السفن }
+
+  /port/screenings:
+    post:
+      tags: [Port Health]
+      summary: تسجيل فحص صحي
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [traveler_id, vessel_id]
+              properties:
+                traveler_id: { type: string, format: uuid }
+                vessel_id: { type: string, format: uuid }
+                body_temperature: { type: number }
+                symptoms: { type: array, items: { type: string } }
+      responses:
+        '201': { description: تم تسجيل الفحص }
+
+  # ============================================================
+  # 20. نظام صحة المعابر البرية (Land Border Health System)
+  # ============================================================
+  /border/checkpoints:
+    get:
+      tags: [Land Border Health]
+      summary: قائمة المعابر البرية
+      responses:
+        '200': { description: قائمة المعابر }
+
+  /border/screenings:
+    post:
+      tags: [Land Border Health]
+      summary: تسجيل فحص صحي
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [traveler_id, checkpoint_id]
+              properties:
+                traveler_id: { type: string, format: uuid }
+                checkpoint_id: { type: string, format: uuid }
+                body_temperature: { type: number }
+                symptoms: { type: array, items: { type: string } }
+      responses:
+        '201': { description: تم تسجيل الفحص }

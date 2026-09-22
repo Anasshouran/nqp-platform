@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+*.db
+*.sqlite3
+
+# Virtual environments
+.venv/
+.venv*/
+
+# Django
+backend/media/
+backend/static/
+*.mo
+*.po
+
+# Environment
+.env
+.env.local
+.env.prod
+.env.test
+*.env
+backend/.env
+backend/.env.dev
+backend/frontend/.env
+
+# Node
+node_modules/
+.npm/
+.cache/
+*.tgz
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# SSL certificates (private keys must never be committed)
+deploy/ssl/privkey.pem
+deploy/ssl/*.pem
+*.key
+
+# Local Redis development data (runs in the repository root)
+appendonlydir/
+dump.rdb
+
+# Stray local artifacts
+backend/nqp_db
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# Coverage
+htmlcov/
+.coverage
+coverage/
+
+# Testing
+.pytest_cache/
+.mypy_cache/

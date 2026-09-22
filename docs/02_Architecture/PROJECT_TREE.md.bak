@@ -1,0 +1,714 @@
+# PROJECT_TREE - الهيكل النهائي لمنصة الحجر الصحي القومي (NQP)
+
+## 1. الهيكل العام للمشروع (Root Directory)
+
+nqp-platform/
+│
+├── README.md                           # وصف المشروع ونظرة عامة
+├── .env.example                        # متغيرات البيئة النموذجية
+├── .gitignore
+├── Makefile                            # أوامر تشغيل مختصرة
+│
+├── 📁 backend/                         # الخادم الخلفي (Django + DRF)
+│   ├── manage.py
+│   ├── nqp_backend/                    # إعدادات المشروع الرئيسية
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   │   └── celery.py                   # إعدادات Celery
+│   ├── apps/                           # تطبيقات Django (Feature-based)
+│   │   ├── accounts/                   # المصادقة والمستخدمين (JWT + RBAC)
+│   │   ├── travelers/                  # إدارة المسافرين
+│   │   ├── carriers/                   # شركات الطيران ووسائل النقل
+│   │   ├── screening/                  # الفحص الصحي وتقييم المخاطر
+│   │   ├── risk_engine/                # محرك تقييم المخاطر (ذكي)
+│   │   ├── clinic/                     # العيادات والسجلات الطبية (EMR)
+│   │   ├── laboratory/                 # المختبرات والعينات
+│   │   ├── food_quarantine/            # الحجر الصحي للأغذية
+│   │   ├── emergency_eoc/              # غرفة الطوارئ (EOC)
+│   │   ├── notifications/              # محرك الإشعارات (SMS, Email, Push)
+│   │   ├── reporting/                  # التقارير ولوحات المعلومات
+│   │   ├── integration/                # التكامل مع الأنظمة الخارجية
+│   │   ├── cms/                        # إدارة محتوى الموقع العام
+│   │   └── airport_health/             # نظام صحة المطارات
+│   ├── core/                           # الوظائف المشتركة (Common)
+│   │   ├── models/                     # نماذج أساسية
+│   │   ├── permissions/                # صلاحيات مخصصة
+│   │   ├── serializers/                # Serializers مشتركة
+│   │   ├── utils/                      # دوال مساعدة (QR, تشفير)
+│   │   └── exceptions/                 # استثناءات مخصصة
+│   ├── external/                       # تكاملات خارجية
+│   │   ├── clients/                    # عميل APIs خارجية
+│   │   └── services/                   # خدمات التكامل (Celery Tasks)
+│   ├── static/                         # ملفات ثابتة (تُجمع في الإنتاج)
+│   ├── media/                          # ملفات مرفوعة (تخزين محلي)
+│   ├── requirements/
+│   │   ├── base.txt                    # الاعتماديات الأساسية
+│   │   ├── dev.txt                     # اعتماديات التطوير
+│   │   └── prod.txt                    # اعتماديات الإنتاج
+│   ├── Dockerfile
+│   ├── Dockerfile.dev                  # للتطوير المحلي
+│   ├── .env.example
+│   └── pytest.ini
+│
+├── 📁 frontend/                        # الخادم الأمامي (React 19 + Vite)
+│   ├── public/
+│   │   ├── favicon.ico
+│   │   ├── robots.txt
+│   │   └── manifest.json               # PWA Manifest
+│   ├── src/
+│   │   ├── api/                        # Axios (API Calls)
+│   │   │   ├── client.ts               # تكوين Axios (Interceptors)
+│   │   │   └── endpoints/              # نقاط النهاية (مقسمة حسب الميزة)
+│   │   │       ├── auth.ts
+│   │   │       ├── travelers.ts
+│   │   │       └── screening.ts
+│   │   ├── components/                 # مكونات React
+│   │   │   ├── ui/                     # MUI Components (مُغلفة)
+│   │   │   │   ├── Button.tsx
+│   │   │   │   ├── Input.tsx
+│   │   │   │   └── Card.tsx
+│   │   │   ├── forms/                  # React Hook Form + Zod
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   ├── ScreeningForm.tsx
+│   │   │   │   └── schemas/            # Zod Schemas
+│   │   │   ├── tables/                 # AG Grid
+│   │   │   │   ├── TravelersTable.tsx
+│   │   │   │   └── FlightsTable.tsx
+│   │   │   ├── charts/                 # Recharts
+│   │   │   │   ├── CasesChart.tsx
+│   │   │   │   └── KPIsChart.tsx
+│   │   │   └── layouts/                # تخطيطات الصفحات
+│   │   │       ├── PublicLayout.tsx
+│   │   │       └── AdminLayout.tsx
+│   │   ├── pages/                      # صفحات التطبيق (تطابق البوابات)
+│   │   │   ├── PublicWebsite/          # الموقع العام (1)
+│   │   │   │   ├── Home.tsx
+│   │   │   │   ├── About.tsx
+│   │   │   │   ├── News.tsx
+│   │   │   │   ├── SectorsPorts.tsx    # القطاعات والمنافذ
+│   │   │   │   └── ...
+│   │   │   ├── TravelerPortal/         # بوابة المسافرين (2)
+│   │   │   ├── PortHealth/             # بوابة موظفي الحجر (4)
+│   │   │   ├── ClinicPortal/           # بوابة العيادات (5)
+│   │   │   ├── LaboratoryPortal/       # بوابة المختبرات (6)
+│   │   │   ├── FoodQuarantine/         # بوابة الحجر الغذائي (7)
+│   │   │   ├── FederalAdmin/           # بوابة الإدارة الاتحادية (8)
+│   │   │   ├── EmergencyEOC/           # بوابة الطوارئ (9)
+│   │   │   └── Mobile/                 # تطبيق الجوال (شاشات مشتركة)
+│   │   ├── store/                      # Redux Toolkit
+│   │   │   ├── slices/
+│   │   │   │   ├── authSlice.ts
+│   │   │   │   ├── travelerSlice.ts
+│   │   │   │   └── uiSlice.ts
+│   │   │   ├── hooks.ts                # useAppDispatch, useAppSelector
+│   │   │   └── store.ts
+│   │   ├── hooks/                      # Custom Hooks
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useTravelers.ts
+│   │   │   └── useScreening.ts
+│   │   ├── utils/                      # دوال مساعدة
+│   │   │   ├── validators.ts
+│   │   │   ├── formatters.ts
+│   │   │   └── qr-generator.ts
+│   │   ├── types/                      # TypeScript Types & Interfaces
+│   │   │   ├── traveler.ts
+│   │   │   ├── screening.ts
+│   │   │   └── api.ts
+│   │   ├── styles/                     # Tailwind CSS
+│   │   │   ├── globals.css
+│   │   │   └── theme.ts                # MUI Theme (مع RTL)
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── routes.tsx                  # React Router
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── .env.development
+│   ├── .env.production
+│   ├── Dockerfile
+│   ├── Dockerfile.dev                  # للتطوير المحلي
+│   └── nginx.conf
+│
+├── 📁 deploy/                          # ملفات النشر والتوزيع
+│   ├── README.md                       # نظرة عامة على مجلد deploy
+│   ├── docker-compose.yml              # تشغيل جميع الخدمات
+│   ├── docker-compose.db.yml           # تشغيل قاعدة البيانات فقط
+│   ├── docker-compose.override.yml     # إعدادات التطوير المحلي
+│   ├── 📁 nginx/
+│   │   ├── nginx.conf                  # تكوين Nginx (الإنتاج)
+│   │   └── nginx.dev.conf              # تكوين Nginx (التطوير)
+│   ├── 📁 ssl/
+│   │   ├── README.md                   # إرشادات SSL
+│   │   ├── fullchain.pem
+│   │   └── privkey.pem
+│   ├── 📁 init-scripts/
+│   │   └── 01-init-db.sql              # تهيئة قاعدة البيانات
+│   └── 📁 k8s/                         # Kubernetes (الإنتاج)
+│       ├── namespace.yaml
+│       ├── secrets.yaml
+│       ├── backend-deployment.yaml
+│       ├── backend-service.yaml
+│       ├── frontend-deployment.yaml
+│       ├── frontend-service.yaml
+│       ├── postgres-statefulset.yaml
+│       ├── postgres-service.yaml
+│       ├── redis-deployment.yaml
+│       ├── redis-service.yaml
+│       ├── celery-deployment.yaml
+│       └── ingress.yaml
+│
+├── 📁 docs/                            # 📚 التوثيق الشامل للمشروع
+│   ├── 📁 00_Project/                  # إدارة المشروع
+│   │   ├── Glossary.md
+│   │   ├── Objectives.md
+│   │   ├── Risk_Register.md
+│   │   ├── Roadmap.md
+│   │   ├── Scope.md
+│   │   ├── Stakeholders.md
+│   │   ├── Timeline.md
+│   │   └── Vision.md
+│   ├── 📁 01_Business/                 # متطلبات الأعمال
+│   │   ├── Business_Requirements.md
+│   │   ├── Business_Rules.md
+│   │   ├── Current_Workflow.md
+│   │   ├── Digital_Transformation.md
+│   │   ├── Functional_Requirements.md
+│   │   ├── Future_Workflow.md
+│   │   ├── Non_Functional_Requirements.md
+│   │   ├── requirements.md
+│   │   ├── Use_Cases.md
+│   │   └── User_Stories.md
+│   ├── 📁 02_Architecture/             # العمارة الفنية والنظم
+│   │   ├── Architecture_Layers.md
+│   │   ├── Architecture.md
+│   │   ├── Component_Diagram.drawio
+│   │   ├── Deployment_Diagram.drawio
+│   │   ├── Integration_Architecture.md
+│   │   ├── Network_Diagram.drawio
+│   │   ├── PROJECT_TREE.md             # (هذا الملف)
+│   │   ├── Security_Architecture.md
+│   │   ├── System_Overview.md
+│   │   └── Technology_Stack.md
+│   ├── 📁 03_Database/                 # تصميم قاعدة البيانات
+│   │   ├── Backup_Strategy.md
+│   │   ├── Constraints.md
+│   │   ├── Database_Design.md
+│   │   ├── Data_Dictionary.md
+│   │   ├── ERD.drawio
+│   │   ├── Indexes.md
+│   │   ├── init.sql
+│   │   ├── init_new_modules.sql
+│   │   ├── ReadMe.md
+│   │   ├── Relationships.md
+│   │   └── Tables.md
+│   ├── 📁 04_Modules/                  # الوحدات الوظيفية (البوابات والأنظمة)
+│   │   ├── 📁 01_Public_Website/       # (1) الموقع العام
+│   │   │   ├── 01_Public_Website.md
+│   │   │   ├── 02-Public-Website-Users.md
+│   │   │   ├── 📁 Admin-Dashboard/
+│   │   │   │   ├── CMS-Dashboard.md
+│   │   │   │   ├── CMS-Pages.md
+│   │   │   │   ├── CMS-Users-Roles.md
+│   │   │   │   ├── Contact-Messages-Management.md
+│   │   │   │   ├── Document-management.md
+│   │   │   │   ├── FAQ-Management.md
+│   │   │   │   ├── Media-Library.md
+│   │   │   │   ├── News-Management.md
+│   │   │   │   ├── Site-Settings.md
+│   │   │   │   └── Sliders-Management.md
+│   │   │   └── 📁 Public-Website-Users/
+│   │   │       ├── About-Us.md
+│   │   │       ├── Contact-Us.md
+│   │   │       ├── Diseases.md
+│   │   │       ├── Documents.md
+│   │   │       ├── E-Services.md
+│   │   │       ├── FAQ.md
+│   │   │       ├── Home.md
+│   │   │       ├── Login.md
+│   │   │       ├── News.md
+│   │   │       ├── Sectors-Ports.md    # (جديد) القطاعات والمنافذ
+│   │   │       └── Travel-Requirements.md
+│   │   ├── 📁 02_Traveler_Portal/      # (2) بوابة المسافرين
+│   │   │   ├── 02_Traveler_Portal.md
+│   │   │   ├── Health-Declaration.md
+│   │   │   ├── Health-Profile.md
+│   │   │   ├── mobile.md
+│   │   │   ├── Notifications.md
+│   │   │   ├── Pre-registration.md
+│   │   │   ├── QR-Code.md
+│   │   │   ├── Request-Tracking.md
+│   │   │   └── Upload-Documents.md
+│   │   ├── 📁 03_Carrier_Portal/       # (3) بوابة شركات الطيران
+│   │   │   ├── 03_Carrier_Portal.md
+│   │   │   ├── API-Integration.md
+│   │   │   ├── Company-Management.md
+│   │   │   ├── Flight-Management.md
+│   │   │   ├── Health-Notices.md
+│   │   │   ├── Passenger-Manifest.md
+│   │   │   └── Reports.md
+│   │   ├── 📁 04_Health_Inspection/    # (4) بوابة موظفي الحجر
+│   │   │   ├── 04_Health_Inspection.md
+│   │   │   ├── Dashboard.md
+│   │   │   ├── Flight-Management.md
+│   │   │   ├── QR-Code.md
+│   │   │   ├── Referral-Clinic.md
+│   │   │   ├── Reports.md
+│   │   │   ├── Risk-Assessment.md
+│   │   │   └── Screening.md
+│   │   ├── 📁 05_Clinic_Portal/        # (5) بوابة العيادات
+│   │   │   ├── 05_Clinic_Portal.md
+│   │   │   ├── Clinical-Exam.md
+│   │   │   ├── EMR.md
+│   │   │   ├── Lab-Requests.md
+│   │   │   ├── Medical-Reports.md
+│   │   │   ├── Referrals-Reception.md
+│   │   │   └── Treatment-Follow-up.md
+│   │   ├── 📁 06_Laboratory_Portal/    # (6) بوابة المختبرات
+│   │   │   ├── 06_Laboratory_Portal.md
+│   │   │   ├── Reports.md
+│   │   │   ├── Result-Approval.md
+│   │   │   ├── Results-Entry.md
+│   │   │   ├── Sample-Registration.md
+│   │   │   └── Sample-Tracking.md
+│   │   ├── 📁 07_Food_Quarantine/      # (7) بوابة الحجر الغذائي
+│   │   │   ├── 07_Food_Quarantine.md
+│   │   │   ├── Fees.md
+│   │   │   ├── Inspection.md
+│   │   │   ├── LabTests.md
+│   │   │   ├── ReleaseCertificates.md
+│   │   │   ├── Sampling.md
+│   │   │   └── ShipmentManagement.md
+│   │   ├── 📁 08_Federal_Administration/ # (8) بوابة الإدارة الاتحادية
+│   │   │   ├── 08_Federal_Administration.md
+│   │   │   ├── KPIs.md
+│   │   │   ├── National-Reports.md
+│   │   │   ├── Ports-Management.md
+│   │   │   ├── Sectors-Management.md
+│   │   │   ├── System-Settings.md
+│   │   │   └── Users-RBAC.md
+│   │   ├── 📁 09_Public_Health_Emergency/ # (9) بوابة الطوارئ
+│   │   │   ├── 09_Emergency_Operations.md
+│   │   │   ├── Command_Dashboard.md
+│   │   │   ├── Contact_Tracing.md
+│   │   │   ├── EOC_Alert_Protocol.md
+│   │   │   ├── EOC_Integration_Map.md
+│   │   │   ├── EOC_Integration_Protocol.md
+│   │   │   ├── Kill_Switch.md
+│   │   │   ├── Mass_Alert_System.md
+│   │   │   ├── Rapid_Response_Teams.md
+│   │   │   └── Strategic_Stockpile.md
+│   │   ├── 📁 10_Supporting_Systems/   # (10) أنظمة الدعم
+│   │   │   ├── 10_Supporting_Systems.md
+│   │   │   ├── 📁 Disease_Management/
+│   │   │   │   ├── 01_Disease_Management.md
+│   │   │   │   ├── 01_System_Overview.md
+│   │   │   │   ├── 02_Database_Schema.md
+│   │   │   │   ├── 03_Disease_API.md
+│   │   │   │   ├── 04_Disease_Workflow.md
+│   │   │   │   └── 05_Disease_UI_UX.md
+│   │   │   ├── 📁 Document_Management/
+│   │   │   │   └── 01_Document_Management.md
+│   │   │   ├── 📁 Health_Followup_System/
+│   │   │   │   ├── 01_System_Overview.md
+│   │   │   │   ├── 02_Patient_Mobile_App.md
+│   │   │   │   ├── 03_Doctor_Dashboard.md
+│   │   │   │   ├── 04_Alert_Engine.md
+│   │   │   │   ├── 05_Wearables_IoT.md
+│   │   │   │   ├── 06_Medication_Adherence.md
+│   │   │   │   ├── 07_Recovery_Certificate.md
+│   │   │   │   └── 08_Integration_Map.md
+│   │   │   ├── 📁 Notifcation_Engine/
+│   │   │   │   └── 01_Notification_Engine.md
+│   │   │   ├── 📁 Reporting/
+│   │   │   │   └── 01_Reporting_System.md
+│   │   │   ├── 📁 Risk_Engine/
+│   │   │   │   └── 01_Risk_Engine_Overview.md
+│   │   │   ├── 📁 Surveillance/
+│   │   │   │   └── 01_Surveillance_System.md
+│   │   │   └── 📁 who/
+│   │   │       ├── 01_WHO_Integration.md
+│   │   │       ├── Data_Exchange.md
+│   │   │       ├── FHIR.md
+│   │   │       ├── ICD11.md
+│   │   │       ├── IHR_2005.md
+│   │   │       ├── Reporting.md
+│   │   │       └── WHO_Integration.md
+│   │   ├── 📁 11_Integration/          # (11) منصة التكامل
+│   │   │   ├── 10_Integration_Platform.md
+│   │   │   ├── 📁 API-Gateway/
+│   │   │   │   └── API-Gateway.md
+│   │   │   ├── 📁 Audit-Log/
+│   │   │   │   └── Audit-Log.md
+│   │   │   ├── 📁 Authentication-Service-JWT/
+│   │   │   │   └── Authentication-Service-JWT.md
+│   │   │   ├── 📁 Integration-Services/
+│   │   │   │   └── Integration-Services.md
+│   │   │   ├── 📁 Message-Queue/
+│   │   │   │   └── Message-Queue.md
+│   │   │   └── 📁 Monitoring/
+│   │   │       └── Monitoring.md
+│   │   ├── 📁 12_External/             # (12) التكامل الخارجي
+│   │   │   ├── 11_External_Integrations.md
+│   │   │   ├── Airlines.md
+│   │   │   ├── API_Gateway.md
+│   │   │   ├── Civil_Aviation.md
+│   │   │   ├── Customs.md
+│   │   │   ├── Hospitals.md
+│   │   │   ├── Immigration.md
+│   │   │   ├── Ministry-of-Health-Integration.md
+│   │   │   ├── Ministry_of_Health.md
+│   │   │   ├── Reference_Laboratories.md
+│   │   │   ├── Standards.md
+│   │   │   ├── Surveillance_System.md
+│   │   │   └── WHO_IHR.md
+│   │   ├── 📁 13_Vaccination_System/   # (13) نظام التطعيمات
+│   │   │   ├── 01_System_Overview.md
+│   │   │   ├── 02_Database_Schema.md
+│   │   │   ├── 03_Vaccination_API.md
+│   │   │   ├── 04_Vaccination_Workflow.md
+│   │   │   └── 05_Vaccination_UI_UX.md
+│   │   ├── 📁 14_Hospital_Integration/ # (14) تكامل المستشفيات
+│   │   │   ├── 01_System_Overview.md
+│   │   │   ├── 02_Database_Schema.md
+│   │   │   ├── 03_Hospital_API.md
+│   │   │   ├── 04_Hospital_Workflow.md
+│   │   │   └── 05_Hospital_UI_UX.md
+│   │   ├── 📁 15_Emergency_Crisis_Management/ # (15) إدارة الأزمات
+│   │   │   ├── 01_System_Overview.md
+│   │   │   ├── 02_Database_Schema.md
+│   │   │   ├── 03_Emergency_API.md
+│   │   │   ├── 04_Emergency_Workflow.md
+│   │   │   └── 05_Emergency_UI_UX.md
+│   │   ├── 📁 16_Mobile_Application/   # (16) تطبيق الجوال
+│   │   │   ├── 01_System_Overview.md
+│   │   │   ├── 02_User_Profiles.md
+│   │   │   ├── 03_Features.md
+│   │   │   ├── 04_Architecture.md
+│   │   │   ├── 05_UI_UX_Screens.md
+│   │   │   ├── 06_Backend_Integration.md
+│   │   │   ├── 07_Offline_Mode.md
+│   │   │   ├── 08_Push_Notifications.md
+│   │   │   └── 09_Development_Plan.md
+│   │   └── 📁 17_Airport_Health_System/ # (17) نظام صحة المطارات
+│   │       ├── 01_System_Overview.md
+│   │       ├── 02_Database_Schema.md
+│   │       ├── 03_Airport_Modules.md
+│   │       └── 04_Airport_Workflow.md
+│   ├── 📁 05_API/                      # توثيق واجهات البرمجة (OpenAPI)
+│   │   ├── api.md
+│   │   ├── API_Standards.md
+│   │   ├── Airport_API.md              # (جديد) نظام صحة المطارات
+│   │   ├── Authentication_API.md
+│   │   ├── Clinic_API.md
+│   │   ├── CMS-API.md
+│   │   ├── Crisis_API.md               # (جديد) إدارة الأزمات
+│   │   ├── Food_API.md
+│   │   ├── Hospital_API.md             # (جديد) تكامل المستشفيات
+│   │   ├── Laboratory_API.md
+│   │   ├── Mobile_API.md               # (جديد) تطبيق الجوال
+│   │   ├── OpenAPI.yaml
+│   │   ├── Public_API.md               # (جديد) واجهات الموقع العام
+│   │   ├── Reports_API.md
+│   │   ├── Risk_API.md
+│   │   ├── Screening_API.md
+│   │   ├── Traveler_API.md
+│   │   └── Vaccination_API.md          # (جديد) نظام التطعيمات
+│   ├── 📁 06_UI_UX/                    # شاشات وتجربة المستخدم
+│   │   ├── 00-UX-UI-Screens.md
+│   │   ├── 📁 01_Public_Website/       # الموقع العام
+│   │   │   ├── 404-Page.md
+│   │   │   ├── About.md
+│   │   │   ├── 📁 AdminDashboard/
+│   │   │   │   ├── CMS-Dashboard.md
+│   │   │   │   ├── CMS-Users-Roles.md
+│   │   │   │   ├── Contact-Messages-Management.md
+│   │   │   │   ├── DocumentManager.md
+│   │   │   │   ├── FAQManager.md
+│   │   │   │   ├── Media-Library.md
+│   │   │   │   ├── NewsManager.md
+│   │   │   │   ├── Overview.md
+│   │   │   │   ├── PagesManager.md
+│   │   │   │   ├── SiteSettings.md
+│   │   │   │   ├── Sliders-Management.md
+│   │   │   │   └── Travel-Requirements-Management.md
+│   │   │   ├── Contact.md
+│   │   │   ├── Diseases.md
+│   │   │   ├── Document-Detail.md
+│   │   │   ├── Documents.md
+│   │   │   ├── FAQ.md
+│   │   │   ├── Home.md
+│   │   │   ├── Login.md
+│   │   │   ├── Medical-Disclaimer.md
+│   │   │   ├── News-Detail.md
+│   │   │   ├── News.md
+│   │   │   ├── Overview.md
+│   │   │   ├── Port-Detail.md          # (جديد) تفاصيل المنفذ
+│   │   │   ├── Privacy-Policy.md
+│   │   │   ├── Search-Results.md
+│   │   │   ├── Sector-Detail.md        # (جديد) تفاصيل القطاع
+│   │   │   ├── Sectors-Ports.md        # (جديد) القطاعات والمنافذ
+│   │   │   ├── Services.md
+│   │   │   ├── Sitemap.md
+│   │   │   ├── Terms-of-Use.md
+│   │   │   └── TravelRequirements.md
+│   │   ├── 📁 02_Traveler_Portal/      # بوابة المسافرين
+│   │   │   ├── Dashboard.md
+│   │   │   ├── HealthDeclaration.md
+│   │   │   ├── HealthProfile.md
+│   │   │   ├── Notifications.md
+│   │   │   ├── PreRegistration.md
+│   │   │   ├── QRCode.md
+│   │   │   ├── RequestTracking.md
+│   │   │   └── UploadDocuments.md
+│   │   ├── 📁 03_Carrier_Portal/       # بوابة شركات الطيران
+│   │   │   ├── APIIntegration.md
+│   │   │   ├── CompanyManagement.md
+│   │   │   ├── Dashboard.md
+│   │   │   ├── FlightManagement.md
+│   │   │   ├── HealthNotices.md
+│   │   │   ├── Overview.md
+│   │   │   ├── PassengerManifest.md
+│   │   │   └── Reports.md
+│   │   ├── 📁 04_Health_Inspection/    # بوابة موظفي الحجر
+│   │   │   ├── Dashboard.md
+│   │   │   ├── FlightManagement.md
+│   │   │   ├── QRScanner.md
+│   │   │   ├── Referral.md
+│   │   │   ├── Reports.md
+│   │   │   ├── RiskAssessment.md
+│   │   │   └── Screening.md
+│   │   ├── 📁 05_Clinic_Portal/        # بوابة العيادات
+│   │   │   ├── ClinicalExam.md
+│   │   │   ├── Dashboard.md
+│   │   │   ├── EMR.md
+│   │   │   ├── LabRequests.md
+│   │   │   ├── MedicalReports.md
+│   │   │   ├── Referrals.md
+│   │   │   └── Treatment.md
+│   │   ├── 📁 06_Laboratory_Portal/    # بوابة المختبرات
+│   │   │   ├── Dashboard.md
+│   │   │   ├── Reports.md
+│   │   │   ├── ResultApproval.md
+│   │   │   ├── ResultsEntry.md
+│   │   │   ├── SampleRegistration.md
+│   │   │   └── SampleTracking.md
+│   │   ├── 📁 07_Food_Quarantine/      # بوابة الحجر الغذائي
+│   │   │   ├── Fees.md
+│   │   │   ├── Inspection.md
+│   │   │   ├── LabTests.md
+│   │   │   ├── ReleaseCertificates.md
+│   │   │   ├── Sampling.md
+│   │   │   └── ShipmentManagement.md
+│   │   ├── 📁 08_Federal_Administration/ # بوابة الإدارة الاتحادية
+│   │   │   ├── Dashboard.md
+│   │   │   ├── KPIs.md
+│   │   │   ├── NationalReports.md
+│   │   │   ├── Overview.md
+│   │   │   ├── Ports.md
+│   │   │   ├── Sectors.md
+│   │   │   ├── SystemSettings.md
+│   │   │   └── UsersRBAC.md
+│   │   ├── 📁 09_Public_Health_Emergency/ # بوابة الطوارئ
+│   │   │   ├── Command_Dashboard.md
+│   │   │   ├── Contact_Tracing.md
+│   │   │   ├── Dashboard.md
+│   │   │   ├── EOC_Integration_Protocol.md
+│   │   │   ├── Kill_Switch.md
+│   │   │   ├── Mass_Alert_System.md
+│   │   │   ├── Rapid_Response_Teams.md
+│   │   │   └── Strategic_Stockpile.md
+│   │   ├── 📁 10_Supporting_Systems/   # أنظمة الدعم
+│   │   │   └── Overview.md
+│   │   ├── 📁 11_Integration_Platform/ # منصة التكامل
+│   │   │   └── Overview.md
+│   │   ├── 📁 12_External_Integrations/# التكامل الخارجي
+│   │   │   └── Overview.md
+│   │   ├── 📁 13_Vaccination_System/   # نظام التطعيمات
+│   │   │   └── 05_Vaccination_UI_UX.md
+│   │   ├── 📁 14_Hospital_Integration/ # تكامل المستشفيات
+│   │   │   └── 05_Hospital_UI_UX.md
+│   │   ├── 📁 15_Emergency_Crisis_Management/ # إدارة الأزمات
+│   │   │   └── 05_Emergency_UI_UX.md
+│   │   ├── 📁 16_Mobile_Application/   # تطبيق الجوال
+│   │   │   ├── DailyCheckIn.md
+│   │   │   ├── Dashboard.md
+│   │   │   ├── ForgotPassword.md
+│   │   │   ├── Login.md
+│   │   │   ├── Medications.md
+│   │   │   ├── Notifications.md
+│   │   │   ├── Profile.md
+│   │   │   ├── RecoveryCertificate.md
+│   │   │   └── Register.md
+│   │   └── 📁 17_Airport_Health_System/ # نظام صحة المطارات
+│   │       ├── Dashboard.md
+│   │       ├── Emergency.md
+│   │       ├── Quarantine.md
+│   │       └── Screening.md
+│   ├── 📁 07_Workflows/                # سيناريوهات التشغيل (BPMN)
+│   │   ├── workflows.md                # الفهرس الرئيسي
+│   │   ├── Aircraft_Inspection_Workflow.md   # (جديد) تفتيش الطائرات
+│   │   ├── Airport_Arrival_Workflow.md       # (جديد) وصول المطار
+│   │   ├── Airport_Crew_Screening_Workflow.md # (جديد) فحص الطواقم
+│   │   ├── Airport_Emergency_Workflow.md     # (جديد) طوارئ المطار
+│   │   ├── Airport_Quarantine_Workflow.md    # (جديد) عزل المطار
+│   │   ├── Airport_Transit_Workflow.md       # (جديد) عبور المطار
+│   │   ├── Carrier_Manifest_Workflow.md
+│   │   ├── Clinic_Workflow.md
+│   │   ├── Contact_Tracing_Workflow.md
+│   │   ├── Crisis_Management_Workflow.md     # (جديد) إدارة الأزمات
+│   │   ├── Discharge_Certificate_Workflow.md
+│   │   ├── Emergency_Alert_Workflow.md
+│   │   ├── Emergency_Response.md
+│   │   ├── Follow_Up.md
+│   │   ├── Food_Inspection.md
+│   │   ├── Health_Screening.md
+│   │   ├── Hospital_Integration_Workflow.md  # (جديد) تكامل المستشفيات
+│   │   ├── Integration_Sync_Workflow.md
+│   │   ├── Kill_Switch_Workflow.md
+│   │   ├── Laboratory_Workflow.md
+│   │   ├── Mobile_App_Workflow.md            # (جديد) تطبيق الجوال
+│   │   ├── QR_Code_Process.md
+│   │   ├── Risk_Assessment.md
+│   │   ├── Traveler_Journey.md
+│   │   ├── User_Account_Lifecycle.md
+│   │   └── Vaccination_Workflow.md           # (جديد) نظام التطعيمات
+│   ├── 📁 09_Development/              # إرشادات التطوير (DevOps)
+│   │   ├── Backend_Architecture.md
+│   │   ├── CI_CD.md
+│   │   ├── Coding_Standards.md
+│   │   ├── Deployment.md
+│   │   ├── Docker.md
+│   │   ├── Environment.md
+│   │   ├── Folder_Structure.md
+│   │   └── Frontend_Architecture.md
+│   ├── 📁 10_Testing/                  # استراتيجيات الاختبار
+│   │   ├── Integration_Testing.md
+│   │   ├── Performance_Testing.md
+│   │   ├── Security_Testing.md
+│   │   ├── Testing_Strategy.md
+│   │   ├── UAT.md
+│   │   └── Unit_Testing.md
+│   ├── 📁 11_AI/                       # الذكاء الاصطناعي والتحليلات
+│   │   ├── AI_Assistant.md
+│   │   ├── Future_AI.md
+│   │   ├── OCR_MRZ.md
+│   │   ├── Prediction.md
+│   │   ├── QR_Code.md
+│   │   └── Risk_AI.md
+│   ├── 📁 12_Legal/                    # الجوانب القانونية والامتثال
+│   │   ├── Compliance.md
+│   │   ├── Privacy_Policy.md
+│   │   ├── Sudan_Regulations.md
+│   │   ├── Terms_of_Use.md
+│   │   └── WHO_IHR.md
+│   ├── 📁 ADR/                         # قرارات الهندسة المعمارية
+│   │   ├── ADR-0001-Monolith.md
+│   │   ├── ADR-0002-PostgreSQL.md
+│   │   ├── ADR-0003-Docker.md
+│   │   ├── ADR-0004-JWT.md
+│   │   ├── ADR-0005-Redis.md
+│   │   ├── ADR-0006-React.md
+│   │   ├── ADR-0007-Celery.md
+│   │   └── ADR-0008-MinIO.md
+│   ├── 📁 Assets/                      # الموارد الرقمية والأصول
+│   │   ├── README.md
+│   │   ├── 📁 Branding/
+│   │   │   ├── Colors.md
+│   │   │   ├── Guidelines.md
+│   │   │   ├── Logo-Guidelines.md
+│   │   │   └── Typography.md
+│   │   ├── 📁 Icons/
+│   │   │   └── README.md
+│   │   ├── 📁 Images/
+│   │   │   └── README.md
+│   │   ├── 📁 Logos/
+│   │   │   └── README.md
+│   │   └── 📁 Screenshots/
+│   │       └── README.md
+│   ├── 📁 Data/                        # البيانات المرجعية والرئيسية
+│   │   ├── Airport_Codes.md
+│   │   ├── Country_Codes.md
+│   │   ├── Disease_Codes.md
+│   │   ├── ICD11.md
+│   │   ├── ISO3166.md
+│   │   ├── Master_Data.md
+│   │   ├── Naming_Convention.md
+│   │   ├── README.md
+│   │   └── Validation_Rules.md
+│   ├── 📁 DevOps/                      # عمليات التطوير والبنية التحتية
+│   │   ├── Docker.md
+│   │   ├── GitHub_Actions.md
+│   │   ├── Grafana.md
+│   │   ├── Kubernetes.md
+│   │   ├── Logging.md
+│   │   ├── Monitoring.md
+│   │   ├── Prometheus.md
+│   │   ├── README.md
+│   │   └── Uptime_Kuma.md
+│   ├── 📁 Infrastructure/              # البنية التحتية
+│   │   ├── DNS.md
+│   │   ├── Firewall.md
+│   │   ├── LoadBalancer.md
+│   │   ├── Network.md
+│   │   ├── README.md
+│   │   ├── Server.md
+│   │   ├── SSL.md
+│   │   └── VM.md
+│   ├── 📁 OpenCode/                    # المساعد الذكي وأوامر التوليد
+│   │   ├── api_prompt.md
+│   │   ├── backend_prompt.md
+│   │   ├── database_prompt.md
+│   │   ├── deployment_prompt.md
+│   │   ├── frontend_prompt.md
+│   │   ├── opencode_commands.md
+│   │   ├── README.md
+│   │   ├── system_prompt.md
+│   │   ├── testing_prompt.md
+│   │   └── ui_prompt.md
+│   ├── 📁 Security/                    # الأمن السيبراني
+│   │   ├── Audit_Log.md
+│   │   ├── Authentication.md
+│   │   ├── Authorization.md
+│   │   ├── Backup.md
+│   │   ├── Disaster_Recovery.md
+│   │   ├── Encryption.md
+│   │   ├── JWT.md
+│   │   ├── RBAC.md
+│   │   └── README.md
+│   └── 📁 UML/                         # مخططات UML
+│       ├── Activity.drawio
+│       ├── Class.drawio
+│       ├── Component.drawio
+│       ├── Sequence.drawio
+│       ├── State.drawio
+│       └── UseCase.drawio
+│
+├── 📁 scripts/                         # سكربتات التشغيل المساعدة
+│   ├── backup_full_project.sh
+│   ├── build.sh
+│   ├── create_full_project.sh
+│   ├── deploy.sh
+│   ├── reorganize_all.sh
+│   ├── reorganize_ui_ux.sh
+│   ├── reorganize_workflows.sh
+│   ├── seed-data.sh
+│   └── update_airport_health_system.sh
+│
+├── 📁 tests/                           # اختبارات End-to-End (Cypress/Playwright)
+│   ├── e2e/
+│   │   ├── login.spec.ts
+│   │   ├── screening.spec.ts
+│   │   └── clinic.spec.ts
+│   └── fixtures/
+│
+└── 📁 .github/                         # GitHub Actions
+    └── workflows/
+        ├── ci-cd.yml
+        ├── test-backend.yml
+        └── test-frontend.yml

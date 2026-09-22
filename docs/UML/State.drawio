@@ -1,0 +1,53 @@
+
+---
+
+### 📄 5. `State.drawio` (مخطط الحالة)
+
+```markdown
+# مخطط الحالة (State Diagram) - NQP
+
+## 1. الهدف
+يوضح هذا المخطط دورة حياة (Lifecycle) كائن معين في النظام. تم اختيار **دورة حياة العينة المخبرية (Lab Sample)** لأنها توضح حالات متعددة وتحولات واضحة.
+
+## 2. مخطط Mermaid
+
+```mermaid
+stateDiagram-v2
+    [*] --> Registered : تسجيل العينة
+    
+    Registered --> Processing : بدء التحليل
+    Registered --> Cancelled : إلغاء العينة
+    
+    Processing --> ResultsEntered : إدخال النتيجة
+    Processing --> Cancelled : إلغاء العينة
+    
+    ResultsEntered --> PendingApproval : إرسال للمراجعة
+    PendingApproval --> Approved : اعتماد النتيجة (مشرف)
+    PendingApproval --> Rejected : رفض النتيجة (مشرف)
+    
+    Rejected --> Processing : إعادة التحليل
+    
+    Approved --> [*] : إرسال النتيجة للعيادة
+    
+    Cancelled --> [*] : إلغاء
+    
+    note right of Registered : الحالة الأولية\n(تم تسجيل العينة)
+    note right of Processing : العينة قيد التحليل
+    note right of Approved : تم اعتماد النتيجة\n(إرسال للعيادة)
+    note right of Rejected : إعادة التحليل مطلوب
+
+3. حالات العينة (Sample States)
+الحالة	الوصف	الإجراء التلقائي
+REGISTERED	تم تسجيل العينة في النظام.	انتظار بدء التحليل.
+PROCESSING	العينة قيد التحليل المخبري.	لا يوجد.
+RESULTS_ENTERED	تم إدخال النتيجة من قبل الفني.	إرسال إشعار للمشرف.
+PENDING_APPROVAL	النتيجة بانتظار اعتماد المشرف.	لا يوجد.
+APPROVED	تم اعتماد النتيجة.	إرسال النتيجة إلى (العيادة، نظام الترصد، غرفة الطوارئ).
+REJECTED	تم رفض النتيجة (غير صحيحة).	إشعار الفني لإعادة التحليل.
+CANCELLED	تم إلغاء العينة.	لا يوجد.
+4. حالات أخرى في النظام
+الكائن	الحالات الأساسية
+الطلب (Request)	PENDING → UNDER_REVIEW → APPROVED / REJECTED
+الرحلة (Flight)	SCHEDULED → MANIFEST_UPLOADED → IN_TRANSIT → ARRIVED
+المتابعة (Follow-up)	ACTIVE → COMPLETED / CANCELLED
+الإنذار (Alert)	NEW → PROCESSING → RESOLVED

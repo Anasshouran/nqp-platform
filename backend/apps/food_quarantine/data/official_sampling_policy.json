@@ -1,0 +1,1316 @@
+[
+ {
+  "product_key": "الحليب الخام",
+  "package_size": "120-1000 ml",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الحليب المبستر",
+  "package_size": "120-1000 ml",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الحليب المجفف",
+  "package_size": "جوال",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "في حالات: تكرار الورود مع نتائج سابقة غير مطابقة، مؤشر فساد، أول مرة، ظروف تخزين سيئة، انقضاء شهادة صحية، إعادة تصدير، اشتباه غش"
+ },
+ {
+  "product_key": "الحليب المجفف",
+  "package_size": "2.5 kg",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الحليب المجفف",
+  "package_size": "200-400 gm",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الحليب والحليب المركز المعامل بالحرارة الفائقة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "قشدة مبسترة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الحليب والحليب المركز المضاف إليه نكهة ومعامل بالحرارة الفائقة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الحليب المكثف و المكثف المُحلي والحليب المكرمل",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "قشدة مبسترة بالنكهة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "قشدة مخفوقة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "قشدة متخمرة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات الحليب المتخمر (الزبادي واللبنة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات الحليب المتخمر (الزبادي واللبنة) بالنكهة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "مسحوق خليط الآيس كريم",
+  "package_size": "جوال",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "مسحوق خليط الآيس كريم",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الآيس كريم (مثلوجات لبنية ومائية)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الآيس كريم (مثلوجات لبنية ومائية)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأجبان الطرية",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأجبان الصلبة وشبه الصلبة (الجبن السوداني الأبيض والجبن المضفر والجبن الرومي)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأجبان المدخنة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الاجبان المطبوخة (المصنعة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "كازينات",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "سمن من دهن الحليب",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "سمن من دهن الحليب",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الزبـد",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الزبـد",
+  "package_size": "كرتونه كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الشرش المجفف",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الحبوب (الذرة, الدخن, القمح, الشعير, الذرة الشامية, الأرز ...إلخ)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "الحبوب (الذرة, الدخن, القمح, الشعير, الذرة الشامية, الأرز ...إلخ)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "دقيق الحبوب، الردة (النخالة) والمواد الناتجة الشبيه",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "دقيق الحبوب، الردة (النخالة) والمواد الناتجة الشبيه",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "دقيق فول الصويا أو مركزات الصويا او مستخلصات من فول الصويا",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "دقيق فول الصويا أو مركزات الصويا او مستخلصات من فول الصويا",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "النشا (كورن فلور, كاسترد, الخ....)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "النشا (كورن فلور, كاسترد, الخ....)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الكيك، التورتات، الجاتوهات ومنتجات المخابز التي تؤكل مباشرة بدون تسخين",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "المخبوزات المجمدة غير المطهية مثل: البيتزا وفطائر اللحم والعجائن المجمدة المحشوة أو المغلفة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "رقائق ومنتفخات الأرز والذرة الشامية والبطاطس",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "شرائح المعجنات الطازجة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المعكرونة والشعيريـة والسكسكانية (جميع الأنواع الجافة)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "المعكرونة والشعيريـة والسكسكانية (جميع الأنواع الجافة)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "وجبة الإفطار (الكورنفليكس و الرقاق ... وما شابه ذلك)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الخبـز",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "خبز محلي أو بالبيض أو بالحليب",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "البسكويت العادي، المحشو و المغطي بطبقة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "البسكويت الجاف (العادي، المحشو و المغطي بطبقة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "منتجات مجففة سريعة الذوبان (فورية) (لا تحتاج تسخين قبل الأكل)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "وجبات الاطفال المكونة من الحبوب",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "المنتجات المجففة التي تتطلب تسخين",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "وجبات الاطفال الجاهزة في شكل بودرة والمضاف اليها بكتريا حامض اللاكتيك",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "وجبـات الأطفـال السائلة المعقمة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "معلبات الأطفال المعالجة حراريا",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الذبيح المبرد (أنصاف أو أرباع الذبيح الطازج بعظم أو بدون عظم)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأحشاء المبردة والمجمدة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "لحم مجمد، بدون عظم (فخذه)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "اللحم المفروم المجمد",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "اللحم المفروم المبرد",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "اللحوم ومستخلصاتها المجففة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "منتجات البروتين المشتقة من اللحوم مثل مركز مرق لحوم البقر",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "اللحوم المعاملة بالتمليح والتجفيف كاملة أو قطع أو أى شكل شرائح مثل (بسطرمة ...)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "أنواع السجق الطازج",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات اللحوم الطازجة المجمدة مثل (البيرقر، الكفتة الكبة... الخ)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "اللحوم ومنتجات اللحوم المطبوخة (الجاهزة للأكل)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات اللحوم المصنعة المطبوخة سواء كانت مدخنة أو غير مدخنة مثل: الفرانكفورتر، المورتديلا, البولوقنا، لانشون ...إلخ",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الشوربات الجاهزة التى تحتوي علي لحوم وخضروات ومكونات أخرى",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الخضروات الطازجة (تستهلك طازجة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الخضروات المجمدة او المبردة (تستهلك طازجة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الخضر الطازجة أو المجمدة المعدة للطبخ",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الخضر المجمدة بعد السلق الخفيف (بطاطس شرائح ومكعبات إلخ)",
+  "package_size": "",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الخضراوات المجففة",
+  "package_size": "",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهة الطازجة أو المجمدة",
+  "package_size": "",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الفاكهة الجاهزة للاستهلاك",
+  "package_size": "",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الفاكهة والخضروات المجففة التي تستخدم كمواد أولية في التصنيع",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهة والخضروات المجففة التي تستخدم كمواد أولية في التصنيع",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهه و الخضروات المحفوظه في الخل أو الزيت أو المحلول الملحي",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهه و الخضروات المحفوظه في الخل أو الزيت أو المحلول الملحي",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهة والخضروات المعلبة ذات الاس الهيدروجيني 4.6 فما دون (معجون الطماطم، كاتشب الخوخ)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفاكهة والخضروات المعلبة ذات الاس الهيدروجيني 4.6 فما دون (معجون الطماطم، كاتشب الخوخ)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الدواجن الطازجة والمبردة أو المجمدة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الدواجن المطهية , المجمدة (الجاهزة للأكل أو بعد التسخين مثل برغر الدجاج وفطائر الدجاج)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الدجاج المطهي المغطي بطبقة من البقسماط",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الدواجن المملحة والمطهية و/أو المدخنة، مثل منتجات الدواجن في صورة مارتديلا، فرانكفورتر، بسطرمة الديك الرومى أو صدر الديك الرومى المدخن... الخ)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات الدواجن المجففة (مكعبات المرق وغيرها)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "بيض سائل مبرد أو مجمد (كامل ، بياض أو مح)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "البيض المبستر (سائل أو مجمد أو مجفف)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "منتجات البيض المعدة لأغراض خاصة (رضع، كبار السن، أغذية النقاهة، الحساسية)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأسماك الطازجة أو المجمدة ومنتجاتها (بلوكات, ومسحوق, ومفروم أو شرائح الخ...)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الأسماك المطهوة مسبقا ومغطاة بطبقة من الخبز الجاف المجروش (بقسماط)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "القشريات المطهية المجمدة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "لحوم السرطانات المطهية المبردة والمجمدة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "الرخويات الطازجة والمجمدة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "فسيخ (السمك المملح المخمر, كامل, بودرة, مفرومة, عجينه. ملوحة (تركين)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R1",
+  "rate_pct": 100,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "تسحب عينة من كل الرسائل الواردة"
+ },
+ {
+  "product_key": "ماء الشرب",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الماء المعالج الداخل لشبكة التوزيع",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الماء المعالج داخل شبكة التوزيع",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المياه المعبأة في قناني",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الثلج المعد للاستهلاك",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "السكر",
+  "package_size": "كل الاحجام",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "السكر",
+  "package_size": "كل الاحجام",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "عسل النحل",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الشاي والأعشاب التي تغلي وتشرب كالشاي",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "الشاي والأعشاب التي تغلي وتشرب كالشاي",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "حبوب البن الخام",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "حبوب البن الخام",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "البن المحمص او المطحون أو الأنواع سريعة الذوبان",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "البن المحمص او المطحون أو الأنواع سريعة الذوبان",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "خميرة الخبز الفورية (الجافة والمضغوطة)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "علك المضغ",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الشوكولاته بأنواعها، سادة أو محلاة بالحليب أو أحد مكوناته أو بالمكسرات محشوة أو مغلفة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الحلوي الجافة مثل الكرامل والمنتجات الشبيهة بها",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "بودرة الكاكاو",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "جوز الهند المجفف (مبشور)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المكسرات (فول سوداني, الخ....)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المكسرات (فول سوداني, الخ....)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المولاس بانواعه - الدبس/ كتل السكر البنية وعسل سكر القصب",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الهلام (الجلي)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الجلاتين (حيواني)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "إنزيمات مجففة (حيوانية, نباتية أو ميكروبية عن طريق التخمر)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الطحينة والدكوة",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الطحينة والدكوة",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المارجرين (السمن النباتي)",
+  "package_size": "عبوات كبيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المارجرين (السمن النباتي)",
+  "package_size": "عبوات صغيره",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "العصائر الطبيعية والصناعية",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المشروبات الغازية (غير الكحولية)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المربات",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الصمغ العربي",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "المايونيز وصلصات البيض الأخرى والمستردة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "مسحوق الكركدي الرزازي",
+  "package_size": "كل الاحجام",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "الكركدي الزهرة والمسحوق",
+  "package_size": "كل الاحجام",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الطحنية",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "التوابل",
+  "package_size": "كل الاحجام",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "الكاتشب والمستردة",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "6",
+  "quantity_num": 6.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "زبدة الكاكاو",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "5",
+  "quantity_num": 5.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الملح",
+  "package_size": "عبوات كبيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "1 kg",
+  "quantity_num": 1.0,
+  "sampling_conditions": "فحص ظاهري أولاً، تحليل عند الشك، وتحليل مرتين سنوياً"
+ },
+ {
+  "product_key": "الملح",
+  "package_size": "عبوات صغيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "2",
+  "quantity_num": 2.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "العدس",
+  "package_size": "عبوات كبيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "1 kg",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "العدس",
+  "package_size": "عبوات صغيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "1",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الكركدى",
+  "package_size": "عبوات كبيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "1 kg",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الكركدى",
+  "package_size": "عبوات صغيرة",
+  "risk_group": "R3",
+  "rate_pct": 25,
+  "quantity": "1",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس الشروط أعلاه"
+ },
+ {
+  "product_key": "الصمغ العربى",
+  "package_size": "",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "1.5 kg",
+  "quantity_num": 1.5,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الباكنج بودر",
+  "package_size": "عبوات كبيرة",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "1",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الباكنج بودر",
+  "package_size": "عبوات صغيرة",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "3",
+  "quantity_num": 3.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الفانيليا",
+  "package_size": "عبوات صغيرة",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "3",
+  "quantity_num": 3.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "الخل والمخللات",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "2",
+  "quantity_num": 2.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ },
+ {
+  "product_key": "مدخلات الانتاج (حمض الستريك - صوديوم بيروفوسفيت - صوديوم كربونيت ومثبتات القوام)",
+  "package_size": "كل الاحجام",
+  "risk_group": "R2",
+  "rate_pct": 75,
+  "quantity": "1",
+  "quantity_num": 1.0,
+  "sampling_conditions": "نفس شروط المجموعة الثانية"
+ }
+]

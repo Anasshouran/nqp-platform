@@ -1,0 +1,13 @@
+# ============================================================
+# k8s/namespace.yaml - Kubernetes Namespace
+# بيئة: الإنتاج (Production)
+# ============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nqp
+  labels:
+    name: nqp
+    environment: production
+    app: nqp
