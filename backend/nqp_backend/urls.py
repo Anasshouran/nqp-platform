@@ -10,7 +10,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 @require_GET
 def health(_request):
     """نقطة الصحة المستخدمة في Kubernetes Readiness/Liveness Probes."""
-    return JsonResponse({'status': 'ok', 'service': 'nqp-backend'})
+    return JsonResponse({'status': 'ok', 'service': 'afyatna-backend'})
 
 
 urlpatterns = [
