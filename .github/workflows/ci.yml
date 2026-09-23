@@ -159,12 +159,3 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VITE_API_URL=https://api-dev.afyatna.com/api/v1
-      - name: Make frontend package public
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -sS -X PATCH \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/user/packages/container/afyatna-frontend" \
-            -d '{"visibility":"public"}'
