@@ -84,13 +84,13 @@ jobs:
       - name: Build (tsc + vite)
         run: npm run build
 
-  docker:
-    name: Build & publish images
+  docker-backend:
+    name: Build & publish backend image
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    needs: [backend, frontend]
+    needs: [backend]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -107,28 +107,64 @@ jobs:
           if [[ "${{ github.event_name }}" == "push" && \
                 ( "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ) ]]; then
             echo "main-branch=true" >> "$GITHUB_OUTPUT"
-            echo "backend-tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:dev,${{ env.IMAGE_NAMESPACE }}/afyatna-backend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
-            echo "frontend-tags=${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:dev,${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:dev,${{ env.IMAGE_NAMESPACE }}/afyatna-backend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           else
             echo "main-branch=false" >> "$GITHUB_OUTPUT"
-            echo "backend-tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
-            echo "frontend-tags=${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
           fi
       - name: Build & push backend image
         uses: docker/build-push-action@v6
         with:
           context: backend
           push: true
-          tags: ${{ steps.tags.outputs.backend-tags }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  docker-frontend:
+    name: Build & publish frontend image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: [frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          if [[ "${{ github.event_name }}" == "push" && \
+                ( "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ) ]]; then
+            echo "main-branch=true" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:dev,${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          else
+            echo "main-branch=false" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build & push frontend image
         uses: docker/build-push-action@v6
         with:
           context: frontend
           push: true
-          tags: ${{ steps.tags.outputs.frontend-tags }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             VITE_API_URL=https://api-dev.afyatna.com/api/v1
+      - name: Make frontend package public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sS -X PATCH \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/user/packages/container/afyatna-frontend" \
+            -d '{"visibility":"public"}'
