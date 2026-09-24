@@ -107,10 +107,10 @@ jobs:
           if [[ "${{ github.event_name }}" == "push" && \
                 ( "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ) ]]; then
             echo "main-branch=true" >> "$GITHUB_OUTPUT"
-            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:dev,${{ env.IMAGE_NAMESPACE }}/afyatna-backend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/nqp-backend:dev,${{ env.IMAGE_NAMESPACE }}/nqp-backend:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           else
             echo "main-branch=false" >> "$GITHUB_OUTPUT"
-            echo "tags=${{ env.IMAGE_NAMESPACE }}/afyatna-backend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE_NAMESPACE }}/nqp-backend:pr-${{ github.event.pull_request.number || github.sha }}" >> "$GITHUB_OUTPUT"
           fi
       - name: Build & push backend image
         uses: docker/build-push-action@v6
