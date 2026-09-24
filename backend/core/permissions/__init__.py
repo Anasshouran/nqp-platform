@@ -33,32 +33,42 @@ class AdminOrPermissionAction(BasePermission):
 
     @staticmethod
     def _resolve_action(view, action):
+        """خريطة أمان فاشلة (fail-closed): أي إجراء غير معروف لا يُصرّح به."""
         custom = getattr(view, 'action_permission_map', {})
         if action in custom:
             return custom[action]
-        return AdminOrPermissionAction.default_action_map.get(action, 'view')
+        return AdminOrPermissionAction.default_action_map.get(action)
+
+    def _enforce(self, request, view):
+        """تقييم صريح (فاشل-آمن): عدم وجود مورد أو عدم تعيين إجراء يمنع الوصول."""
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+        resource = self.resource or getattr(view, 'permission_resource', None)
+        if not resource:
+            logger.warning(
+                'AdminOrPermissionAction: view %s lacks permission_resource '
+                '(and class resource) - DENYING access for %s',
+                view.__class__.__name__, request.user,
+            )
+            return False
+        action = self._resolve_action(view, view.action)
+        if not action:
+            logger.warning(
+                'AdminOrPermissionAction: unmapped action %s on %s - DENYING access for %s',
+                view.action, view.__class__.__name__, request.user,
+            )
+            return False
+        return request.user.can(f'{resource}:{action}')
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
-        if request.user.is_superuser or request.user.is_staff:
-            return True
-        resource = self.resource or getattr(view, 'permission_resource', None)
-        if not resource:
-            return True
-        action = self._resolve_action(view, view.action)
-        return request.user.can(f'{resource}:{action}')
+        return self._enforce(request, view)
 
     def has_object_permission(self, request, view, obj):
         if not request.user or not request.user.is_authenticated:
             return False
-        if request.user.is_superuser or request.user.is_staff:
-            return True
-        resource = self.resource or getattr(view, 'permission_resource', None)
-        if not resource:
-            return True
-        action = self._resolve_action(view, view.action)
-        return request.user.can(f'{resource}:{action}')
+        return self._enforce(request, view)
 
 
 class ActionPermissionMixin:

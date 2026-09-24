@@ -1,9 +1,11 @@
 from django.apps import apps
 from django.contrib.auth import authenticate, get_user_model
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+from core.utils.authorization import check_grant_capability
 from core.utils.scoping import resolve_user_sectors
 
 from .models import EmployeeProfile, Permission, PermissionAudit, Role, RoleAssignment, ScopeType, User
@@ -145,6 +147,19 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
             qs = qs.exclude(pk=instance.pk)
         if qs.exists():
             raise serializers.ValidationError('تم تعيين هذا الدور بالفعل لهذا المستخدم في هذا النطاق')
+        actor = UserWriteSerializer._actor(self.context)
+        target = user or (getattr(self.instance, 'user', None) if self.instance else None)
+        if actor and not actor.is_superuser:
+            if target and target.is_superuser:
+                raise serializers.ValidationError('لا يمكن تعديل تعيينات حساب المشرف إلا بواسطة مشرف')
+            if target and target.is_staff and not actor.is_staff:
+                raise serializers.ValidationError('لا يمكن تعديل تعيينات حساب موظف إلا بواسطة موظف أو مشرف')
+        if actor:
+            allowed, reason = check_grant_capability(
+                actor, role, scope_type=scope_type, scope_id=scope_id,
+            )
+            if not allowed:
+                raise serializers.ValidationError({'role': reason})
         return attrs
 
     def _validate_scope_id(self, scope_type, scope_id):
@@ -283,6 +298,27 @@ class UserWriteSerializer(serializers.ModelSerializer):
                 validated_data[field] = None
 
     @staticmethod
+    def _actor(context):
+        """المستخدم الفاعل (المتصل) من سياق الطلب، أو None للمسارات الموثوقة داخلياً."""
+        request = context.get('request')
+        if not request:
+            return None
+        user = getattr(request, 'user', None)
+        if user is None or getattr(user, 'is_anonymous', False):
+            return None
+        return user
+
+    def _enforce_role_grant(self, role, scope_type, scope_id, sector_field='role'):
+        actor = self._actor(self.context)
+        if not actor or actor.is_superuser or actor.is_staff:
+            return
+        allowed, reason = check_grant_capability(
+            actor, role, scope_type=scope_type, scope_id=scope_id,
+        )
+        if not allowed:
+            raise serializers.ValidationError({sector_field: reason})
+
+    @staticmethod
     def _resolve_sector(sector_id):
         """يحلّ UUID القطاع إلى Sector، أو يقبل None."""
         if not sector_id:
@@ -330,9 +366,21 @@ class UserWriteSerializer(serializers.ModelSerializer):
         blocked_permissions = validated_data.pop('blocked_permissions', [])
         role = validated_data.pop('role', None)
         sector_id = validated_data.pop('sector', None)
+        requested_staff = validated_data.pop('is_staff', None)
+        actor = self._actor(self.context)
+        if requested_staff and (not actor or not actor.is_superuser):
+            raise serializers.ValidationError({
+                'is_staff': 'لا يمكن إنشاء حساب موظف (is_staff) إلا بواسطة المشرف'
+            })
         self._clean_optional_identifiers(validated_data)
         sector = self._resolve_sector(sector_id)
+        if role:
+            self._enforce_role_grant(role, 'GLOBAL', None)
+            if sector:
+                self._enforce_role_grant(role, 'SECTOR', sector.pk, sector_field='sector')
         user = UserModel(**validated_data)
+        if requested_staff and actor and actor.is_superuser:
+            user.is_staff = True
         if sector:
             user.sector = sector
         if password:
@@ -341,9 +389,10 @@ class UserWriteSerializer(serializers.ModelSerializer):
         user.extra_permissions.set(extra_permissions)
         user.blocked_permissions.set(blocked_permissions)
         if role:
-            user.role = role
-            user.save(update_fields=['role'])
-            self._apply_role(user, role, sector)
+            with transaction.atomic():
+                user.role = role
+                user.save(update_fields=['role'])
+                self._apply_role(user, role, sector)
         if employee_number:
             self._apply_employee_number(user, employee_number)
         return user
@@ -355,6 +404,17 @@ class UserWriteSerializer(serializers.ModelSerializer):
         blocked_permissions = validated_data.pop('blocked_permissions', None)
         role = validated_data.pop('role', 'UNSET')
         sector_id = validated_data.pop('sector', 'UNSET')
+        requested_staff = validated_data.pop('is_staff', None)
+        actor = self._actor(self.context)
+        if actor and not actor.is_superuser:
+            if instance.is_superuser:
+                raise serializers.ValidationError('لا يمكن تعديل حساب المشرف إلا بواسطة مشرف')
+            if instance.is_staff and not actor.is_staff:
+                raise serializers.ValidationError('لا يمكن تعديل حساب موظف إلا بواسطة موظف أو مشرف')
+        if requested_staff is not None and (not actor or not actor.is_superuser):
+            raise serializers.ValidationError({
+                'is_staff': 'لا يمكن تغيير صلاحية الموظف (is_staff) إلا بواسطة المشرف'
+            })
         self._clean_optional_identifiers(validated_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -363,6 +423,9 @@ class UserWriteSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)
         instance.save()
+        if requested_staff is not None and actor and actor.is_superuser:
+            instance.is_staff = requested_staff
+            instance.save(update_fields=['is_staff'])
         if extra_permissions is not None:
             instance.extra_permissions.set(extra_permissions)
         if blocked_permissions is not None:
@@ -370,12 +433,16 @@ class UserWriteSerializer(serializers.ModelSerializer):
         if employee_number is not None:
             self._apply_employee_number(instance, employee_number or None)
         if role != 'UNSET':
-            old_role = instance.role
-            instance.role = role
-            instance.save(update_fields=['role'])
-            if old_role and old_role != role:
-                RoleAssignment.objects.filter(user=instance, role=old_role, is_active=True).update(is_active=False)
-            self._apply_role(instance, role, instance.sector)
+            self._enforce_role_grant(role, 'GLOBAL', None)
+            if instance.sector:
+                self._enforce_role_grant(role, 'SECTOR', instance.sector.pk, sector_field='sector')
+            with transaction.atomic():
+                old_role = instance.role
+                instance.role = role
+                instance.save(update_fields=['role'])
+                if old_role and old_role != role:
+                    RoleAssignment.objects.filter(user=instance, role=old_role, is_active=True).update(is_active=False)
+                self._apply_role(instance, role, instance.sector)
         return instance
 
 

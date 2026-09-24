@@ -494,6 +494,24 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserWriteSerializer
         return UserSerializer
 
+    @staticmethod
+    def _protect_account(request, instance):
+        """حماية حسابات المشرف والموظفين من التعديل غير المصرح به (C1)."""
+        actor = getattr(request, 'user', None)
+        if not actor or getattr(actor, 'is_anonymous', False) or actor.is_superuser:
+            return None
+        if instance.is_superuser:
+            return Response(
+                {'status': 'error', 'message': 'لا يمكن تعديل حساب المشرف إلا بواسطة مشرف'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if instance.is_staff and not actor.is_staff:
+            return Response(
+                {'status': 'error', 'message': 'لا يمكن تعديل حساب موظف إلا بواسطة موظف أو مشرف'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -512,6 +530,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        protected = self._protect_account(request, instance)
+        if protected:
+            return protected
         old_extra = list(instance.extra_permissions.values_list('code', flat=True))
         old_blocked = list(instance.blocked_permissions.values_list('code', flat=True))
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -524,6 +545,13 @@ class UserViewSet(viewsets.ModelViewSet):
             list(user.blocked_permissions.values_list('code', flat=True)),
         )
         return Response(success_response(UserSerializer(user).data))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        protected = self._protect_account(request, instance)
+        if protected:
+            return protected
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'], url_path='roles')
     def roles(self, request):
@@ -557,6 +585,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def reset_password(self, request, pk=None):
         """تعيين كلمة مرور جديدة للمستخدم (موظفو الأمان) مع فك قفل الحساب."""
         user = self.get_object()
+        protected = self._protect_account(request, user)
+        if protected:
+            return protected
         new_password = request.data.get('password')
         if not new_password or len(new_password) < 8:
             return Response(
@@ -652,6 +683,25 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
             return RoleAssignmentWriteSerializer
         return RoleAssignmentSerializer
 
+    @staticmethod
+    def _protect_assignment(request, assignment):
+        """حماية تعيينات حسابات المشرف والموظفين من التعديل غير المصرح به (H1)."""
+        actor = getattr(request, 'user', None)
+        if not actor or getattr(actor, 'is_anonymous', False) or actor.is_superuser:
+            return None
+        target = assignment.user
+        if target.is_superuser:
+            return Response(
+                {'status': 'error', 'message': 'لا يمكن تعديل تعيينات حساب المشرف إلا بواسطة مشرف'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if target.is_staff and not actor.is_staff:
+            return Response(
+                {'status': 'error', 'message': 'لا يمكن تعديل تعيينات حساب موظف إلا بواسطة موظف أو مشرف'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -663,7 +713,17 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        protected = self._protect_assignment(request, instance)
+        if protected:
+            return protected
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         assignment = serializer.save()
         return Response(success_response(RoleAssignmentSerializer(assignment).data))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        protected = self._protect_assignment(request, instance)
+        if protected:
+            return protected
+        return super().destroy(request, *args, **kwargs)

@@ -106,3 +106,156 @@ def test_lab_manager_can_manage_assignment_only(sector):
     }, format='json')
     assert resp.status_code == 201
     assert User.objects.filter(email='managed@nqp.gov.sd').exists()
+
+
+def test_deactivated_assignment_denies_lab_management(sector):
+    mgr = User.objects.create_user(
+        email='mgr-deact@nqp.gov.sd', password='x', full_name='مدير مُعطّل'
+    )
+    mgr_role, _ = Role.objects.get_or_create(
+        code='LAB_MANAGER', defaults={'name_ar': 'مدير معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    assignment = RoleAssignment.objects.create(
+        user=mgr, role=mgr_role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+    )
+    # يبقى الحقل القديم user.role معطياً — لكنه يجب ألا يمنح تفويضاً
+    mgr.role = mgr_role
+    mgr.save(update_fields=['role'])
+    assignment.is_active = False
+    assignment.save(update_fields=['is_active'])
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(mgr)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'no-deact@nqp.gov.sd',
+        'full_name': 'مرفوض',
+        'role': 'LAB_TECHNICIAN',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 403
+
+
+def test_expired_assignment_denies_lab_management(sector, red_manager):
+    from datetime import timedelta
+    from django.utils import timezone
+
+    # انتهاء نافذة مدير البحر الأحمر يمنع الإدارة حتى مع بقاء الحقل القديم
+    assignment = RoleAssignment.objects.get(user=red_manager, role__code='LAB_MANAGER')
+    assignment.end_date = timezone.now().date() - timedelta(days=1)
+    assignment.save(update_fields=['end_date'])
+    red_manager.role = assignment.role
+    red_manager.save(update_fields=['role'])
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(red_manager)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'no-expired@nqp.gov.sd',
+        'full_name': 'مرفوض',
+        'role': 'LAB_TECHNICIAN',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 403
+
+
+def test_future_dated_assignment_cannot_yet_manage(sector):
+    from datetime import timedelta
+    from django.utils import timezone
+
+    role, _ = Role.objects.get_or_create(
+        code='LAB_MANAGER', defaults={'name_ar': 'مدير معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    mgr = User.objects.create_user(
+        email='mgr-future@nqp.gov.sd', password='x', full_name='مدير مستقبلي'
+    )
+    mgr.role = role
+    mgr.save(update_fields=['role'])
+    RoleAssignment.objects.create(
+        user=mgr, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+        start_date=timezone.now().date() + timedelta(days=1),
+    )
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(mgr)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'no-future@nqp.gov.sd',
+        'full_name': 'مرفوض',
+        'role': 'LAB_TECHNICIAN',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 403
+
+
+def test_lab_users_list_filters_by_date_window(sector):
+    from datetime import timedelta
+    from django.utils import timezone
+
+    role, _ = Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    active_tech = User.objects.create_user(email='tech-active@nqp.gov.sd', password='x', full_name='نشط')
+    RoleAssignment.objects.create(
+        user=active_tech, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+    )
+    stale = User.objects.create_user(email='tech-stale@nqp.gov.sd', password='x', full_name='قديم')
+    stale.role = role
+    stale.save(update_fields=['role'])
+    RoleAssignment.objects.create(
+        user=stale, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+        end_date=timezone.now().date() - timedelta(days=1),
+    )
+    viewer = User.objects.create_user(email='view@nqp.gov.sd', password='x', full_name='مشاهِد')
+    RoleAssignment.objects.create(user=viewer, role=role, scope_type=ScopeType.GLOBAL)
+    c = auth_client_for(viewer)
+    resp = c.get('/api/v1/laboratory/users/')
+    emails = [u['email'] for u in resp.json()['data']]
+    assert 'tech-active@nqp.gov.sd' in emails
+    assert 'tech-stale@nqp.gov.sd' not in emails
+
+
+def test_cross_sector_lab_user_creation_denied(sector, red_manager):
+    khartoum = Sector.objects.create(code='KHARTOUM', name_ar='الخرطوم', name_en='Khartoum')
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(red_manager)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'cross@nqp.gov.sd',
+        'full_name': 'عابر قطاع',
+        'role': 'LAB_TECHNICIAN',
+        'sector': str(khartoum.pk),
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 400
+    assert not User.objects.filter(email='cross@nqp.gov.sd').exists()
+
+
+def test_lab_manager_cannot_create_higher_tier(sector, red_manager):
+    Role.objects.get_or_create(
+        code='LAB_DIRECTOR', defaults={'name_ar': 'مدير معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(red_manager)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'new-director@nqp.gov.sd',
+        'full_name': 'مدير جديد',
+        'role': 'LAB_DIRECTOR',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 400
+    assert not User.objects.filter(email='new-director@nqp.gov.sd').exists()
+
+
+def test_lab_manager_can_create_peer_and_lower_within_scope(sector, red_manager):
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    c = auth_client_for(red_manager)
+    tech = c.post('/api/v1/laboratory/users/', {
+        'email': 'tech-ok@nqp.gov.sd',
+        'full_name': 'فني',
+        'role': 'LAB_TECHNICIAN',
+        'password': 'testpass123',
+    }, format='json')
+    assert tech.status_code == 201

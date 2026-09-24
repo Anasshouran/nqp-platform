@@ -1,8 +1,11 @@
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
 from apps.accounts.models import Role, RoleAssignment
 from apps.accounts.models import User as NqlUser
+
+from core.utils.authorization import check_grant_capability
 
 from .models import (
     LAB_ROLE_CODES,
@@ -373,7 +376,7 @@ class SampleNumberCounterSerializer(serializers.ModelSerializer):
 
 
 class LabUserSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(source='role.code', read_only=True, allow_null=True)
+    role = serializers.SerializerMethodField()
     role_id = serializers.UUIDField(source='role.id', read_only=True, allow_null=True)
 
     class Meta:
@@ -384,6 +387,22 @@ class LabUserSerializer(serializers.ModelSerializer):
             'is_active', 'last_login', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_role(self, obj):
+        """الدور من التعيين النشط (مصدر الحقيقة، ضمن النافذة الزمنية)،
+        مع حقل user.role القديم كاحتياطي للعرض/التوافق فقط (لا تفويض)."""
+        from core.utils.authorization import active_assignments
+
+        assignment = (
+            active_assignments(obj)
+            .filter(role__code__in=LAB_ROLE_CODES)
+            .select_related('role')
+            .order_by('-start_date')
+            .first()
+        )
+        if assignment:
+            return assignment.role.code
+        return getattr(obj.role, 'code', None)
 
 
 class LabUserWriteSerializer(serializers.ModelSerializer):
@@ -426,56 +445,92 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
             return RoleAssignment.ScopeType.SECTOR, creator_sector.pk, creator_sector
         return RoleAssignment.ScopeType.GLOBAL, None, None
 
+    @staticmethod
+    def _actor(context):
+        """المستخدم الفاعل (المتصل) من سياق الطلب، أو None للمسارات الموثوقة داخلياً."""
+        request = context.get('request')
+        if not request:
+            return None
+        user = getattr(request, 'user', None)
+        if user is None or getattr(user, 'is_anonymous', False):
+            return None
+        return user
+
+    def _enforce_grant(self, role, scope_type, scope_id):
+        """يعتمد تفويض الدور المعملي على موارد الفاعل ونطاقه (H3)."""
+        actor = self._actor(self.context)
+        if not actor or actor.is_superuser or actor.is_staff:
+            return
+        allowed, _ = check_grant_capability(
+            actor, role, scope_type=scope_type, scope_id=scope_id,
+        )
+        if not allowed:
+            raise serializers.ValidationError(
+                'الدور المطلوب خارج نطاق صلاحياتك (نطاق أو مستوى دور)'
+            )
+
+    def _validate_grant(self, role, sector_id):
+        """تحقق قبلي (قبل أي كتابة) من صلاحية منح الدور في النطاق المستهدف."""
+        scope_type, scope_id, _ = self._target_scope(sector_id)
+        self._enforce_grant(role, scope_type, scope_id)
+
+    def validate(self, attrs):
+        if attrs.get('role'):
+            self._validate_grant(attrs['role'], attrs.get('sector'))
+        return attrs
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         role = validated_data.pop('role', None)
         sector_id = validated_data.pop('sector', None)
-        user = NqlUser(**validated_data)
-        if password:
-            user.set_password(password)
-        user.save()
-        if role:
-            user.role = role
-            user.save(update_fields=['role'])
-            scope_type, scope_id, sector = self._target_scope(sector_id)
-            if sector:
-                user.sector = sector
-                user.save(update_fields=['sector'])
-            RoleAssignment.objects.get_or_create(
-                user=user,
-                role=role,
-                scope_type=scope_type,
-                scope_id=scope_id,
-                defaults={'is_active': True, 'start_date': timezone.localdate()},
-            )
+        with transaction.atomic():
+            user = NqlUser(**validated_data)
+            if password:
+                user.set_password(password)
+            user.save()
+            if role:
+                scope_type, scope_id, sector = self._target_scope(sector_id)
+                user.role = role
+                user.save(update_fields=['role'])
+                if sector:
+                    user.sector = sector
+                    user.save(update_fields=['sector'])
+                RoleAssignment.objects.get_or_create(
+                    user=user,
+                    role=role,
+                    scope_type=scope_type,
+                    scope_id=scope_id,
+                    defaults={'is_active': True, 'start_date': timezone.localdate()},
+                )
         return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         role = validated_data.pop('role', 'UNSET')
         sector_id = validated_data.pop('sector', 'UNSET')
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if password:
-            instance.set_password(password)
-        instance.save()
-        if role != 'UNSET':
-            old_role = instance.role
-            instance.role = role
-            instance.save(update_fields=['role'])
-            if old_role and old_role != role:
-                RoleAssignment.objects.filter(user=instance, role=old_role).update(is_active=False)
-            scope_type, scope_id, sector = self._target_scope(
-                sector_id if sector_id != 'UNSET' else None
-            )
-            if sector:
-                instance.sector = sector
-                instance.save(update_fields=['sector'])
-            RoleAssignment.objects.update_or_create(
-                user=instance,
-                role=role,
-                scope_type=scope_type,
-                scope_id=scope_id,
-                defaults={'is_active': True, 'start_date': timezone.localdate()},
-            )
+        with transaction.atomic():
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            if password:
+                instance.set_password(password)
+            instance.save()
+            if role != 'UNSET':
+                scope_type, scope_id, sector = self._target_scope(
+                    sector_id if sector_id != 'UNSET' else None
+                )
+                old_role = instance.role
+                instance.role = role
+                instance.save(update_fields=['role'])
+                if old_role and old_role != role:
+                    RoleAssignment.objects.filter(user=instance, role=old_role).update(is_active=False)
+                if sector:
+                    instance.sector = sector
+                    instance.save(update_fields=['sector'])
+                RoleAssignment.objects.update_or_create(
+                    user=instance,
+                    role=role,
+                    scope_type=scope_type,
+                    scope_id=scope_id,
+                    defaults={'is_active': True, 'start_date': timezone.localdate()},
+                )
         return instance

@@ -1237,7 +1237,8 @@ class CriticalResultViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 class LabUsersManagePermission(BasePermission):
     """قراءة: أي مستخدم موثّق. إدارة: المشرف أو مدير المختبر (LAB_DIRECTOR / LAB_MANAGER).
 
-    المرجع: تعيينات الأدوار أولاً (مصدر الحقيقة)، ثم الحقل القديم user.role للتوافق.
+    المرجع: تعيينات الأدوار النشطة ضمن النافذة الزمنية فقط (مصدر الحقيقة)،
+    والحقل القديم user.role غير معتبر في التفويض (توافق/عرض فقط).
     """
 
     MANAGER_CODES = ('LAB_DIRECTOR', 'LAB_MANAGER')
@@ -1249,15 +1250,28 @@ class LabUsersManagePermission(BasePermission):
             return True
         if request.user.is_staff:
             return True
-        if has_role(request.user, self.MANAGER_CODES[0]) or has_role(request.user, self.MANAGER_CODES[1]):
-            return True
-        return bool(request.user.role and request.user.role.code in self.MANAGER_CODES)
+        return any(has_role(request.user, code) for code in self.MANAGER_CODES)
+
+
+def _active_lab_filter(role_codes):
+    """فلتر تعيينات الأدوار النشطة ضمن النافذة الزمنية (مصدر الحقيقة)."""
+    now = timezone.now()
+    return (
+        Q(
+            role_assignments__role__code__in=role_codes,
+            role_assignments__is_active=True,
+            role_assignments__start_date__lte=now,
+        )
+        & (
+            Q(role_assignments__end_date__isnull=True)
+            | Q(role_assignments__end_date__gt=now)
+        )
+    )
 
 
 class LabUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('role').filter(
-        Q(role_assignments__role__code__in=LAB_ROLE_CODES, role_assignments__is_active=True)
-        | Q(role__code__in=LAB_ROLE_CODES)
+        _active_lab_filter(LAB_ROLE_CODES)
     ).distinct().order_by('full_name')
     permission_classes = [LabUsersManagePermission]
     pagination_class = None
@@ -1271,10 +1285,7 @@ class LabUserViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         role_code = self.request.query_params.get('role')
         if role_code:
-            qs = qs.filter(
-                Q(role_assignments__role__code=role_code, role_assignments__is_active=True)
-                | Q(role__code=role_code)
-            )
+            qs = qs.filter(_active_lab_filter([role_code]))
         user = self.request.user
         if not user or user.is_anonymous or user.is_superuser or has_global_scope(user):
             return qs
@@ -1283,9 +1294,9 @@ class LabUserViewSet(viewsets.ModelViewSet):
         if not sectors:
             return qs.none()
         return qs.filter(
+            _active_lab_filter(LAB_ROLE_CODES),
             role_assignments__scope_type=RoleAssignment.ScopeType.SECTOR,
             role_assignments__scope_id__in=[s.pk for s in sectors],
-            role_assignments__is_active=True,
         ).distinct()
 
     def get_serializer_class(self):
@@ -1319,8 +1330,7 @@ class LabUserViewSet(viewsets.ModelViewSet):
                 'name_ar': role.name_ar,
                 'name': role.name,
                 'user_count': User.objects.filter(
-                    Q(role_assignments__role=role, role_assignments__is_active=True)
-                    | Q(role=role, is_active=True)
+                    _active_lab_filter([role.code])
                 ).filter(is_active=True).distinct().count(),
             })
         return Response(success_response(roles))
@@ -1328,6 +1338,18 @@ class LabUserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='reset-password')
     def reset_password(self, request, pk=None):
         user = self.get_object()
+        actor = getattr(request, 'user', None)
+        if actor and not getattr(actor, 'is_anonymous', False) and not actor.is_superuser:
+            if user.is_superuser:
+                return Response(
+                    {'status': 'error', 'message': 'لا يمكن إعادة تعيين كلمة مرور المشرف إلا بواسطة مشرف'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if user.is_staff and not actor.is_staff:
+                return Response(
+                    {'status': 'error', 'message': 'لا يمكن إعادة تعيين كلمة مرور موظف إلا بواسطة موظف أو مشرف'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
         new_password = request.data.get('password')
         if not new_password or len(new_password) < 8:
             return Response(

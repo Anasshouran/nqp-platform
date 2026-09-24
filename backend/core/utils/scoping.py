@@ -5,10 +5,19 @@
 `masterdata.EntryPoint`، وكل `EntryPoint` مرتبط بقطاع `organization.Sector`
 عبر الحقل المباشر `EntryPoint.sector`. لذلك يمكن تقييد أي queryset على
 نطاق المستخدم (قطاع أو نقطة دخول أو محطة) بفلترة معرفات نقاط دخوله.
+
+مصدر الحقيقة للتفويض: تعيينات الأدوار النشطة ضمن النافذة الزمنية فقط
+(الحقل القديم ``User.role`` غير معتبر في القرارات).
 """
 from django.core.exceptions import FieldError
 
 import logging
+
+from core.utils.authorization import (
+    active_assignments,
+    has_active_global_scope,
+    has_active_role,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,46 +26,35 @@ def resolve_user_sectors(user):
     """قطاعات المستخدم كقائمة Sector (user.sector + تعيينات الدور بنطاق SECTOR).
 
     للمستخدم القومي/الوطني (superuser أو GLOBAL scope أو NATIONAL_LAB_ADMIN)
-    تُرجع كل القطاعات النشطة، وإلا قائمة قطاعاته الفعلية.
+    تُرجع كل القطاعات النشطة، وإلا قائمة قطاعاته الفعلية (حقل القطاع +
+    جميع نطاقات SECTOR من التعيينات النشطة ضمن النافذة الزمنية).
     """
-    from apps.accounts.models import RoleAssignment
     from apps.organization.models import Sector
 
     if not user or user.is_anonymous:
         return []
-    if user.is_superuser or has_global_scope(user) or has_role(user, 'NATIONAL_LAB_ADMIN'):
+    if user.is_superuser or has_active_global_scope(user) or has_active_role(user, 'NATIONAL_LAB_ADMIN'):
         return list(Sector.objects.filter(is_active=True))
 
     ids = set()
     if user.sector_id:
         ids.add(user.sector_id)
-        qs = user.role_assignments.filter(
-            scope_type=RoleAssignment.ScopeType.SECTOR,
-            scope_id__isnull=False,
-            is_active=True,
-        )
-        ids.update(qs.values_list('scope_id', flat=True))
+    ids.update(
+        active_assignments(user)
+        .filter(scope_type='SECTOR', scope_id__isnull=False)
+        .values_list('scope_id', flat=True)
+    )
     return list(Sector.objects.filter(pk__in=ids))
 
 
 def has_global_scope(user):
-    """هل للمستخدم نطاق GLOBAL نشط (عامل على كل القطاعات)؟"""
-    from apps.accounts.models import RoleAssignment
-
-    if not user or user.is_anonymous or user.is_superuser:
-        return True
-    return user.role_assignments.filter(
-        is_active=True, scope_type=RoleAssignment.ScopeType.GLOBAL,
-    ).exists()
+    """هل للمستخدم نطاق GLOBAL نشط (ضمن النافذة الزمنية)؟"""
+    return has_active_global_scope(user)
 
 
 def has_role(user, role_code):
-    """هل للمستخدم دور معيّن (من تعيينات الأدوار النشطة)؟"""
-    if not user or user.is_anonymous:
-        return False
-    return user.role_assignments.filter(
-        role__code=role_code, is_active=True,
-    ).exists()
+    """هل للمستخدم دور معيّن (تعيين نشط ضمن النافذة الزمنية)؟"""
+    return has_active_role(user, role_code)
 
 
 def resolve_user_sector(user):
@@ -65,17 +63,15 @@ def resolve_user_sector(user):
     (يحافظ على سلوك الموديولات القطاعية السابقة: يعتمد على تعيينات الدور
     بنطاق SECTOR فقط، ولا يجمع قطاعات متعددة.)
     """
-    from apps.accounts.models import RoleAssignment
     from apps.organization.models import Sector
 
     if not user or user.is_anonymous or user.is_superuser:
         return None
     sector_id = next(
-        (a.scope_id for a in user.role_assignments.filter(
-            scope_type=RoleAssignment.ScopeType.SECTOR,
+        (a.scope_id for a in active_assignments(user).filter(
+            scope_type='SECTOR',
             scope_id__isnull=False,
-            is_active=True,
-        ).all()),
+        )),
         None,
     )
     if sector_id is None:
@@ -84,12 +80,9 @@ def resolve_user_sector(user):
 
 
 def _active_assignments(user):
-    from apps.accounts.models import RoleAssignment
-
-    return user.role_assignments.filter(
-        is_active=True,
+    return active_assignments(user).filter(
         scope_id__isnull=False,
-    ).exclude(scope_type=RoleAssignment.ScopeType.GLOBAL)
+    ).exclude(scope_type='GLOBAL')
 
 
 def _assigned_entry_point_ids(user):
@@ -134,21 +127,16 @@ def resolve_user_port_ids(user):
     """
     if not user or user.is_anonymous or user.is_superuser:
         return None
-    from apps.accounts.models import RoleAssignment
-
-    has_global = user.role_assignments.filter(
-        is_active=True, scope_type=RoleAssignment.ScopeType.GLOBAL,
-    ).exists()
-    if has_global:
+    if has_global_scope(user):
         return None
 
     assignments = _active_assignments(user)
     sector_ids = set()
     entry_point_ids = set()
     for a in assignments:
-        if a.scope_type in (RoleAssignment.ScopeType.SECTOR, RoleAssignment.ScopeType.REGION):
+        if a.scope_type in ('SECTOR', 'REGION'):
             sector_ids.add(a.scope_id)
-        elif a.scope_type in (RoleAssignment.ScopeType.POINT, RoleAssignment.ScopeType.PORT):
+        elif a.scope_type in ('POINT', 'PORT'):
             entry_point_ids.add(a.scope_id)
 
     port_ids = set(_sector_port_ids(sector_ids))

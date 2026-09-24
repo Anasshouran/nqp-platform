@@ -17,6 +17,7 @@ from apps.masterdata.models import EntryPoint as Port
 from apps.notifications.models import NotificationLog
 from apps.organization.models import Sector
 
+from core.utils.authorization import FOOD_REVIEW_ROLES, has_active_role
 from core.utils.response import error_response, success_response
 
 from .models import (
@@ -118,11 +119,20 @@ from .services import apply_sampling, build_export_inspection_form, compute_fee_
 # ---------------------------------------------------------------------------
 
 def _has_role(user, code):
-    if not user or user.is_anonymous:
+    """هل للمستخدم دور معيّن (تعيين نشط ضمن النافذة الزمنية فقط)؟
+
+    الحقل القديم user.role غير معتبر في التفويض (توافق/عرض فقط).
+    """
+    return has_active_role(user, code)
+
+
+def _can_review_food(user):
+    """توجيه إيجابي: من يسمح له بمراجعة تقارير التفتيش الغذائي."""
+    if not user or getattr(user, 'is_anonymous', False):
         return False
-    if user.role_assignments.filter(role__code=code, is_active=True).exists():
+    if user.is_superuser or user.is_staff:
         return True
-    return bool(user.role_id and getattr(user.role, 'code', None) == code)
+    return any(has_active_role(user, code) for code in FOOD_REVIEW_ROLES)
 
 
 def _audit(request, action, obj=None, event=None, object_type=None, object_id=None, object_label=None, extra=None):
@@ -875,9 +885,9 @@ class FoodInspectionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='review')
     def review(self, request, pk=None):
         inspection = self.get_object()
-        if _has_role(request.user, 'FOOD_INSPECTOR'):
+        if not _can_review_food(request.user):
             return Response(
-                error_response('لا يسمح للمفتش بمراجعة تقريره'),
+                error_response('لا يسمح لك بمراجعة تقارير التفتيش'),
                 status=status.HTTP_403_FORBIDDEN,
             )
         if inspection.supervisor_status != FoodInspection.SupervisorStatus.PENDING:

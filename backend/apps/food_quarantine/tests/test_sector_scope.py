@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from apps.masterdata.models import EntryPoint as Port, Sector as MasterSector, State as MasterState
 from apps.organization.models import Sector
-from apps.accounts.models import Role
+from apps.accounts.models import Role, RoleAssignment, ScopeType
 
 from ..models import (
     FoodSample,
@@ -170,6 +170,7 @@ def test_retest_reopens_approved_test(user=None):
 def test_retest_blocked_for_receptionist():
     role, _ = Role.objects.get_or_create(code='LAB_RECEPTIONIST', defaults={'name_ar': 'مستقبل العينات'})
     user = _user(email='reception@nqp.gov.sd', role=role)
+    RoleAssignment.objects.create(user=user, role=role, scope_type=ScopeType.GLOBAL)
     red_sea, _ = Sector.objects.get_or_create(code='RED_SEA', defaults={'name_ar': 'قطاع البحر الأحمر'})
     state, _ = MasterState.objects.get_or_create(
         code='ST_RX', defaults={'name_ar': 'ولاية', 'sector': MasterSector.objects.get_or_create(

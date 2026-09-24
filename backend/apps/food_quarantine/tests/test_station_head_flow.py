@@ -62,11 +62,16 @@ def inspector2(db, inspector_role):
 
 @pytest.fixture
 def head_client(api_client, db, station_head_role):
+    from apps.accounts.models import RoleAssignment, ScopeType
+
     user = User.objects.create_user(
         email='head@nqp.gov.sd',
         password='StrongPass123!',
         full_name='د. سامي عمر',
         role=station_head_role,
+    )
+    RoleAssignment.objects.create(
+        user=user, role=station_head_role, scope_type=ScopeType.GLOBAL,
     )
     login = api_client.post(
         '/api/v1/auth/login/',
@@ -264,3 +269,71 @@ def _ep_state():
     )
     return state
 
+
+
+def test_review_denied_when_station_head_assignment_expired(api_client, db, port, inspector, station_head_role):
+    from datetime import timedelta
+
+    from apps.accounts.models import RoleAssignment, ScopeType
+    from django.utils import timezone
+
+    head = User.objects.create_user(
+        email='head-expired@nqp.gov.sd',
+        password='StrongPass123!',
+        full_name='رئيس منتهي',
+        role=station_head_role,
+    )
+    RoleAssignment.objects.create(
+        user=head, role=station_head_role, scope_type=ScopeType.GLOBAL,
+        end_date=timezone.now().date() - timedelta(days=1),
+    )
+    login = api_client.post(
+        '/api/v1/auth/login/',
+        {'email': head.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    api_client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}"
+    )
+    shipment = _shipment(db, port, inspector, manifest='IMP-2026-00889')
+    assert _inspect(api_client, shipment, FoodInspection.Decision.COMPLIANT).status_code == 201
+    inspection = FoodInspection.objects.get(shipment=shipment)
+    res = api_client.post(
+        f'/api/v1/food/inspections/{inspection.pk}/review/',
+        {'action': 'APPROVE'},
+        format='json',
+    )
+    assert res.status_code == 403
+
+
+def test_review_denied_when_station_head_assignment_deactivated(api_client, db, port, inspector, station_head_role):
+    from apps.accounts.models import RoleAssignment, ScopeType
+
+    head = User.objects.create_user(
+        email='head-deact@nqp.gov.sd',
+        password='StrongPass123!',
+        full_name='رئيس مُعطّل',
+        role=station_head_role,
+    )
+    assignment = RoleAssignment.objects.create(
+        user=head, role=station_head_role, scope_type=ScopeType.GLOBAL,
+    )
+    assignment.is_active = False
+    assignment.save(update_fields=['is_active'])
+    login = api_client.post(
+        '/api/v1/auth/login/',
+        {'email': head.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    api_client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}"
+    )
+    shipment = _shipment(db, port, inspector, manifest='IMP-2026-00890')
+    assert _inspect(api_client, shipment, FoodInspection.Decision.COMPLIANT).status_code == 201
+    inspection = FoodInspection.objects.get(shipment=shipment)
+    res = api_client.post(
+        f'/api/v1/food/inspections/{inspection.pk}/review/',
+        {'action': 'APPROVE'},
+        format='json',
+    )
+    assert res.status_code == 403
