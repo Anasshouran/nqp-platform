@@ -238,6 +238,14 @@ class Command(BaseCommand):
                 updated.append(code)
             codes = [c for c in data['permissions'] if c in perm_qs]
             role.permissions.set([perm_qs[c] for c in codes])
+            missing = sorted({c for c in data['permissions'] if c not in perm_qs})
+            if missing:
+                self.stderr.write(
+                    self.style.WARNING(
+                        f'تحذير {code}: {len(missing)} كود صلاحية غير مزارع في قاعدة البيانات — '
+                        f'{", ".join(missing)}'
+                    )
+                )
 
         removed = 0
         fallback = Role.objects.filter(code='ADMIN').first()

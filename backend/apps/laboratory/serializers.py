@@ -390,16 +390,46 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(
         slug_field='code', queryset=Role.objects.filter(code__in=LAB_ROLE_CODES), required=False, allow_null=True
     )
+    sector = serializers.UUIDField(required=False, allow_null=True)
     password = serializers.CharField(write_only=True, required=False, allow_blank=True, min_length=8)
 
     class Meta:
         model = NqlUser
-        fields = ['id', 'email', 'full_name', 'phone', 'user_type', 'role', 'password', 'is_active']
+        fields = ['id', 'email', 'full_name', 'phone', 'user_type', 'role', 'sector', 'password', 'is_active']
         read_only_fields = ['id']
+
+    @staticmethod
+    def _resolve_sector(sector_id):
+        """حلّ UUID القطاع إلى Sector (أو None لعدم التقييد القطاعي)."""
+        if not sector_id:
+            return None
+        from apps.organization.models import Sector
+
+        sector = Sector.objects.filter(pk=sector_id).first()
+        if not sector:
+            raise serializers.ValidationError({'sector': 'القطاع المحدد غير موجود'})
+        return sector
+
+    def _target_scope(self, sector_id):
+        """نطاق التعيين: القطاع المزوَّد، أو قطاع المنشئ، وإلا GLOBAL للوطنيين."""
+        sector = self._resolve_sector(sector_id)
+        if sector:
+            return RoleAssignment.ScopeType.SECTOR, sector.pk, sector
+        request = self.context.get('request')
+        creator = getattr(request, 'user', None) if request else None
+        creator_sector = None
+        if creator and not getattr(creator, 'is_anonymous', True):
+            from core.utils.scoping import resolve_user_sector
+
+            creator_sector = resolve_user_sector(creator)
+        if creator_sector:
+            return RoleAssignment.ScopeType.SECTOR, creator_sector.pk, creator_sector
+        return RoleAssignment.ScopeType.GLOBAL, None, None
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        role = validated_data.get('role')
+        role = validated_data.pop('role', None)
+        sector_id = validated_data.pop('sector', None)
         user = NqlUser(**validated_data)
         if password:
             user.set_password(password)
@@ -407,9 +437,15 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
         if role:
             user.role = role
             user.save(update_fields=['role'])
-            RoleAssignment.objects.update_or_create(
+            scope_type, scope_id, sector = self._target_scope(sector_id)
+            if sector:
+                user.sector = sector
+                user.save(update_fields=['sector'])
+            RoleAssignment.objects.get_or_create(
                 user=user,
                 role=role,
+                scope_type=scope_type,
+                scope_id=scope_id,
                 defaults={'is_active': True, 'start_date': timezone.localdate()},
             )
         return user
@@ -417,6 +453,7 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         role = validated_data.pop('role', 'UNSET')
+        sector_id = validated_data.pop('sector', 'UNSET')
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
@@ -428,9 +465,17 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
             instance.save(update_fields=['role'])
             if old_role and old_role != role:
                 RoleAssignment.objects.filter(user=instance, role=old_role).update(is_active=False)
+            scope_type, scope_id, sector = self._target_scope(
+                sector_id if sector_id != 'UNSET' else None
+            )
+            if sector:
+                instance.sector = sector
+                instance.save(update_fields=['sector'])
             RoleAssignment.objects.update_or_create(
                 user=instance,
                 role=role,
+                scope_type=scope_type,
+                scope_id=scope_id,
                 defaults={'is_active': True, 'start_date': timezone.localdate()},
             )
         return instance

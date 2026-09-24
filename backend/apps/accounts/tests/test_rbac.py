@@ -416,3 +416,227 @@ def test_assign_blocked_permissions_to_user(staff_client, travelers_view):
     assert response.status_code == 200
     user.refresh_from_db()
     assert list(user.blocked_permissions.values_list('code', flat=True)) == ['travelers:view']
+
+
+# --- مصدر الحقيقة: RoleAssignment مقابل حقل user.role القديم ---
+
+
+def test_role_fk_without_assignment_grants_nothing(db, travelers_view):
+    role = Role.objects.create(code='FK_ONLY', name='FK Only', name_ar='حقل فقط')
+    role.permissions.add(travelers_view)
+    user = User.objects.create_user(
+        email='fk@nqp.gov.sd', password='StrongPass123!', full_name='FK', role=role,
+    )
+    # الحقل وحده لا يمنح صلاحيات — التعيين هو المصدر
+    assert user.can('travelers:view') is False
+    # لكن role_code يعود للحقل القديم احتياطاً
+    assert user.role_code == 'FK_ONLY'
+
+
+def test_role_code_derived_from_assignment_over_fk(db):
+    fk_role = Role.objects.create(code='FK_ROLE', name='FK', name_ar='حقل')
+    assign_role = Role.objects.create(code='ASSIGN_ROLE', name='Assign', name_ar='تعيين')
+    user = User.objects.create_user(
+        email='derived@nqp.gov.sd', password='StrongPass123!', full_name='Derived', role=fk_role,
+    )
+    RoleAssignment.objects.create(user=user, role=assign_role, scope_type='GLOBAL')
+    assert user.role_code == 'ASSIGN_ROLE'
+
+
+def test_patch_user_role_creates_assignment_and_grants(staff_client, db, travelers_view):
+    role = Role.objects.create(code='GRA', name='Grant', name_ar='منح')
+    role.permissions.add(travelers_view)
+    user = User.objects.create_user(
+        email='gra@nqp.gov.sd', password='StrongPass123!', full_name='Grant'
+    )
+    response = staff_client.patch(
+        f'/api/v1/auth/users/{user.id}/', {'role': 'GRA'}, format='json'
+    )
+    assert response.status_code == 200
+    # المرآة: إنشاء تعيين GLOBAL مع كتابة الحقل
+    assert user.role_assignments.filter(role=role, scope_type='GLOBAL', is_active=True).exists()
+    user.refresh_from_db()
+    assert user.role.code == 'GRA'
+    assert user.can('travelers:view') is True
+
+
+def test_food_quarantine_has_role_via_assignment_only(db):
+    from apps.food_quarantine.views import _has_role
+
+    role = Role.objects.create(code='FOOD_MANAGER', name='FM', name_ar='مدير')
+    user = User.objects.create_user(
+        email='fh@nqp.gov.sd', password='StrongPass123!', full_name='FH'
+    )
+    RoleAssignment.objects.create(user=user, role=role, scope_type='GLOBAL')
+    assert _has_role(user, 'FOOD_MANAGER') is True
+    assert _has_role(user, 'UNKNOWN_ROLE') is False
+
+
+# --- بوابة الإدارة الدقيقة (AdminOrPermissionAction) ---
+
+
+def _non_staff_client_with_permission(code):
+    resource, action = code.split(':')
+    Permission.objects.get_or_create(
+        code=code, defaults={'name': code, 'resource': resource, 'action': action},
+    )
+    role = Role.objects.create(code=f'GRANTED_{resource.upper()}', name='G', name_ar='مُصرّح')
+    role.permissions.add(Permission.objects.get(code=code))
+    user = User.objects.create_user(
+        email=f'granted-{resource}@nqp.gov.sd', password='StrongPass123!',
+        full_name='Granted', is_staff=False,
+    )
+    RoleAssignment.objects.create(user=user, role=role, scope_type='GLOBAL')
+    client = APIClient()
+    login = client.post(
+        '/api/v1/auth/login/',
+        {'email': user.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}")
+    return client
+
+
+def test_non_staff_with_users_add_can_create_user(db):
+    client = _non_staff_client_with_permission('users:add')
+    response = client.post(
+        '/api/v1/auth/users/',
+        {'email': 'new-granted@nqp.gov.sd', 'full_name': 'New', 'password': 'StrongPass123!'},
+        format='json',
+    )
+    assert response.status_code == 201
+    assert User.objects.filter(email='new-granted@nqp.gov.sd').exists()
+
+
+def test_non_staff_users_view_cannot_reset_password(db):
+    client = _non_staff_client_with_permission('users:view')
+    target = User.objects.create_user(
+        email='reset-t@nqp.gov.sd', password='StrongPass123!', full_name='T'
+    )
+    response = client.post(
+        f'/api/v1/auth/users/{target.id}/reset-password/',
+        {'password': 'StrongPass123!'}, format='json',
+    )
+    assert response.status_code == 403
+
+
+def test_non_staff_without_users_perm_denied(db):
+    user = User.objects.create_user(
+        email='plain@nqp.gov.sd', password='StrongPass123!', full_name='Plain'
+    )
+    client = APIClient()
+    login = client.post(
+        '/api/v1/auth/login/',
+        {'email': user.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}")
+    assert client.get('/api/v1/auth/users/').status_code == 403
+    assert client.post('/api/v1/auth/users/', {
+        'email': 'x@nqp.gov.sd', 'full_name': 'X', 'password': 'StrongPass123!',
+    }, format='json').status_code == 403
+
+
+def test_permission_view_denied_for_non_staff_without_permission(db):
+    user = User.objects.create_user(
+        email='perm-plain@nqp.gov.sd', password='StrongPass123!', full_name='PP'
+    )
+    client = APIClient()
+    login = client.post(
+        '/api/v1/auth/login/',
+        {'email': user.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}")
+    assert client.get('/api/v1/auth/permissions/').status_code == 403
+    assert client.get('/api/v1/auth/permissions/tree/').status_code == 403
+
+
+# --- سلامة النطاقات ---
+
+
+def test_role_assignment_scope_defaults_to_global(staff_client, db):
+    role = Role.objects.create(code='SCOPE_G', name='S', name_ar='س')
+    user = User.objects.create_user(
+        email='sg@nqp.gov.sd', password='x', full_name='S'
+    )
+    response = staff_client.post(
+        '/api/v1/auth/role-assignments/',
+        {'user': str(user.id), 'role': 'SCOPE_G'},
+        format='json',
+    )
+    assert response.status_code == 201
+    assert response.data['data']['scope_type'] == 'GLOBAL'
+
+
+def test_role_assignment_default_scope_follows_role(staff_client, db):
+    role = Role.objects.create(
+        code='SCOPE_S', name='S', name_ar='س', default_scope='SECTOR'
+    )
+    user = User.objects.create_user(
+        email='ss@nqp.gov.sd', password='x', full_name='S'
+    )
+    response = staff_client.post(
+        '/api/v1/auth/role-assignments/',
+        {'user': str(user.id), 'role': 'SCOPE_S'},
+        format='json',
+    )
+    assert response.status_code == 400
+    assert 'scope_id' in response.json()
+
+
+def test_role_assignment_rejects_unit_scope(staff_client, db):
+    role = Role.objects.create(code='SCOPE_U', name='S', name_ar='س')
+    user = User.objects.create_user(
+        email='su@nqp.gov.sd', password='x', full_name='S'
+    )
+    response = staff_client.post(
+        '/api/v1/auth/role-assignments/',
+        {'user': str(user.id), 'role': 'SCOPE_U', 'scope_type': 'UNIT'},
+        format='json',
+    )
+    assert response.status_code == 400
+
+
+def test_global_assignment_forces_scope_id_none(staff_client, db):
+    import uuid
+
+    role = Role.objects.create(code='SCOPE_N', name='S', name_ar='س')
+    user = User.objects.create_user(
+        email='sn@nqp.gov.sd', password='x', full_name='S'
+    )
+    response = staff_client.post(
+        '/api/v1/auth/role-assignments/',
+        {
+            'user': str(user.id), 'role': 'SCOPE_N',
+            'scope_type': 'GLOBAL', 'scope_id': str(uuid.uuid4()),
+        },
+        format='json',
+    )
+    assert response.status_code == 201
+    assert response.data['data']['scope_id'] is None
+
+
+# --- تغطية البذر (يرجع الكود لتعريف الأدوار كمرجع) ---
+
+
+def test_all_referenced_permission_codes_are_covered(db):
+    from apps.accounts.management.commands import seed_iam_roles, seed_rbac
+    from apps.finance.management.commands.seed_finance_rbac import FINANCE_PERMISSIONS
+
+    expected = set()
+    for res in seed_rbac.RESOURCES:
+        actions = {**seed_rbac.ACTIONS, **seed_rbac.EXTRA_ACTIONS.get(res, {})}
+        expected.update(f'{res}:{a}' for a in actions)
+    expected.update(code for code, *_rest in FINANCE_PERMISSIONS)
+
+    uncovered = []
+    for role_def in seed_rbac.ROLES:
+        ref = set(seed_rbac.resolve_permission_codes(role_def['resources']))
+        if ref - expected:
+            uncovered.append(f"seed_rbac/{role_def['code']}: {sorted(ref - expected)}")
+    for code, data in seed_iam_roles.ROLES.items():
+        ref = set(data['permissions'])
+        if ref - expected:
+            uncovered.append(f'seed_iam_roles/{code}: {sorted(ref - expected)}')
+    assert uncovered == [], 'صلاحيات مرجعية بلا مصدر بذر:\n' + '\n'.join(uncovered)

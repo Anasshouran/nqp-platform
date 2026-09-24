@@ -14,7 +14,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from rest_framework_simplejwt.settings import api_settings
 
 from core.filters import ExactFilterBackend
-from core.permissions import IsAdmin, PermissionAction
+from core.permissions import AdminOrPermissionAction
 from core.utils.response import success_response
 
 from .models import EmployeeProfile, Permission, PermissionAudit, Role, RoleAssignment, User
@@ -473,7 +473,16 @@ def log_permission_audit(request, user, old_extra, old_blocked, new_extra, new_b
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('role').all()
-    permission_classes = [IsAdmin]
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'users'
+    action_permission_map = {
+        'roles': 'view',
+        'effective_permissions': 'view',
+        'profile': 'view',
+        'permission_audit': 'view',
+        'scopes': 'view',
+        'reset_password': 'edit',
+    }
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['email', 'full_name', 'phone', 'national_id', 'organization_name']
@@ -566,7 +575,8 @@ class RoleViewSet(viewsets.ModelViewSet):
         permission_count=Count('permissions', distinct=True),
         user_count=Count('users', distinct=True),
     ).prefetch_related('permissions').order_by('code')
-    permission_classes = [IsAdmin]
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'roles'
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['code', 'name', 'name_ar', 'description']
@@ -608,7 +618,9 @@ class RoleViewSet(viewsets.ModelViewSet):
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Permission.objects.order_by('code')
     serializer_class = PermissionSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'permissions'
+    action_permission_map = {'tree': 'view'}
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['code', 'name', 'resource']
     ordering_fields = ['resource', 'code']
@@ -627,7 +639,8 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
     queryset = RoleAssignment.objects.select_related(
         'user', 'role', 'assigned_by'
     ).all()
-    permission_classes = [IsAdmin]
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'role_assignments'
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['user__email', 'user__full_name', 'role__code']

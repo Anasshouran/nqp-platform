@@ -4,6 +4,7 @@ import uuid
 from datetime import timedelta
 
 from django.utils import timezone
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -16,6 +17,7 @@ from core.utils.response import success_response
 from core.utils.scoping import (
     SectorFieldScopedMixin,
     has_global_scope,
+    has_role,
     resolve_user_sectors,
 )
 
@@ -1233,7 +1235,10 @@ class CriticalResultViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
         )
 
 class LabUsersManagePermission(BasePermission):
-    """قراءة: أي مستخدم موثّق. إدارة: المشرف أو مدير المختبر (LAB_DIRECTOR / LAB_MANAGER)."""
+    """قراءة: أي مستخدم موثّق. إدارة: المشرف أو مدير المختبر (LAB_DIRECTOR / LAB_MANAGER).
+
+    المرجع: تعيينات الأدوار أولاً (مصدر الحقيقة)، ثم الحقل القديم user.role للتوافق.
+    """
 
     MANAGER_CODES = ('LAB_DIRECTOR', 'LAB_MANAGER')
 
@@ -1244,13 +1249,16 @@ class LabUsersManagePermission(BasePermission):
             return True
         if request.user.is_staff:
             return True
+        if has_role(request.user, self.MANAGER_CODES[0]) or has_role(request.user, self.MANAGER_CODES[1]):
+            return True
         return bool(request.user.role and request.user.role.code in self.MANAGER_CODES)
 
 
 class LabUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('role').filter(
-        role__code__in=LAB_ROLE_CODES
-    ).order_by('full_name')
+        Q(role_assignments__role__code__in=LAB_ROLE_CODES, role_assignments__is_active=True)
+        | Q(role__code__in=LAB_ROLE_CODES)
+    ).distinct().order_by('full_name')
     permission_classes = [LabUsersManagePermission]
     pagination_class = None
     http_method_names = ['get', 'post', 'patch']
@@ -1263,7 +1271,10 @@ class LabUserViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         role_code = self.request.query_params.get('role')
         if role_code:
-            qs = qs.filter(role__code=role_code)
+            qs = qs.filter(
+                Q(role_assignments__role__code=role_code, role_assignments__is_active=True)
+                | Q(role__code=role_code)
+            )
         user = self.request.user
         if not user or user.is_anonymous or user.is_superuser or has_global_scope(user):
             return qs
@@ -1307,7 +1318,10 @@ class LabUserViewSet(viewsets.ModelViewSet):
                 'code': role.code,
                 'name_ar': role.name_ar,
                 'name': role.name,
-                'user_count': role.users.filter(is_active=True).count(),
+                'user_count': User.objects.filter(
+                    Q(role_assignments__role=role, role_assignments__is_active=True)
+                    | Q(role=role, is_active=True)
+                ).filter(is_active=True).distinct().count(),
             })
         return Response(success_response(roles))
 

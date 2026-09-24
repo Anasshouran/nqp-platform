@@ -110,6 +110,7 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(
         slug_field='code', queryset=Role.objects.all()
     )
+    scope_type = serializers.ChoiceField(choices=ScopeType.choices, required=False)
     scope_id = serializers.UUIDField(required=False, allow_null=True, default=None)
     assigned_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -120,11 +121,17 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
             'start_date', 'end_date', 'is_active', 'assigned_by',
         ]
         read_only_fields = ['id']
+        validators = []
 
     def validate(self, attrs):
-        user = attrs.get('user')
-        role = attrs.get('role')
-        scope_type = attrs.get('scope_type', 'GLOBAL')
+        user = attrs.get('user') or getattr(self.instance, 'user', None)
+        role = attrs.get('role') or getattr(self.instance, 'role', None)
+        default_scope = role.default_scope if role else 'GLOBAL'
+        if self.instance:
+            scope_type = attrs.get('scope_type', self.instance.scope_type)
+        else:
+            scope_type = attrs.get('scope_type', default_scope)
+        attrs['scope_type'] = scope_type
         scope_id = attrs.get('scope_id')
         instance = self.instance
         if scope_type == 'GLOBAL':
@@ -144,7 +151,6 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
         mapping = {
             'SECTOR': ('organization.Sector', 'القطاع'),
             'DEPARTMENT': ('organization.Department', 'الإدارة'),
-            'UNIT': ('organization.Department', 'الوحدة'),
             'STATION': ('organization.Station', 'المحطة'),
             'POINT': ('masterdata.EntryPoint', 'نقطة الدخول'),
             'PORT': ('masterdata.EntryPoint', 'الميناء'),
@@ -250,6 +256,7 @@ class UserWriteSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(
         slug_field='code', queryset=Role.objects.all(), required=False, allow_null=True
     )
+    sector = serializers.UUIDField(required=False, allow_null=True)
     extra_permissions = serializers.SlugRelatedField(
         slug_field='code', queryset=Permission.objects.all(), many=True, required=False
     )
@@ -263,7 +270,7 @@ class UserWriteSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = [
             'id', 'email', 'username', 'full_name', 'phone', 'national_id',
-            'user_type', 'organization_name', 'role', 'extra_permissions',
+            'user_type', 'organization_name', 'role', 'sector', 'extra_permissions',
             'blocked_permissions', 'password', 'employee_number',
             'is_active', 'is_staff',
         ]
@@ -274,6 +281,38 @@ class UserWriteSerializer(serializers.ModelSerializer):
         for field in ('phone', 'national_id', 'username'):
             if field in validated_data and not validated_data[field]:
                 validated_data[field] = None
+
+    @staticmethod
+    def _resolve_sector(sector_id):
+        """يحلّ UUID القطاع إلى Sector، أو يقبل None."""
+        if not sector_id:
+            return None
+        from apps.organization.models import Sector
+
+        sector = Sector.objects.filter(pk=sector_id).first()
+        if not sector:
+            raise serializers.ValidationError({'sector': 'القطاع المحدد غير موجود'})
+        return sector
+
+    @staticmethod
+    def _apply_role(user, role, sector=None):
+        """مرآة كتابة الدور: تحدّث الحقل القديم وأنشئ/فعّل RoleAssignment (GLOBAL + SECTOR عند قطاع)."""
+        _ = user  # اسماً محجوزاً لتوضيح التوقيع
+        RoleAssignment.objects.filter(user=user, role=role, scope_type=ScopeType.GLOBAL).update(
+            is_active=True, start_date=timezone.localdate()
+        )
+        if not RoleAssignment.objects.filter(
+            user=user, role=role, scope_type=ScopeType.GLOBAL
+        ).exists():
+            RoleAssignment.objects.create(
+                user=user, role=role, scope_type=ScopeType.GLOBAL,
+                start_date=timezone.localdate(), is_active=True,
+            )
+        if sector:
+            RoleAssignment.objects.update_or_create(
+                user=user, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+                defaults={'is_active': True, 'start_date': timezone.localdate()},
+            )
 
     def _apply_employee_number(self, user, value):
         has_profile = EmployeeProfile.objects.filter(user=user).exists()
@@ -289,13 +328,22 @@ class UserWriteSerializer(serializers.ModelSerializer):
         employee_number = validated_data.pop('employee_number', None)
         extra_permissions = validated_data.pop('extra_permissions', [])
         blocked_permissions = validated_data.pop('blocked_permissions', [])
+        role = validated_data.pop('role', None)
+        sector_id = validated_data.pop('sector', None)
         self._clean_optional_identifiers(validated_data)
+        sector = self._resolve_sector(sector_id)
         user = UserModel(**validated_data)
+        if sector:
+            user.sector = sector
         if password:
             user.set_password(password)
         user.save()
         user.extra_permissions.set(extra_permissions)
         user.blocked_permissions.set(blocked_permissions)
+        if role:
+            user.role = role
+            user.save(update_fields=['role'])
+            self._apply_role(user, role, sector)
         if employee_number:
             self._apply_employee_number(user, employee_number)
         return user
@@ -305,9 +353,13 @@ class UserWriteSerializer(serializers.ModelSerializer):
         employee_number = validated_data.pop('employee_number', None)
         extra_permissions = validated_data.pop('extra_permissions', None)
         blocked_permissions = validated_data.pop('blocked_permissions', None)
+        role = validated_data.pop('role', 'UNSET')
+        sector_id = validated_data.pop('sector', 'UNSET')
         self._clean_optional_identifiers(validated_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        if sector_id != 'UNSET':
+            instance.sector = self._resolve_sector(sector_id)
         if password:
             instance.set_password(password)
         instance.save()
@@ -317,6 +369,13 @@ class UserWriteSerializer(serializers.ModelSerializer):
             instance.blocked_permissions.set(blocked_permissions)
         if employee_number is not None:
             self._apply_employee_number(instance, employee_number or None)
+        if role != 'UNSET':
+            old_role = instance.role
+            instance.role = role
+            instance.save(update_fields=['role'])
+            if old_role and old_role != role:
+                RoleAssignment.objects.filter(user=instance, role=old_role, is_active=True).update(is_active=False)
+            self._apply_role(instance, role, instance.sector)
         return instance
 
 

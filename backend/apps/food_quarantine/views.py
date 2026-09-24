@@ -120,9 +120,9 @@ from .services import apply_sampling, build_export_inspection_form, compute_fee_
 def _has_role(user, code):
     if not user or user.is_anonymous:
         return False
-    if user.role_id and getattr(user.role, 'code', None) == code:
+    if user.role_assignments.filter(role__code=code, is_active=True).exists():
         return True
-    return user.role_assignments.filter(role__code=code, is_active=True).exists()
+    return bool(user.role_id and getattr(user.role, 'code', None) == code)
 
 
 def _audit(request, action, obj=None, event=None, object_type=None, object_id=None, object_label=None, extra=None):

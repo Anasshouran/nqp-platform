@@ -173,6 +173,30 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     @property
     def role_code(self):
+        """الدور الرئيسي للعرض: أحدث تعيين نشط (GLOBAL أولاً ثم الأحدث بدايته).
+
+        `RoleAssignment` هو مصدر الحقيقة للصلاحيات؛ الحقل القديم `role` يبقى
+        كقيمة احتياطية أثناء الانتقال (وفاءً لعرض الواجهة والبيانات القديمة).
+        """
+        from django.db.models import Case, IntegerField, Value, When
+
+        now = timezone.now()
+        assignment = (
+            self.role_assignments.filter(is_active=True, start_date__lte=now)
+            .filter(models.Q(end_date__isnull=True) | models.Q(end_date__gt=now))
+            .annotate(
+                scope_rank=Case(
+                    models.When(scope_type=ScopeType.GLOBAL, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by('scope_rank', '-start_date')
+            .select_related('role')
+            .first()
+        )
+        if assignment:
+            return assignment.role.code
         return self.role.code if self.role else None
 
     def has_permission(self, code):
@@ -288,6 +312,18 @@ class RoleAssignment(BaseModel):
             and self.start_date <= now
             and (self.end_date is None or self.end_date >= now)
         )
+
+    def clean(self):
+        """تحقق من سلامة النطاق (درع إضافي فوق تحقق الكاتب).
+
+        GLOBAL لا يقبل scope_id، وأي نطاق آخر يتطلب معرّفاً.
+        """
+        from django.core.exceptions import ValidationError
+
+        if self.scope_type == ScopeType.GLOBAL and self.scope_id is not None:
+            raise ValidationError({'scope_id': 'النطاق العام GLOBAL لا يقبل معرّف نطاق'})
+        if self.scope_type != ScopeType.GLOBAL and not self.scope_id:
+            raise ValidationError({'scope_id': f'نطاق {self.scope_type} يتطلب معرّف نطاق'})
 
 
 class PermissionAudit(BaseModel):

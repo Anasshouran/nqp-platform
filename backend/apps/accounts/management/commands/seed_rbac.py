@@ -37,6 +37,13 @@ RESOURCES = {
     'who_diseases': 'الأمراض الوبائية العالمية (ICD-11)',
     'vaccination': 'التطعيم الدولي',
     'vector': 'مكافحة النواقل',
+    'approval': 'الاعتماد',
+    'content': 'المحتوى التوعوي',
+    'finance': 'المالية والمحاسبة',
+    'food_window': 'نافذة الأغذية',
+    'food_samples': 'عينات الأغذية',
+    'permissions': 'الصلاحيات (تعريف)',
+    'role_assignments': 'تعيينات الأدوار',
 }
 
 ACTIONS = {
@@ -77,6 +84,14 @@ EXTRA_ACTIONS = {
         'approve': 'اعتماد المسوحات والنتائج والعمليات',
         'close': 'إغلاق البؤر، البلاغات، وعمليات المكافحة',
         'assess': 'تقييم البلاغات وفتح البؤر',
+    },
+    'content': {
+        'approve': 'اعتماد المحتوى',
+        'publish': 'نشر المحتوى',
+        'archive': 'أرشفة المحتوى',
+    },
+    'food_window': {
+        'approve': 'اعتماد معاملات نافذة الأغذية',
     },
 }
 
@@ -760,7 +775,7 @@ ROLES = [
         'name': 'Clinic Doctor',
         'name_ar': 'طبيب عيادة الحجر الصحي',
         'description': 'إدارة زيارات العيادات وتوثيق السجلات الطبية الإلكترونية وطلبات المختبر والوصفات الطبية للمسافرين المحولين من بوابة الفحص',
-        'default_scope': ScopeType.PORT,
+        'default_scope': ScopeType.POINT,
         'resources': {
             'clinic': ['view', 'add', 'edit', 'export'],
             'screening': ['view'],
@@ -862,7 +877,7 @@ ROLES = [
         'name': 'Point of Entry Health Officer',
         'name_ar': 'مسؤول الصحة بمنفذ الدخول',
         'description': 'المستوى الميداني: تسجيل الحالات المشتبهة والفحص الصحي بالمنفذ وإنشاء أحداث IHR (مسودة فقط). لا يرفع للمراجعة الوطنية ولا يعتمد ولا يطّلع على تكامل WHO. يُمنح على نطاق منفذ واحد.',
-        'default_scope': ScopeType.PORT,
+        'default_scope': ScopeType.POINT,
         'resources': {
             'screening': ['view', 'add', 'edit'],
             'clinic': ['view'],
@@ -891,7 +906,7 @@ ROLES = [
         'name': 'Vaccination Officer',
         'name_ar': 'مسؤول التطعيم',
         'description': 'تسجيل المسافرين وإعطاء الجرعات وإصدار الشهادات وإجراء التحقق — داخل عيادة أو نقطة تطعيم تابعة لمنفذ (نطاق منفذ).',
-        'default_scope': ScopeType.PORT,
+        'default_scope': ScopeType.POINT,
         'resources': {
             'vaccination': ['view', 'add', 'edit', 'issue', 'verify'],
             'travelers': ['view'],
