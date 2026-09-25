@@ -158,4 +158,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VITE_API_URL=https://api-dev.afyatna.com/api/v1
+            VITE_API_URL=/api/v1
