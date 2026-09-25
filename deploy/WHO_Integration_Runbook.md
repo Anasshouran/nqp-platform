@@ -11,14 +11,22 @@
 ## 2. Required Credentials
 
 * `WHO_BASE_URL`
+* `WHO_TOKEN_URL`
 * `WHO_CLIENT_ID`
 * `WHO_CLIENT_SECRET`
 
-Default value:
+Default values (ICD-API v2):
 
 ```
-WHO_BASE_URL=https://icd.who.int/icdapi
+WHO_BASE_URL=https://id.who.int
+WHO_TOKEN_URL=https://icdaccessmanagement.who.int/connect/token
 ```
+
+The OAuth token endpoint (`https://icdaccessmanagement.who.int/connect/token`) is
+**separate** from the ICD API base (`https://id.who.int`). Per the official docs,
+`ICD11Client` authenticates the token request with **HTTP Basic** (client_id/secret),
+sends `grant_type=client_credentials` + `scope=icdapi_access`, and adds the
+`API-Version: v2` header to every ICD API call.
 
 These variables are **not** read by `settings.py`; they feed the bootstrap and the
 test snippets in this runbook. The integration state itself lives in the
@@ -57,7 +65,8 @@ Pass the three variables to `nqp-backend-dev` (VPS host). Two acceptable channel
 service `backend` (environment block):
 
 ```yaml
-WHO_BASE_URL: ${WHO_BASE_URL:-https://icd.who.int/icdapi}
+WHO_BASE_URL: ${WHO_BASE_URL:-https://id.who.int}
+WHO_TOKEN_URL: ${WHO_TOKEN_URL:-https://icdaccessmanagement.who.int/connect/token}
 WHO_CLIENT_ID: ${WHO_CLIENT_ID:-}
 WHO_CLIENT_SECRET: ${WHO_CLIENT_SECRET:-}
 ```
@@ -90,6 +99,7 @@ failure). Never prints the client secret or the access token.
 ```bash
 set -a; source deploy/.env.who; set +a
 docker exec -e WHO_BASE_URL="$WHO_BASE_URL" \
+            -e WHO_TOKEN_URL="$WHO_TOKEN_URL" \
             -e WHO_CLIENT_ID="$WHO_CLIENT_ID" \
             -e WHO_CLIENT_SECRET="$WHO_CLIENT_SECRET" \
             -i nqp-backend-dev python manage.py shell <<'PY'
@@ -98,6 +108,7 @@ from apps.who.clients.icd_client import ICD11Client
 
 client = ICD11Client(
     base_url=os.environ['WHO_BASE_URL'],
+    token_url=os.environ.get('WHO_TOKEN_URL'),
     client_id=os.environ['WHO_CLIENT_ID'],
     client_secret=os.environ['WHO_CLIENT_SECRET'],
 )
@@ -127,6 +138,7 @@ title=<title>
 ```bash
 set -a; source deploy/.env.who; set +a
 docker exec -e WHO_BASE_URL="$WHO_BASE_URL" \
+            -e WHO_TOKEN_URL="$WHO_TOKEN_URL" \
             -e WHO_CLIENT_ID="$WHO_CLIENT_ID" \
             -e WHO_CLIENT_SECRET="$WHO_CLIENT_SECRET" \
             -i nqp-backend-dev python manage.py shell <<'PY'
@@ -135,6 +147,7 @@ from apps.who.clients.icd_client import ICD11Client
 
 client = ICD11Client(
     base_url=os.environ['WHO_BASE_URL'],
+    token_url=os.environ.get('WHO_TOKEN_URL'),
     client_id=os.environ['WHO_CLIENT_ID'],
     client_secret=os.environ['WHO_CLIENT_SECRET'],
 )
@@ -161,7 +174,7 @@ Safe method (documented here — **not executed automatically by this runbook**)
 * `client_secret` stored **encrypted** via `set_client_secret()`
 * `is_active=True`
 * `environment=SANDBOX`
-* `base_url=https://icd.who.int/icdapi`
+* `base_url=https://id.who.int`
 
 ```bash
 set -a; source deploy/.env.who; set +a

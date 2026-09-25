@@ -77,6 +77,10 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
       MINIO_BUCKET: ${MINIO_BUCKET:-nqp-documents}
       ENABLE_DEMO_QR: ${ENABLE_DEMO_QR:-False}
+      WHO_BASE_URL: ${WHO_BASE_URL:-https://id.who.int}
+      WHO_TOKEN_URL: ${WHO_TOKEN_URL:-https://icdaccessmanagement.who.int/connect/token}
+      WHO_CLIENT_ID: ${WHO_CLIENT_ID:-}
+      WHO_CLIENT_SECRET: ${WHO_CLIENT_SECRET:-}
     volumes:
       - backend_media:/app/media
     depends_on:
