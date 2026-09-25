@@ -1,0 +1,209 @@
+# ============================================================
+# docker-compose.dev-vps.yml
+# بيئة التطوير الرسمية والقابلة لإعادة الإنتاج على VPS.
+# الدومين: dev.afyatna.com
+#
+# النشر من GHCR فقط (بدون حاجة لمصدر الكود على VPS):
+#   cd /opt/nqp-platform/deploy
+#   docker-compose -f docker-compose.dev-vps.yml pull
+#   docker-compose -f docker-compose.dev-vps.yml up -d
+#
+# التكوين عبر ملف deploy/.env (انظر deploy/.env.example).
+# التوافق: Docker Compose v1.29.2 (لا يُستخدم top-level name أو pull_policy).
+# ============================================================
+
+services:
+  # ===== قاعدة البيانات (PostgreSQL) — صامدة، ولا تُكشف على الـ Host =====
+  postgres:
+    image: ${POSTGRES_IMAGE:-ghcr.io/anasshouran/postgres:16-alpine}
+    container_name: nqp-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-afyatna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-afyatna}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - nqp_postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-afyatna} -d ${POSTGRES_DB:-afyatna}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nqp_internal
+
+  # ===== التخزين المؤقت (Redis) — صامد، ولا يُكشف على الـ Host =====
+  redis:
+    image: ${REDIS_IMAGE:-ghcr.io/anasshouran/redis:7-alpine}
+    container_name: nqp-redis-dev
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - nqp_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG; else redis-cli ping | grep -q PONG; fi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nqp_internal
+
+  # ===== الخادم الخلفي (Django + Gunicorn) — داخلي، لا منفذ على الـ Host =====
+  backend:
+    image: ghcr.io/anasshouran/nqp-backend:2431680
+    container_name: nqp-backend-dev
+    restart: unless-stopped
+    environment:
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-dev.afyatna.com,localhost,127.0.0.1,backend}
+      DB_ENGINE: django.db.backends.postgresql
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-afyatna}
+      POSTGRES_USER: ${POSTGRES_USER:-afyatna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      USE_S3: ${USE_S3:-False}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+      MINIO_BUCKET: ${MINIO_BUCKET:-nqp-documents}
+      ENABLE_DEMO_QR: ${ENABLE_DEMO_QR:-False}
+    volumes:
+      - backend_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: gunicorn --bind 0.0.0.0:8000 nqp_backend.wsgi:application
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health/', timeout=5).status == 200 else 1)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nqp_internal
+
+  # ===== الخادم الأمامي (React + Nginx) — منفذ 80 داخل الحاوية فقط =====
+  # مُنشور على 127.0.0.1:8080 كي يركّز عليه Nginx المضيف فقط.
+  # الوصول من HTTP المضيف: إشارة proxy_pass http://backend:8000 داخل الصورة
+  # تُحل عبر Docker service discovery (اسم الخدمة backend) — بدون IP ثابت.
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/anasshouran/afyatna-frontend:dev}
+    container_name: nqp-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nqp_internal
+
+  # ===== المهام الخلفية (Celery Worker) =====
+  celery:
+    image: ghcr.io/anasshouran/nqp-backend:2431680
+    container_name: nqp-celery-dev
+    restart: unless-stopped
+    environment:
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-dev.afyatna.com,localhost,127.0.0.1,backend}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-afyatna}
+      POSTGRES_USER: ${POSTGRES_USER:-afyatna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      USE_S3: ${USE_S3:-False}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+      MINIO_BUCKET: ${MINIO_BUCKET:-nqp-documents}
+    volumes:
+      - backend_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A nqp_backend worker --loglevel=info --concurrency=4
+    networks:
+      - nqp_internal
+
+  # ===== جدولة المهام (Celery Beat) =====
+  celery-beat:
+    image: ghcr.io/anasshouran/nqp-backend:2431680
+    container_name: nqp-celery-beat-dev
+    restart: unless-stopped
+    environment:
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-dev.afyatna.com,localhost,127.0.0.1,backend}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-afyatna}
+      POSTGRES_USER: ${POSTGRES_USER:-afyatna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      USE_S3: ${USE_S3:-False}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+      MINIO_BUCKET: ${MINIO_BUCKET:-nqp-documents}
+    volumes:
+      - backend_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A nqp_backend beat --loglevel=info
+    networks:
+      - nqp_internal
+
+# ===== الشبكات =====
+# شبكة واحدة بكل الخدمات → اكتشاف الخدمات عبر أسماء الخدمات فقط
+# (backend:8000, postgres:5432, redis:6379) — بدون IP ثابت وبدون alias يدوي.
+# الاسم "deploy_nqp_internal" مثبّت صراحةً ليطابق الشبكة الحالية على VPS.
+networks:
+  nqp_internal:
+    name: deploy_nqp_internal
+    driver: bridge
+
+# ===== وحدات التخزين (Volumes) =====
+# PostgreSQL و Redis يستخدمان الـ volumes الخارجية الموجودة بالفعل على VPS
+# (لا يُنشآن ولا يُحذفان أبداً — البيانات محفوظة تماماً):
+#   deploy_nqp_postgres_data
+#   deploy_nqp_redis_data
+volumes:
+  nqp_postgres_data:
+    external: true
+    name: deploy_nqp_postgres_data
+
+  nqp_redis_data:
+    external: true
+    name: deploy_nqp_redis_data
+
+  backend_media:
+    name: ${BACKEND_MEDIA_VOLUME:-deploy_backend_media}
