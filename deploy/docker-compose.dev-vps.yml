@@ -22,7 +22,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-afyatna}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-afyatna}
-      PGDATA: /var/lib/postgresql/data/pgdata
+      PGDATA: /var/lib/postgresql/data
     volumes:
       - nqp_postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
@@ -54,7 +54,7 @@ services:
 
   # ===== الخادم الخلفي (Django + Gunicorn) — داخلي، لا منفذ على الـ Host =====
   backend:
-    image: ghcr.io/anasshouran/nqp-backend:2431680
+    image: ghcr.io/anasshouran/nqp-backend:57b9c4d
     container_name: nqp-backend-dev
     restart: unless-stopped
     environment:
@@ -116,7 +116,7 @@ services:
 
   # ===== المهام الخلفية (Celery Worker) =====
   celery:
-    image: ghcr.io/anasshouran/nqp-backend:2431680
+    image: ghcr.io/anasshouran/nqp-backend:57b9c4d
     container_name: nqp-celery-dev
     restart: unless-stopped
     environment:
@@ -150,7 +150,7 @@ services:
 
   # ===== جدولة المهام (Celery Beat) =====
   celery-beat:
-    image: ghcr.io/anasshouran/nqp-backend:2431680
+    image: ghcr.io/anasshouran/nqp-backend:57b9c4d
     container_name: nqp-celery-beat-dev
     restart: unless-stopped
     environment:
