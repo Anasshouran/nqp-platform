@@ -15,11 +15,11 @@ class ICD11Client:
         self.client_id = client_id
         self.client_secret = client_secret
         self.timeout = timeout
-        self._token: Optional[str] = None
+        self._token_cache: Optional[str] = None
 
     def _token(self) -> str:
-        if self._token:
-            return self._token
+        if self._token_cache:
+            return self._token_cache
         resp = httpx.post(
             f'{self.base_url}/oauth2/token',
             data={
@@ -31,10 +31,10 @@ class ICD11Client:
             timeout=self.timeout,
         )
         resp.raise_for_status()
-        self._token = resp.json().get('access_token', '')
-        if not self._token:
+        self._token_cache = resp.json().get('access_token', '')
+        if not self._token_cache:
             raise WHOClientError('لم يصدر رمز وصول ICD-11.')
-        return self._token
+        return self._token_cache
 
     def search(self, query: str, release: str = 'mms', language: str = 'en') -> list:
         resp = httpx.get(

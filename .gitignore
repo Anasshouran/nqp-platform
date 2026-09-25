@@ -28,6 +28,7 @@ backend/static/
 backend/.env
 backend/.env.dev
 backend/frontend/.env
+deploy/.env.who
 
 # Node
 node_modules/
