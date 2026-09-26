@@ -4,6 +4,7 @@ import hashlib
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 from core.models import BaseModel
 
@@ -141,3 +142,73 @@ class DiseaseMaster(BaseModel):
 
     def __str__(self):
         return f'{self.disease} — notifiable={self.is_notifiable}'
+
+
+class WHOICDMapping(BaseModel):
+    """اقتراح ربط مرض محلي بكيان/كود ICD-11 — قراءة-آمنة: لا يعدّل بيانات Disease."""
+
+    class MappingStatus(models.TextChoices):
+        PENDING = 'PENDING', 'بانتظار'
+        PROPOSED = 'PROPOSED', 'مقترح'
+        REVIEW = 'REVIEW', 'مراجعة'
+        APPROVED = 'APPROVED', 'معتمد'
+        REJECTED = 'REJECTED', 'مرفوض'
+
+    class MatchType(models.TextChoices):
+        EXACT = 'EXACT', 'مطابقة تامة'
+        SEMANTIC = 'SEMANTIC', 'مطابقة دلالية'
+        UNSPECIFIED = 'UNSPECIFIED', 'غير محددة'
+        MANUAL = 'MANUAL', 'يدوية'
+        NO_MATCH = 'NO_MATCH', 'لا يوجد تطابق'
+
+    disease = models.ForeignKey(
+        'laboratory.Disease',
+        on_delete=models.CASCADE,
+        related_name='who_icd_mappings',
+        verbose_name='المرض',
+    )
+    who_release = models.CharField(max_length=32, verbose_name='إصدار WHO')
+    foundation_uri = models.URLField(max_length=500, blank=True, verbose_name='رابط كيان الأساس')
+    mms_uri = models.URLField(max_length=500, blank=True, verbose_name='رابط MMS')
+    icd_11_code = models.CharField(max_length=64, blank=True, verbose_name='كود ICD-11')
+    title_en = models.CharField(max_length=500, blank=True, verbose_name='العنوان بالإنجليزية')
+    title_ar = models.CharField(max_length=500, blank=True, verbose_name='العنوان بالعربية')
+    mapping_status = models.CharField(
+        max_length=32, choices=MappingStatus.choices, default=MappingStatus.PENDING, verbose_name='حالة الربط'
+    )
+    confidence = models.DecimalField(max_digits=5, decimal_places=4, null=True, blank=True, verbose_name='درجة الثقة')
+    match_type = models.CharField(max_length=32, choices=MatchType.choices, blank=True, verbose_name='نوع التطابق')
+    source_query = models.CharField(max_length=255, blank=True, verbose_name='استعلام المصدر')
+    is_current = models.BooleanField(default=True, verbose_name='الربط الحالي')
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت المراجعة')
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='who_icd_mapping_reviews',
+        verbose_name='المراجع',
+    )
+    notes = models.TextField(blank=True, verbose_name='ملاحظات')
+
+    class Meta:
+        verbose_name = 'خريطة ICD-11 من WHO'
+        verbose_name_plural = 'خرائط ICD-11 من WHO'
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['disease'], name='who_icd_disease_idx'),
+            models.Index(fields=['who_release'], name='who_icd_release_idx'),
+            models.Index(fields=['icd_11_code'], name='who_icd_code_idx'),
+            models.Index(fields=['mapping_status'], name='who_icd_status_idx'),
+            models.Index(fields=['is_current'], name='who_icd_current_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['disease', 'who_release', 'is_current'],
+                condition=Q(is_current=True),
+                name='uniq_current_who_mapping_per_release',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.disease} — {self.icd_11_code or "—"} ({self.get_mapping_status_display()})'

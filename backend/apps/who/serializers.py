@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.laboratory.models import Disease
 
-from .models import DiseaseMaster, WHOSyncLog, WHOIntegration
+from .models import DiseaseMaster, WHOSyncLog, WHOICDMapping, WHOIntegration
 
 
 class WHOIntegrationSerializer(serializers.ModelSerializer):
@@ -71,3 +71,22 @@ class DiseaseSyncSerializer(serializers.Serializer):
     """حمولة طلب مزامنة خرائط الأمراض."""
 
     diseases = serializers.PrimaryKeyRelatedField(queryset=Disease.objects.all(), many=True)
+
+
+class WHOICDMappingSerializer(serializers.ModelSerializer):
+    disease_name_ar = serializers.CharField(source='disease.name_ar', read_only=True)
+    disease_name_en = serializers.CharField(source='disease.name_en', read_only=True)
+
+    class Meta:
+        model = WHOICDMapping
+        fields = [
+            'id', 'disease', 'disease_name_ar', 'disease_name_en', 'who_release',
+            'foundation_uri', 'mms_uri', 'icd_11_code', 'title_en', 'title_ar',
+            'mapping_status', 'confidence', 'match_type', 'source_query',
+            'is_current', 'reviewed_at', 'reviewed_by', 'notes',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'disease_name_ar', 'disease_name_en', 'reviewed_at',
+            'reviewed_by', 'created_at', 'updated_at',
+        ]
