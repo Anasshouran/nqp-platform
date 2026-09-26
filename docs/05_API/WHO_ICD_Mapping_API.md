@@ -37,8 +37,30 @@
 |--------|----------|-------|----------|
 | `GET` | `/api/v1/who/icd/search/?q=cholera` | بحث في تصنيف WHO ICD-11 | `who_mappings:search` |
 
-البحث **لا يُنشئ اقتراحاً ولا يعدّل أي Mapping أو Disease**، ويستخدم تكامل WHO النشط
-عبر بيانات اعتماده المشفرة (تُخزَّن مشفّرة داخل `WHOIntegration` ولا تُطبع في أي سجل).
+البحث **لا يُنشئ اقتراحاً ولا يعدّل أي Mapping أو Disease**، ويتطلّب وجود تكامل WHO نشط
+(`WHOIntegration.is_active`) كشرط تفعيل — أي أن `WHOIntegration` مسؤولة عن **حالة التكامل
+التشغيلية**: `is_active` و`base_url` وسجلات المزامنة والتدقيق (`WHOSyncLog`) وحالة آخر
+نجاح/خطأ، وليست مصدر الاعتماد.
+
+**مصدر بيانات اعتماد ICD-11** هو البيئة، وتُقرأ عبر إعدادات Django:
+
+| المتغيّر | الدور |
+|----------|-------|
+| `WHO_ICD_BASE_URL` | أساس ICD API (افتراضي `https://id.who.int`) |
+| `WHO_ICD_TOKEN_URL` | نقطة إصدار التوكن (افتراضي `https://icdaccessmanagement.who.int/connect/token`) |
+| `WHO_ICD_CLIENT_ID` | معرّف عميل OAuth2 |
+| `WHO_ICD_CLIENT_SECRET` | سر العميل (لا يُطبع في أي استجابة أو سجل) |
+
+ترتيب المصدر: قيمة صريحة عند بناء العميل ← إعدادات `WHO_ICD_*` ← قيم `WHOIntegration`
+القادمة من قاعدة البيانات كـ**fallback legacy** فقط (للاحتفاظ بالتوافق مع السجلات
+الموجودة، دون أن يكون وجودها شرطاً للتشغيل).
+
+إن غابت `WHO_ICD_CLIENT_ID` أو `WHO_ICD_CLIENT_SECRET` (أو أي مصدر آخر) لا يُرسَل أي طلب
+جزئي إلى WHO ويُعاد خطأ واضح.
+
+> مسارات IHR/Events معزولة عن ICD-11: تستخدم `WHO_IHR_CLIENT_ID` / `WHO_IHR_CLIENT_SECRET` /
+> `WHO_IHR_TOKEN_URL` (نقطة توكن مشتقة من `base_url` الخاص بالتكامل، بلا `scope`)،
+> بينما ICD-11 يستخدم نقطة توكن WHO الرسمية مع `scope=icdapi_access` ومصادقة HTTP Basic.
 
 ### تصفية وفرز القائمة
 

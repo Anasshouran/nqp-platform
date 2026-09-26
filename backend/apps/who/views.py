@@ -221,7 +221,7 @@ class WHOICDSearchViewSet(viewsets.ViewSet):
             return Response({'status': 'error', 'message': 'معامل q مطلوب للبحث.'}, status=400)
 
         integration = WHOIntegration.objects.filter(is_active=True).order_by('-last_success_at').first()
-        if not integration or not integration.client_id or not integration.client_secret:
+        if not integration:
             return Response({'status': 'error', 'message': 'لا يوجد تكامل WHO فعّال.'}, status=400)
 
         try:

@@ -11,6 +11,7 @@ from unittest import mock
 
 import httpx
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from rest_framework.test import APIClient
 
 from apps.laboratory.models import Disease
@@ -404,3 +405,99 @@ def test_icd_search_read_only_no_mapping_created(auth, integration):
         client.get(SEARCH_URL, {'q': 'cholera'})
     assert WHOICDMapping.objects.count() == 0
     assert Disease.objects.count() == 0
+
+
+# ------------------------------------------------------------------
+# مصدر الاعتمادادات: Environment (settings) لا قاعدة البيانات
+# ------------------------------------------------------------------
+
+
+def test_icd_search_rejects_only_when_no_active_integration(auth):
+    """غياب credentials داخل DB لا يمنع الطلب — العطل الوحيد هو غياب تكامل فعّال."""
+    client, _ = auth()
+    WHOIntegration.objects.all().delete()
+    with mock.patch('apps.who.views.ICD11Client') as FakeClient:
+        resp = client.get(SEARCH_URL, {'q': 'cholera'})
+    assert resp.status_code == 400
+    FakeClient.assert_not_called()
+
+
+def test_icd_search_ignores_inactive_integration(auth, integration):
+    client, _ = auth()
+    integration.is_active = False
+    integration.save(update_fields=['is_active'])
+    with mock.patch('apps.who.views.ICD11Client') as FakeClient:
+        resp = client.get(SEARCH_URL, {'q': 'cholera'})
+    assert resp.status_code == 400
+    FakeClient.assert_not_called()
+
+
+@override_settings(
+    WHO_ICD_BASE_URL='https://settings-base.example',
+    WHO_ICD_TOKEN_URL='https://settings-token.example/connect/token',
+    WHO_ICD_CLIENT_ID='settings-client-id',
+    WHO_ICD_CLIENT_SECRET='settings-secret-placeholder',
+)
+def test_icd_search_with_empty_db_credentials_uses_settings_credentials(auth, integration):
+    """تكامل فعّال بلا أسرار في DB: المرور يصل ICD11Client الذي يقرأ من settings."""
+    client, _ = auth()
+    integration.client_id = ''
+    integration.set_client_secret('')
+    integration.save(update_fields=['client_id', 'client_secret_encrypted'])
+
+    with mock.patch('apps.who.views.ICD11Client') as FakeClient:
+        FakeClient.return_value.search.return_value = [
+            {'id': 'https://id.who.int/icd/entity/257068234', 'title': 'Cholera'},
+        ]
+        resp = client.get(SEARCH_URL, {'q': 'cholera'})
+
+    assert resp.status_code == 200
+    assert resp.data['data'][0]['title'] == 'Cholera'
+    FakeClient.assert_called_once()
+    kwargs = FakeClient.call_args.kwargs
+    assert kwargs['client_id'] == ''
+    assert kwargs['client_secret'] == ''
+    assert 'settings-secret-placeholder' not in str(resp.data)
+
+
+@override_settings(
+    WHO_ICD_CLIENT_ID='settings-client-id',
+    WHO_ICD_CLIENT_SECRET='settings-secret-placeholder',
+)
+def test_icd_search_end_to_end_credentials_source_is_settings(auth, integration, monkeypatch):
+    """بدون أي mocking للـ client: HTTP مموّه، والأسرار تأتي من settings لا من DB."""
+    client, _ = auth()
+    integration.client_id = ''
+    integration.set_client_secret('')
+    integration.save(update_fields=['client_id', 'client_secret_encrypted'])
+
+    token_response = mock.Mock(status_code=200)
+    token_response.json.return_value = {'access_token': 'settings-issued-token'}
+    search_response = mock.Mock(status_code=200)
+    search_response.json.return_value = {'destinationEntities': [{'title': 'Cholera'}]}
+
+    with mock.patch('httpx.post', return_value=token_response) as post, \
+            mock.patch('httpx.get', return_value=search_response) as get:
+        resp = client.get(SEARCH_URL, {'q': 'cholera'})
+
+    assert resp.status_code == 200
+    assert resp.data['data'][0]['title'] == 'Cholera'
+    assert post.call_args.kwargs['auth'] == ('settings-client-id', 'settings-secret-placeholder')
+    assert 'settings-secret-placeholder' not in str(resp.data)
+
+
+@override_settings(WHO_ICD_CLIENT_ID='', WHO_ICD_CLIENT_SECRET='')
+def test_icd_search_returns_502_when_no_credentials_anywhere(auth, integration):
+    """لا credentials في DB ولا في settings: خطأ واضح 502 بلا طلب ناقص إلى WHO."""
+    client, _ = auth()
+    integration.client_id = ''
+    integration.set_client_secret('')
+    integration.save(update_fields=['client_id', 'client_secret_encrypted'])
+
+    with mock.patch('httpx.post') as post, mock.patch('httpx.get') as get:
+        resp = client.get(SEARCH_URL, {'q': 'cholera'})
+
+    assert resp.status_code == 502
+    assert post.call_count == 0
+    assert get.call_count == 0
+    assert resp.data['message'] == 'فشل الاتصال بخدمة ICD-11.'

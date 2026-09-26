@@ -242,6 +242,20 @@ if USE_S3:
         'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
     }
 
+# WHO ICD-11 — المصدر الرسمي للأسرار هو البيئة (env_file: .env.who) وليس قاعدة البيانات.
+# الافتراضيات لروابط الخدمة العامة فقط؛ بيانات الاعتماد تُقرأ من Environment ولا تُطبع في السجلات.
+WHO_ICD_BASE_URL = os.environ.get('WHO_ICD_BASE_URL', 'https://id.who.int')
+WHO_ICD_TOKEN_URL = os.environ.get('WHO_ICD_TOKEN_URL', 'https://icdaccessmanagement.who.int/connect/token')
+WHO_ICD_CLIENT_ID = os.environ.get('WHO_ICD_CLIENT_ID', '')
+WHO_ICD_CLIENT_SECRET = os.environ.get('WHO_ICD_CLIENT_SECRET', '')
+
+# WHO IHR / Events — خادم تفويض منفصل عن ICD-11 (رمز الوصول يُشتق من WHOIntegration.base_url).
+# لا تُخلَط أسرار ICD-11 هنا: نطاق IHR مختلف ونقطة التوكن مختلفة.
+# الافتراضي: بيانات الاعتماد من قاعدة البيانات (WHOIntegration) حتى تُزوَّد بيانات IHR صريحة.
+WHO_IHR_CLIENT_ID = os.environ.get('WHO_IHR_CLIENT_ID', '')
+WHO_IHR_CLIENT_SECRET = os.environ.get('WHO_IHR_CLIENT_SECRET', '')
+WHO_IHR_TOKEN_URL = os.environ.get('WHO_IHR_TOKEN_URL', '')
+
 # Spectacular (OpenAPI)
 SPECTACULAR_SETTINGS = {
     'TITLE': 'NQP API',
