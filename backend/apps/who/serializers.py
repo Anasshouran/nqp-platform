@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from apps.laboratory.models import Disease
@@ -90,3 +92,70 @@ class WHOICDMappingSerializer(serializers.ModelSerializer):
             'id', 'disease_name_ar', 'disease_name_en', 'reviewed_at',
             'reviewed_by', 'created_at', 'updated_at',
         ]
+
+
+class WHOICDMappingReviewSerializer(serializers.ModelSerializer):
+    """سيريالايزر مراجعة خرائط ICD-11.
+
+    - الحالة ``mapping_status``/``is_current``/``reviewed_by``/``reviewed_at``
+      للقراءة فقط — لا يمكن للعميل حسم اقتراح بنفسه.
+    - الإنشاء يجبر دائماً على ``PROPOSED + is_current=False`` (اقتراح فقط،
+      لا موافقة تلقائية).
+    - ``confidence`` مقيد بين 0 و 1 (خمسة أرقام، أربعة كسرية).
+    """
+
+    disease_name_ar = serializers.CharField(source='disease.name_ar', read_only=True)
+    disease_name_en = serializers.CharField(source='disease.name_en', read_only=True)
+    reviewed_by_name = serializers.SerializerMethodField()
+    match_type = serializers.ChoiceField(
+        choices=WHOICDMapping.MatchType.choices, required=False, allow_blank=True
+    )
+    confidence = serializers.DecimalField(
+        max_digits=5, decimal_places=4, required=False, allow_null=True,
+        min_value=Decimal('0'), max_value=Decimal('1'),
+    )
+
+    class Meta:
+        model = WHOICDMapping
+        fields = [
+            'id', 'disease', 'disease_name_ar', 'disease_name_en', 'who_release',
+            'foundation_uri', 'mms_uri', 'icd_11_code', 'title_en', 'title_ar',
+            'mapping_status', 'confidence', 'match_type', 'source_query',
+            'is_current', 'reviewed_at', 'reviewed_by', 'reviewed_by_name',
+            'notes', 'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'mapping_status', 'is_current', 'reviewed_at', 'reviewed_by',
+            'reviewed_by_name', 'created_at', 'updated_at',
+        ]
+        validators = []
+
+    def get_reviewed_by_name(self, obj):
+        return obj.reviewed_by.full_name if obj.reviewed_by else ''
+
+    def create(self, validated_data):
+        from .services.mapping_service import create_mapping_proposal
+
+        return create_mapping_proposal(
+            disease=validated_data['disease'],
+            who_release=validated_data.get('who_release', ''),
+            foundation_uri=validated_data.get('foundation_uri', ''),
+            mms_uri=validated_data.get('mms_uri', ''),
+            icd_11_code=validated_data.get('icd_11_code', ''),
+            title_en=validated_data.get('title_en', ''),
+            title_ar=validated_data.get('title_ar', ''),
+            match_type=validated_data.get('match_type', ''),
+            confidence=validated_data.get('confidence'),
+            source_query=validated_data.get('source_query', ''),
+            notes=validated_data.get('notes', ''),
+            mapping_status=WHOICDMapping.MappingStatus.PROPOSED,
+            is_current=False,
+        )
+
+    def update(self, instance, validated_data):
+        from .services.mapping_service import MappingTransitionError, update_mapping_proposal
+
+        try:
+            return update_mapping_proposal(instance, **validated_data)
+        except MappingTransitionError as exc:
+            raise serializers.ValidationError({'mapping_status': str(exc)}) from exc

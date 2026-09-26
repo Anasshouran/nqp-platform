@@ -35,6 +35,7 @@ RESOURCES = {
     'who_integration': 'تكامل منظمة الصحة العالمية',
     'who_logs': 'سجلات التكامل مع WHO',
     'who_diseases': 'الأمراض الوبائية العالمية (ICD-11)',
+    'who_mappings': 'خرائط ربط ICD-11',
     'vaccination': 'التطعيم الدولي',
     'vector': 'مكافحة النواقل',
     'approval': 'الاعتماد',
@@ -75,6 +76,12 @@ EXTRA_ACTIONS = {
     },
     'who_diseases': {
         'sync': 'مزامنة الأمراض',
+    },
+    'who_mappings': {
+        'review': 'مراجعة اقتراحات الربط',
+        'approve': 'اعتماد اقتراحات الربط',
+        'reject': 'رفض اقتراحات الربط',
+        'search': 'البحث في تصنيف ICD-11',
     },
     'vaccination': {
         'issue': 'إصدار شهادات التطعيم',
@@ -820,6 +827,7 @@ ROLES = [
             'reports': ['view', 'export'],
             'who_logs': ['view'],
             'who_diseases': ['view'],
+            'who_mappings': ['view', 'review', 'approve', 'reject', 'export'],
             'notifications': ['view'],
         },
     },
@@ -833,6 +841,7 @@ ROLES = [
             'who_integration': ['view', 'edit', 'test', 'sync', 'export'],
             'who_logs': ['view', 'export'],
             'who_diseases': ['view', 'edit', 'sync', 'export'],
+            'who_mappings': ['view', 'add', 'edit', 'export', 'search'],
             'ihr_event': ['view'],
             'ihr_spar': ['view'],
             'it': ['view'],

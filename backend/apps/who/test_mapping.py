@@ -58,8 +58,8 @@ def test_current_mapping_uniqueness_enforced(disease):
 
 
 def test_multiple_historical_mappings_keep_single_current(disease):
-    first = create_mapping_proposal(disease, '2026-01', icd_11_code='1D2Z')
-    second = create_mapping_proposal(disease, '2026-01', icd_11_code='1C81')
+    first = create_mapping_proposal(disease, '2026-01', icd_11_code='1D2Z', is_current=True)
+    second = create_mapping_proposal(disease, '2026-01', icd_11_code='1C81', is_current=True)
     qs = WHOICDMapping.objects.filter(disease=disease, who_release='2026-01')
     assert qs.count() == 2
     assert qs.filter(is_current=True).count() == 1

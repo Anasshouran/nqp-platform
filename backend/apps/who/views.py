@@ -1,16 +1,33 @@
+import logging
+
+import httpx
 from django.utils import timezone
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
+from core.filters import ExactFilterBackend
 from core.permissions import ActionPermissionMixin, PermissionAction
 
-from .models import DiseaseMaster, WHOSyncLog, WHOIntegration
+logger = logging.getLogger(__name__)
+
+from .clients.base_client import WHOClientError
+from .clients.icd_client import ICD11Client
+from .models import DiseaseMaster, WHOSyncLog, WHOICDMapping, WHOIntegration
 from .serializers import (
     DiseaseMasterSerializer,
     DiseaseSyncSerializer,
+    WHOICDMappingReviewSerializer,
     WHOIntegrationSerializer,
     WHOSyncLogSerializer,
+)
+from .services.mapping_service import (
+    MappingTransitionError,
+    approve_mapping,
+    create_mapping_proposal,
+    reject_mapping,
+    submit_mapping_for_review,
 )
 
 ACTION_TO_PERMISSION = {
@@ -110,3 +127,111 @@ class DiseaseMasterViewSet(ActionPermissionMixin, viewsets.ReadOnlyModelViewSet)
         for disease in diseases:
             DiseaseMaster.objects.update_or_create(disease=disease)
         return Response({'status': 'success', 'message': f'أُضيف {len(diseases)} مرض للخرائط.', 'data': []})
+
+
+class WHOICDMappingViewSet(ActionPermissionMixin, viewsets.ModelViewSet):
+    """مراجعة خرائط ربط الأمراض بأكواد ICD-11.
+
+    سير العمل: اقتراح → مراجعة → اعتماد / رفض (قرار بشري دائم).
+    لا يُعدَّل Disease من هنا، ولا توجد موافقة تلقائية.
+    """
+
+    serializer_class = WHOICDMappingReviewSerializer
+    permission_classes = [permissions.IsAuthenticated, PermissionAction]
+    permission_resource = 'who_mappings'
+    action_permission_map = {
+        'list': 'view',
+        'retrieve': 'view',
+        'create': 'add',
+        'update': 'edit',
+        'partial_update': 'edit',
+        'destroy': 'delete',
+        'propose': 'add',
+        'review': 'review',
+        'approve': 'approve',
+        'reject': 'reject',
+    }
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['source_query', 'title_en', 'title_ar', 'icd_11_code']
+    filter_fields = ['disease', 'who_release', 'mapping_status', 'match_type', 'is_current', 'icd_11_code']
+    ordering_fields = ['created_at', 'updated_at', 'confidence', 'who_release', 'icd_11_code']
+    ordering = ['-updated_at']
+
+    def get_queryset(self):
+        return WHOICDMapping.objects.select_related('disease', 'reviewed_by').all()
+
+    @staticmethod
+    def _mapping_response(mapping, message, status_code=200):
+        return Response(
+            {'status': 'success', 'message': message, 'data': WHOICDMappingReviewSerializer(mapping).data},
+            status=status_code,
+        )
+
+    @action(detail=False, methods=['post'], url_path='propose')
+    def propose(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mapping = serializer.save()
+        return self._mapping_response(mapping, 'أُنشئ اقتراح الربط وجاهز للمراجعة.', status_code=201)
+
+    @action(detail=True, methods=['post'], url_path='review')
+    def review(self, request, pk=None):
+        mapping = self.get_object()
+        try:
+            mapping = submit_mapping_for_review(mapping, user=request.user)
+        except MappingTransitionError as exc:
+            return Response({'status': 'error', 'message': str(exc)}, status=400)
+        return self._mapping_response(mapping, 'أُرسل الاقتراح للمراجعة.')
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        mapping = self.get_object()
+        try:
+            mapping = approve_mapping(mapping, user=request.user)
+        except MappingTransitionError as exc:
+            return Response({'status': 'error', 'message': str(exc)}, status=400)
+        return self._mapping_response(mapping, 'اعتُمد ربط ICD-11 وأصبح الحالي.')
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        mapping = self.get_object()
+        try:
+            mapping = reject_mapping(mapping, user=request.user)
+        except MappingTransitionError as exc:
+            return Response({'status': 'error', 'message': str(exc)}, status=400)
+        return self._mapping_response(mapping, 'رُفض اقتراح الربط.')
+
+
+class WHOICDSearchPermission(PermissionAction):
+    """بحث ICD-11 يتطلب صلاحية who_mappings:search."""
+
+    def __init__(self):
+        super().__init__(resource='who_mappings', action='search')
+
+
+class WHOICDSearchViewSet(viewsets.ViewSet):
+    """بحث قراءة-فقط في تصنيف ICD-11 (لا يُنشئ اقتراحاً ولا يعدّل Disease)."""
+
+    permission_classes = [permissions.IsAuthenticated, WHOICDSearchPermission]
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = (request.query_params.get('q') or '').strip()
+        if not query:
+            return Response({'status': 'error', 'message': 'معامل q مطلوب للبحث.'}, status=400)
+
+        integration = WHOIntegration.objects.filter(is_active=True).order_by('-last_success_at').first()
+        if not integration or not integration.client_id or not integration.client_secret:
+            return Response({'status': 'error', 'message': 'لا يوجد تكامل WHO فعّال.'}, status=400)
+
+        try:
+            client = ICD11Client(
+                base_url=integration.base_url,
+                client_id=integration.client_id,
+                client_secret=integration.client_secret,
+            )
+            results = client.search(query, language=request.query_params.get('language', 'en'))
+        except (WHOClientError, httpx.HTTPError) as exc:
+            logger.warning('WHO ICD-11 search failed for q=%r', query[:100])
+            return Response({'status': 'error', 'message': 'فشل الاتصال بخدمة ICD-11.'}, status=502)
+        return Response({'status': 'success', 'message': '', 'data': results or []})
