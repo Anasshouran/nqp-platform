@@ -143,6 +143,23 @@ def test_entity_uses_entity_uri_as_endpoint():
     assert post.call_count == 1
 
 
+def test_entity_normalizes_http_uri_to_https():
+    client = _client()
+    http_uri = 'http://id.who.int/icd/entity/257068234'
+    with mock.patch('httpx.post', return_value=_ok_token_response()), \
+            mock.patch('httpx.get', return_value=_ok_entity_response()) as get:
+        client.entity(http_uri, language='en')
+    assert get.call_args.args[0] == 'https://id.who.int/icd/entity/257068234'
+
+
+def test_entity_keeps_https_uri_unchanged():
+    client = _client()
+    with mock.patch('httpx.post', return_value=_ok_token_response()), \
+            mock.patch('httpx.get', return_value=_ok_entity_response()) as get:
+        client.entity(ENTITY_URI, language='en')
+    assert get.call_args.args[0] == ENTITY_URI
+
+
 def test_entity_builds_path_for_non_uri_identifier():
     client = _client()
     with mock.patch('httpx.post', return_value=_ok_token_response()), \

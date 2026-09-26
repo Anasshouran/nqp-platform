@@ -74,7 +74,9 @@ class ICD11Client:
         return resp.json().get('destinationEntities', [])
 
     def entity(self, entity_id: str, release: str = 'mms', language: str = 'ar') -> dict:
-        if entity_id.startswith(('http://', 'https://')):
+        if entity_id.startswith('http://'):
+            url = f'https://{entity_id[len("http://"):]}'
+        elif entity_id.startswith('https://'):
             url = entity_id
         else:
             url = f'{self.base_url}/icd/entity/{entity_id}'
