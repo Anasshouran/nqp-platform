@@ -138,7 +138,7 @@ export const referShipment = (id: string, referred_from: string, referral_refere
   apiClient.post<ApiResponse<FoodShipment>>(`/food/shipments/${id}/refer/`, { referred_from, referral_reference });
 
 export const getQuarantineFees = (year: number = 2025) =>
-  apiClient.get<ApiResponse<QuarantineFeeSchedule>>('/food/quarantine-fees/', { params: { year } });
+  apiClient.get<ApiResponse<QuarantineFeeSchedule>>('/food/quarantine-fees/schedule/', { params: { year } });
 export const getDeptHeadDashboard = (period = 'MONTH') =>
   apiClient.get<ApiResponse<DeptHeadDashboard>>('/food/shipments/department-head-dashboard/', {
     params: { period },

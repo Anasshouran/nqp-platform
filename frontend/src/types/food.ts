@@ -1280,6 +1280,8 @@ export interface QuarantineFeeCategory {
 
 export interface QuarantineFeeSchedule {
   year: number;
+  total_fees: number;
+  total_categories: number;
   categories: QuarantineFeeCategory[];
 }
 

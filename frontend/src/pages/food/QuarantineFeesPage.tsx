@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,46 +18,65 @@ import { getQuarantineFees } from '../../api/endpoints/food';
 
 const YEAR = 2025;
 
+const pluralizeItems = (count: number) => {
+  if (count === 1) return 'بند واحد';
+  if (count === 2) return 'بندان';
+  if (count >= 3 && count <= 10) return `${count} بنود`;
+  return `${count} بنداً`;
+};
+
+const pluralizeCategories = (count: number) => {
+  if (count === 1) return 'قسم واحد';
+  if (count === 2) return 'قسمان';
+  if (count >= 3 && count <= 10) return `${count} أقسام`;
+  return `${count} قسماً`;
+};
+
 const QuarantineFeesPage = () => {
   const [data, setData] = useState<QuarantineFeeSchedule | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  const load = useCallback(() => {
     setLoading(true);
     getQuarantineFees(YEAR)
       .then((response) => {
-        if (mounted) {
-          setData(response.data.data);
-          setError(false);
-        }
+        setData(response.data.data);
+        setError(false);
       })
       .catch(() => {
-        if (mounted) setError(true);
+        setData(null);
+        setError(true);
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const categories = data?.categories ?? [];
+  const isEmpty = !loading && !error && categories.length === 0;
 
   return (
     <Box>
       <PageHeader
-        title="رسوم اللائحة المالية 2025"
-        subtitle="تقرير شامل بجميع رسوم اللائحة المالية السارية لعام 2025"
+        title={`رسوم اللائحة المالية ${YEAR}`}
+        subtitle="تقرير شامل بجميع رسوم اللائحة المالية السارية"
         eyebrow="رسوم اللائحة المالية"
       />
 
-      <Box sx={{ mb: 4 }}>
-        <Alert severity="info" icon={false}>
-          يتضمن هذا التقرير <strong>86 بنداً</strong> موزعة عبر <strong>12 قسمًا</strong>، مع دعم عملتين:
-          السوداني (SDG) والدولي (USD). أي بند يمتلك العملتين يتم عرضه في عمودين منفصلين.
-        </Alert>
-      </Box>
+      {!loading && !error && !isEmpty && data && (
+        <Box sx={{ mb: 4 }}>
+          <Alert severity="info" icon={false}>
+            يتضمن هذا التقرير <strong>{pluralizeItems(data.total_fees)}</strong> موزعة عبر{' '}
+            <strong>{pluralizeCategories(data.total_categories)}</strong>، مع دعم عملتين: السوداني (SDG)
+            والدولي (USD). أي بند يمتلك العملتين يتم عرضه في عمودين منفصلين.
+          </Alert>
+        </Box>
+      )}
 
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -65,14 +85,20 @@ const QuarantineFeesPage = () => {
       )}
 
       {error && (
-        <Alert severity="error">
+        <Alert severity="error" action={<Button color="inherit" size="small" onClick={load}>إعادة المحاولة</Button>}>
           تعذر تحميل رسوم اللائحة المالية. تأكد من اتصال الخادم وحاول مرة أخرى.
         </Alert>
       )}
 
-      {!loading && !error && data && (
-        <Stack direction="row" spacing={3} alignItems="flex-start" sx={{ flexWrap: 'wrap' }}>
-          {data.categories.map((category: QuarantineFeeCategory) => (
+      {isEmpty && (
+        <Alert severity="warning">
+          لا توجد بنود رسوم مسجّلة لعام {YEAR}. يرجى مراجعة إدارة بيانات تعرفة الكرنتينة.
+        </Alert>
+      )}
+
+      {!loading && !error && categories.length > 0 && (
+        <Stack direction="row" spacing={3} alignItems="stretch" sx={{ flexWrap: 'wrap' }}>
+          {categories.map((category: QuarantineFeeCategory) => (
             <FeeCategoryCard key={category.key} category={category} />
           ))}
         </Stack>
@@ -103,7 +129,7 @@ const FeeCategoryCard = ({ category }: { category: QuarantineFeeCategory }) => {
           {category.label}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-          {category.fees.length} بند
+          {pluralizeItems(category.fees.length)}
         </Typography>
       </Box>
 

@@ -1148,10 +1148,62 @@ class SamplingPolicyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class QuarantineFeeViewSet(viewsets.ModelViewSet):
+class QuarantineFeeViewSet(viewsets.ReadOnlyModelViewSet):
+    """تعرفة رسوم الكرنتينة — مرجع قراءة فقط، غير قابل للتعديل عبر الـAPI."""
+
     queryset = QuarantineFee.objects.all()
     serializer_class = QuarantineFeeSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return QuarantineFee.objects.filter(is_active=True)
+
+    @action(detail=False, methods=['get'])
+    def schedule(self, request):
+        """تقرير الرسوم مجمّعاً حسب القسم كما تعرضه صفحة «رسوم اللائحة المالية»."""
+        year = self._resolve_year(request.query_params.get('year'))
+        if year is None:
+            return Response(
+                error_response('سنة غير صالحة. استخدم رقماً صحيحاً بين 2000 و2100.'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        categories = QuarantineFee.Category
+        fees_by_category = {}
+        fees = self.get_queryset().filter(year=year).order_by('order', 'code', 'id')
+        for fee in fees:
+            fees_by_category.setdefault(fee.category, []).append(fee)
+
+        payload = []
+        for key, label in categories.choices:
+            fees = fees_by_category.get(key)
+            if not fees:
+                continue
+            payload.append({
+                'key': key,
+                'label': label,
+                'fees': self.get_serializer(fees, many=True).data,
+            })
+
+        return Response({
+            'year': year,
+            'total_fees': sum(len(item['fees']) for item in payload),
+            'total_categories': len(payload),
+            'categories': payload,
+        })
+
+    def _resolve_year(self, raw):
+        """سنة مطلوبة صريحة، وإلا أحدث سنة تحتوي بيانات."""
+        if raw in (None, ''):
+            latest = self.get_queryset().order_by('-year').values_list('year', flat=True).first()
+            return latest or timezone.now().year
+        try:
+            year = int(raw)
+        except (TypeError, ValueError):
+            return None
+        if not 2000 <= year <= 2100:
+            return None
+        return year
 
 
 class SampleSourceViewSet(viewsets.ModelViewSet):
