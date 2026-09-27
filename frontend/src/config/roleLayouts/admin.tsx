@@ -42,7 +42,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'لوحة التحكم',
     subtitle: 'Federal Administration',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     overline: 'الإدارة الاتحادية للحجر الصحي',
     logo: <GovernmentHeader />,
     nav: [
@@ -158,7 +158,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'القيادة الوطنية',
     subtitle: 'National Leadership',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app', exact: true, icon: <DashboardIcon /> },
       { label: 'لوحة القيادة', target: '/app/national-command', icon: <MonitorHeartIcon /> },
@@ -211,7 +211,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير اتحادي',
     subtitle: 'Federal Director',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app', exact: true, icon: <HomeIcon /> },
       { label: 'مركز القيادة الصحي', target: '/app/health', icon: <LocalHospitalIcon /> },
@@ -227,7 +227,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير نقطة الدخول',
     subtitle: 'Point of Entry Manager',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#2f6dd0',
+    color: 'info.main',
     nav: [
       { label: 'لوحة الترصد', target: '/app/surveillance', icon: <RiskIcon /> },
       { label: 'الفحص الصحي', target: '/app/screening', icon: <FactCheckIcon /> },
@@ -242,7 +242,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'قيادة قطاع البحر الأحمر',
     subtitle: 'Red Sea Sector Command',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة القطاع', target: '/dashboard/sector/red-sea', icon: <DashboardIcon /> },
       {
@@ -286,7 +286,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مديرة الحجر الصحي بالمطار',
     subtitle: 'Airport Health Director',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#2f6dd0',
+    color: 'info.main',
     nav: [
       { label: 'الرئيسية', target: '/app/airport-director#overview', icon: <HomeIcon /> },
       { label: 'التنبيهات', target: '/app/airport-director#alerts', icon: <NotificationsIcon /> },

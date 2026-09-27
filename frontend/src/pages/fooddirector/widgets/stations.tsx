@@ -23,9 +23,9 @@ const BLUE = '#2f6dd0';
 /* ============ التنبيهات الذكية ============ */
 
 const SEVERITY_META = {
-  critical: { color: '#c63a3a', bg: 'rgba(198,58,58,0.06)', border: 'rgba(198,58,58,0.25)', label: 'حرجة', icon: <NotificationsActiveIcon /> },
+  critical: { color: 'error.main', bg: 'rgba(198,58,58,0.06)', border: 'rgba(198,58,58,0.25)', label: 'حرجة', icon: <NotificationsActiveIcon /> },
   warning: { color: '#a86400', bg: 'rgba(168,100,0,0.06)', border: 'rgba(168,100,0,0.25)', label: 'تحذير', icon: <ErrorOutlineIcon /> },
-  attention: { color: '#2f6dd0', bg: 'rgba(47,109,208,0.05)', border: 'rgba(47,109,208,0.2)', label: 'انتباه', icon: <InfoOutlinedIcon /> },
+  attention: { color: 'info.main', bg: 'rgba(47,109,208,0.05)', border: 'rgba(47,109,208,0.2)', label: 'انتباه', icon: <InfoOutlinedIcon /> },
 } as const;
 
 export const SmartAlerts = () => (
@@ -217,9 +217,9 @@ export const StationHeatmap = () => (
       subtitle="تصور جغرافي مبسط لأداء المحطات — الضغط على المحطة يعرض التحليل التفصيلي"
       action={
         <Stack direction="row" spacing={1}>
-          <Chip size="small" sx={{ bgcolor: '#1d7a54', color: '#fff', fontWeight: 700 }} label="جيد" />
+          <Chip size="small" sx={{ bgcolor: 'success.main', color: '#fff', fontWeight: 700 }} label="جيد" />
           <Chip size="small" sx={{ bgcolor: '#a86400', color: '#fff', fontWeight: 700 }} label="انتباه" />
-          <Chip size="small" sx={{ bgcolor: '#c63a3a', color: '#fff', fontWeight: 700 }} label="حرج" />
+          <Chip size="small" sx={{ bgcolor: 'error.main', color: '#fff', fontWeight: 700 }} label="حرج" />
         </Stack>
       }
     >

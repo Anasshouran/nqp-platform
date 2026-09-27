@@ -116,7 +116,7 @@ const SectorPortalHome = () => {
       </Stack>
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'سلامة الغذاء', desc: 'الوارد والصادر والتفتيش والشهادات', path: `/sector/${slug}/services`, icon: <ScienceIcon />, color: '#0e8a72' },
+          { label: 'سلامة الغذاء', desc: 'الوارد والصادر والتفتيش والشهادات', path: `/sector/${slug}/services`, icon: <ScienceIcon />, color: 'primary.main' },
           { label: 'مكافحة النواقل', desc: 'التوعية والإرشادات والبلاغات', path: `/sector/${slug}/services`, icon: <BugReportIcon />, color: '#2f6f9f' },
           { label: 'المنافذ', desc: 'المطارات والموانئ والمعابر', path: `/sector/${slug}/ports`, icon: <LocationOnIcon />, color: '#b3544b' },
           { label: 'التعميمات', desc: 'القرارات والإجراءات الرسمية', path: `/sector/${slug}/news`, icon: <CampaignIcon />, color: '#7a5c9e' },

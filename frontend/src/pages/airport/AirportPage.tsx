@@ -45,7 +45,7 @@ const CodeChip = ({ code }: { code: string }) => (
       bgcolor: 'primary.light',
       color: 'primary.dark',
       fontFamily: 'monospace',
-      fontWeight: 800,
+      fontWeight: 700,
       fontSize: 12,
     }}
   >
@@ -60,7 +60,7 @@ const PersonCell = ({ name, id }: { name?: string; id?: string }) => (
         width: 36,
         height: 36,
         fontSize: 14,
-        fontWeight: 800,
+        fontWeight: 700,
         bgcolor: 'primary.light',
         color: 'primary.dark',
         flexShrink: 0,

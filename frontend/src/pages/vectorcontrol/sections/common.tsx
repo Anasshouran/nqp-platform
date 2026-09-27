@@ -18,7 +18,7 @@ export const SectionHeading = ({
     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
       <Box sx={{ display: 'flex', color: 'primary.main' }}>{icon}</Box>
       <Box sx={{ minWidth: 0 }}>
-        <Typography variant="h6" sx={{ fontWeight: 800 }}>{title}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>{title}</Typography>
         {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
       </Box>
     </Stack>
@@ -35,7 +35,7 @@ export const FieldGrid = ({ children }: { children: ReactNode }) => (
 export const ToggleForm = ({ open, onToggle, title, children }: { open?: boolean; onToggle?: () => void; title?: string; children: ReactNode }) => (
   <Card variant="outlined" sx={{ borderRadius: 3, p: 3, mb: 2 }}>
     {title && (
-      <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: 'primary.main' }}>{title}</Typography>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: 'primary.main' }}>{title}</Typography>
     )}
     {children}
   </Card>

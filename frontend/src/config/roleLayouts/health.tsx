@@ -25,7 +25,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مشغّل مركز الطوارئ',
     subtitle: 'EOC Operator',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#c63a3a',
+    color: 'error.main',
     nav: [
       { label: 'البلاغات والطوارئ', target: '/app/emergency', icon: <EmergencyIcon /> },
       { label: 'لوحة مكافحة الأوبئة', target: '/app/epidemic-dashboard', icon: <HealthAndSafetyIcon /> },
@@ -83,7 +83,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'نقطة الاتصال الوطنية (NFP)',
     subtitle: 'National IHR Focal Point',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
       { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
@@ -111,7 +111,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مسؤول الترصد الصحي القومي',
     subtitle: 'National Surveillance Officer',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0e8a72',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
       { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
@@ -125,7 +125,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مسؤول IHR بالقطاع',
     subtitle: 'Sector IHR Officer',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0e8a72',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
       { label: 'الترصد', target: '/app/surveillance', icon: <RiskIcon /> },
@@ -136,7 +136,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مسؤول الصحة بالمنفذ',
     subtitle: 'Point of Entry Health Officer',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#2f6dd0',
+    color: 'info.main',
     nav: [
       { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
       { label: 'الفحص الصحي', target: '/app/screening', icon: <FactCheckIcon /> },

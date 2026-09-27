@@ -175,7 +175,7 @@ const SectorCmsPorts = () => {
         >
           <TravelExploreIcon /> نقاط الدخول — {sectorBareName(sector.name_ar)}
         </Typography>
-        <Typography component="h1" variant="h3" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.01em' }}>
+        <Typography component="h1" variant="h3" sx={{ fontWeight: 700, mb: 1, letterSpacing: 0 }}>
           المنافذ
           <Box component="span" sx={{ color: 'primary.main' }}> والصحة الحدودية</Box>
         </Typography>
@@ -275,7 +275,7 @@ const SectorCmsPorts = () => {
                 borderRadius: 3,
                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                 color: 'primary.main',
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             />
           </Stack>
@@ -299,8 +299,8 @@ const SectorCmsPorts = () => {
                     <Typography variant="overline" color="text.disabled" sx={{ m: 0 }}>
                       {String(gi + 1).padStart(2, '0')}
                     </Typography>
-                    <Typography component="h2" variant="h5" sx={{ fontWeight: 800 }}>{groupLabels[t]}</Typography>
-                    <Chip label={`${list.length}`} size="small" sx={{ bgcolor: alpha(theme.palette[typeMeta[t].chip].main, 0.1), color: theme.palette[typeMeta[t].chip].main, fontWeight: 800 }} />
+                    <Typography component="h2" variant="h5" sx={{ fontWeight: 700 }}>{groupLabels[t]}</Typography>
+                    <Chip label={`${list.length}`} size="small" sx={{ bgcolor: alpha(theme.palette[typeMeta[t].chip].main, 0.1), color: theme.palette[typeMeta[t].chip].main, fontWeight: 700 }} />
                   </Stack>
                   <Box sx={{ height: 1, bgcolor: 'divider', mb: 2.5, width: '100%' }} />
                   {list.length === 0 ? (
@@ -465,7 +465,7 @@ function CenteredState({ icon, title, body, action }: { icon: React.ReactNode; t
       >
         {icon}
       </Box>
-      <Typography variant="h6" sx={{ fontWeight: 800 }}>{title}</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>{title}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: action ? 3 : 0 }}>{body}</Typography>
       {action}
     </Paper>

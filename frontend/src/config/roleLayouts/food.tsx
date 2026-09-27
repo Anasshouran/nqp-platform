@@ -95,7 +95,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير رقابة الأغذية بالقطاع',
     subtitle: 'Food Safety Sector Head',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة القطاع', target: '/dashboard/sector/red-sea', icon: <DashboardIcon /> },
       {
@@ -137,7 +137,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير رقابة الأغذية',
     subtitle: 'Food Control Director',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#0e8a72',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app/food-director#overview', icon: <HomeIcon /> },
       { label: 'التقارير', target: '/app/food-director#reports', icon: <DescriptionIcon /> },
@@ -158,7 +158,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'موظّف نافذة الأغذية',
     subtitle: 'Food Window Clerk',
     brand: 'نافذة الأغذية الموحدة',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app/food-window', icon: <DashboardIcon /> },
       { label: 'المعاملات', target: '/app/food-window#transactions', icon: <LocalShippingIcon /> },
@@ -172,7 +172,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مشرف نافذة الأغذية',
     subtitle: 'Food Window Supervisor',
     brand: 'نافذة الأغذية الموحدة',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app/food-window', icon: <DashboardIcon /> },
       { label: 'المعاملات', target: '/app/food-window#transactions', icon: <LocalShippingIcon /> },
@@ -324,7 +324,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير إدارة',
     subtitle: 'Department Manager',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#1d7a54',
+    color: 'success.main',
     nav: [
       { label: 'عمليات رقابة الأغذية', target: '/app/food-ops', icon: <HomeIcon /> },
       { label: 'لوحة مدير رقابة الأغذية', target: '/app/food-director', icon: <RestaurantIcon /> },
@@ -335,7 +335,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير مكافحة الأوبئة',
     subtitle: 'Epidemic Control Manager',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#c63a3a',
+    color: 'error.main',
     nav: [
       { label: 'لوحة مكافحة الأوبئة', target: '/app/epidemic-dashboard', icon: <HomeIcon /> },
       { label: 'الترصد الغذائي', target: '/app/food-surveillance', icon: <AssessmentIcon /> },
@@ -346,7 +346,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير الترصد الغذائي',
     subtitle: 'Food Surveillance Manager',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#1d7a54',
+    color: 'success.main',
     nav: [
       { label: 'الترصد الغذائي', target: '/app/food-surveillance', icon: <HomeIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },

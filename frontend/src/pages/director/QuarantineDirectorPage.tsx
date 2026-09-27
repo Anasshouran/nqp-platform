@@ -212,7 +212,7 @@ const QuarantineDirectorPage = () => {
                       {
                         label: 'الفحوصات',
                         data: screenings,
-                        borderColor: '#0c7f6a',
+                        borderColor: 'primary.main',
                         backgroundColor: 'rgba(12,127,106,0.14)',
                         fill: true,
                         tension: 0.4,
@@ -222,7 +222,7 @@ const QuarantineDirectorPage = () => {
                       {
                         label: 'حالات مؤكدة',
                         data: confirmed,
-                        borderColor: '#c63a3a',
+                        borderColor: 'error.main',
                         backgroundColor: 'transparent',
                         borderDash: [6, 4],
                         fill: false,

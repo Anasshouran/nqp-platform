@@ -101,7 +101,7 @@ const RoleNavMenu = ({
         </ListItemIcon>
         {!collapsed && <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 'inherit', fontSize: 14 }} />}
         {!collapsed && b !== undefined && (
-          <Chip size="small" label={b} sx={{ bgcolor: 'rgba(198,58,58,0.12)', color: '#c63a3a', fontWeight: 700, fontSize: 11 }} />
+          <Chip size="small" label={b} sx={{ bgcolor: 'rgba(198,58,58,0.12)', color: 'error.main', fontWeight: 700, fontSize: 11 }} />
         )}
       </ListItemButton>
     );
@@ -217,7 +217,7 @@ const RoleNavMenu = ({
                         primaryTypographyProps={{ fontWeight: 'inherit', fontSize: 12.5 }}
                       />
                       {b !== undefined && (
-                        <Chip size="small" label={b} sx={{ bgcolor: 'rgba(198,58,58,0.12)', color: '#c63a3a', fontWeight: 700, fontSize: 11 }} />
+                        <Chip size="small" label={b} sx={{ bgcolor: 'rgba(198,58,58,0.12)', color: 'error.main', fontWeight: 700, fontSize: 11 }} />
                       )}
                     </ListItemButton>
                   </ListItem>

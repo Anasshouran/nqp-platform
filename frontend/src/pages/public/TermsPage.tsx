@@ -80,14 +80,14 @@ const TermsPage = () => {
                     placeItems: 'center',
                     bgcolor: 'primary.lighter',
                     color: 'primary.main',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     fontSize: 14,
                     flexShrink: 0,
                   }}
                 >
                   {index + 1}
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {section.title}
                 </Typography>
               </Box>

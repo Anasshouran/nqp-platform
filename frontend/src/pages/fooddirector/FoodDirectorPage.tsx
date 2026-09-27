@@ -53,9 +53,9 @@ const PERIODS = [
 ];
 
 const DOT_META = {
-  green: { emoji: '🟢', color: '#1d7a54' },
+  green: { emoji: '🟢', color: 'success.main' },
   yellow: { emoji: '🟡', color: '#f0ad4e' },
-  red: { emoji: '🔴', color: '#c63a3a' },
+  red: { emoji: '🔴', color: 'error.main' },
 } as const;
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
@@ -317,7 +317,7 @@ const FoodDirectorPage = () => {
                   <FinanceRow label="الإجمالي" value={dash.finance.total} bold />
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
-                  <PaymentsIcon fontSize="small" sx={{ color: '#1d7a54' }} />
+                  <PaymentsIcon fontSize="small" sx={{ color: 'success.main' }} />
                   <Typography variant="caption" color="text.secondary">فواتير محصّلة SDG — الانتقال للنظام المالي دون تعديل قيود</Typography>
                 </Stack>
               </Paper>
@@ -396,11 +396,11 @@ const TradeCard = ({ kind, data, accent }: {
         <Chip size="small" label={`${fmtNum(data.total)} شحنة`} sx={{ bgcolor: `${accent}14`, color: accent, fontWeight: 700 }} />
       </Stack>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
-        <Typography variant="caption" sx={{ fontWeight: 700, color: '#1d7a54' }}>✅ إفراج / اعتماد</Typography>
-        <Typography variant="body2" sx={{ fontWeight: 700, color: '#1d7a54' }}>{data.released_pct}%</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>✅ إفراج / اعتماد</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>{data.released_pct}%</Typography>
       </Stack>
       <Box sx={{ height: 8, borderRadius: 4, bgcolor: '#e9ecef', overflow: 'hidden', mb: 1 }}>
-        <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: '#1d7a54' }} />
+        <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: 'success.main' }} />
       </Box>
       <Stack direction="row" justifyContent="space-between">
         <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>🚫 رفض {data.rejected_pct}%</Typography>

@@ -533,7 +533,7 @@ export const ClinicDashboardPage = () => {
             sx={{
               fontWeight: 700,
               borderRadius: 2.5,
-              bgcolor: '#0c7f6a',
+              bgcolor: 'primary.main',
               boxShadow: '0 8px 20px -10px rgba(12,127,106,0.6)',
               '&:hover': { bgcolor: '#0a6b58' },
             }}
@@ -635,7 +635,7 @@ export const ClinicDashboardPage = () => {
               <TableContainer sx={{ mt: 1, overflowX: 'auto' }}>
                 <Table size="small" sx={{ minWidth: 760 }}>
                   <TableHead>
-                    <TableRow sx={{ '& th': { bgcolor: 'rgba(16,40,34,0.03)', color: 'text.secondary', fontSize: 11.5, fontWeight: 800, letterSpacing: '0.02em' } }}>
+                    <TableRow sx={{ '& th': { bgcolor: 'rgba(16,40,34,0.03)', color: 'text.secondary', fontSize: 11.5, fontWeight: 700, letterSpacing: '0.02em' } }}>
                       <TableCell>المسافر</TableCell>
                       <TableCell>الأعراض والفحص</TableCell>
                       <TableCell>المنفذ · الوقت</TableCell>
@@ -749,7 +749,7 @@ export const ClinicDashboardPage = () => {
                                     color="success"
                                     aria-label={`قبول إحالة ${r.traveler_name}`}
                                     onClick={(e) => { e.stopPropagation(); setDecisionTarget(r); }}
-                                    sx={{ bgcolor: 'rgba(12,127,106,0.1)', '&:hover': { bgcolor: '#0c7f6a', color: '#fff' } }}
+                                    sx={{ bgcolor: 'rgba(12,127,106,0.1)', '&:hover': { bgcolor: 'primary.main', color: '#fff' } }}
                                   >
                                     <CheckCircleOutlineIcon fontSize="small" />
                                   </IconButton>

@@ -124,11 +124,11 @@ const PHASE_ORDER = [
 const phaseMeta: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   REGISTERED: { label: 'مسجلة', color: '#8a8f98', icon: <EditNoteIcon sx={{ fontSize: 16 }} /> },
   TRIAGED: { label: 'تم الفرز', color: '#b7791f', icon: <MonitorHeartIcon sx={{ fontSize: 16 }} /> },
-  EXAMINED: { label: 'فحص طبي', color: '#0c7f6a', icon: <BadgeIcon sx={{ fontSize: 16 }} /> },
-  LABORATORY: { label: 'مختبر', color: '#2f6dd0', icon: <ScienceIcon sx={{ fontSize: 16 }} /> },
+  EXAMINED: { label: 'فحص طبي', color: 'primary.main', icon: <BadgeIcon sx={{ fontSize: 16 }} /> },
+  LABORATORY: { label: 'مختبر', color: 'info.main', icon: <ScienceIcon sx={{ fontSize: 16 }} /> },
   DECISION: { label: 'القرار', color: '#7b4fb3', icon: <NotesIcon sx={{ fontSize: 16 }} /> },
   CERTIFICATE: { label: 'الشهادة', color: '#0e7490', icon: <HealthAndSafetyIcon sx={{ fontSize: 16 }} /> },
-  CLOSED: { label: 'مغلقة', color: '#c63a3a', icon: <LockIcon sx={{ fontSize: 16 }} /> },
+  CLOSED: { label: 'مغلقة', color: 'error.main', icon: <LockIcon sx={{ fontSize: 16 }} /> },
 };
 
 const severityMeta: Record<string, { label: string; color: 'success' | 'warning' | 'error' | 'info' }> = {
@@ -694,7 +694,7 @@ setVisit(data);
                 </Grid>
 
                 <SectionLabel color="#2f6dd0">
-                  <EditNoteIcon sx={{ fontSize: 16, color: '#2f6dd0' }} /> الفحص البدني
+                  <EditNoteIcon sx={{ fontSize: 16, color: 'info.main' }} /> الفحص البدني
                 </SectionLabel>
                 <Grid container spacing={2} sx={{ mb: 1 }}>
                   {physicalExamFields.map((f) => (

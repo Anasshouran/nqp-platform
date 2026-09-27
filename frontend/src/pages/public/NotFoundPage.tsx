@@ -45,7 +45,7 @@ const NotFoundPage = () => {
           component="h1"
           sx={{
             fontSize: { xs: '2.5rem', md: '3.5rem' },
-            fontWeight: 900,
+            fontWeight: 700,
             lineHeight: 1.1,
             mb: 1,
           }}

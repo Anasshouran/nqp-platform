@@ -226,11 +226,15 @@ const theme = createTheme({
   typography: {
     fontFamily: '"IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif',
     htmlFontSize: 16,
-    /* Display */
-    h1: { fontWeight: 800, fontSize: 'clamp(2.25rem, 4.5vw, 3.25rem)', lineHeight: 1.15, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 800, fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.2, letterSpacing: '-0.01em' },
-    h3: { fontWeight: 800, fontSize: 'clamp(1.375rem, 2.2vw, 1.875rem)', lineHeight: 1.28 },
-    h4: { fontWeight: 800, fontSize: '1.375rem', lineHeight: 1.32 },
+    /* Display — IBM Plex Sans Arabic ships 100–700 only; 700 is the family max.
+       Hierarchy comes from size + the surface ramp, never from a non-existent 800
+       (which the browser would synthesise as faux-bold, mismatching body metrics).
+       letterSpacing stays 0: Arabic is a joining script and negative tracking
+       collides contextual forms. lineHeight is raised for Arabic vertical extents. */
+    h1: { fontWeight: 700, fontSize: 'clamp(2rem, 4vw, 2.75rem)', lineHeight: 1.35, letterSpacing: 0 },
+    h2: { fontWeight: 700, fontSize: 'clamp(1.625rem, 2.8vw, 2.25rem)', lineHeight: 1.3, letterSpacing: 0 },
+    h3: { fontWeight: 700, fontSize: 'clamp(1.3125rem, 2.1vw, 1.75rem)', lineHeight: 1.32, letterSpacing: 0 },
+    h4: { fontWeight: 700, fontSize: '1.3125rem', lineHeight: 1.35, letterSpacing: 0 },
     h5: { fontWeight: 700, fontSize: '1.125rem', lineHeight: 1.36 },
     h6: { fontWeight: 700, fontSize: '1rem', lineHeight: 1.42 },
     /* Body */
@@ -241,7 +245,9 @@ const theme = createTheme({
     /* Labels */
     button: { fontWeight: 700, fontSize: '0.9375rem', letterSpacing: 0 },
     caption: { fontWeight: 500, fontSize: '0.8125rem', lineHeight: 1.55 },
-    overline: { fontWeight: 700, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: '0.12em' },
+    /* No tracking: Arabic has no lettercase, and letterspacing a joining script
+       breaks the connection rhythm even at small sizes. */
+    overline: { fontWeight: 700, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: 0 },
   },
   shadows,
   components: {
@@ -316,7 +322,7 @@ const theme = createTheme({
           position: 'relative',
           textTransform: 'none',
           borderRadius: radius.md,
-          fontWeight: 800,
+          fontWeight: 700,
           padding: '0.625rem 1.5rem',
           minHeight: 48,
           transition: 'transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease',
@@ -446,7 +452,10 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-notchedOutline': { borderColor: outlineVariant },
         },
-        input: { '&::placeholder': { opacity: 0.75 } },
+        /* Placeholder is real content, not decoration, so it is exempt from the
+           disabled-text allowance and must clear 4.5:1. At opacity 0.75 the ink
+           composited to 3.42:1; onSurfaceVariant at full opacity gives 5.95:1. */
+        input: { '&::placeholder': { color: onSurfaceVariant, opacity: 1 } },
       },
     },
     MuiSelect: {
@@ -527,7 +536,7 @@ const theme = createTheme({
     },
     MuiAvatar: {
       styleOverrides: {
-        root: { fontWeight: 800, backgroundColor: brand[200], color: brand[900], '&.Mui-focusVisible': { boxShadow: focusRing } },
+        root: { fontWeight: 700, backgroundColor: brand[200], color: brand[900], '&.Mui-focusVisible': { boxShadow: focusRing } },
       },
     },
     /* ------- Lists / navigation ------- */
@@ -585,7 +594,7 @@ const theme = createTheme({
         root: {
           '& .MuiTableCell-head': {
             backgroundColor: 'rgba(16,40,34,0.04)',
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: '0.75rem',
             letterSpacing: 0.03,
             color: onSurfaceVariant,
@@ -596,7 +605,7 @@ const theme = createTheme({
     },
     MuiTableCell: {
       styleOverrides: {
-        head: { fontWeight: 800, backgroundColor: 'rgba(16,40,34,0.04)', fontSize: '0.8125rem' },
+        head: { fontWeight: 700, backgroundColor: 'rgba(16,40,34,0.04)', fontSize: '0.8125rem' },
         root: { borderBottomColor: 'rgba(16,40,34,0.08)', fontSize: '0.875rem', py: '0.9rem' },
       },
     },
@@ -628,7 +637,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 800,
+          fontWeight: 700,
           borderRadius: radius.md,
           minHeight: 44,
           padding: '6px 18px',
@@ -737,7 +746,7 @@ const theme = createTheme({
           borderRadius: radius.sm,
           minWidth: 40,
           height: 40,
-          fontWeight: 800,
+          fontWeight: 700,
           border: '1px solid transparent',
           '&.Mui-selected': {
             bgcolor: brand.main,

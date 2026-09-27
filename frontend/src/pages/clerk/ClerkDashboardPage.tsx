@@ -1129,9 +1129,9 @@ const ClerkDashboardPage = () => {
                         { label: 'مسودات', value: counts.drafts, color: '#8c6d1f' },
                         { label: 'بانتظار الرسوم', value: counts.submitted, color: '#6f5516' },
                         { label: 'بانتظار المراجعة', value: counts.underReview, color: '#a86400' },
-                        { label: 'قيد الفحص', value: counts.inspection, color: '#0c7f6a' },
+                        { label: 'قيد الفحص', value: counts.inspection, color: 'primary.main' },
                         { label: 'بانتظار المعدل', value: counts.sampling, color: '#12a585' },
-                        { label: 'مرفوضة', value: counts.rejected, color: '#c63a3a' },
+                        { label: 'مرفوضة', value: counts.rejected, color: 'error.main' },
                       ].map((row) => (
                         <Stack key={row.label} direction="row" justifyContent="space-between" alignItems="center" sx={{ p: 1.25, borderRadius: 2, border: '1px solid rgba(16,40,34,0.07)' }}>
                           <Stack direction="row" spacing={1} alignItems="center">
@@ -1678,11 +1678,11 @@ const SidebarItem = ({
 type QueueCounts = { drafts: number; submitted: number; underReview: number; inspection: number; rejected: number };
 
 const PIPELINE_STAGES: Array<{ key: keyof QueueCounts; label: string; color: string }> = [
-  { key: 'drafts', label: 'مسودات', color: '#0c7f6a' },
+  { key: 'drafts', label: 'مسودات', color: 'primary.main' },
   { key: 'submitted', label: 'بانتظار الرسوم', color: '#8c6d1f' },
   { key: 'underReview', label: 'بانتظار المراجعة', color: '#a86400' },
   { key: 'inspection', label: 'قيد الفحص', color: '#12a585' },
-  { key: 'rejected', label: 'مرفوضة', color: '#c63a3a' },
+  { key: 'rejected', label: 'مرفوضة', color: 'error.main' },
 ];
 
 const PipelineCard = ({ counts }: { counts: QueueCounts }) => {

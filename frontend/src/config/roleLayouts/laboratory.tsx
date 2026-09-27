@@ -29,7 +29,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير المعمل القومي للحجر الصحي',
     subtitle: 'NQLIS Laboratory Manager',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#1d7a54',
+    color: 'success.main',
     nav: [
       { label: 'لوحة NQLIS', target: '/app/laboratory', icon: <HomeIcon /> },
       { label: 'النتائج الحرجة', target: '/app/laboratory#critical', icon: <NotificationsActiveIcon /> },
@@ -149,7 +149,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'الإدارة القومية للمعامل',
     subtitle: 'National Laboratory Administration',
     brand: 'وزارة الصحة الاتحادية – الحجر الصحي القومي',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'اللوحة القومية للمعامل', target: '/app/laboratory/national', icon: <DashboardIcon /> },
       { label: 'لوحة NQLIS', target: '/app/laboratory', icon: <HomeIcon /> },

@@ -296,11 +296,11 @@ const EpidemicDashboardPage = () => {
                         {
                           label: 'حالات مؤكدة',
                           data: (data?.case_curve ?? []).map((c) => c.count),
-                          borderColor: '#c63a3a',
+                          borderColor: 'error.main',
                           backgroundColor: 'rgba(198,58,58,0.12)',
                           fill: true,
                           tension: 0.35,
-                          pointBackgroundColor: '#c63a3a',
+                          pointBackgroundColor: 'error.main',
                         },
                       ],
                     }}

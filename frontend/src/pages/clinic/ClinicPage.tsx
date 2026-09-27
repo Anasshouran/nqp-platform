@@ -32,11 +32,11 @@ const visitStatusOptions = Object.entries(visitStatus).map(([v, m]) => ({ value:
 const phaseLabels: Record<string, { label: string; color: string }> = {
   REGISTERED: { label: 'مسجلة', color: '#8a8f98' },
   TRIAGED: { label: 'تم الفرز', color: '#b7791f' },
-  EXAMINED: { label: 'فحص طبي', color: '#0c7f6a' },
-  LABORATORY: { label: 'مختبر', color: '#2f6dd0' },
+  EXAMINED: { label: 'فحص طبي', color: 'primary.main' },
+  LABORATORY: { label: 'مختبر', color: 'info.main' },
   DECISION: { label: 'القرار', color: '#7b4fb3' },
   CERTIFICATE: { label: 'الشهادة', color: '#0e7490' },
-  CLOSED: { label: 'مغلقة', color: '#c63a3a' },
+  CLOSED: { label: 'مغلقة', color: 'error.main' },
 };
 
 const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) => (

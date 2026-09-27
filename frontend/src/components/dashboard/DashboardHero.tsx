@@ -117,7 +117,7 @@ const DashboardHero = ({ eyebrow, title, subtitle, avatarLabel, chips, action, g
               border: '2px solid rgba(255,255,255,0.4)',
               backdropFilter: 'blur(6px)',
               fontSize: { xs: 24, md: 28 },
-              fontWeight: 800,
+              fontWeight: 700,
               color: '#fff',
               flexShrink: 0,
             }}
@@ -131,7 +131,7 @@ const DashboardHero = ({ eyebrow, title, subtitle, avatarLabel, chips, action, g
             >
               {eyebrow}
             </Typography>
-            <Typography variant="h4" component="h2" sx={{ fontWeight: 800, color: '#fff', lineHeight: 1.25 }}>
+            <Typography variant="h4" component="h2" sx={{ fontWeight: 700, color: '#fff', lineHeight: 1.25 }}>
               {title}
             </Typography>
             {subtitle && (

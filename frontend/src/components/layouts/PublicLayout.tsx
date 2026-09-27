@@ -612,7 +612,7 @@ const PublicLayout = () => {
                     {showSection && (
                       <Box sx={{ px: 2, pt: i > 0 ? 0.75 : 1, pb: 0.25 }}>
                         {i > 0 && <Divider sx={{ mb: 1 }} />}
-                        <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 0.5 }}>
+                        <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
                           {tl(child.section)}
                         </Typography>
                       </Box>
@@ -759,7 +759,7 @@ const PublicLayout = () => {
                             {showSection && (
                               <Box sx={{ px: 3, pt: i > 0 ? 1 : 1.5, pb: 0.25 }}>
                                 {i > 0 && <Divider sx={{ mb: 1 }} />}
-                                <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block' }}>
+                                <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                                   {tl(child.section)}
                                 </Typography>
                               </Box>

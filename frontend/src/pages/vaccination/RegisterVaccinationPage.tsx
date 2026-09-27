@@ -192,7 +192,7 @@ const RegisterVaccinationPage = () => {
 
       <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mb: 3 }}>
         <Stack spacing={2}>
-          <Typography sx={{ fontWeight: 800 }}>البحث عن المسافر</Typography>
+          <Typography sx={{ fontWeight: 700 }}>البحث عن المسافر</Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
             <TextField
               fullWidth
@@ -243,7 +243,7 @@ const RegisterVaccinationPage = () => {
                     <PersonIcon />
                   </Box>
                   <Box>
-                    <Typography sx={{ fontWeight: 800 }}>{traveler.full_name}</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{traveler.full_name}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
                       {traveler.passport_number}
                     </Typography>
@@ -262,7 +262,7 @@ const RegisterVaccinationPage = () => {
                   </Typography>
                 )}
 
-                <Typography sx={{ fontWeight: 800, mt: 1 }}>تقييم احتياج التطعيم</Typography>
+                <Typography sx={{ fontWeight: 700, mt: 1 }}>تقييم احتياج التطعيم</Typography>
                 <Stack spacing={1}>
                   {assessment.length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
@@ -292,7 +292,7 @@ const RegisterVaccinationPage = () => {
             <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mb: 3 }}>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
                 <VaccinesIcon color="primary" />
-                <Typography sx={{ fontWeight: 800 }}>بيانات الجرعة</Typography>
+                <Typography sx={{ fontWeight: 700 }}>بيانات الجرعة</Typography>
               </Stack>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
@@ -408,7 +408,7 @@ const RegisterVaccinationPage = () => {
 
             {summary && summary.records.length > 0 && (
               <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mt: 3 }}>
-                <Typography sx={{ fontWeight: 800, mb: 1.5 }}>سجل الجرعات السابقة</Typography>
+                <Typography sx={{ fontWeight: 700, mb: 1.5 }}>سجل الجرعات السابقة</Typography>
                 <Stack spacing={1}>
                   {summary.records.map((r) => (
                     <Stack key={r.id} direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
@@ -427,7 +427,7 @@ const RegisterVaccinationPage = () => {
 
             {summary && summary.certificates.length > 0 && (
               <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mt: 3 }}>
-                <Typography sx={{ fontWeight: 800, mb: 1.5 }}>شهادات سارية</Typography>
+                <Typography sx={{ fontWeight: 700, mb: 1.5 }}>شهادات سارية</Typography>
                 <Stack spacing={1}>
                   {summary.certificates.map((c) => (
                     <Stack key={c.id} direction="row" alignItems="center" justifyContent="space-between" spacing={1}>

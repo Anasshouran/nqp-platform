@@ -979,7 +979,7 @@ const FlightTab = () => {
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" flexWrap="wrap">
                 <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Typography sx={{ fontWeight: 800, fontFamily: 'monospace', fontSize: 16 }}>
+                  <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 16 }}>
                     {f.flight_number}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">{f.carrier_name}</Typography>
@@ -1046,7 +1046,7 @@ const FoodShipmentTab = () => {
           <CardContent>
             <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" flexWrap="wrap">
               <Stack direction="row" spacing={1.5} alignItems="center">
-                <Typography sx={{ fontWeight: 800, fontFamily: 'monospace', fontSize: 16 }}>{shipment.manifest_number}</Typography>
+                <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 16 }}>{shipment.manifest_number}</Typography>
                 <Typography variant="caption" color="text.secondary">{shipment.port_name}</Typography>
               </Stack>
               <StatusChip label={shipment.status_label} tone={released ? 'success' : shipment.status === 'REJECTED' || shipment.status === 'DESTROYED' || shipment.status === 'HOLD' ? 'error' : 'warning'} />
