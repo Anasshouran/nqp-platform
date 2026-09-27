@@ -28,17 +28,13 @@ def submit_ihr_event(self, event_id: str) -> str:
 def sync_who_diseases(self) -> dict:
     """مزامنة خرائط ICD-11 للمرض من البيانات المحلية الصالحة."""
     from apps.who.clients.icd_client import ICD11Client
-    from apps.who.models import WHOIntegration
     from apps.who.services.disease_service import sync_diseases_from_icd11
 
-    integration = WHOIntegration.objects.filter(is_active=True).order_by('-last_success_at').first()
-    if not integration or not integration.client_id or not integration.client_secret:
-        raise ValueError('تكامل WHO غير مكتمل لتنفيذ مزامنة الأمراض.')
-    client = ICD11Client(
-        base_url=integration.base_url,
-        client_id=integration.client_id,
-        client_secret=integration.client_secret,
-    )
+    client = ICD11Client()
+    if not client.is_configured:
+        raise ValueError(
+            'بيانات اعتماد WHO ICD-11 غير مُهيّأة لتنفيذ مزامنة الأمراض.'
+        )
     result = sync_diseases_from_icd11(client)
     if result.errors:
         raise RuntimeError(' | '.join(result.errors[:20]))
