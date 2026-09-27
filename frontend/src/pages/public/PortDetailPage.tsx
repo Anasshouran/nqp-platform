@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -117,7 +118,7 @@ const PortDetailPage = () => {
                   <Stack spacing={1.5}>
                     <InfoRow label="رمز المنفذ" value={port.code} dir="ltr" />
                     <InfoRow label="الاسم بالعربية" value={port.name_ar} />
-                    <InfoRow label="الاسم بالإنجليزية" value={port.name_en} dir="ltr" />
+                    <InfoRow label="الاسم بالإنجليزية" value=<En>{port.name_en}</En> dir="ltr" />
                     <InfoRow label="الولاية" value={port.country_name || '—'} />
                   </Stack>
                 </CardContent>
@@ -176,7 +177,7 @@ const PortDetailPage = () => {
 const portTypeColors = (type: string) =>
   type === 'AIRPORT' ? '#2f6f9f' : type === 'SEAPORT' ? '#c8a13a' : '#b3544b';
 
-const InfoRow = ({ label, value, dir }: { label: string; value: string; dir?: 'ltr' | 'rtl' }) => (
+const InfoRow = ({ label, value, dir }: { label: string; value: React.ReactNode; dir?: 'ltr' | 'rtl' }) => (
   <Stack direction="row" justifyContent="space-between" alignItems="center">
     <Typography variant="body2" color="text.secondary">{label}</Typography>
     <Typography variant="body2" sx={{ fontWeight: 700 }} dir={dir}>{value}</Typography>

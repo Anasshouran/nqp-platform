@@ -105,7 +105,7 @@ const glass = {
   bg: 'rgba(248, 252, 249, 0.72)',
   bgStrong: 'rgba(255, 255, 255, 0.86)',
   tint: 'rgba(238, 250, 246, 0.6)',
-  blur: 'blur(20px) saturate(1.4)',
+  blur: 'blur(12px) saturate(1.25)',
   border: ink,
   highlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.65)',
 };
@@ -254,16 +254,23 @@ const theme = createTheme({
     /* ------- Base ------- */
     MuiCssBaseline: {
       styleOverrides: {
-        html: { colorScheme: 'light' },
-        body: {
-          minHeight: '100vh',
-          color: onSurface,
+        /* The ambient gradient wash lives on the root element, not on a
+           background-attachment:fixed body. A root background is painted onto
+           the canvas and stays put without attachment, which avoids the
+           full-page repaint on every scroll frame that mobile Safari suffers
+           from. Body must therefore stay transparent or it would cover it. */
+        html: {
+          colorScheme: 'light',
           background:
             'radial-gradient(1100px 520px at 88% -8%, rgba(18,165,133,0.09), transparent 60%),' +
             'radial-gradient(900px 480px at -8% 112%, rgba(47,109,208,0.07), transparent 55%),' +
             'radial-gradient(760px 420px at 60% 118%, rgba(140,109,31,0.05), transparent 55%),' +
             surface.default,
-          backgroundAttachment: 'fixed',
+        },
+        body: {
+          minHeight: '100vh',
+          color: onSurface,
+          background: 'transparent',
         },
         'img, svg, video': { display: 'block' },
         /* Numerals stay aligned in tables & stats */
@@ -304,10 +311,12 @@ const theme = createTheme({
       },
     },
     MuiCardContent: {
-      styleOverrides: { root: { padding: 28, '&:last-child': { paddingBottom: 28 } } },
+      styleOverrides: {
+          root: { padding: 'var(--pad-card)', '&:last-child': { paddingBottom: 'var(--pad-card-bottom)' } },
+        },
     },
     MuiCardActions: {
-      styleOverrides: { root: { padding: '0 28px 24px' } },
+      styleOverrides: { root: { padding: '0 var(--pad-card-x) var(--pad-card-actions)' } },
     },
     MuiCardActionArea: {
       styleOverrides: {
@@ -324,7 +333,7 @@ const theme = createTheme({
           borderRadius: radius.md,
           fontWeight: 700,
           padding: '0.625rem 1.5rem',
-          minHeight: 48,
+          minHeight: 'var(--control-min-h)',
           transition: 'transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease',
           '&:hover': { transform: 'translateY(-1px)' },
           '&:active': { transform: 'translateY(0) scale(0.99)' },
@@ -545,7 +554,7 @@ const theme = createTheme({
         root: {
           borderRadius: radius.md,
           margin: '2px 8px',
-          minHeight: 46,
+          minHeight: 'var(--list-min-h)',
           transition: 'background-color 150ms ease, color 150ms ease',
           '&:hover': { backgroundColor: alpha(brand.main, 0.07) },
           '&.Mui-selected': {
@@ -606,7 +615,16 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         head: { fontWeight: 700, backgroundColor: 'rgba(16,40,34,0.04)', fontSize: '0.8125rem' },
-        root: { borderBottomColor: 'rgba(16,40,34,0.08)', fontSize: '0.875rem', py: '0.9rem' },
+        /* Default to tabular figures: passport numbers, ICD-11 codes, fee
+           amounts and counts all sit in these columns, and proportional digits
+           make them jitter as values change. Affects numerals only, so Arabic
+           text in the same cell is unaffected. */
+        root: {
+          borderBottomColor: 'rgba(16,40,34,0.08)',
+          fontSize: '0.875rem',
+          py: 'var(--row-py)',
+          fontVariantNumeric: 'tabular-nums',
+        },
       },
     },
     MuiTableRow: {
@@ -639,7 +657,7 @@ const theme = createTheme({
           textTransform: 'none',
           fontWeight: 700,
           borderRadius: radius.md,
-          minHeight: 44,
+          minHeight: 'var(--tab-min-h)',
           padding: '6px 18px',
           margin: '2px 4px',
           color: onSurfaceVariant,

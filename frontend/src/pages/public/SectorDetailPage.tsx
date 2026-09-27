@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -244,7 +245,7 @@ const SectorDetailPage = () => {
                   </Typography>
                   <Stack spacing={1.5}>
                     <InfoRow label="الاسم بالعربية" value={sector.name_ar} />
-                    <InfoRow label="الاسم بالإنجليزية" value={sector.name_en} dir="ltr" />
+                    <InfoRow label="الاسم بالإنجليزية" value=<En>{sector.name_en}</En> dir="ltr" />
                     <InfoRow label="الإقليم" value={regionLabels[sector.region] || sector.region} />
                     <InfoRow label="عدد المنافذ" value={String(sector.ports_count)} />
                   </Stack>
@@ -495,7 +496,7 @@ const SectorDetailPage = () => {
   );
 };
 
-const InfoRow = ({ label, value, dir }: { label: string; value: string; dir?: 'ltr' | 'rtl' }) => (
+const InfoRow = ({ label, value, dir }: { label: string; value: React.ReactNode; dir?: 'ltr' | 'rtl' }) => (
   <Stack direction="row" justifyContent="space-between" alignItems="center">
     <Typography variant="body2" color="text.secondary">{label}</Typography>
     <Typography variant="body2" sx={{ fontWeight: 700 }} dir={dir}>{value}</Typography>

@@ -140,6 +140,35 @@ const DataTable = <T,>({
         boxShadow: '0 1px 2px rgba(16,40,34,0.03), 0 10px 30px rgba(16,40,34,0.06)',
       }}
     >
+      {/*
+        Result-set announcements. Filtering, searching and paginating all change
+        the table silently for a screen-reader user, so the new extent is spoken
+        politely. aria-live + role=status (not alert) so it waits for a pause
+        instead of interrupting mid-typing. Suppressed while loading, where the
+        count is stale, and the container is aria-busy for the duration.
+      */}
+      <Box
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          p: 0,
+          m: -1,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+          clipPath: 'inset(50%)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {loading || count === 0
+          ? ''
+          : `عرض ${Math.min(rowsPerPage, count)}-${Math.min(page * rowsPerPage + rowsPerPage, count)} من ${count} نتيجة`}
+      </Box>
+
       {hasToolbar && (
         <Box
           sx={{
@@ -275,7 +304,7 @@ const DataTable = <T,>({
       )}
 
       <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
-        <Table size="medium" aria-label={title}>
+        <Table size="medium" aria-label={title || 'جدول البيانات'}>
           <TableHead>
             <TableRow>
               {columns.map((column) => (

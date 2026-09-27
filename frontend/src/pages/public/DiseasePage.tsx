@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -67,9 +68,7 @@ const DiseasePage = () => {
                     </Typography>
                     <Chip label={disease.icd_11_code} size="small" variant="outlined" />
                   </Stack>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                    {disease.name_en}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}><En>{disease.name_en}</En></Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>
                     {disease.description}
                   </Typography>

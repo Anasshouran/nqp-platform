@@ -36,6 +36,14 @@ export type { FormDialogProps } from './FormDialog';
 export { default as ConfirmDialog } from '../ui/ConfirmDialog';
 export { default as AppButton } from '../ui/AppButton';
 
+// Typography helpers
+export { default as En } from './En';
+export type { EnProps } from './En';
+
+// Layout density
+export { default as DensityProvider } from './DensityProvider';
+export type { Density, DensityProviderProps } from './DensityProvider';
+
 // Navigation
 export { default as PageTabs } from './PageTabs';
 export type { PageTab, PageTabsProps } from './PageTabs';

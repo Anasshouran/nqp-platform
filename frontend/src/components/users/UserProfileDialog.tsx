@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,7 +29,7 @@ interface Props {
   onClose: () => void;
 }
 
-const InfoRow = ({ label, value }: { label: string; value?: string | number | null }) => (
+const InfoRow = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   <Box
     sx={{
       display: 'flex',
@@ -123,7 +124,7 @@ const UserProfileDialog = ({ open, user, onClose }: Props) => {
               <InfoRow label="الرقم الوظيفي" value={p.profile.employee_number ?? p.user.employee_number} />
               <InfoRow label="المنصب" value={p.profile.job_title} />
               <InfoRow label="الاسم (عربي)" value={p.profile.full_name_ar} />
-              <InfoRow label="الاسم (إنجليزي)" value={p.profile.full_name_en} />
+              <InfoRow label="الاسم (إنجليزي)" value=<En>{p.profile.full_name_en}</En> />
               <InfoRow label="الجنس" value={p.profile.gender} />
               <InfoRow label="تاريخ الميلاد" value={p.profile.birth_date} />
               <InfoRow label="تاريخ التعيين" value={p.profile.hire_date} />

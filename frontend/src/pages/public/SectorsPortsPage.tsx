@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -328,9 +329,7 @@ const SectorsPortsPage = () => {
                     <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
                       {port.name_ar}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {port.name_en}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary"><En>{port.name_en}</En></Typography>
                     <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
                       <Chip label={port.code} size="small" variant="outlined" dir="ltr" sx={{ fontWeight: 700 }} />
                       {port.country_name && (
@@ -460,9 +459,7 @@ const SectorsPortsPage = () => {
                       <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
                         {sector.name_ar}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {sector.name_en}
-                      </Typography>
+                      <Typography variant="body2" color="text.secondary"><En>{sector.name_en}</En></Typography>
 
                       <Divider sx={{ my: 1.5 }} />
 

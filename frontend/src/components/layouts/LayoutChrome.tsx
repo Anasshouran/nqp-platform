@@ -81,6 +81,7 @@ const LayoutChrome = ({
   return (
     <>
       <AppBar
+        component="header"
         position="fixed"
         color="inherit"
         elevation={0}

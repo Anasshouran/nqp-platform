@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -175,9 +176,7 @@ const LabPricingPage = () => {
               <Stack>
                 <Typography sx={{ fontWeight: 700, fontSize: 13.5 }}>{p.name_ar}</Typography>
                 {p.name_en && (
-                  <Typography variant="caption" color="text.secondary">
-                    {p.name_en}
-                  </Typography>
+                  <Typography variant="caption" color="text.secondary"><En>{p.name_en}</En></Typography>
                 )}
               </Stack>
             ),

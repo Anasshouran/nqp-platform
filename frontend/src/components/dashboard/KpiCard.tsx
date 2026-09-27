@@ -127,9 +127,9 @@ const KpiCard = ({ icon, label, value, accent = 'primary.main', hint, trend, onC
           sx={{
             fontSize: '1.85rem',
             lineHeight: 1.1,
-            fontWeight: 800,
+            fontWeight: 700,
             fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.01em',
+            letterSpacing: 0,
           }}
         >
           {numeric ? value.toLocaleString('en-US') : value}

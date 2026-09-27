@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -122,7 +123,7 @@ const SectorCmsPortDetail = () => {
           >
             <RefreshIcon />
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>المنفذ غير متاح</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>المنفذ غير متاح</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 3 }}>
             لم نتمكن من جلب بيانات هذا المنفذ. يرجى المحاولة مرة أخرى.
           </Typography>
@@ -174,9 +175,9 @@ const SectorCmsPortDetail = () => {
                 {meta.icon}
               </Box>
               <Box>
-                <Typography component="h1" variant="h4" sx={{ fontWeight: 800 }}>{port.name_ar}</Typography>
+                <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>{port.name_ar}</Typography>
                 {port.name_en ? (
-                  <Typography variant="body2" color="text.secondary" dir="ltr" sx={{ textAlign: 'right' }}>{port.name_en}</Typography>
+                  <Typography variant="body2" color="text.secondary" dir="ltr" sx={{ textAlign: 'right' }}><En>{port.name_en}</En></Typography>
                 ) : null}
               </Box>
             </Stack>
@@ -201,7 +202,7 @@ const SectorCmsPortDetail = () => {
       </Card>
 
       <Typography variant="overline" color="text.disabled" sx={{ mb: 0.5, display: 'block' }}>مؤشرات الأداء</Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 2.5 }}>إحصائيات عامة</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2.5 }}>إحصائيات عامة</Typography>
       <Grid container spacing={2.5} sx={{ mb: 4 }} aria-busy={statsLoading}>
         {statCards.map((s) => (
           <Grid item xs={12} sm={4} key={s.label}>
@@ -232,7 +233,7 @@ const SectorCmsPortDetail = () => {
                   {s.icon}
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }} dir="ltr">
+                  <Typography variant="h3" sx={{ fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }} dir="ltr">
                     {s.value === null ? (statsLoading ? <Skeleton width={48} /> : '—') : s.value.toLocaleString('ar-EG')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{s.label}</Typography>
@@ -244,7 +245,7 @@ const SectorCmsPortDetail = () => {
       </Grid>
 
       <Typography variant="overline" color="text.disabled" sx={{ mb: 0.5, display: 'block' }}>ماذا يمكنك أن تفعل هنا</Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 2.5 }}>الخدمات المتاحة</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2.5 }}>الخدمات المتاحة</Typography>
       <Grid container spacing={2.5}>
         {serviceMeta.map((s) => (
           <Grid item xs={12} sm={6} md={3} key={s.label}>

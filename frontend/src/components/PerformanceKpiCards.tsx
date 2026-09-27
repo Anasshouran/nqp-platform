@@ -121,7 +121,7 @@ const PerformanceKpiCards = ({ stats, loading, onRetry }: PerformanceKpiCardsPro
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="h5"
-                    sx={{ fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}
+                    sx={{ fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', letterSpacing: 0 }}
                   >
                     {formatNumber(Number(stats[def.key] ?? 0))}
                   </Typography>

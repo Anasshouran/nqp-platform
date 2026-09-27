@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -247,7 +248,7 @@ const CarrierFormDialog = ({ open, onClose, onSaved }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
         <AddBusinessIcon color="primary" /> إضافة شركة طيران
         {busy && <LinearProgress sx={{ position: 'absolute', inset: '0 0 auto', width: '100%', borderRadius: '4px 4px 0 0' }} />}
       </DialogTitle>
@@ -361,7 +362,7 @@ const CarrierApiKeyDialog = ({ carrier, open, onClose, onMessage }: { carrier: C
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
         <KeyIcon color="primary" /> التكامل API — {carrier.name}
       </DialogTitle>
       <DialogContent dividers>
@@ -436,7 +437,7 @@ const CarriersTab = () => {
           { key: 'name', label: 'الاسم', sortable: true, render: (c) => (
             <Box>
               <Typography sx={{ fontWeight: 700 }}>{c.name}</Typography>
-              {c.name_en && <Typography variant="caption" color="text.secondary">{c.name_en}</Typography>}
+              {c.name_en && <Typography variant="caption" color="text.secondary"><En>{c.name_en}</En></Typography>}
             </Box>
           ) },
           { key: 'iata_code', label: 'كود IATA', render: (c) => c.iata_code || '—' },

@@ -1,3 +1,4 @@
+import En from '../../../components/uikit/En';
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -156,7 +157,7 @@ const DiseaseSyncPage = () => {
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography dir="ltr" sx={{ fontFamily: 'monospace', fontSize: 11 }}>{d.icd_11_code}</Typography>
                       <Typography>{d.name_ar}</Typography>
-                      <Typography variant="caption" color="text.secondary">{d.name_en}</Typography>
+                      <Typography variant="caption" color="text.secondary"><En>{d.name_en}</En></Typography>
                     </Stack>
                   }
                 />

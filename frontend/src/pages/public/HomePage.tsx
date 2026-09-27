@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -387,7 +388,7 @@ const HomePage = () => {
                         {loading ? (
                           <Skeleton width={54} height={34} />
                         ) : (
-                          <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>
                             {stats ? `${Number(stats[stat.key] ?? 0).toLocaleString('en-US')}+` : '—'}
                           </Typography>
                         )}
@@ -475,7 +476,7 @@ const HomePage = () => {
                       <Popup>
                         <Box sx={{ minWidth: 200 }}>
                           <Typography sx={{ fontWeight: 700 }}>{p.name_ar}</Typography>
-                          {p.name_en && <Typography variant="caption" display="block" sx={{ mb: 0.5 }}>{p.name_en}</Typography>}
+                          {p.name_en && <Typography variant="caption" display="block" sx={{ mb: 0.5 }}><En>{p.name_en}</En></Typography>}
                           <Typography variant="caption" display="block" sx={{ opacity: 0.8 }}>
                             {PORT_TYPE_GROUPS.find((g) => g.type === p.type)?.label ?? p.type}
                             {p.address ? ` — ${p.address}` : ''}
@@ -712,7 +713,7 @@ const HomePage = () => {
                   sx={{ px: 2.5, py: 1.75, bgcolor: 'primary.lighter' }}
                 >
                   <CampaignIcon sx={{ color: 'primary.dark' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 800, flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
                     التعاميم
                   </Typography>
                   <Button component={Link} to="/circulars" size="small" endIcon={<ArrowBackIcon />} sx={{ fontWeight: 700 }}>

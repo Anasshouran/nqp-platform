@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -58,7 +59,7 @@ const GATEWAYS: Gateway[] = [
     title: 'بوابة المسافر',
     subtitle: 'خدمات المسافر: التسجيل المسبق، تتبع الطلبات، إدارة المستندات',
     icon: <PersonIcon />,
-    color: '#0e8a72',
+    color: 'primary.main',
     path: '/traveler/login',
     public: true,
   },
@@ -67,7 +68,7 @@ const GATEWAYS: Gateway[] = [
     title: 'بوابة القطاعات',
     subtitle: 'القطاعات الصحية الخمسة: البحر الأحمر، الخرطوم، كسلا، القضارف، الشمالي',
     icon: <AccountTreeIcon />,
-    color: '#0c7f6a',
+    color: 'primary.main',
     path: '/gateways#sectors',
     public: true,
   },
@@ -211,7 +212,7 @@ const portTypeColors: Record<string, string> = {
 const sectorSlug = (code: string) => code.toLowerCase().replace('_', '-');
 
 const statsOverview = [
-  { icon: <HealthAndSafetyIcon />, value: '5', label: 'قطاعات صحية', color: '#0e8a72' },
+  { icon: <HealthAndSafetyIcon />, value: '5', label: 'قطاعات صحية', color: 'primary.main' },
   { icon: <LocalShippingIcon />, value: '14', label: 'منافذ دخول', color: '#2f6f9f' },
   { icon: <LocalHospitalIcon />, value: '7', label: 'عيادات نشطة', color: '#d32f2f' },
   { icon: <ScienceIcon />, value: '12', label: 'مختبر', color: '#7a5c9e' },
@@ -493,9 +494,7 @@ const GatewayHubPage = () => {
                     <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
                       {sector.name_ar}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {sector.name_en}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary"><En>{sector.name_en}</En></Typography>
 
                     <Divider sx={{ my: 1.5 }} />
 
@@ -586,9 +585,7 @@ const GatewayHubPage = () => {
                     <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
                       {port.name_ar}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {port.name_en}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary"><En>{port.name_en}</En></Typography>
                     <Divider sx={{ my: 1.5 }} />
                     <Stack spacing={0.75}>
                       {port.address && (
