@@ -1,11 +1,13 @@
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppRoutes from './routes';
+import OfflineSyncPresenter from './components/common/OfflineSyncPresenter';
 
 function App() {
   return (
     <>
       <AppRoutes />
+      <OfflineSyncPresenter />
       <ToastContainer
         position="bottom-left"
         rtl

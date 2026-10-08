@@ -145,6 +145,39 @@ def test_entry_point_linked_to_organization_sector(entry_point, org_sector):
     assert entry_point in org_sector.entry_points.all()
 
 
+# ---------------- نطاقان لا يتبادلان: الولاية الجغرافية ≠ القطاع الإداري ----------------
+
+
+def test_entry_point_state_and_sector_fks_target_distinct_models():
+    state_field = EntryPoint._meta.get_field('state')
+    sector_field = EntryPoint._meta.get_field('sector')
+    assert state_field.related_model is State
+    assert sector_field.related_model is OrgSector
+    assert state_field.related_model is not sector_field.related_model
+
+
+def test_state_sector_fk_targets_transport_sector():
+    """`State.sector` قطاع النقل (بحري/بري/جوي) وليس القطاع الإداري."""
+    assert State._meta.get_field('sector').related_model is Sector
+    assert Sector is not OrgSector
+
+
+def test_org_sector_is_rejected_by_state_field(org_sector):
+    with pytest.raises(ValueError):
+        EntryPoint(
+            code='EP_SWAPPED', name_ar='تبديل مرفوض', kind=EntryPoint.Kind.LAND_PORT,
+            state=org_sector,
+        )
+
+
+def test_geographic_state_is_rejected_by_sector_field(state):
+    with pytest.raises(ValueError):
+        EntryPoint(
+            code='EP_SWAPPED2', name_ar='تبديل مرفوض', kind=EntryPoint.Kind.LAND_PORT,
+            sector=state,
+        )
+
+
 def test_entry_point_filter_by_kind(staff_client, entry_point, state):
     EntryPoint.objects.create(
         code='SDAIR', name_ar='مطار الخرطوم', kind=EntryPoint.Kind.AIRPORT, state=state

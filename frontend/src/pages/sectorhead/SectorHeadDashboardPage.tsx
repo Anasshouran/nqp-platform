@@ -44,6 +44,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { getSectorHeadDashboard } from '../../api/endpoints/food';
+import { notifyError } from '../../utils/toast';
 import type { SectorHeadDashboard } from '../../types/food';
 
 const PERIODS = [
@@ -83,7 +84,6 @@ const getErrMessage = (e: unknown, fallback: string): string => {
   const err = e as { response?: { data?: { message?: string } } };
   return err?.response?.data?.message || fallback;
 };
-const notifyError = (m: string) => console.error(m);
 
 const SectorHeadDashboardPage = () => {
   const navigate = useNavigate();
@@ -92,16 +92,20 @@ const SectorHeadDashboardPage = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const periodRef = useRef(period);
+  const reqId = useRef(0);
 
   const loadData = useCallback(async (p: string) => {
+    const current = ++reqId.current;
     try {
       const res = await getSectorHeadDashboard(p);
+      if (reqId.current !== current) return;
       setDash(res.data.data);
       setLastUpdated(new Date());
     } catch (e) {
+      if (reqId.current !== current) return;
       notifyError(getErrMessage(e, 'تعذر تحميل لوحة القطاع'));
     } finally {
-      setLoadingData(false);
+      if (reqId.current === current) setLoadingData(false);
     }
   }, []);
 

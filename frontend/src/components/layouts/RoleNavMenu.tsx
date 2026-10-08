@@ -21,6 +21,13 @@ export interface RoleNavSection {
 interface RoleNavMenuProps {
   /** أقسام القائمة (كل قسم بعنوان overline اختياري) */
   sections: RoleNavSection[];
+  /**
+   * صلاحيات المستخدم بصيغة `resource:action`. تُخفى العناصر التي تطلب صلاحية
+   * غير موجودة. **فارغة أو غير معرَّفة ⇒ لا تقييد** (fail-open): موظفو
+   * `is_staff` يتجاوزون فحص الصلاحيات في الخادم وقد لا تُحمَّل قائمتهم،
+   * فإخفاؤها عندها يبني مستحىً في الواجهة بلا سبب.
+   */
+  permissions?: string[];
   /** اللون الأساسي للدور (تدرّجات النص النشط والخلفية) */
   accent: string;
   /** وضع الطي لأيقونات فقط (أدوار Generic) */
@@ -51,6 +58,7 @@ const matchActive = (target: string | undefined, pathname: string, search: strin
  *  (Generic + ADMIN) لإزالة تكرار القوائم وحفظ الأسلوب البصري. */
 const RoleNavMenu = ({
   sections,
+  permissions,
   accent,
   collapsed = false,
   microBadgeCount = 0,
@@ -59,6 +67,19 @@ const RoleNavMenu = ({
   onNavigate,
 }: RoleNavMenuProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const canSee = (item: RoleNavItem) => {
+    if (!item.permission) return true;
+    if (!permissions?.length) return true;
+    return permissions.includes(item.permission);
+  };
+
+  // نُصفّي معاً: نُسقط العناصر الممنوعة، ومجموعةً لم يتبقَّ منها عنصر ظاهر.
+  const filterItems = (items: RoleNavItem[]): RoleNavItem[] =>
+    items
+      .filter(canSee)
+      .map((item) => (item.children ? { ...item, children: filterItems(item.children) } : item))
+      .filter((item) => !item.children || item.children.length > 0);
 
   const toggle = (label: string) =>
     setExpanded((s) => ({ ...s, [label]: !s[label] }));
@@ -245,7 +266,7 @@ const RoleNavMenu = ({
               {section.label}
             </Typography>
           )}
-          <List disablePadding>{section.items.map(renderItem)}</List>
+          <List disablePadding>{filterItems(section.items).map(renderItem)}</List>
         </Box>
       ))}
     </>

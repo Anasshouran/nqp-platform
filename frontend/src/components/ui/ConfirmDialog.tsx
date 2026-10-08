@@ -27,9 +27,9 @@ interface ConfirmDialogProps {
 }
 
 const toneMeta = {
-  error: { color: 'error.main', bg: 'error.light', icon: <WarningAmberIcon fontSize="small" />, btn: 'error' as const },
-  success: { color: 'success.main', bg: 'success.light', icon: <CheckCircleIcon fontSize="small" />, btn: 'success' as const },
-  info: { color: 'info.main', bg: 'info.light', icon: <InfoIcon fontSize="small" />, btn: 'primary' as const },
+  error: { color: 'error.dark', bg: 'error.light', icon: <WarningAmberIcon fontSize="small" />, btn: 'error' as const },
+  success: { color: 'success.dark', bg: 'success.light', icon: <CheckCircleIcon fontSize="small" />, btn: 'success' as const },
+  info: { color: 'info.dark', bg: 'info.light', icon: <InfoIcon fontSize="small" />, btn: 'primary' as const },
 };
 
 const ConfirmDialog = ({

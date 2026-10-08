@@ -24,6 +24,7 @@ import type { AuthUser } from '../../api/endpoints/auth';
 import { getCertificateQr, getCertificates, revokeCertificate } from '../../api/endpoints/clinic';
 import type { HealthCertificate } from '../../types/clinic';
 import { formatDate, formatDateTime } from '../../utils/formatters';
+import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { PassportChip, PersonAvatar } from './ui';
 
@@ -54,7 +55,7 @@ const printCertificate = (cert: CertDetail, qrPng?: string, orgName?: string) =>
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8" />
-<title>شهادة صحية - ${cert.certificate_number}</title>
+<title>شهادة صحية - ${escapeHtml(cert.certificate_number)}</title>
 <style>
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; padding: 32px; color: #102822; }
   .sheet { max-width: 720px; margin: 0 auto; border: 3px solid #0e7490; border-radius: 16px; padding: 40px; }
@@ -74,30 +75,30 @@ const printCertificate = (cert: CertDetail, qrPng?: string, orgName?: string) =>
 <div class="sheet">
   <div class="head">
     <div>
-      <h1>${orgName || 'وزارة الصحة الاتحادية'} - الحجر الصحي</h1>
+      <h1>${escapeHtml(orgName || 'وزارة الصحة الاتحادية')} - الحجر الصحي</h1>
       <h2>شهادة صحية</h2>
     </div>
     <div class="stamp">${cert.status === 'ACTIVE' ? 'سارية' : 'ملغاة'}</div>
   </div>
-  <div class="row"><span>رقم الشهادة</span><b>${cert.certificate_number}</b></div>
-  <div class="row"><span>نوع الشهادة</span><b>${certTypeMeta[cert.certificate_type]?.label || cert.certificate_type}</b></div>
-  <div class="row"><span>اسم حامل الشهادة</span><b>${cert.traveler_name || '—'}</b></div>
-  <div class="row"><span>جواز السفر</span><b>${cert.passport_number || '—'}</b></div>
-  <div class="row"><span>التوصية النهائية</span><b>${verdictMeta[cert.verdict] || cert.verdict}</b></div>
-  <div class="row"><span>المضمون</span><b>${cert.decision || '—'}</b></div>
-  <div class="row"><span>الجهة المصدرة</span><b>${cert.clinic_name || '—'}</b></div>
-  <div class="row"><span>تاريخ الإصدار</span><b>${formatDateTime(cert.issued_at)}</b></div>
-  <div class="row"><span>صالحة حتى</span><b>${cert.valid_until ? formatDate(cert.valid_until) : '—'}</b></div>
+  <div class="row"><span>رقم الشهادة</span><b>${escapeHtml(cert.certificate_number)}</b></div>
+  <div class="row"><span>نوع الشهادة</span><b>${escapeHtml(certTypeMeta[cert.certificate_type]?.label || cert.certificate_type)}</b></div>
+  <div class="row"><span>اسم حامل الشهادة</span><b>${escapeHtmlOr(cert.traveler_name)}</b></div>
+  <div class="row"><span>جواز السفر</span><b>${escapeHtmlOr(cert.passport_number)}</b></div>
+  <div class="row"><span>التوصية النهائية</span><b>${escapeHtml(verdictMeta[cert.verdict] || cert.verdict)}</b></div>
+  <div class="row"><span>المضمون</span><b>${escapeHtmlOr(cert.decision)}</b></div>
+  <div class="row"><span>الجهة المصدرة</span><b>${escapeHtmlOr(cert.clinic_name)}</b></div>
+  <div class="row"><span>تاريخ الإصدار</span><b>${escapeHtml(formatDateTime(cert.issued_at))}</b></div>
+  <div class="row"><span>صالحة حتى</span><b>${cert.valid_until ? escapeHtml(formatDate(cert.valid_until)) : '—'}</b></div>
   <div class="foot">
     <div>
       <div class="qr">
-        ${qr ? `<img src="data:image/png;base64,${qr}" alt="QR" />` : ''}
-        <div class="verify">للتحقق: ${typeof window !== 'undefined' ? window.location.origin : ''}${cert.verification_path || ''}</div>
+        ${qr ? `<img src="data:image/png;base64,${escapeHtml(qr)}" alt="QR" />` : ''}
+        <div class="verify">للتحقق: ${typeof window !== 'undefined' ? window.location.origin : ''}${escapeHtml(cert.verification_path || '')}</div>
       </div>
     </div>
     <div style="text-align:left">
       <div style="font-weight:800">الطبيب</div>
-      <div>${cert.issued_by_name || '—'}</div>
+      <div>${escapeHtmlOr(cert.issued_by_name)}</div>
     </div>
   </div>
 </div>

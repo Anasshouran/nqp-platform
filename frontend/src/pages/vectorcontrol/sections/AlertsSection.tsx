@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -15,7 +16,7 @@ import { OfflineQueuedError } from '../../../utils/vectorOffline';
 const AlertsSection = () => {
   const t = useServerTable<VectorAlert>({ fetchData: getAlerts });
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   return (
     <SectionCard id="alerts">

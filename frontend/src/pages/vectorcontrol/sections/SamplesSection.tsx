@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,6 +11,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ScienceIcon from '@mui/icons-material/Science';
 import { DataTable, StatusChip } from '../../../components/ui';
+import { FormDialog } from '../../../components/uikit';
 import { useServerTable } from '../../../hooks/useServerTable';
 import {
   approveLabResult,
@@ -53,7 +55,7 @@ const NewSampleForm = ({ onSaved }: { onSaved: () => void }) => {
       setForm((f) => ({ ...f, focus: '', vector: '', specimen_count: '1', collection_method: '', condition_note: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ العينة — تأكد من نقطة الدخول');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ العينة — تأكد من نقطة الدخول');
     } finally {
       setSaving(false);
     }
@@ -104,7 +106,7 @@ const ResultDialog = ({ sample, onClose, onSaved }: ResultDialogProps) => {
       onSaved();
       onClose();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ نتيجة المختبر');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ نتيجة المختبر');
     } finally {
       setSaving(false);
     }
@@ -138,14 +140,17 @@ const SamplesSection = () => {
   const lt = useServerTable<VectorLabResult>({ fetchData: getLabResults });
   const [formOpen, setFormOpen] = useState(false);
   const [resultFor, setResultFor] = useState<VectorSample | null>(null);
+  const [rejectFor, setRejectFor] = useState<VectorLabResult | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
-  const act = (p: Promise<unknown>) => p.then(() => { t.refresh(); lt.refresh(); }).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => { t.refresh(); lt.refresh(); }).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   const approveReject = (id: string, approve: boolean) => {
     if (approve) act(approveLabResult(id));
     else {
-      const r = window.prompt('سبب الرفض:');
-      if (r !== null) act(rejectLabResult(id, r));
+      const target = lt.rows.find((r) => r.id === id) ?? null;
+      setRejectFor(target);
+      setRejectReason('');
     }
   };
 
@@ -229,6 +234,31 @@ const SamplesSection = () => {
       />
 
       {resultFor && <ResultDialog sample={resultFor} onClose={() => setResultFor(null)} onSaved={() => { t.refresh(); lt.refresh(); }} />}
+
+      <FormDialog
+        open={Boolean(rejectFor)}
+        title="رفض النتيجة"
+        subtitle={rejectFor ? `العينة ${rejectFor.sample_number}` : undefined}
+        submitLabel="رفض"
+        onClose={() => setRejectFor(null)}
+        onSubmit={() => {
+          if (!rejectFor) return;
+          const target = rejectFor;
+          setRejectFor(null);
+          act(rejectLabResult(target.id, rejectReason));
+        }}
+        submitDisabled={!rejectReason.trim()}
+      >
+        <TextField
+          autoFocus
+          multiline
+          minRows={2}
+          label="سبب الرفض"
+          placeholder="أدخل سبب رفض النتيجة المخبرية"
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+      </FormDialog>
     </SectionCard>
   );
 };

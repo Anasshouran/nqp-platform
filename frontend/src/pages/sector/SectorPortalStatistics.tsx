@@ -36,7 +36,7 @@ const SectorPortalStatistics = () => {
   const statCards = [
     { value: stats.entry_points, label: 'نقاط الدخول', icon: <LocationOnIcon />, color: 'primary.main', scope: 'القطاع' },
     { value: stats.screenings, label: 'الفحوصات الصحية', icon: <HealthAndSafetyIcon />, color: '#2f6f9f', scope: 'القطاع' },
-    { value: stats.certificates, label: 'الشهادات الصادرة', icon: <WorkspacePremiumIcon />, color: '#c8a13a', scope: 'المنصة' },
+    { value: stats.certificates, label: 'الشهادات الصادرة', icon: <WorkspacePremiumIcon />, color: '#8c6d1f', scope: 'المنصة' },
     { value: stats.food_shipments, label: 'الشحنات الغذائية', icon: <InventoryIcon />, color: '#b3544b', scope: 'القطاع' },
     { value: stats.lab_samples, label: 'العينات المخبرية', icon: <ScienceIcon />, color: '#7a5c9e', scope: 'المنصة' },
   ];

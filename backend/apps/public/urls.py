@@ -29,6 +29,7 @@ urlpatterns = [
     path('assistant/chat/', AssistantViewSet.as_view({'post': 'chat'}), name='public-assistant-chat'),
     path('assistant/suggestions/', AssistantViewSet.as_view({'get': 'suggestions'}), name='public-assistant-suggestions'),
     path('assistant/topics/', AssistantViewSet.as_view({'get': 'topics'}), name='public-assistant-topics'),
+    path('assistant/feedback/', AssistantViewSet.as_view({'post': 'feedback'}), name='public-assistant-feedback'),
     path('lookup/', TravelerLookupView.as_view(), name='public-traveler-lookup'),
     path('verify-qr/', VerifyQrView.as_view(), name='public-verify-qr'),
     path('verify-certificate/', VerifyCertificateView.as_view(), name='public-verify-certificate'),

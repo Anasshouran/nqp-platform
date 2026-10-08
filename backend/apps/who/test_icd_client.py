@@ -8,7 +8,7 @@
   • رأس API-Version: v2 على كل طلبات API
   • سلوك الـ cache وعدم تسريب السّر أو access_token
   • الإعدادات المركزية (WHO_ICD_*) كمصدر افتراضي مع بقاء التمرير الصريح له الأولوية
-  • رفض إرسال أي طلب عند غياب بيانات الاعتماد
+  • رفض إرسال أي طلب عند غياب بيانات الاعتماد أو عند تعطيل WHO_ENABLED
 """
 
 from unittest import mock
@@ -18,8 +18,13 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 
-from apps.who.clients.base_client import WHOClientError
-from apps.who.clients.icd_client import ICD11Client, _setting
+from apps.who.clients.base_client import (
+    WHOClientError,
+    WHOClientValidationError,
+    WHOExternalAccessDisabled,
+)
+from apps.who.clients.icd_client import ICD11Client
+from apps.who.config import setting
 
 BASE_URL = 'https://id.who.int'
 TOKEN_URL = 'https://icdaccessmanagement.who.int/connect/token'
@@ -34,6 +39,13 @@ SETTINGS_CLIENT_ID = 'settings-client-id'
 SETTINGS_SECRET = 'settings-secret-placeholder'
 
 
+@pytest.fixture(autouse=True)
+def _who_enabled():
+    """كل اختبارات هذه الوحدة تفترض تكاملاً مفعّلاً صراحةً."""
+    with override_settings(WHO_ENABLED=True):
+        yield
+
+
 def _client(secret=SECRET):
     return ICD11Client(
         base_url=BASE_URL,
@@ -44,7 +56,7 @@ def _client(secret=SECRET):
 
 
 def _central_settings(**overrides):
-    """سياق إعدادات مركزية يحاكي .env.who دون أي credentials حقيقية."""
+    """سياق إعدادات مركزية يحاكي deploy/.env.who دون أي credentials حقيقية."""
     values = {
         'WHO_ICD_BASE_URL': SETTINGS_BASE_URL,
         'WHO_ICD_TOKEN_URL': SETTINGS_TOKEN_URL,
@@ -53,6 +65,7 @@ def _central_settings(**overrides):
     }
     values.update(overrides)
     return override_settings(**values)
+
 
 
 def _ok_token_response(token='access-token-abc'):
@@ -292,9 +305,9 @@ def test_setting_helper_returns_fallback_when_django_settings_unavailable():
     type(unconfigured).__getattr__ = mock.Mock(
         side_effect=ImproperlyConfigured('Settings are not configured.'),
     )
-    with mock.patch('apps.who.clients.icd_client.settings', unconfigured):
-        assert _setting('WHO_ICD_CLIENT_SECRET', 'fallback') == 'fallback'
-        assert _setting('WHO_ICD_CLIENT_SECRET') == ''
+    with mock.patch('apps.who.config.settings', unconfigured):
+        assert setting('WHO_ICD_CLIENT_SECRET', 'fallback') == 'fallback'
+        assert setting('WHO_ICD_CLIENT_SECRET') == ''
 
 
 # ===== غياب بيانات الاعتماد: لا طلب شبكي إطلاقًا =====
@@ -382,3 +395,107 @@ def test_client_does_not_reference_who_integration_model():
     source = inspect.getsource(icd_client)
     assert 'WHOIntegration' not in source
     assert 'objects' not in source
+
+
+# ===== عقد الإعدادات: التعطيل، الصلاحية، والعقد الصريح =====
+
+
+def test_constructing_client_performs_no_http_request():
+    """البناء كسول تماماً: لا توكن ولا طلب عند الإنشاء."""
+    with _central_settings(), mock.patch('httpx.post') as post, \
+            mock.patch('httpx.get') as get:
+        ICD11Client()
+    assert post.call_count == 0
+    assert get.call_count == 0
+
+
+def test_disabled_integration_refuses_before_any_request():
+    """WHO_ENABLED=false يمنع كل إرسال حتى مع اعتماد كامل صالح."""
+    with override_settings(WHO_ENABLED=False), _central_settings(), \
+            mock.patch('httpx.post') as post, mock.patch('httpx.get') as get:
+        client = ICD11Client()
+        assert client.is_configured is True
+        assert client.is_enabled is False
+        with pytest.raises(WHOExternalAccessDisabled) as exc:
+            client.search('Cholera', language='en')
+        assert 'WHO_ENABLED' in str(exc.value)
+    assert post.call_count == 0
+    assert get.call_count == 0
+
+
+def test_invalid_base_url_is_reported_without_any_request():
+    with _central_settings(WHO_ICD_BASE_URL='not-a-url'), \
+            mock.patch('httpx.post') as post, mock.patch('httpx.get') as get:
+        client = ICD11Client()
+        assert client.is_enabled is False
+        with pytest.raises(WHOClientError) as exc:
+            client.search('Cholera', language='en')
+    assert 'WHO_ICD_BASE_URL' in str(exc.value)
+    assert post.call_count == 0
+    assert get.call_count == 0
+
+
+def test_invalid_token_url_is_reported_without_any_request():
+    with _central_settings(WHO_ICD_TOKEN_URL='ht!tp://bad url'), \
+            mock.patch('httpx.post') as post, mock.patch('httpx.get') as get:
+        with pytest.raises(WHOClientError) as exc:
+            ICD11Client()._token()
+    assert 'WHO_ICD_TOKEN_URL' in str(exc.value)
+    assert post.call_count == 0
+    assert get.call_count == 0
+
+
+@pytest.mark.parametrize('language', ['arabic', 'AR', '', 'ar-egypt!'])
+def test_unsupported_language_is_refused_before_any_request(language):
+    """عقد اللغة صريح: ar / en مدعومان، وما عداها يُرفض محلياً بلا طلب."""
+    client = _client()
+    with mock.patch('httpx.post') as post, mock.patch('httpx.get') as get, \
+            pytest.raises(WHOClientValidationError):
+        client.search('Cholera', language=language)
+    assert post.call_count == 0
+    assert get.call_count == 0
+
+
+@pytest.mark.parametrize('language', ['ar', 'en'])
+def test_supported_languages_pass_language_contract(language):
+    client = _client()
+    with mock.patch('httpx.post', return_value=_ok_token_response()), \
+            mock.patch('httpx.get', return_value=_ok_search_response()) as get:
+        client.search('Cholera', language=language)
+    assert get.call_args.kwargs['headers']['Accept-Language'] == language
+    assert get.call_args.kwargs['headers']['API-Version'] == 'v2'
+
+
+def test_api_version_and_scope_are_configuration_driven():
+    """عقد ICD-11 ظاهر في الإعدادات: إصدار API ونطاق OAuth قابلان للضبط."""
+    with _central_settings(WHO_ICD_API_VERSION='v2', WHO_ICD_SCOPE='icdapi_access'):
+        client = ICD11Client()
+    assert client.api_version == 'v2'
+    assert client.scope == 'icdapi_access'
+    with mock.patch('httpx.post', return_value=_ok_token_response()) as post:
+        client._token()
+    assert post.call_args.kwargs['data']['scope'] == 'icdapi_access'
+
+
+def test_timeout_is_configuration_driven():
+    with _central_settings(), override_settings(WHO_ICD_TIMEOUT=7.5):
+        client = ICD11Client()
+    assert client.timeout == 7.5
+    with mock.patch('httpx.post', return_value=_ok_token_response()) as post:
+        client._token()
+    assert post.call_args.kwargs['timeout'] == 7.5
+
+
+def test_client_repr_does_not_leak_credentials(caplog):
+    client = _client()
+    assert SECRET not in repr(client)
+    assert CLIENT_ID not in repr(client)
+    assert SECRET not in caplog.text
+
+
+def test_transport_timeout_error_is_wrapped_as_client_error():
+    request = httpx.Request('GET', SEARCH_URL)
+    with mock.patch('httpx.post', return_value=_ok_token_response()), \
+            mock.patch('httpx.get', side_effect=httpx.ReadTimeout('timed out', request=request)), \
+            pytest.raises(httpx.ReadTimeout):
+        _client().search('Cholera', language='en')

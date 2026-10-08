@@ -182,7 +182,8 @@ export interface HealthCertificate {
 export interface CertificateVerifyResult {
   certificate_number: string;
   certificate_type: string;
-  verdict: string;
+  /** حقول سريرية قد لا تُرجع في التحقق العام — اختيارية. */
+  verdict?: string;
   decision?: string;
   status: string;
   issued_at: string;

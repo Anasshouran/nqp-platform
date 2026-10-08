@@ -3,16 +3,32 @@ from rest_framework.routers import DefaultRouter
 
 from apps.carriers.views import CarrierIntegrationViewSet
 from .views import (
+    ApiEndpointViewSet,
+    AuditLogViewSet,
+    DataScopeViewSet,
     DeveloperAppViewSet,
-    ExternalEntityViewSet,
+    EncryptedCredentialValueViewSet,
+    IntegrationHealthViewSet,
     IntegrationLogViewSet,
     IntegrationViewSet,
+    IntegrationViewSetPortal,
+    OrganizationViewSet,
+    WebhookDeliveryViewSet,
     WebhookEndpointViewSet,
+    WebhookSubscriptionViewSet,
 )
 
 router = DefaultRouter()
 router.register('logs', IntegrationLogViewSet, basename='integration-log')
-router.register('entities', ExternalEntityViewSet, basename='external-entity')
+router.register('entities', OrganizationViewSet, basename='organization')
+router.register('api-endpoints', ApiEndpointViewSet, basename='api-endpoint')
+router.register('integrations', IntegrationViewSetPortal, basename='integration-portal')
+router.register('health', IntegrationHealthViewSet, basename='integration-health')
+router.register('webhook-subscriptions', WebhookSubscriptionViewSet, basename='webhook-subscription')
+router.register('webhook-deliveries', WebhookDeliveryViewSet, basename='webhook-delivery')
+router.register('audit-logs', AuditLogViewSet, basename='audit-log')
+router.register('data-scopes', DataScopeViewSet, basename='data-scope')
+router.register('credentials', EncryptedCredentialValueViewSet, basename='credential')
 router.register('developer-apps', DeveloperAppViewSet, basename='developer-app')
 router.register('webhooks', WebhookEndpointViewSet, basename='webhook')
 
@@ -34,6 +50,7 @@ urlpatterns = [
     path('immigration/verify/', IntegrationViewSet.as_view({'post': 'immigration_verify'}), name='integration-immigration'),
     path('labs/request/', IntegrationViewSet.as_view({'post': 'labs_request'}), name='integration-labs-request'),
     path('labs/result/', IntegrationViewSet.as_view({'post': 'labs_result'}), name='integration-labs-result'),
+    path('labs/status/<str:sample_id>/', IntegrationViewSet.as_view({'get': 'labs_status'}), name='integration-labs-status'),
     path('surveillance/aggregated/', IntegrationViewSet.as_view({'post': 'surveillance_aggregated'}), name='integration-surv-aggregated'),
     path('surveillance/alert/', IntegrationViewSet.as_view({'post': 'surveillance_alert'}), name='integration-surv-alert'),
     path('hospitals/referral/', IntegrationViewSet.as_view({'post': 'hospitals_referral'}), name='integration-hosp-referral'),

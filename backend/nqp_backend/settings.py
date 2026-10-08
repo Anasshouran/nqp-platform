@@ -79,7 +79,11 @@ LOCAL_APPS = [
     'apps.ihr',
     'apps.who',
     'apps.vaccination',
+    'apps.shipping',
     'apps.surveillance',
+    'apps.borders_health',
+    'apps.hr',
+    'apps.mobile_api',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -175,6 +179,7 @@ REST_FRAMEWORK = {
         'core.renderers.EnvelopeRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
+    'EXCEPTION_HANDLER': 'core.exceptions.handlers.api_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardPagination',
     'PAGE_SIZE': 10,
 'DEFAULT_THROTTLE_CLASSES': (
@@ -183,15 +188,40 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
+        # `anon` يحمي محاولات تسجيل الدخول من القوة الغاشمة؛ المفتاح هو الـIP.
         'anon': '100/min',
-        'user': '200/hour',
+        # `user` مفتاحه معرّف المستخدم لا الـIP. لا بد أن يسع لوحة معلومات
+        # تفتح عدة طلبات في الصفحة الواحدة: بـ`200/hour` كان يُقفل مستخدم واحد
+        # بحلول عشر صفحات، وهو سلوك لا يُطاق. الخدمة الداخلية لكل موظف
+        # الطلب الواحد هنا، فلا معنى لسقف بهذا الصغر.
+        'user': '1000/hour',
         'traveler_lookup': '30/hour',
+        # التحقق العام من الشهادات والرموز يعمل بلا مصادقة، وسقفه مشترك
+        # بين عروض التحقق العامة حتى لا يُستغل أي منها في تفحّص جماعي:
+        # 60/ساعة لكل عنوان — يسمح بالتحقق التشغيلي العادي ويمنع الفحص الآلي.
+        'public_verify': '60/hour',
+        # المساعد الذكي عام وبلا مصادقة، فهو الأكثر عرضة للاستنزاف:
+        # سقف مستقل حتى لا ينازع على حصة استعلام المسافر (30/ساعة).
+        'assistant_chat': '30/hour',
+        'assistant_feedback': '60/hour',
     },
 }
 
+if DEBUG and not _IS_TEST_RUN:
+    # في التطوير: التخزين هو `LocMemCache` داخل عملية واحدة، وإعادة تشغيل
+    # الخادم تمسح السجل. سقف الإنتاج هنا يوقف التطوير بلا فائدة. نرفع السقف
+    # فقط، ولا نُلغي التقييد: كشف التجاوزات يبقى صالحاً للتجريب.
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']['user'] = '10000/hour'
+
 if _IS_TEST_RUN:
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = ()
-    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {}
+    # خريطة المعدّلات لا تُفرَّغ: `ScopedRateThrottle` مُعلَن صريحاً على
+    # `public/lookup` (التطعيم) وعلى عروض البحث العامة، وهي ترمي
+    # `ImproperlyConfigured` عند غياب النطاق. نرفع السقف بدل تعطيله كي
+    # تبقى الاختبارات غير هشّة.
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        k: '1000/min' for k in ('anon', 'user', 'traveler_lookup', 'public_verify', 'assistant_chat', 'assistant_feedback')
+    }
 
 # JWT
 _SIGNING_KEY = os.environ.get('JWT_SECRET_KEY') or None
@@ -210,6 +240,9 @@ else:
 # رابط الواجهة الأمامية لروابط إعادة تعيين كلمة المرور.
 # يُفعَّل صراحةً في الإنتاج — يُستخدم بدلاً من رأس Origin (الذي يمكن تسميمه).
 PASSWORD_RESET_BASE_URL = os.environ.get('PASSWORD_RESET_BASE_URL', '').rstrip('/')
+# الرابط العام المطبوع على رموز QR (شهادات التطعيم). فارغ ⇒ يُشتق من المضيف
+# في الطلب، وهو ما يصلح للتطوير لكنه غير كافٍ في الإنتاج (وراء وكيل عكسي).
+PUBLIC_SITE_URL = os.environ.get('PUBLIC_SITE_URL', '').rstrip('/')
 
 # Celery — build broker/result URLs from REDIS_* when not overridden (e.g. in containers)
 _REDIS_HOST = os.environ.get('REDIS_HOST')
@@ -242,21 +275,74 @@ if USE_S3:
         'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
     }
 
-# WHO ICD-11 — المصدر الرسمي للأسرار هو البيئة (env_file: .env.who) وليس قاعدة البيانات.
-# الافتراضيات لروابط الخدمة العامة فقط؛ بيانات الاعتماد تُقرأ من Environment ولا تُطبع في السجلات.
-WHO_ICD_BASE_URL = os.environ.get('WHO_ICD_BASE_URL', 'https://id.who.int')
-WHO_ICD_TOKEN_URL = os.environ.get('WHO_ICD_TOKEN_URL', 'https://icdaccessmanagement.who.int/connect/token')
-WHO_ICD_CLIENT_ID = os.environ.get('WHO_ICD_CLIENT_ID', '')
-WHO_ICD_CLIENT_SECRET = os.environ.get('WHO_ICD_CLIENT_SECRET', '')
+# ============================================================
+# WHO / ICD-11 / IHR — عقد الإعدادات القانوني (Canonical contract)
+# ============================================================
+# مصدر الأسرار الوحيد هو البيئة (deploy/.env.who على VPS). قاعدة البيانات
+# (WHOIntegration) تحتفظ بحالة التكامل التشغيلي فقط، وتُقرأ كـfallback للتوافق فقط.
+#
+# الفصل بين النطاقات:
+#   WHO_*       → مفتاح عام مشترك: التفعيل + المهلة الافتراضية
+#   WHO_ICD_*   → WHO ICD-11 API (روابط موثّقة في apps/who/clients/icd_client.py)
+#   WHO_IHR_*   → WHO IHR (نقاط النهاية الخارجية غير مؤكّدة رسمياً — تُترك فارغة عمداً)
+#
+# لا يُرسل أي طلب خارجي ما لم يكن WHO_ENABLED=true مع بيانات اعتماد صالحة.
 
-# WHO IHR / Events — خادم تفويض منفصل عن ICD-11 (رمز الوصول يُشتق من WHOIntegration.base_url).
-# لا تُخلَط أسرار ICD-11 هنا: نطاق IHR مختلف ونقطة التوكن مختلفة.
-# الافتراضي: بيانات الاعتماد من قاعدة البيانات (WHOIntegration) حتى تُزوَّد بيانات IHR صريحة.
+
+def _env_bool(name, default='False'):
+    return os.environ.get(name, default).strip().lower() in ('true', '1', 'yes', 'on')
+
+
+def _env_float(name, default):
+    try:
+        return float(os.environ.get(name, ''))
+    except (TypeError, ValueError):
+        return float(default)
+
+
+# --- مفتاح عام ---
+# التعطيل الافتراضي مقصود: التبني متدرّج opt-in، ولا اتصال خارجي قبل موافقة صريحة.
+WHO_ENABLED = _env_bool('WHO_ENABLED', 'False')
+WHO_TIMEOUT = _env_float('WHO_TIMEOUT', 15)
+
+# --- ICD-11 ---
+# الأسماء القديمة (WHO_BASE_URL / WHO_TOKEN_URL / WHO_CLIENT_ID / WHO_CLIENT_SECRET)
+# تُقرأ كـfallback لأن نشرها السابق لم يحمل سوى قيم ICD-11. الأولوية للاسم القانوني.
+WHO_LEGACY_ENV_IN_USE = [
+    name for name in ('WHO_BASE_URL', 'WHO_TOKEN_URL', 'WHO_CLIENT_ID', 'WHO_CLIENT_SECRET')
+    if os.environ.get(name)
+]
+WHO_ICD_BASE_URL = (
+    os.environ.get('WHO_ICD_BASE_URL') or os.environ.get('WHO_BASE_URL') or 'https://id.who.int'
+)
+WHO_ICD_TOKEN_URL = (
+    os.environ.get('WHO_ICD_TOKEN_URL')
+    or os.environ.get('WHO_TOKEN_URL')
+    or 'https://icdaccessmanagement.who.int/connect/token'
+)
+WHO_ICD_CLIENT_ID = os.environ.get('WHO_ICD_CLIENT_ID') or os.environ.get('WHO_CLIENT_ID', '')
+WHO_ICD_CLIENT_SECRET = (
+    os.environ.get('WHO_ICD_CLIENT_SECRET') or os.environ.get('WHO_CLIENT_SECRET', '')
+)
+WHO_ICD_TIMEOUT = _env_float('WHO_ICD_TIMEOUT', WHO_TIMEOUT)
+WHO_ICD_API_VERSION = os.environ.get('WHO_ICD_API_VERSION', 'v2')
+WHO_ICD_SCOPE = os.environ.get('WHO_ICD_SCOPE', 'icdapi_access')
+
+# --- IHR ---
+# لا افتراضيات: مسار الإرسال الرسمي يتطلب تأكيد عقد رسمي من WHO قبل ضبطه
+# (WHO_IHR_EVENTS_PATH / WHO_IHR_STATUS_PATH). الفارغ = انشغال مقصود.
+WHO_IHR_BASE_URL = os.environ.get('WHO_IHR_BASE_URL', '')
+WHO_IHR_TOKEN_URL = os.environ.get('WHO_IHR_TOKEN_URL', '')
 WHO_IHR_CLIENT_ID = os.environ.get('WHO_IHR_CLIENT_ID', '')
 WHO_IHR_CLIENT_SECRET = os.environ.get('WHO_IHR_CLIENT_SECRET', '')
-WHO_IHR_TOKEN_URL = os.environ.get('WHO_IHR_TOKEN_URL', '')
+WHO_IHR_TIMEOUT = _env_float('WHO_IHR_TIMEOUT', WHO_TIMEOUT)
+WHO_IHR_EVENTS_PATH = os.environ.get('WHO_IHR_EVENTS_PATH', '')
+WHO_IHR_STATUS_PATH = os.environ.get('WHO_IHR_STATUS_PATH', '')
 
 # Spectacular (OpenAPI)
+# عقد نتيجة الجوال: إصدار العقد الذي يخدمه خادم الجوال (يفيد تجزئة الإصدارات).
+AFYATNA_MOBILE_CONTRACT_VERSION = 'v1'
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'NQP API',
     'DESCRIPTION': 'National Quarantine Platform API',

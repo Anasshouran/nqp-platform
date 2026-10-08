@@ -21,8 +21,8 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import IntegrationInstructionsIconSafe from '@mui/icons-material/IntegrationInstructions';
 import PublicHealthIconSafe from '@mui/icons-material/Public';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import BiotechIcon from '@mui/icons-material/Biotech';
+import HistoryIcon from '@mui/icons-material/History';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import type { RoleLayoutConfig } from './core';
 
@@ -71,7 +71,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
       },
       { label: 'لوحة القطاع', target: '/dashboard/sector/red-sea', icon: <MonitorHeartIcon /> },
       {
-        label: 'نقاط الدخول',
+        label: 'المنافذ',
         icon: <AnchorIcon />,
         children: [
           { label: 'المطارات', target: '/dashboard/sector/red-sea/points' },
@@ -130,9 +130,9 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
         label: 'تكامل WHO',
         icon: <PublicHealthIconSafe />,
         children: [
-          { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
-          { label: 'أحداث IHR (مراقبة)', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
-          { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', icon: <BiotechIcon /> },
+          { label: 'لوحة WHO', target: '/app/integration/who', permission: 'who_integration:view', icon: <PublicHealthIconSafe /> },
+          { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', permission: 'who_diseases:view', icon: <BiotechIcon /> },
+          { label: 'سجلات المزامنة', target: '/app/integration/who/logs', permission: 'who_logs:view', icon: <HistoryIcon /> },
         ],
       },
       { label: 'الدعم الفني', target: '/dashboard/national/it', icon: <SupportAgentIconSafe /> },

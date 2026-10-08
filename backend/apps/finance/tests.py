@@ -2,12 +2,13 @@ from django.test import TestCase
 
 from apps.accounts.models import User
 from apps.finance.models import Fee, Invoice, PaymentAttempt, Receipt
-from apps.finance.models import FinancialAuditLog, InvoiceStatus
+from apps.finance.models import FinancialAuditLog, InvoiceStatus, RefundStatus
 from apps.finance.services import (
     FinanceServiceError,
     balance_due,
     cancel_invoice,
     confirm_payment,
+    execute_refund,
     issue_invoice,
     mark_overdue,
     next_invoice_number,
@@ -114,8 +115,25 @@ class FinanceModelTests(TestCase):
         confirm_payment(invoice, self.user, 'CASH')
         invoice, refund = refund_invoice(invoice, self.user, 'استرداد للعميل')
         invoice.refresh_from_db()
-        self.assertEqual(invoice.status, InvoiceStatus.REFUNDED)
+        # الطلب بلا موافق = REQUESTED: حالة الفاتورة تبقى مسدّقة حتى التنفيذ،
+        # وإلا اختفت من سجل التحصيل قبل الموافقة على الاسترداد.
+        self.assertEqual(invoice.status, InvoiceStatus.PAID)
+        self.assertEqual(refund.status, RefundStatus.REQUESTED)
         self.assertGreater(refund.amount, 0)
+
+    def test_refund_with_approver_executes_immediately(self):
+        invoice = self._make_invoice()
+        issue_invoice(invoice, self.user)
+        confirm_payment(invoice, self.user, 'CASH')
+        approver = User.objects.create_user(
+            email='approver3@nqp.gov.sd', password='StrongPass123!', full_name='معتمد مالي',
+        )
+        invoice, refund = refund_invoice(
+            invoice, self.user, 'استرداد معتمد', approver_id=approver.id,
+        )
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, InvoiceStatus.REFUNDED)
+        self.assertEqual(refund.status, RefundStatus.EXECUTED)
 
     def test_overdue_sweep(self):
         one = self._make_invoice()
@@ -208,8 +226,37 @@ class FinanceModelTests(TestCase):
         self.assertEqual(invoice.status, InvoiceStatus.PARTIAL)
         _, refund = refund_invoice(invoice, self.user, 'استرداد جزئي')
         invoice.refresh_from_db()
-        self.assertEqual(invoice.status, InvoiceStatus.REFUNDED)
+        # استرداد جزئي على فاتورة مدفوعة جزئياً: المبلغ المسترد = المحصّل فقط،
+        # والحالة تبقى PARTIAL حتى اعتماد الطلب.
+        self.assertEqual(invoice.status, InvoiceStatus.PARTIAL)
         self.assertEqual(refund.amount, 25)
+        self.assertEqual(refund.status, RefundStatus.REQUESTED)
+
+    def test_refund_rejected_when_nothing_collected(self):
+        invoice = self._make_invoice()
+        issue_invoice(invoice, self.user)
+        invoice.refresh_from_db()
+        self.assertIn(invoice.status, (InvoiceStatus.ISSUED, InvoiceStatus.PENDING_PAYMENT))
+        with self.assertRaises(FinanceServiceError):
+            refund_invoice(invoice, self.user, 'استرداد بلا تحصيل')
+
+    def test_execute_refund_moves_invoice_to_refunded(self):
+        invoice = self._make_invoice()
+        issue_invoice(invoice, self.user)
+        confirm_payment(invoice, self.user, 'CASH')
+        invoice, refund = refund_invoice(invoice, self.user, 'طلب استرداد')
+        self.assertEqual(refund.status, RefundStatus.REQUESTED)
+
+        approver = User.objects.create_user(
+            email='approver2@nqp.gov.sd', password='StrongPass123!', full_name='معتمد',
+        )
+        execute_refund(refund, approver)
+        invoice.refresh_from_db()
+        refund.refresh_from_db()
+        self.assertEqual(invoice.status, InvoiceStatus.REFUNDED)
+        self.assertEqual(refund.status, RefundStatus.EXECUTED)
+        with self.assertRaises(FinanceServiceError):
+            execute_refund(refund, approver)
 
     def test_unique_numbering(self):
         numbers = []

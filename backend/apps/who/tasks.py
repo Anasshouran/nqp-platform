@@ -1,4 +1,12 @@
-"""مهام Celery لمزامنة وإرسال البيانات لمنظمة الصحة العالمية."""
+"""مهام Celery لمزامنة وإرسال البيانات لمنظمة الصحة العالمية.
+
+انضباط Phase 0:
+* لا استيراد على مستوى الوحدة يفتح اتصالاً أو يبني عميلاً — كل الاستيرادات
+  داخل الدوال، فاستيراد الوحدة لا يسبب أي أثر جانبي.
+* لا تُجدول أي مهمة دورية هنا: لا ``CELERY_BEAT_SCHEDULE``، والتزامن الدوري
+  مرحلة لاحقة بعد اعتماد العقد وتهيئة الاعتمادادات.
+* كل مهمة تتحقق من التهيئة قبل أي إرسال وتُفشل برسالة واضحة.
+"""
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -51,9 +59,13 @@ def sync_who_diseases(self) -> dict:
 
 @shared_task(max_retries=2, default_retry_delay=60)
 def test_who_connection() -> dict:
-    """فحص اتصال سريع بالجهة المفوّضة."""
+    """فحص اتصال سريع بالجهة المفوّضة (لا يُجرى إلا باستدعاء صريح)."""
     from apps.who.clients.base_client import test_connection
+    from apps.who.config import SETTING_ENABLED, load_icd_configuration
     from apps.who.models import WHOIntegration
+
+    if not load_icd_configuration().enabled:
+        return {'connected': False, 'message': f'التكامل مع WHO معطّل عبر {SETTING_ENABLED}.'}
 
     integration = WHOIntegration.objects.filter(is_active=True).first()
     if not integration:

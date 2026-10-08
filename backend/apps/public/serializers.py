@@ -203,7 +203,10 @@ class AssistantContextSerializer(serializers.Serializer):
 
 class AssistantChatSerializer(serializers.Serializer):
     message = serializers.CharField(required=True, allow_blank=False, max_length=2000)
-    language = serializers.CharField(required=False, allow_blank=True, default='ar')
+    # لا `default='ar'`: غياب الحقل يجب أن يعني «اكتشف اللغة من نصّ
+    # الرسالة» لا «افترض العربية» — كان يفرض العربية على كل بالإنجليزية.
+    # القيم المقبولة الصريحة: ar / en. وأي قيمة أخرى تُعامل كـ auto.
+    language = serializers.CharField(required=False, allow_blank=True, default='')
     context = AssistantContextSerializer(required=False)
 
 
@@ -229,3 +232,12 @@ class AssistantAnswerSerializer(serializers.Serializer):
     sources = AssistantSourceSerializer(many=True, required=False)
     confidence = serializers.CharField()
     language = serializers.CharField(required=False, allow_blank=True)
+    disclaimer = serializers.CharField(required=False, allow_null=True)
+    conversation_id = serializers.CharField(required=False, allow_null=True)
+
+class AssistantFeedbackSerializer(serializers.Serializer):
+    conversation_id = serializers.UUIDField(required=False, allow_null=True)
+    rating = serializers.ChoiceField(choices=[(1, 'up'), (-1, 'down')])
+    intent = serializers.CharField(required=False, allow_blank=True)
+    answer_type = serializers.CharField(required=False, allow_blank=True)
+    engine = serializers.CharField(required=False, allow_blank=True)

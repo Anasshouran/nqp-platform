@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -6,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { DataTable, StatusChip } from '../../../components/ui';
+import { FormDialog } from '../../../components/uikit';
 import { useServerTable } from '../../../hooks/useServerTable';
 import { closeFocus, createFocus, getFoci, retreatFocus } from '../../../api/endpoints/vectorControl';
 import type { VectorFocus } from '../../../types/vectorControl';
@@ -45,7 +47,7 @@ const NewFocusForm = ({ onSaved }: { onSaved: () => void }) => {
       setForm((f) => ({ ...f, site: '', vector: '', focus_size: '', gps_latitude: '', gps_longitude: '', description: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ البؤرة — تأكد من نقطة الدخول');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ البؤرة — تأكد من نقطة الدخول');
     } finally {
       setSaving(false);
     }
@@ -86,8 +88,10 @@ const NewFocusForm = ({ onSaved }: { onSaved: () => void }) => {
 const FociSection = () => {
   const t = useServerTable<VectorFocus>({ fetchData: getFoci });
   const [formOpen, setFormOpen] = useState(false);
+  const [closeFor, setCloseFor] = useState<VectorFocus | null>(null);
+  const [closeReason, setCloseReason] = useState('');
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   return (
     <SectionCard id="foci">
@@ -114,7 +118,7 @@ const FociSection = () => {
             render: (r) => (
               <Box sx={{ display: 'flex', gap: 0.5 }}>
                 {r.status !== 'CLOSED' && (
-                  <Button size="small" variant="outlined" color="error" onClick={() => { const n = window.prompt('سبب الإغلاق (اختياري):') ?? ''; act(closeFocus(r.id, n)); }}>إغلاق</Button>
+                  <Button size="small" variant="outlined" color="error" onClick={() => { setCloseReason(''); setCloseFor(r); }}>إغلاق</Button>
                 )}
                 {r.status === 'CLOSED' && (
                   <Button size="small" variant="outlined" onClick={() => act(retreatFocus(r.id))}>إعادة فتح</Button>
@@ -134,6 +138,33 @@ const FociSection = () => {
         onPageChange={t.setPage} onRowsPerPageChange={t.setRowsPerPage} onRefresh={t.refresh}
         emptyTitle="لا توجد بؤر" emptyDescription="بؤر تكاثر النواقل تظهر هنا"
       />
+
+      <FormDialog
+        open={Boolean(closeFor)}
+        title="إغلاق البؤرة"
+        subtitle={closeFor ? `البؤرة ${closeFor.focus_number}` : undefined}
+        submitLabel="إغلاق"
+        onClose={() => {
+          if (closeFor) act(closeFocus(closeFor.id, ''));
+          setCloseFor(null);
+          setCloseReason('');
+        }}
+        onSubmit={() => {
+          if (closeFor) act(closeFocus(closeFor.id, closeReason));
+          setCloseFor(null);
+          setCloseReason('');
+        }}
+      >
+        <TextField
+          autoFocus
+          multiline
+          minRows={2}
+          label="سبب الإغلاق (اختياري)"
+          placeholder="أدخل سبب الإغلاق إن وجد"
+          value={closeReason}
+          onChange={(e) => setCloseReason(e.target.value)}
+        />
+      </FormDialog>
     </SectionCard>
   );
 };

@@ -150,6 +150,52 @@ def test_clerk_stats_endpoint(auth_client, port):
     assert body['recent'][0]['manifest_number']
 
 
+def test_clerk_stats_exposes_full_dashboard_contract(auth_client, port):
+    """لوحة الكاتب تقرأ 12 عدّاداً؛ أي نقص كان يجعل الواجهة تعرض أصفاراً صامتة."""
+    auth_client.post('/api/v1/food/shipments/', draft_payload(port), format='json')
+
+    stats = auth_client.get('/api/v1/food/shipments/clerk-stats/')
+    assert stats.status_code == 200
+    payload = stats.json()['data']['stats']
+    for key in (
+        'drafts', 'imports_today', 'submitted', 'under_review', 'inspection',
+        'sampling', 'lab_testing', 'final_review', 'completed_today', 'rejected',
+        'total', 'received', 'fees_due',
+    ):
+        assert key in payload, f'الحقل {key} مفقود من عقد إحصائيات الكاتب'
+    assert payload['total'] == 1
+    assert payload['drafts'] == 1
+
+
+def test_create_with_submit_flag_is_atomic(auth_client, port):
+    """`submit=true` ينشئ ويرسل في نداء واحد بلا مسودة يتيمة."""
+    payload = draft_payload(port, manifest='ATOMIC-2026-0001')
+    payload['as_draft'] = True
+    payload['submit'] = True
+    resp = auth_client.post('/api/v1/food/shipments/', payload, format='json')
+    assert resp.status_code == 201
+    body = resp.json()['data']
+    assert body['status'] == 'FEES_DUE'
+    assert body['submitted_at']
+
+    shipment = FoodShipment.objects.get(id=body['id'])
+    assert shipment.status == FoodShipment.ShipmentStatus.FEES_DUE
+    assert shipment.submitted_at is not None
+    stages = list(shipment.events.values_list('stage', flat=True))
+    assert 'SUBMITTED' in stages
+    # لا مسودة معلّقة: العدد الكلي = عدد المُرسَل
+    assert FoodShipment.objects.filter(status=FoodShipment.ShipmentStatus.DRAFT).count() == 0
+
+
+def test_create_without_submit_flag_stays_draft(auth_client, port):
+    payload = draft_payload(port, manifest='ATOMIC-2026-0002')
+    payload['as_draft'] = True
+    resp = auth_client.post('/api/v1/food/shipments/', payload, format='json')
+    assert resp.status_code == 201
+    assert resp.json()['data']['status'] == 'DRAFT'
+    assert resp.json()['data']['submitted_at'] is None
+
+
 def test_attachment_upload_list_delete(auth_client, port):
     resp = auth_client.post('/api/v1/food/shipments/', draft_payload(port), format='json')
     sid = resp.json()['data']['id']

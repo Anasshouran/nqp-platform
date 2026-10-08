@@ -259,3 +259,73 @@ def test_lab_manager_can_create_peer_and_lower_within_scope(sector, red_manager)
         'password': 'testpass123',
     }, format='json')
     assert tech.status_code == 201
+
+
+# --- M8-S: تجاوز is_staff في مسار منح أدوار المختبر ---
+
+
+def test_staff_cannot_grant_lab_role_without_tier(sector):
+    """`is_staff` لم يعد راية منح في مسار المختبر: موظف بلا أدوار مُنع."""
+    Role.objects.get_or_create(
+        code='LAB_DIRECTOR', defaults={'name_ar': 'مدير معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    staff = User.objects.create_user(
+        email='lab-staff@nqp.gov.sd', password='x', full_name='موظف', is_staff=True,
+    )
+    c = auth_client_for(staff)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'staff-director@nqp.gov.sd',
+        'full_name': 'مدير مزعوم',
+        'role': 'LAB_DIRECTOR',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 400
+    assert not User.objects.filter(email='staff-director@nqp.gov.sd').exists()
+    assert not RoleAssignment.objects.filter(
+        user__email='staff-director@nqp.gov.sd', role__code='LAB_DIRECTOR',
+    ).exists()
+
+
+def test_superuser_may_grant_lab_role(sector):
+    """الطريق المشروع للمشرف بقي يعمل بعد إزالة تجاوز is_staff."""
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    root = User.objects.create_superuser(
+        email='lab-root@nqp.gov.sd', password='x', full_name='Root',
+    )
+    root.sector = sector
+    root.save(update_fields=['sector'])
+    c = auth_client_for(root)
+    resp = c.post('/api/v1/laboratory/users/', {
+        'email': 'root-tech@nqp.gov.sd',
+        'full_name': 'فني',
+        'role': 'LAB_TECHNICIAN',
+        'password': 'testpass123',
+    }, format='json')
+    assert resp.status_code == 201
+    assert RoleAssignment.objects.filter(
+        user__email='root-tech@nqp.gov.sd', role__code='LAB_TECHNICIAN',
+    ).exists()
+
+
+def test_clearing_lab_role_does_not_crash(sector, red_manager):
+    """سحب دور المختبر (`role: null`) لا ينشئ RoleAssignment بلا دور."""
+    Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    tech = User.objects.create_user(
+        email='lab-clear@nqp.gov.sd', password='x', full_name='فني',
+    )
+    RoleAssignment.objects.create(
+        user=tech, role=Role.objects.get(code='LAB_TECHNICIAN'),
+        scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+    )
+    c = auth_client_for(red_manager)
+    resp = c.patch(
+        f'/api/v1/laboratory/users/{tech.id}/', {'role': None}, format='json',
+    )
+    assert resp.status_code == 200
+    assert not RoleAssignment.objects.filter(
+        user=tech, role__isnull=True,
+    ).exists()

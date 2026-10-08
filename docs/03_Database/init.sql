@@ -384,7 +384,506 @@ CREATE TABLE external_integration_logs (
 );
 
 -- ============================================================
--- 12. الدوال المساعدة (Functions) - تحديث updated_at
+-- 12. جداول نظام صحة المعابر البرية (Land Border Health System)
+-- التطبيق: apps.borders_health — 21 جدولاً ببادئة borders_health_
+-- الترحيلات المطبَّقة: borders_health.0001 .. borders_health.0007
+--
+-- ملاحظات تختلف عن بقية أقسام هذا الملف:
+--
+-- (أ) المفاتيح الأساسية: كل جدول يرث core.models.BaseModel، أي
+--     id UUID PRIMARY KEY + created_at/updated_at. لكن Django يولّد
+--     قيمة id في بايثون (uuid.uuid4) لا في قاعدة البيانات، لذلك لا
+--     يوجد DEFAULT gen_random_uuid() على هذا العمود.
+--
+-- (ب) سياسات الحذف: Django لا يُصدر بنود ON DELETE إطلاقاً. كل قيد
+--     مفتاح أجنبي يُنشأ على النحو:
+--     FOREIGN KEY (...) REFERENCES t(id) DEFERRABLE INITIALLY DEFERRED
+--     أي أن سلوك قاعدة البيانات الفعلي هو NO ACTION. أما CASCADE و
+--     SET NULL و PROTECT فهي نيّة التطبيق المعرَّفة في on_delete=
+--     داخل النماذج، وينفّذها ORM وليس Postgres (Constraints.md قسم 5).
+--
+-- (ج) على خلاف بقية الأقسام، فهارس هذا التطبيق مُعلَنة في Meta.indexes
+--     ومُصدَرة صراحةً هنا: 28 فهرساً bh_* أضافها الترحيل
+--     borders_health.0007 (راجع Indexes.md قسم 6).
+-- ============================================================
+
+-- ------------------------------------------------------------
+-- 12.1 إدارة المعابر
+-- ------------------------------------------------------------
+
+-- ملف المعبر البري التشغيلي: امتداد OneToOne لـ masterdata_entrypoint
+-- (منفذ بري واحد ⇐ ملف BorderCrossing واحد على الأكثر).
+CREATE TABLE borders_health_bordercrossing (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    entry_point_id UUID NOT NULL UNIQUE REFERENCES masterdata_entrypoint(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    border_type VARCHAR(10) NOT NULL DEFAULT 'ROAD',     -- ROAD | RAIL | RIVER
+    neighbor_country VARCHAR(100) NOT NULL DEFAULT '',
+    operating_status VARCHAR(20) NOT NULL DEFAULT 'OPEN', -- OPEN | RESTRICTED | LIMITED | CLOSED | EMERGENCY
+    operating_hours VARCHAR(200) NOT NULL DEFAULT '',
+    daily_capacity INTEGER CHECK (daily_capacity >= 0),
+    working_agencies TEXT NOT NULL DEFAULT '',
+    has_health_facility BOOLEAN NOT NULL DEFAULT FALSE,
+    has_laboratory BOOLEAN NOT NULL DEFAULT FALSE,
+    has_quarantine_facility BOOLEAN NOT NULL DEFAULT FALSE,
+    has_isolation_facility BOOLEAN NOT NULL DEFAULT FALSE,
+    quarantine_capacity INTEGER CHECK (quarantine_capacity >= 0),
+    closure_reason TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_o_xc ON borders_health_bordercrossing (operating_status);
+CREATE INDEX bh_n_xc ON borders_health_bordercrossing (neighbor_country);
+
+-- مرفق داخل المعبر (مرفق صحي، مختبر، حجر، عزل، مخزن، مياه وصرف، نفايات، مكافحة نواقل)
+CREATE TABLE borders_health_borderfacility (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    kind VARCHAR(20) NOT NULL,  -- HEALTH | LABORATORY | QUARANTINE | ISOLATION | STORAGE | WATER_SANITATION | WASTE | VECTOR_CONTROL
+    name_ar VARCHAR(150) NOT NULL,
+    name_en VARCHAR(150) NOT NULL DEFAULT '',
+    capacity INTEGER CHECK (capacity >= 0),
+    staff_count INTEGER CHECK (staff_count >= 0),
+    is_operational BOOLEAN NOT NULL DEFAULT TRUE,
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_ck_fac ON borders_health_borderfacility (crossing_id, kind);
+
+-- وردية العمل — أساس احتساب القوة البشرية وإحصاءات الحركة
+CREATE TABLE borders_health_bordershift (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    shift_date DATE NOT NULL,
+    shift_type VARCHAR(20) NOT NULL DEFAULT 'MORNING',  -- MORNING | AFTERNOON | NIGHT | ROTATING
+    started_at TIME,
+    ended_at TIME,
+    supervisor_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    is_staffed BOOLEAN NOT NULL DEFAULT TRUE,
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_shf ON borders_health_bordershift (crossing_id, shift_date);
+
+-- إسناد كادر صحي للمعبر
+CREATE TABLE borders_health_borderstaff (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    user_id UUID NOT NULL REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    role VARCHAR(30) NOT NULL,  -- MANAGER | DOCTOR | INSPECTOR | FOOD_INSPECTOR | ENVIRONMENTAL_INSPECTOR | REGISTRATION_OFFICER | LAB_TECHNICIAN | EPIDEMIOLOGY_OFFICER | EMERGENCY_OFFICER
+    assignment_type VARCHAR(15) NOT NULL DEFAULT 'FULL_TIME',  -- FULL_TIME | PART_TIME | SECONDMENT
+    starts_on DATE,
+    ends_on DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    notes TEXT NOT NULL DEFAULT '',
+    CONSTRAINT unique_border_staff_assignment UNIQUE (crossing_id, user_id, role)
+);
+
+CREATE INDEX bh_ci_stf ON borders_health_borderstaff (crossing_id, is_active);
+
+-- ------------------------------------------------------------
+-- 12.2 فحص المسافرين والإقرار الصحي
+-- ------------------------------------------------------------
+
+-- السجل الصحي للمسافر عند معبر بري — يرث هوية المسافر من travelers_traveler
+CREATE TABLE borders_health_travelerhealthrecord (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    traveler_id UUID NOT NULL REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    direction VARCHAR(10) NOT NULL DEFAULT 'INBOUND',  -- INBOUND | OUTBOUND
+    entry_at TIMESTAMP WITH TIME ZONE NOT NULL,        -- تملؤه timezone.now في النموذج
+    departure_country VARCHAR(100) NOT NULL DEFAULT '',
+    visited_countries JSONB NOT NULL DEFAULT '[]'::jsonb,
+    transport_mode VARCHAR(50) NOT NULL DEFAULT '',
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    health_status VARCHAR(20) NOT NULL DEFAULT 'FIT',  -- FIT | UNFIT | UNDER_OBSERVATION
+    risk_level VARCHAR(10) NOT NULL DEFAULT 'GREEN',   -- GREEN | YELLOW | RED
+    decision VARCHAR(20) NOT NULL DEFAULT 'CLEARED',  -- CLEARED | HOLD | REFERRED | QUARANTINED | REFUSED_ENTRY
+    assessed_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_ce_thr ON borders_health_travelerhealthrecord (crossing_id, entry_at);
+CREATE INDEX bh_tc_thr ON borders_health_travelerhealthrecord (traveler_id, crossing_id);
+CREATE INDEX bh_cr_thr ON borders_health_travelerhealthrecord (crossing_id, risk_level);
+
+-- إقرار صحي للمسافر — نموذج مصنَّف بالمعبر، منفصل عن سجل الفحص
+CREATE TABLE borders_health_healthdeclaration (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    traveler_id UUID NOT NULL REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    departure_country VARCHAR(100) NOT NULL DEFAULT '',
+    departure_date DATE,
+    visited_countries JSONB NOT NULL DEFAULT '[]'::jsonb,
+    health_conditions TEXT NOT NULL DEFAULT '',
+    current_symptoms TEXT NOT NULL DEFAULT '',
+    contact_name VARCHAR(150) NOT NULL DEFAULT '',
+    contact_phone VARCHAR(30) NOT NULL DEFAULT '',
+    declared_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    status VARCHAR(15) NOT NULL DEFAULT 'RECEIVED',  -- RECEIVED | REVIEWED | APPROVED | REJECTED
+    reviewed_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cd_dcl ON borders_health_healthdeclaration (crossing_id, declared_at);
+CREATE INDEX bh_tc_dcl ON borders_health_healthdeclaration (traveler_id, crossing_id);
+
+-- فحص صحي للمسافر — يُربط بالفحص المشترك عند وجوده
+CREATE TABLE borders_health_borderscreening (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    traveler_id UUID NOT NULL REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    shared_screening_id UUID REFERENCES screening_healthscreening(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    body_temperature DOUBLE PRECISION,
+    oxygen_saturation DOUBLE PRECISION,
+    observed_symptoms JSONB NOT NULL DEFAULT '[]'::jsonb,
+    risk_level VARCHAR(10) NOT NULL DEFAULT '',  -- حقل حر بلا choices في النموذج
+    document_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    vaccination_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    screening_certificate_id UUID REFERENCES vaccination_vaccinationcertificate(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    decision VARCHAR(20) NOT NULL DEFAULT 'CLEARED',  -- CLEARED | HOLD | REFERRED | QUARANTINED
+    screened_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    screened_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_scr ON borders_health_borderscreening (crossing_id, screened_at);
+CREATE INDEX bh_tc_scr ON borders_health_borderscreening (traveler_id, crossing_id);
+CREATE INDEX bh_cd_scr ON borders_health_borderscreening (crossing_id, decision);
+
+-- ------------------------------------------------------------
+-- 12.3 المركبات وتفتيشها
+-- ------------------------------------------------------------
+
+-- مركبة عابرة للمعبر — سجل رئيسي غير موجود على المنصة.
+-- plate_number فريد عالمياً وليس لكل معبر.
+CREATE TABLE borders_health_vehicle (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    plate_number VARCHAR(30) NOT NULL UNIQUE,
+    chassis_number VARCHAR(50) NOT NULL DEFAULT '',
+    vehicle_type VARCHAR(25) NOT NULL DEFAULT 'TRUCK',  -- BUS | TRUCK | PRIVATE_CAR | AMBULANCE | LIVESTOCK_TRANSPORT | REFRIGERATED_TRUCK | TANKER | OTHER
+    make_model VARCHAR(100) NOT NULL DEFAULT '',
+    year_of_manufacture SMALLINT CHECK (year_of_manufacture >= 0),
+    capacity INTEGER CHECK (capacity >= 0),
+    owner_name VARCHAR(200) NOT NULL DEFAULT '',
+    driver_name VARCHAR(150) NOT NULL DEFAULT '',
+    driver_phone VARCHAR(30) NOT NULL DEFAULT '',
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE | UNDER_QUARANTINE | CONDEMNED
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_veh ON borders_health_vehicle (crossing_id, status);
+
+-- تفتيش صحي للمركبة (نظافة، مكافحة حشرات، نفايات، تبريد).
+-- لا يوجد crossing_id: النطاق يُحل عبر vehicle__crossing__entry_point.
+CREATE TABLE borders_health_vehicleinspection (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    vehicle_id UUID NOT NULL REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    inspection_type VARCHAR(20) NOT NULL DEFAULT 'EXTERIOR',  -- EXTERIOR | CARGO_HOLD | TEMPERATURE | DISINFECTION | PEST_CONTROL | WASTE | CABIN
+    inspection_date TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    inspector_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    cleanliness_status VARCHAR(20) NOT NULL DEFAULT 'COMPLIANT',   -- COMPLIANT | NON_COMPLIANT | NOT_APPLICABLE
+    pest_control_status VARCHAR(20) NOT NULL DEFAULT 'COMPLIANT',  -- COMPLIANT | NON_COMPLIANT | NOT_APPLICABLE
+    waste_status VARCHAR(20) NOT NULL DEFAULT 'COMPLIANT',  -- COMPLIANT | NON_COMPLIANT | NOT_APPLICABLE
+    cooling_status VARCHAR(20) NOT NULL DEFAULT 'NOT_APPLICABLE',  -- COMPLIANT | NON_COMPLIANT | NOT_APPLICABLE
+    findings TEXT NOT NULL DEFAULT '',
+    overall_status VARCHAR(15) NOT NULL DEFAULT 'PASSED',  -- PASSED | CONDITIONAL | FAILED
+    reinspection_required BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX bh_vi_vin ON borders_health_vehicleinspection (vehicle_id, inspection_date);
+
+-- ------------------------------------------------------------
+-- 12.4 الشحنات وتفتيش البضائع والأغذية
+-- ------------------------------------------------------------
+
+-- تفتيش شحنة برية أو مخزن المعبر أو مرافق المياه/الصرف (scope يغطّي الأربعة)
+CREATE TABLE borders_health_cargoinspection (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    scope VARCHAR(20) NOT NULL DEFAULT 'CARGO',  -- CARGO | FOOD | WAREHOUSE | WATER_SANITATION
+    food_shipment_id UUID REFERENCES food_quarantine_foodshipment(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    facility_id UUID REFERENCES borders_health_borderfacility(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    declaration_number VARCHAR(50) NOT NULL DEFAULT '',
+    product_type VARCHAR(150) NOT NULL DEFAULT '',
+    country_of_origin VARCHAR(100) NOT NULL DEFAULT '',
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    samples_collected INTEGER NOT NULL DEFAULT 0 CHECK (samples_collected >= 0),
+    laboratory_result TEXT NOT NULL DEFAULT '',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',  -- PENDING | INSPECTING | SAMPLES_SENT | AWAITING_DECISION | RELEASED | REJECTED | HOLD
+    decision VARCHAR(15) NOT NULL DEFAULT '',  -- CLEARED | CONDITIONAL | REJECTED | HOLD
+    decided_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    decided_at TIMESTAMP WITH TIME ZONE,
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_css_crg ON borders_health_cargoinspection (crossing_id, scope, status);
+
+-- عيّنة مسحوبة من مركبة أو شحنة بإجراء معبر
+CREATE TABLE borders_health_bordersample (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    lab_sample_id UUID REFERENCES laboratory_labsample(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    cargo_inspection_id UUID REFERENCES borders_health_cargoinspection(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    sample_code VARCHAR(40) NOT NULL DEFAULT '',
+    sample_type VARCHAR(100) NOT NULL DEFAULT '',
+    collected_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    collected_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    status VARCHAR(20) NOT NULL DEFAULT 'COLLECTED',  -- COLLECTED | SENT | UNDER_TEST | RESULT_RECEIVED | REJECTED
+    result TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cc_smp ON borders_health_bordersample (crossing_id, collected_at);
+CREATE INDEX bh_cs_smp ON borders_health_bordersample (cargo_inspection_id, status);
+
+-- ------------------------------------------------------------
+-- 12.5 العزل والحجر
+-- ------------------------------------------------------------
+
+-- حالة حجر صحي — كيان مستقل يربط العزل والعيادة والمرصد.
+-- case_number فريد و NULLABLE عمداً: NULL يتكرر في Postgres بلا تعارض،
+-- و save() يولّد Q-YYMMDD-XXXXXXXX قبل أول INSERT. الترحيل 0006 غيّر
+-- القيد من (unique + default='') إلى (unique + null=True) — راجع
+-- Constraints.md قسم 3.
+CREATE TABLE borders_health_quarantinecase (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    case_number VARCHAR(30) UNIQUE,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    traveler_id UUID REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    person_name VARCHAR(200) NOT NULL DEFAULT '',
+    health_case_id UUID REFERENCES emergency_eoc_healthcase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    disease_id UUID REFERENCES laboratory_disease(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    clinic_id UUID REFERENCES clinic_clinic(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    facility_id UUID REFERENCES borders_health_borderfacility(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    entry_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    required_days SMALLINT NOT NULL DEFAULT 14 CHECK (required_days >= 0),
+    expected_end_date DATE,
+    actual_end_date DATE,
+    phase VARCHAR(20) NOT NULL DEFAULT 'SCREENED',  -- SCREENED | ASSESSED | QUARANTINED | UNDER_TREATMENT | RECOVERED | RELEASED | REFERRED_OUT
+    status VARCHAR(20) NOT NULL DEFAULT 'ADMITTED',  -- ADMITTED | UNDER_QUARANTINE | REFERRED | RELEASED | ESCALATED
+    follow_up_notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_qua ON borders_health_quarantinecase (crossing_id, status);
+CREATE INDEX bh_ce_qua ON borders_health_quarantinecase (crossing_id, entry_at);
+
+-- حالة عزل — مرتبطة بالحجر أو الإحالة من العيادة
+CREATE TABLE borders_health_isolationcase (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    quarantine_case_id UUID REFERENCES borders_health_quarantinecase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    clinic_isolation_id UUID REFERENCES clinic_isolationrecord(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    facility_id UUID REFERENCES borders_health_borderfacility(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    start_date DATE NOT NULL,
+    expected_end_date DATE,
+    end_date DATE,
+    status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE | RELEASED | REMOVED
+    started_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    closed_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_iso ON borders_health_isolationcase (crossing_id, status);
+
+-- ------------------------------------------------------------
+-- 12.6 تتبع المخالطين
+-- ------------------------------------------------------------
+
+-- حالة تتبع مخالطين مرتبطة بحالة حجر أو سراية.
+-- ملاحظة: العمود case_id يشير إلى borders_health_quarantinecase (الحالة المفهرسة).
+CREATE TABLE borders_health_contacttracingcase (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    case_id UUID REFERENCES borders_health_quarantinecase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    index_case_name VARCHAR(200) NOT NULL DEFAULT '',
+    transport_mode VARCHAR(50) NOT NULL DEFAULT '',
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    shared_contact_trace_id UUID REFERENCES emergency_eoc_contacttrace(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    follow_up_days SMALLINT NOT NULL DEFAULT 14 CHECK (follow_up_days >= 0),
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    status VARCHAR(15) NOT NULL DEFAULT 'OPEN',  -- OPEN | MONITORING | COMPLETED | ESCALATED
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_ctc ON borders_health_contacttracingcase (crossing_id, status);
+
+-- مخالط مُعرَّف (راكب/مرافق) تحت متابعة
+CREATE TABLE borders_health_contact (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    tracing_case_id UUID NOT NULL REFERENCES borders_health_contacttracingcase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    full_name VARCHAR(200) NOT NULL,
+    passport_number VARCHAR(40) NOT NULL DEFAULT '',
+    phone VARCHAR(30) NOT NULL DEFAULT '',
+    seat_or_relation VARCHAR(60) NOT NULL DEFAULT '',
+    status VARCHAR(15) NOT NULL DEFAULT 'IDENTIFIED',  -- IDENTIFIED | CONTACTED | QUARANTINED | MONITORING | CLEARED | LOST
+    follow_up_day SMALLINT NOT NULL DEFAULT 0 CHECK (follow_up_day >= 0),
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_ts_con ON borders_health_contact (tracing_case_id, status);
+
+-- ------------------------------------------------------------
+-- 12.7 الطوارئ والحوادث
+-- ------------------------------------------------------------
+
+-- حادثة صحية على مستوى المعبر
+CREATE TABLE borders_health_borderhealthincident (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    quarantine_case_id UUID REFERENCES borders_health_quarantinecase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    severity VARCHAR(10) NOT NULL DEFAULT 'MEDIUM',  -- LOW | MEDIUM | HIGH | CRITICAL
+    status VARCHAR(15) NOT NULL DEFAULT 'OPEN',  -- OPEN | INVESTIGATING | CONTROLLED | CLOSED
+    reported_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    closed_at TIMESTAMP WITH TIME ZONE,
+    reported_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_inc ON borders_health_borderhealthincident (crossing_id, status);
+
+-- طوارئ صحية تُقيّد حركة المعبر عند الضرورة (بند IHR)
+CREATE TABLE borders_health_borderemergency (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    shared_event_id UUID REFERENCES emergency_eoc_emergencyevent(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    disease_id UUID REFERENCES laboratory_disease(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    restriction_level VARCHAR(25) NOT NULL DEFAULT 'ADVISORY',  -- ADVISORY | INCREASED_SURVEILLANCE | MOVEMENT_REDUCED | MOVEMENT_SUSPENDED | CLOSED
+    status VARCHAR(15) NOT NULL DEFAULT 'OPEN',  -- OPEN | ACTIVE | CONTROLLED | CLOSED
+    reported_at TIMESTAMP WITH TIME ZONE NOT NULL,  -- auto_now_add
+    resolved_at TIMESTAMP WITH TIME ZONE,
+    reported_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_emg ON borders_health_borderemergency (crossing_id, status);
+
+-- ------------------------------------------------------------
+-- 12.8 الشهادات والقرارات والإشعارات والإحصاءات
+-- ------------------------------------------------------------
+
+-- شهادة معبرية (إفراج صحي، فحص، تصريح عبور، خروج من الحجر، رفض)
+CREATE TABLE borders_health_bordercertificate (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    certificate_number VARCHAR(50) NOT NULL UNIQUE,
+    certificate_type VARCHAR(25) NOT NULL,  -- HEALTH_CLEARANCE | INSPECTION | PASSAGE_PERMIT | QUARANTINE_RELEASE | REJECTION
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    traveler_id UUID REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    vehicle_inspection_id UUID REFERENCES borders_health_vehicleinspection(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    issue_date DATE NOT NULL,
+    expiry_date DATE,
+    status VARCHAR(15) NOT NULL DEFAULT 'DRAFT',  -- DRAFT | ISSUED | EXPIRED | REVOKED | CANCELLED
+    qr_payload VARCHAR(500) NOT NULL DEFAULT '',
+    issued_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_ci_crt ON borders_health_bordercertificate (crossing_id, issue_date);
+
+-- سجل قرارات الإفراج/الإحالة/الإنفاذ — قابل للتدقيق
+CREATE TABLE borders_health_borderdecision (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    subject_type VARCHAR(30) NOT NULL DEFAULT '',
+    traveler_id UUID REFERENCES travelers_traveler(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    vehicle_id UUID REFERENCES borders_health_vehicle(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    cargo_inspection_id UUID REFERENCES borders_health_cargoinspection(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    quarantine_case_id UUID REFERENCES borders_health_quarantinecase(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=SET_NULL
+    outcome VARCHAR(20) NOT NULL,  -- CLEARED | CONDITIONAL | HOLD | REFERRED | REJECTED | ENFORCEMENT
+    reason TEXT NOT NULL DEFAULT '',
+    decided_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    decided_at TIMESTAMP WITH TIME ZONE NOT NULL  -- auto_now_add
+);
+
+CREATE INDEX bh_cd_dec ON borders_health_borderdecision (crossing_id, decided_at);
+
+-- إشعار صادر من المعبر (رفع إخطار، إحالة، تنبيه)
+CREATE TABLE borders_health_bordernotification (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    recipient_role VARCHAR(40) NOT NULL DEFAULT '',
+    recipient_contact VARCHAR(120) NOT NULL DEFAULT '',
+    title VARCHAR(200) NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    channel VARCHAR(15) NOT NULL DEFAULT 'INTERNAL',  -- INTERNAL | EMAIL | SMS | PUSH
+    status VARCHAR(10) NOT NULL DEFAULT 'PENDING',  -- PENDING | SENT | FAILED
+    sent_at TIMESTAMP WITH TIME ZONE,
+    sent_by_id UUID REFERENCES accounts_user(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=PROTECT
+    notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX bh_cs_ntf ON borders_health_bordernotification (crossing_id, sent_at);
+
+-- إحصاءات حركة يومية مجمَّعة لكل معبر — تغذّي لوحة القيادة القومية.
+-- بلا فهرس bh_*: الاستعلامات تعتمد على فهرس القيد الفريد
+-- unique_border_daily_statistic (crossing_id, stat_date).
+CREATE TABLE borders_health_borderdailystatistics (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    crossing_id UUID NOT NULL REFERENCES borders_health_bordercrossing(id) DEFERRABLE INITIALLY DEFERRED, -- on_delete=CASCADE
+    stat_date DATE NOT NULL,
+    travelers_inbound INTEGER NOT NULL DEFAULT 0 CHECK (travelers_inbound >= 0),
+    travelers_outbound INTEGER NOT NULL DEFAULT 0 CHECK (travelers_outbound >= 0),
+    vehicles_inspected INTEGER NOT NULL DEFAULT 0 CHECK (vehicles_inspected >= 0),
+    cargo_inspections INTEGER NOT NULL DEFAULT 0 CHECK (cargo_inspections >= 0),
+    quarantine_cases INTEGER NOT NULL DEFAULT 0 CHECK (quarantine_cases >= 0),
+    isolation_cases INTEGER NOT NULL DEFAULT 0 CHECK (isolation_cases >= 0),
+    suspected_cases INTEGER NOT NULL DEFAULT 0 CHECK (suspected_cases >= 0),
+    certificates_issued INTEGER NOT NULL DEFAULT 0 CHECK (certificates_issued >= 0),
+    samples_collected INTEGER NOT NULL DEFAULT 0 CHECK (samples_collected >= 0),
+    average_processing_minutes INTEGER CHECK (average_processing_minutes >= 0),
+    CONSTRAINT unique_border_daily_statistic UNIQUE (crossing_id, stat_date)
+);
+
+-- ============================================================
+-- 13. الدوال المساعدة (Functions) - تحديث updated_at
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -402,7 +901,7 @@ CREATE TRIGGER update_diseases_updated_at BEFORE UPDATE ON diseases FOR EACH ROW
 CREATE TRIGGER update_travelers_updated_at BEFORE UPDATE ON travelers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
--- 13. المستخدمون الأوليون (Seeding)
+-- 14. المستخدمون الأوليون (Seeding)
 -- ============================================================
 
 -- إدراج بعض الأدوار الأساسية

@@ -41,6 +41,7 @@ import { getSectors, getSectorPorts, getPorts } from '../../api/endpoints/public
 import type { Sector, PublicPort } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, CardsGridSkeleton, SectionTitle } from '../../components/common';
 import { accentTokens } from '../../styles/theme';
+import { portTypeMeta } from '../../config/portTypes';
 
 const regionLabels: Record<string, string> = {
   KHARTOUM: 'الخرطوم',
@@ -53,29 +54,11 @@ const regionLabels: Record<string, string> = {
 
 type PortType = PublicPort['type'];
 
-const portTypeLabels: Record<string, string> = {
-  AIRPORT: 'منفذ جوي',
-  SEAPORT: 'منفذ بحري',
-  LAND_PORT: 'منفذ بري',
-};
-
-const portTypeIcons: Record<string, React.ReactNode> = {
-  AIRPORT: <FlightIcon />,
-  SEAPORT: <DirectionsBoatIcon />,
-  LAND_PORT: <DirectionsBusIcon />,
-};
-
-const portTypeColors: Record<string, string> = {
-  AIRPORT: accentTokens.air,
-  SEAPORT: accentTokens.sea,
-  LAND_PORT: accentTokens.land,
-};
-
 const typeFilterOptions: Array<{ value: 'ALL' | PortType; label: string }> = [
   { value: 'ALL', label: 'الكل' },
-  { value: 'AIRPORT', label: 'منافذ جوية' },
-  { value: 'SEAPORT', label: 'منافذ بحرية' },
-  { value: 'LAND_PORT', label: 'منافذ برية' },
+  { value: 'AIRPORT', label: 'المطارات' },
+  { value: 'SEAPORT', label: 'الموانئ' },
+  { value: 'LAND_PORT', label: 'المعابر البرية' },
 ];
 
 const sectorSlug = (code: string) => code.toLowerCase().replace('_', '-');
@@ -170,9 +153,9 @@ const SectorsPortsPage = () => {
 
   const statCards = [
     { value: portStats.total, label: 'إجمالي المنافذ', icon: <DomainIcon />, color: accentTokens.brand },
-    { value: portStats.air, label: 'منافذ جوية', icon: <FlightIcon />, color: accentTokens.air },
-    { value: portStats.sea, label: 'منافذ بحرية', icon: <DirectionsBoatIcon />, color: accentTokens.sea },
-    { value: portStats.land, label: 'منافذ برية', icon: <DirectionsBusIcon />, color: accentTokens.land },
+    { value: portStats.air, label: 'المطارات', icon: <FlightIcon />, color: accentTokens.air },
+    { value: portStats.sea, label: 'الموانئ', icon: <DirectionsBoatIcon />, color: accentTokens.sea },
+    { value: portStats.land, label: 'المعابر البرية', icon: <DirectionsBusIcon />, color: accentTokens.land },
     { value: portStats.sectors, label: 'قطاع صحي', icon: <DomainIcon />, color: accentTokens.health },
   ];
 
@@ -314,16 +297,16 @@ const SectorsPortsPage = () => {
                           display: 'grid',
                           placeItems: 'center',
                           color: '#fff',
-                          background: portTypeColors[port.type] || 'primary.main',
+                          background: portTypeMeta(port.type).fill,
                         }}
                       >
-                        {portTypeIcons[port.type] || <LocationOnIcon />}
+                        {portTypeMeta(port.type).icon}
                       </Box>
                       <Chip
-                        label={portTypeLabels[port.type] || port.type}
+                        label={portTypeMeta(port.type).label}
                         size="small"
                         variant="outlined"
-                        color="primary"
+                        sx={{ fontWeight: 700, ...portTypeMeta(port.type).chipSx }}
                       />
                     </Stack>
                     <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
@@ -518,8 +501,8 @@ const SectorsPortsPage = () => {
                           <List dense sx={{ mt: 1 }}>
                             {(portsBySector[sector.id] || []).map((port) => (
                               <ListItem key={port.id} sx={{ px: 0.5, py: 0.25, borderRadius: 2 }}>
-                                <ListItemIcon sx={{ minWidth: 36, color: 'primary.main' }}>
-                                  {portTypeIcons[port.type] || <LocationOnIcon />}
+                                <ListItemIcon sx={{ minWidth: 36, color: portTypeMeta(port.type).tone }}>
+                                  {portTypeMeta(port.type).icon}
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={port.name_ar}
@@ -530,11 +513,10 @@ const SectorsPortsPage = () => {
                                         {port.code}
                                       </Typography>
                                       <Chip
-                                        label={portTypeLabels[port.type] || port.type}
+                                        label={portTypeMeta(port.type).label}
                                         size="small"
                                         variant="outlined"
-                                        color="primary"
-                                        sx={{ height: 20, fontSize: '0.68rem' }}
+                                        sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, ...portTypeMeta(port.type).chipSx }}
                                       />
                                     </Stack>
                                   }

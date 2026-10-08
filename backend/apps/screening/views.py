@@ -1,19 +1,43 @@
 import json
+import logging
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
+from apps.accounts.models import RoleAssignment
 from apps.risk_engine.models import RiskAssessment
 from apps.risk_engine.serializers import RiskAssessmentSerializer
 from apps.risk_engine.services import RiskEngineService
 from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
+from core.permissions import PermissionAction, ScopeFilter
 from core.utils.response import success_response
 
 from .models import HealthScreening
 from .serializers import HealthScreeningSerializer
+
+logger = logging.getLogger(__name__)
+
+# معلومات المرحلة M2: لا ننفّذ هنا أي خسارة في القيود. المصادقة + التفويض (RBAC)
+# + نطاق الكائن (port) إلزامي — المصادقة وحدها غير كافية إطلاقاً (SEC-M0-1).
+ACTION_TO_PERMISSION = {
+    'list': 'view',
+    'retrieve': 'view',
+    'create': 'add',
+    'scan_qr': 'view',
+    'latest_risk': 'view',
+    'refer': 'add',
+}
+
+# أنواع النطاق التي تحمل معرّف نقطة دخول/ميناء مباشرة.
+_ENTRY_POINT_SCOPE_TYPES = {
+    RoleAssignment.ScopeType.POINT,
+    RoleAssignment.ScopeType.PORT,
+    RoleAssignment.ScopeType.STATION,
+}
 
 
 class ScreeningViewSet(viewsets.ModelViewSet):
@@ -25,9 +49,87 @@ class ScreeningViewSet(viewsets.ModelViewSet):
     ordering_fields = ['screened_at']
     filter_fields = ['port', 'traveler']
 
+    # SEC-M0-1 remediation: RBAC (screening:*) + نطاق الـ port/entrypoint.
+    # المصادقة (JWT) لم تعد كافية لوحدها — أي رمز مصادَق عليه بلا صلاحية
+    # رسمية أو نطاق يُرفَض ولا يرى أي صف (فشل آمن).
+    permission_resource = 'screening'
+    permission_classes = [PermissionAction, ScopeFilter]
+    scope_type = RoleAssignment.ScopeType.PORT
+
+    def get_permissions(self):
+        action = self.action or 'list'
+        self.permission_action = ACTION_TO_PERMISSION.get(action, 'view')
+        if action in ('scan_qr', 'refer'):
+            # إجراءات مخصّصة: تنتمي لعملية الفحص (view للقراءة، add للتحويل).
+            self.permission_action = ACTION_TO_PERMISSION[action]
+        return super().get_permissions()
+
+    def _entry_point_ids_for(self, user):
+        """يرجع معرفات منافذ الدخول المتاحة لنطاقات المستخدم (فشل آمن = قائمة فارغة)."""
+        from core.utils.scoping import has_active_global_scope
+
+        # GLOBAL scope (مدير/جهة وطنية) → كل السجلات؛ لا نُقيّد إلا بالنطاق الفعلي.
+        if user.is_superuser or has_active_global_scope(user):
+            return None
+        scopes = user.active_scopes('screening')
+        from apps.masterdata.models import EntryPoint
+
+        port_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] in _ENTRY_POINT_SCOPE_TYPES and s['scope_id'] is not None
+        ]
+        if port_ids:
+            return port_ids
+        # نطاق قطاعي → كل منافذ الدخول التابعة للقطاع(ات)
+        sector_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.SECTOR and s['scope_id'] is not None
+        ]
+        if sector_ids:
+            return list(
+                EntryPoint.objects.filter(is_active=True, sector_id__in=sector_ids)
+                .values_list('id', flat=True)
+            )
+        logger.warning(
+            'screening: no resolvable entry-point scope for %s — DENYING access', user
+        )
+        return []
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.request.user or self.request.user.is_anonymous:
+            return qs.none()
+        port_ids = self._entry_point_ids_for(self.request.user)
+        if port_ids is None:
+            return qs
+        return qs.filter(port_id__in=port_ids) if port_ids else qs.none()
+
+    def _assert_port_in_scope(self, port):
+        """منع إنشاء فحص خارج نطاق صاحب الصلاحية (لا بوابات جانبية عبر create)."""
+        if not self.request.user or self.request.user.is_anonymous:
+            raise PermissionDenied('لا تملك الصلاحية لإنشاء فحص في هذا المنفذ')
+        from core.utils.scoping import has_active_global_scope
+
+        if self.request.user.is_superuser or has_active_global_scope(self.request.user):
+            return
+        port_ids = self._entry_point_ids_for(self.request.user)
+        if port_ids is not None and str(port.pk) not in {str(pid) for pid in port_ids}:
+            raise PermissionDenied('المنفذ خارج نطاق صلاحياتك')
+
     def create(self, request, *args, **kwargs):
+        data = request.data if isinstance(request.data, dict) else {}
+        port_id = data.get('port') or (data.get('port_id'))
+        from apps.masterdata.models import EntryPoint
+        if port_id:
+            port = EntryPoint.objects.filter(id=port_id).first()
+            if port is not None:
+                self._assert_port_in_scope(port)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        if 'port' in serializer.validated_data:
+            self._assert_port_in_scope(serializer.validated_data['port'])
         screening = serializer.save()
         assessment = RiskEngineService.assess(screening)
         self._handle_assessment(screening, assessment)

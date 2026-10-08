@@ -18,6 +18,14 @@
 | **WF-07** | المتابعة المنزلية للمريض (ما بعد الحجر) | نظام المتابعة الصحية + تطبيق الجوال | `Follow_Up.md` |
 | **WF-08** | التفتيش والإفراج الغذائي | 7 (الحجر الغذائي) + الجمارك | `Food_Inspection.md` |
 | **WF-09** | الاستجابة للطوارئ (غرفة العمليات) | 9 (EOC) + جميع البوابات | `Emergency_Response.md` |
+| **WF-10** | دورة العمل عبر المعابر البرية (من تسجيل المسافر حتى الإفراج) | 20 (نظام صحة المعابر البرية) | `Border_Health_Workflow.md` |
+| **WF-21** | فحص السفن القادمة | 19_Port_Health | `Vessel_Screening_Workflow.md` |
+| **WF-22** | تفتيش السفن | 19_Port_Health | `Vessel_Inspection_Workflow.md` |
+| **WF-23** | إدارة الشحنات الغذائية | 18_Food_Safety | `Food_Shipment_Workflow.md` |
+| **WF-24** | فحص المعابر البرية | 20_Land_Border | `Border_Screening_Workflow.md` |
+| **WF-25** | فحص الشحنات البرية | 18_Food_Safety, 20_Land_Border | `Land_Food_Shipment_Workflow.md` |
+
+> **نظام صحة المعابر البرية (20):** تفاصيل دورة العمل الكاملة عبر المعابر البرية — تسجيل المسافر ← الإقرار الصحي ← الفحص ← القرار (إفراج / إحالة) ← الحجر أو العزل ← الشهادة، مع تفتيش المركبات والشحنات وإجراءات الطوارئ — في [`Border_Health_Workflow.md`](Border_Health_Workflow.md).
 
 ## 3. العلاقات بين سير العمل (Workflow Dependencies)
 ```mermaid
@@ -31,8 +39,13 @@ flowchart LR
     WF08[WF-08: الحجر الغذائي] --> Customs[الجمارك]
     WF09[WF-09: الطوارئ] --> WF02
     WF09 --> WF05
+    WF10[WF-10: المعابر البرية] --> WF02
+    WF10 --> WF05
+    WF10 --> WF06
+    WF10 --> Customs
+```
 
-4. اصطلاحات المخططات (Mermaid Notations)
+## 4. اصطلاحات المخططات (Mermaid Notations)
 
     المستطيل ذو الزوايا الحادة: إجراء / خطوة يقوم بها المستخدم أو النظام.
 
@@ -41,8 +54,3 @@ flowchart LR
     المستطيل ذو الحواف الدائرية: بداية أو نهاية العملية.
 
     الخط المتقطع: تدفق البيانات / الرسائل بين الأنظمة (مثل: WebSocket, REST API).
-| **WF-21** | فحص السفن القادمة | 19_Port_Health | `Vessel_Screening_Workflow.md` |
-| **WF-22** | تفتيش السفن | 19_Port_Health | `Vessel_Inspection_Workflow.md` |
-| **WF-23** | إدارة الشحنات الغذائية | 18_Food_Safety | `Food_Shipment_Workflow.md` |
-| **WF-24** | فحص المعابر البرية | 20_Land_Border | `Border_Screening_Workflow.md` |
-| **WF-25** | فحص الشحنات البرية | 18_Food_Safety, 20_Land_Border | `Land_Food_Shipment_Workflow.md` |

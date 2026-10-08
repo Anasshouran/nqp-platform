@@ -1,3 +1,4 @@
+import { labelOf, colorOf } from '../../utils/labels';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -94,7 +95,7 @@ const SectorCmsPorts = () => {
         (p.name_en || '').toLowerCase().includes(term) ||
         p.code.toLowerCase().includes(term) ||
         (p.country_name || '').toLowerCase().includes(term) ||
-        typeMeta[p.type].label.toLowerCase().includes(term) ||
+        labelOf(typeMeta, p.type).toLowerCase().includes(term) ||
         (p.address || '').toLowerCase().includes(term)
     );
   }, [state.ports, term, isSearching]);
@@ -199,7 +200,7 @@ const SectorCmsPorts = () => {
                 {state.status === 'loading' ? (
                   <Skeleton variant="rounded" height={118} />
                 ) : (
-                  <KpiCard icon={typeMeta[t].icon} value={countFor(t)} label={typeMeta[t].label} accent={`${typeMeta[t].chip}.main`} />
+                  <KpiCard icon={typeMeta[t].icon} value={countFor(t)} label={labelOf(typeMeta, t)} accent={`${colorOf(typeMeta, t, 'chip')}.main`} />
                 )}
               </Grid>
             ))}

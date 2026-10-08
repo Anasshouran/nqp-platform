@@ -81,6 +81,7 @@ import ReconciliationView from '../../components/finance/ReconciliationView';
 import ReportsView from '../../components/finance/ReportsView';
 import AuditLogsView from '../../components/finance/AuditLogsView';
 import type { AxiosError } from 'axios';
+import { notifySuccess } from '../../utils/toast';
 import { useAuth } from '../../hooks/useAuth';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../store/store';
@@ -249,7 +250,7 @@ export default function NationalFinancePage(): React.JSX.Element {
       if (r) {
         setPrintTarget({ receipt: r, invoice: res.data.data, payment: res.data.data.payments?.[0] });
       } else if (res.data.data.receipt_number) {
-        window.alert(`تم التحصيل — إيصال ${res.data.data.receipt_number}`);
+        notifySuccess(`تم التحصيل — إيصال ${res.data.data.receipt_number}`);
       }
     } catch (e) {
       notifyError(e as AxiosError<{ message?: string }>);

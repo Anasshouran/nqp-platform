@@ -2,6 +2,7 @@ import EmergencyIcon from '@mui/icons-material/EmergencyShare';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import AnchorIcon from '@mui/icons-material/Anchor';
 import PersonIcon from '@mui/icons-material/Person';
+import PeopleIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -10,6 +11,7 @@ import VaccinesIcon from '@mui/icons-material/Vaccines';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MedicationIcon from '@mui/icons-material/Medication';
 import ScienceIcon from '@mui/icons-material/Science';
+import DescriptionIcon from '@mui/icons-material/Description';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import FlightIcon from '@mui/icons-material/Flight';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
@@ -76,6 +78,17 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     nav: [
       { label: 'بوابة الشركة', target: '/app/carrier', icon: <FlightTakeoffIcon /> },
       { label: 'الرحلات والنقل', target: '/app/carriers', icon: <FlightIcon /> },
+      { label: 'المستندات', target: '/app/carrier/documents', icon: <DescriptionIcon /> },
+      { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
+    ],
+  },
+  CARRIER_ADMIN: {
+    title: 'إدارة الشركة',
+    subtitle: 'Carrier Administration',
+    brand: 'وزارة الصحة الاتحادية',
+    color: '#0B5ED7',
+    nav: [
+      { label: 'أعضاء الشركة', target: '/app/carrier/members', icon: <PeopleIcon />, permission: 'carrier_members:view' },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
     ],
   },
@@ -85,10 +98,11 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: 'primary.main',
     nav: [
-      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
-      { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
-      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', icon: <FactCheckIcon /> },
-      { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', icon: <BiotechIcon /> },
+      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', permission: 'ihr_event:view', icon: <MedicalServicesIcon /> },
+      { label: 'لوحة WHO', target: '/app/integration/who', permission: 'who_integration:view', icon: <PublicHealthIconSafe /> },
+      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', permission: 'ihr_spar:view', icon: <FactCheckIcon /> },
+      { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', permission: 'who_diseases:view', icon: <BiotechIcon /> },
+      { label: 'سجلات المزامنة', target: '/app/integration/who/logs', permission: 'who_logs:view', icon: <HistoryIcon /> },
       { label: 'التقارير', target: '/app/food-surveillance', icon: <AssessmentIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
     ],
@@ -99,11 +113,11 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: '#1565c0',
     nav: [
-      { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
-      { label: 'أحداث IHR (مراقبة)', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
-      { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', icon: <BiotechIcon /> },
-      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', icon: <FactCheckIcon /> },
-      { label: 'سجلات المزامنة', target: '/app/integration/who/diseases', icon: <HistoryIcon /> },
+      { label: 'لوحة WHO', target: '/app/integration/who', permission: 'who_integration:view', icon: <PublicHealthIconSafe /> },
+      { label: 'أحداث IHR (مراقبة)', target: '/app/integration/who/events', permission: 'ihr_event:view', icon: <MedicalServicesIcon /> },
+      { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', permission: 'who_diseases:view', icon: <BiotechIcon /> },
+      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', permission: 'ihr_spar:view', icon: <FactCheckIcon /> },
+      { label: 'سجلات المزامنة', target: '/app/integration/who/logs', permission: 'who_logs:view', icon: <HistoryIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
     ],
   },
@@ -113,9 +127,9 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: 'primary.main',
     nav: [
-      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
-      { label: 'لوحة WHO', target: '/app/integration/who', icon: <PublicHealthIconSafe /> },
-      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', icon: <FactCheckIcon /> },
+      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', permission: 'ihr_event:view', icon: <MedicalServicesIcon /> },
+      { label: 'لوحة WHO', target: '/app/integration/who', permission: 'who_integration:view', icon: <PublicHealthIconSafe /> },
+      { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', permission: 'ihr_spar:view', icon: <FactCheckIcon /> },
       { label: 'الترصد', target: '/app/surveillance', icon: <RiskIcon /> },
       { label: 'التقارير', target: '/app/food-surveillance', icon: <AssessmentIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
@@ -127,7 +141,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: 'primary.main',
     nav: [
-      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
+      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', permission: 'ihr_event:view', icon: <MedicalServicesIcon /> },
       { label: 'الترصد', target: '/app/surveillance', icon: <RiskIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
     ],
@@ -138,7 +152,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: 'info.main',
     nav: [
-      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', icon: <MedicalServicesIcon /> },
+      { label: 'لوحة أحداث IHR', target: '/app/integration/who/events', permission: 'ihr_event:view', icon: <MedicalServicesIcon /> },
       { label: 'الفحص الصحي', target: '/app/screening', icon: <FactCheckIcon /> },
       { label: 'العيادة', target: '/app/clinic/dashboard', icon: <MedicalServicesIcon /> },
       { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },

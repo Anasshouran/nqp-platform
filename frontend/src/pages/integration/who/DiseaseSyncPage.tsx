@@ -17,6 +17,7 @@ import { PageHeader } from '../../../components/common';
 import { DataTable, StatusChip } from '../../../components/ui';
 import { useServerTable } from '../../../hooks/useServerTable';
 import { formatDateTime } from '../../../utils/formatters';
+import { safeExternalUrl } from '../../../utils/safeUrl';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../../utils/toast';
 import { getWhoDiseases, syncWhoDiseases } from '../../../api/endpoints/who';
 import { getDiseases as getLabDiseases } from '../../../api/endpoints/laboratory';
@@ -106,7 +107,7 @@ const DiseaseSyncPage = () => {
             label: 'رمز ICD-11',
             render: (d) => <Typography dir="ltr" sx={{ fontFamily: 'monospace', fontSize: 12 }}>{d.disease_code}</Typography>,
           },
-          { key: 'icd11_uri', label: 'رابط ICD-11', hideOnMobile: true, render: (d) => (d.icd11_uri ? <Typography dir="ltr" component="a" href={d.icd11_uri} target="_blank" rel="noreferrer" sx={{ fontFamily: 'monospace', fontSize: 11, color: 'primary.main' }}>{d.icd11_uri.slice(0, 30)}…</Typography> : '—') },
+          { key: 'icd11_uri', label: 'رابط ICD-11', hideOnMobile: true, render: (d) => (safeExternalUrl(d.icd11_uri) ? <Typography dir="ltr" component="a" href={safeExternalUrl(d.icd11_uri)} target="_blank" rel="noreferrer" sx={{ fontFamily: 'monospace', fontSize: 11, color: 'primary.main' }}>{d.icd11_uri!.slice(0, 30)}…</Typography> : '—') },
           {
             key: 'is_notifiable',
             label: 'واجب الإبلاغ',

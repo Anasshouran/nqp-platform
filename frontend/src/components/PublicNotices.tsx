@@ -23,9 +23,9 @@ const marquee = keyframes`
 `;
 
 const PRIORITY: Record<string, { label: string; color: 'error' | 'warning' | 'info' | 'default'; tone: string }> = {
-  HIGH: { label: 'عاجل', color: 'error', tone: '#d32f2f' },
-  MEDIUM: { label: 'متوسط', color: 'warning', tone: '#ed6c02' },
-  LOW: { label: 'منخفض', color: 'info', tone: '#1976d2' },
+  HIGH: { label: 'عاجل', color: 'error', tone: '#c63a3a' },
+  MEDIUM: { label: 'متوسط', color: 'warning', tone: '#a86400' },
+  LOW: { label: 'منخفض', color: 'info', tone: '#2f6dd0' },
 };
 
 const CATEGORY_META: Record<string, { label: string; icon: ReactElement }> = {

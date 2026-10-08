@@ -1,6 +1,12 @@
 
 ---
 
+> **ملاحظة حالة:** الأقسام 1–6 أدناه وصف تصاميمي قديم لا يطابق التنفيذ
+> (لا يوجد `ROLE_CHOICES` ولا `seed_permissions.py`، والأدوار الفعلية بصيغة
+> `code:resource:action`). المرجع المعتمد هو القسم 7.
+
+---
+
 ### 📄 5. `RBAC.md` (إدارة الصلاحيات القائمة على الأدوار)
 
 ```markdown
@@ -111,3 +117,103 @@ def seed_roles():
     NIST RBAC Standard: https://csrc.nist.gov/projects/role-based-access-control
 
     
+---
+
+## 7. الوضع المُنفَّذ فعليًا
+
+### 7.1 اصطلاح أسماء الصلاحيات
+
+الصلاحية بصيغة `resource:action` (نقطتان، حرفان صغيران)، مثل `flights:view`.
+الأفعال المتاحة: `view`, `add`, `edit`, `delete`, `export`.
+
+المصدر المرجعي الوحيد للخريطة: `seed_rbac.py` → `RESOURCES`.
+تعديل الأدوار يتم عبر `python manage.py seed_rbac` فقط.
+
+### 7.2 كيف تُحسم الصلاحية؟
+
+`User.can()` في `apps/accounts/models.py` بالترتيب:
+
+1. `is_superuser` ← `True` دائمًا.
+2. `blocked_permissions` تحتوي أي كود من المطلوب ← `False` (الحجب يسبق كل شيء).
+3. `extra_permissions` تغطي **كل** الكودات المطلوبة ← `True`.
+4. الصلاحيات المجمّعة من `RoleAssignment` النشطة (`is_active`, ضمن
+   `start_date`/`end_date`) تغطي كل الكودات ← `True`.
+5. غير ذلك ← `False`.
+
+`User.role` (العلاقة القديمة) **لا يُقرأ** في `User.can()`. أي دور يُمنح فعليًا
+عبر `RoleAssignment` نشطة.
+
+### 7.3 بوابة الـviewset
+
+`AdminOrPermissionAction` (في `core/permissions/__init__.py`):
+
+- `is_staff` أو `is_superuser` ← مسموح (سلوك `IsAdmin` التاريخي).
+- غير ذلك: يُشتق المورد من `permission_resource`، والإجراء من
+  `default_action_map` أو `action_permission_map` على الـviewset.
+- **يفشل مغلقًا**: مورد غائب أو إجراء غير معرّف أو إجراء مخصص غير مُدرج في
+  `action_permission_map` ← `403`.
+
+### 7.4 مورد `flights`
+
+`FlightViewSet` كان بلا `permission_classes`، فورث `IsAuthenticated` العام —
+أي أن أي حساب مسجّل كان يقرأ ويكتب ويحذف رحلات كل الشركات.
+
+| الدور | الصلاحيات |
+| :--- | :--- |
+| `ADMIN`, `DG_MANAGER` | `view, add, edit, delete, export` |
+| `CARRIER` | `view, add, edit, delete` (بلا `export`) |
+| `POE_HEALTH_OFFICER`, `QUARANTINE_INSPECTOR`, `NATIONAL_SURVEILLANCE_OFFICER`, `SECTOR_IHR_OFFICER` | `view` فقط |
+
+**نطاق ممثّل الناقل** لا تأتي من الصلاحيات، بل من `FlightViewSet`:
+
+- `get_queryset` يقصر النتائج على `get_portal_carrier(user)`.
+- `perform_create` يثبّت `carrier` على شركة المستخدم.
+- `_guard_company` يمنع تعديل رحلة شركة أخرى (403/404).
+- `is_staff` لا يقصر، فيرى الإدارة كل الشركات.
+
+`action_permission_map` مطلوب لكل `@action`: `upcoming`→`view`,
+`set_status`/`manifest_reprocess`→`edit`, `upload_manifest`→`add`,
+`manifest_status|passengers|report|errors`→`view`,
+`api_key_info|regenerate_api_key`→`edit`.
+
+### 7.5 الإشعارات الصحية: لا مورد RBAC
+
+`HealthNoticeViewSet.get_permissions` يتجاوز `permission_classes` عمدًا:
+
+| الإجراء | الحارس |
+| :--- | :--- |
+| `list`, `retrieve`, `archived`, `recent` | `AllowAny` (نصيحة عامة) |
+| `acknowledge` | `IsCarrierRep` |
+| `create`, `update`, `delete` | `IsAdmin` |
+
+إنشاء إشعار يجدول بث Web Push لكل المشتركين
+(`apps/notifications/signals.py`)، لذلك محصور إداريًا. لا يوجد مورد
+`notices` في `RESOURCES`، وأي إضافة له ستكون config معطلًا يتجاوزه
+`get_permissions`.
+
+### 7.6 أسماء بديلة (aliases)
+
+`PERMISSION_CODE_ALIASES` في `core/utils/authorization.py` تربط أسماء
+`dotted` قديمة (من وثائق WHO/IHR) بالأكواد الفعلية `resource:action`.
+`User.can()` يقبلها، لكن `effective_permission_codes()` — وهو ما تستهلكه
+الواجهة — يعيد الأكواد الفعلية فقط. أمثلة:
+
+| الاسم البديل | الكود الفعلي |
+| :--- | :--- |
+| `who.integration.view` | `who_integration:view` |
+| `who.integration.manage` | `who_integration:edit` |
+| `who.icd11.search` | `who_mappings:search` |
+| `who.ihr.integration.view` | `who_integration:view` |
+| `ihr.events.create` | `ihr_event:add` |
+| `ihr.notifications.submit` | `ihr_event:notify` |
+| `ihr.communications.view` | `ihr_event:view` |
+| `users.manage`, `roles.manage` | حزمة `add+edit+delete` |
+| `audit_logs.view` | `audit_log:view` |
+
+### 7.7 التحقق
+
+```bash
+python manage.py seed_rbac                 # لا تُعدَّل الأدوار يدويًا
+python manage.py verify_seed_coverage      # قراءة فقط
+python -m pytest apps/carriers -q
+```

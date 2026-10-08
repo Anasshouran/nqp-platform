@@ -77,10 +77,26 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
       MINIO_BUCKET: ${MINIO_BUCKET:-nqp-documents}
       ENABLE_DEMO_QR: ${ENABLE_DEMO_QR:-False}
-      WHO_BASE_URL: ${WHO_BASE_URL:-https://id.who.int}
-      WHO_TOKEN_URL: ${WHO_TOKEN_URL:-https://icdaccessmanagement.who.int/connect/token}
-      WHO_CLIENT_ID: ${WHO_CLIENT_ID:-}
-      WHO_CLIENT_SECRET: ${WHO_CLIENT_SECRET:-}
+      # ===== WHO / ICD-11 / IHR (عقد الإعدادات القانوني — apps/who/config.py) =====
+      # الافتراضي معطّل: لا اتصال خارجي إلا بعد WHO_ENABLED=true + اعتمادادات صالحة.
+      # الأسرار من deploy/.env.who (gitignored) على VPS فقط.
+      WHO_ENABLED: ${WHO_ENABLED:-False}
+      WHO_TIMEOUT: ${WHO_TIMEOUT:-15}
+      WHO_ICD_BASE_URL: ${WHO_ICD_BASE_URL:-https://id.who.int}
+      WHO_ICD_TOKEN_URL: ${WHO_ICD_TOKEN_URL:-https://icdaccessmanagement.who.int/connect/token}
+      WHO_ICD_CLIENT_ID: ${WHO_ICD_CLIENT_ID:-}
+      WHO_ICD_CLIENT_SECRET: ${WHO_ICD_CLIENT_SECRET:-}
+      WHO_ICD_TIMEOUT: ${WHO_ICD_TIMEOUT:-}
+      WHO_ICD_API_VERSION: ${WHO_ICD_API_VERSION:-v2}
+      WHO_ICD_SCOPE: ${WHO_ICD_SCOPE:-icdapi_access}
+      # IHR: لا افتراضيات. مسارات الإرسال/الحالة تبقى فارغة حتى تأكيد العقد الرسمي.
+      WHO_IHR_BASE_URL: ${WHO_IHR_BASE_URL:-}
+      WHO_IHR_TOKEN_URL: ${WHO_IHR_TOKEN_URL:-}
+      WHO_IHR_CLIENT_ID: ${WHO_IHR_CLIENT_ID:-}
+      WHO_IHR_CLIENT_SECRET: ${WHO_IHR_CLIENT_SECRET:-}
+      WHO_IHR_TIMEOUT: ${WHO_IHR_TIMEOUT:-}
+      WHO_IHR_EVENTS_PATH: ${WHO_IHR_EVENTS_PATH:-}
+      WHO_IHR_STATUS_PATH: ${WHO_IHR_STATUS_PATH:-}
     volumes:
       - backend_media:/app/media
     depends_on:

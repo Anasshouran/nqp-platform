@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from django.db.models import Prefetch, Q
 from django.utils import timezone
@@ -72,6 +73,7 @@ class TravelerLookupView(APIView):
     """
     permission_classes = [AllowAny]
     serializer_class = TravelerLookupSerializer
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'traveler_lookup'
 
     def get(self, request):
@@ -88,21 +90,24 @@ class TravelerLookupView(APIView):
         ).first()
         if not traveler:
             return Response(success_response({'found': False, 'error': 'NOT_FOUND'}))
+        # التحقق العام من حالة الطلب لا يفرِّق رسالته حسب وجود الشخص: نُعيد
+        # الحد الأدنى (الحالة فقط) دون الاسم الكامل أو رقم الجواز أو سبب الرفض
+        # الحرّ النصي — البيانات الشخصية تبقى لملكية الجلسة/الخدمة الذاتية.
         return Response(success_response({
             'found': True,
-            'traveler_id': str(traveler.id),
-            'passport_number': traveler.passport_number,
-            'full_name': traveler.full_name,
-            'nationality': traveler.nationality.name_ar if traveler.nationality_id else None,
             'registration_status': traveler.registration_status,
             'qr_issued': traveler.registration_status == Traveler.RegistrationStatus.COMPLETED,
-            'rejection_reason': traveler.rejection_reason or None,
         }))
 
 
 class VerifyQrView(APIView):
     permission_classes = [AllowAny]
     serializer_class = QrVerificationSerializer
+    # التحقق من QR موقّع بامتلاك الرمز نفسه (HMAC + نافذة زمنية)؛ يفرض
+    # موظف المنفذ مطابقة حامل الرمز بجوازه، لذا تُبقى هويته. نضيف سقفاً
+    # للعنوان رغم توقيع الرمز احتياطاً ضد الاستنزاف وإعادة الإرسال.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     def post(self, request):
         payload = request.data or {}
@@ -136,6 +141,8 @@ class VerifyQrView(APIView):
 class VerifyCertificateView(APIView):
     permission_classes = [AllowAny]
     serializer_class = CertificateVerificationSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     def post(self, request):
         cert_number = (request.data.get('certificate_number') or '').strip()
@@ -150,14 +157,13 @@ class VerifyCertificateView(APIView):
         if certificate.expiry_date and certificate.expiry_date < timezone.localdate():
             return Response(success_response({'valid': False, 'reason': 'EXPIRED'}))
 
+        # الحد الأدنى لإثبات الصلاحية دون كشف هوية الحامل أو المرض الحرّ —
+        # الاسم/الجواز/المرض تبقى للعروض المشروعة المصرَّح بها.
         return Response(success_response({
             'valid': True,
             'certificate': {
                 'certificate_number': certificate.certificate_number,
-                'traveler_name': certificate.traveler_name,
-                'passport_number': certificate.passport_number,
                 'certificate_type': certificate.certificate_type,
-                'disease': certificate.disease,
                 'issued_date': certificate.issued_date,
                 'expiry_date': certificate.expiry_date,
             },
@@ -213,6 +219,8 @@ class DemoQrView(APIView):
 
     permission_classes = [AllowAny]
     serializer_class = DemoQrSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     DEMO_TRAVELER_ID = uuid.UUID('00000000-0000-0000-0000-000000000001')
     DEMO_PASSPORT = 'P1234567'
@@ -253,10 +261,16 @@ class LabResultLookupView(APIView):
 
     الرمز (LNC-XXXXXX) يُنشأ تلقائياً عندما تكتمل نتائج العينة وتُعتمد،
     ويُسلَّم لصاحب العينة عبر القناة الرسمية المعتمدة فقط.
+
+    الحد الأدنى للتحقق: نُعيد خاتمة التحقق (الفحص، المرض، النتيجة) وتاريخ
+    الاعتماد، دون بيّنات القياس الخام (القيمة/الوحدة/المدى المرجعي/النص)
+    التي تبقى للعروض المختبرية المشروعة.
     """
 
     permission_classes = [AllowAny]
     serializer_class = LabResultLookupSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     def post(self, request):
         serializer = LabResultLookupSerializer(data=request.data or {})
@@ -296,11 +310,6 @@ class LabResultLookupView(APIView):
                     'disease_name': test.disease.name_ar if test.disease_id else '',
                     'outcome': test.outcome,
                     'outcome_label': test.get_outcome_display() if test.outcome else '',
-                    'result_value': test.result_value,
-                    'result_text': test.result_text,
-                    'unit': test.unit,
-                    'reference_range': test.reference_range,
-                    'is_critical': False,
                     'approved_at': test.approved_at,
                 }
                 for test in tests
@@ -615,6 +624,24 @@ class AssistantViewSet(viewsets.ViewSet):
 
     permission_classes = [AllowAny]
 
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'assistant_chat'
+    #: لكل procedure نطاقها؛ القراءة والتقييم أرخص من توليد إجابة.
+    throttle_scopes = {
+        'chat': 'assistant_chat',
+        'feedback': 'assistant_feedback',
+    }
+
+    def get_throttles(self):
+        scope = self.throttle_scopes.get(getattr(self, 'action', None), self.throttle_scope)
+        throttles = []
+        for cls in self.throttle_classes:
+            throttle = cls()
+            if isinstance(throttle, ScopedRateThrottle):
+                throttle.scope = scope
+            throttles.append(throttle)
+        return throttles
+
     def chat(self, request):
         from .assistant import answer_question
         from .serializers import AssistantChatSerializer
@@ -638,12 +665,39 @@ class AssistantViewSet(viewsets.ViewSet):
         from .assistant import topics as assistant_topics
         return Response(success_response(assistant_topics()))
 
+    def feedback(self, request):
+        from .models import AssistantConversation, AssistantFeedback
+        from .serializers import AssistantFeedbackSerializer
+
+        serializer = AssistantFeedbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        conversation = None
+        conv_id = data.get('conversation_id')
+        if conv_id:
+            try:
+                conversation = AssistantConversation.objects.get(pk=conv_id)
+            except (AssistantConversation.DoesNotExist, ValueError):
+                conversation = None
+
+        AssistantFeedback.objects.create(
+            conversation=conversation,
+            rating=data['rating'],
+            intent=data.get('intent') or (conversation.intent if conversation else 'UNKNOWN'),
+            answer_type=data.get('answer_type') or (conversation.answer_type if conversation else 'INFO'),
+            engine=data.get('engine') or 'rules',
+        )
+        return Response(success_response({'ok': True}), status=status.HTTP_201_CREATED)
+
 
 class PublicFlightView(APIView):
     """استعلام عام عن حالة رحلات الناقلين (غير حساس — بدون كشوف المسافرين)."""
 
     permission_classes = [AllowAny]
     serializer_class = PublicFlightSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     _STATUS_LABELS = {
         'SCHEDULED': 'مجدولة',
@@ -694,6 +748,8 @@ class FoodShipmentTrackView(APIView):
 
     permission_classes = [AllowAny]
     serializer_class = FoodShipmentTrackSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     _STATUS_LABELS = {
         'DRAFT': 'مسودة',

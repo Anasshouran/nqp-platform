@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -25,6 +27,8 @@ from .serializers import (
     StationWriteSerializer,
 )
 
+logger = logging.getLogger(__name__)
+
 ACTION_TO_PERMISSION = {
     'list': 'view',
     'retrieve': 'view',
@@ -36,7 +40,17 @@ ACTION_TO_PERMISSION = {
 
 
 class OrgScopedMixin:
-    """يقيّد الوصول بناءً على صلاحيات الوحدة ثم نطاق (القطاع) للمستخدم."""
+    """يقيّد الوصول بناءً على صلاحيات الوحدة ثم نطاق (القطاع) للمستخدم.
+
+    فشل آمن: غياب نطاق قابل للحل = `qs.none()`. قبل المرحلة 3B كان
+    `return qs` غير المقيد هو السلوك الافتراضي، فأي حساب بلا نطاق —
+    بما فيه حساب بنطاق `STATION` — كان يرى كل القطاعات والإدارات
+    والتعيينات.
+
+    الاستثناء الوحيد مصرَّح به عبر `scope_optional = True` للجداول
+    المرجعية التي لا تحمل قطاعاً أصلاً (انظر
+    `core.utils.scoping.SCOPE_OPT_OUT_ATTR`).
+    """
 
     permission_resource = 'organization'
     permission_classes = [PermissionAction, ScopeFilter]
@@ -53,15 +67,32 @@ class OrgScopedMixin:
         user = self.request.user
         if user.is_superuser:
             return qs
+        from core.utils.scoping import scope_is_optional
+
+        if scope_is_optional(self):
+            return qs
         scopes = user.active_scopes(self.permission_resource)
         scope_ids = [
             s['scope_id']
             for s in scopes
             if s['scope_type'] == self.scope_type and s['scope_id'] is not None
         ]
-        if self.scope_field and scope_ids:
+        if not scope_ids:
+            # لا نطاق ⇒ لا تغطية عامة. الافتراضي حجب كامل.
+            logger.warning(
+                'OrgScopedMixin: user %s has no resolvable %s scope on %s '
+                '- DENYING all rows',
+                user, self.scope_type, self.__class__.__name__,
+            )
+            return qs.none()
+        if self.scope_field:
             return qs.filter(**{f'{self.scope_field}__in': scope_ids})
-        return qs
+        logger.warning(
+            'OrgScopedMixin: %s declares scope_type=%s but no scope_field, so the '
+            'scope cannot be applied - DENYING all rows',
+            self.__class__.__name__, self.scope_type,
+        )
+        return qs.none()
 
 
 def build_position_tree(position, user_names=None):
@@ -86,6 +117,13 @@ def build_position_tree(position, user_names=None):
 
 
 class OrgPositionViewSet(OrgScopedMixin, viewsets.ModelViewSet):
+    """جدول مرجعي مشترك: المناصب لا تحمل قطاعاً ولا تنتمي إلى نقطة دخول.
+
+    لا بُعد نطاق له على الإطلاق، فيُعلن `scope_optional = True` صراحةً بدل
+    أن يُمنح `qs` كاملاً كأثر جانبي لغياب `scope_field`.
+    """
+
+    scope_optional = True
     queryset = OrgPosition.objects.select_related('parent').all()
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
@@ -240,8 +278,16 @@ class OrgAssignmentViewSet(OrgScopedMixin, viewsets.ModelViewSet):
 
 
 class StationViewSet(OrgScopedMixin, viewsets.ModelViewSet):
-    """المحطات التشغيلية داخل الإدارات (مع نطاق محطة/إدارة/قطاع)."""
+    """المحطات التشغيلية داخل الإدارات (مع نطاق محطة/إدارة/قطاع).
 
+    `OrgScopedMixin.get_queryset` يخدم نوع نطاق واحداً فقط
+    (`scope_type`)، وهذا الـ viewset يجمع ثلاثة أنواع (STATION/SECTOR/
+    DEPARTMENT) في سياسة النطاق الخاصة به. لذلك يُتخطّى هنا سياسة الأساس
+    أحادية النوع، ويلجأ إلى `get_queryset` أدناه — وهو فاشل آمن عند غياب
+    الأنواع الثلاثة جميعاً.
+    """
+
+    scope_optional = True
     queryset = Station.objects.select_related('department', 'sector').all()
     permission_resource = 'organization'
     scope_type = RoleAssignment.ScopeType.STATION
@@ -275,9 +321,18 @@ class StationViewSet(OrgScopedMixin, viewsets.ModelViewSet):
             q |= Q(sector_id__in=sector_ids)
         if department_ids:
             q |= Q(department_id__in=department_ids)
-        if q:
-            return qs.filter(q)
-        return qs
+        if not q:
+            # Prior behaviour returned the unrestricted queryset here, which made
+            # every scopeless account (and every STATION-scoped one, since
+            # `scope_type` is STATION on this viewset) a global reader of the
+            # org structure. Absence of scope is not national coverage.
+            logger.warning(
+                'StationViewSet: user %s has no resolvable STATION/SECTOR/DEPARTMENT '
+                'scope - DENYING all rows',
+                user,
+            )
+            return qs.none()
+        return qs.filter(q)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -336,7 +391,16 @@ class OrganizationTreeViewSet(OrgScopedMixin, viewsets.GenericViewSet):
                 s['scope_id'] for s in scopes
                 if s['scope_type'] == self.scope_type and s['scope_id'] is not None
             ]
-            if allowed:
+            if not allowed:
+                # Same fail-open bug as OrgScopedMixin: no scope used to mean
+                # "every sector". Fail closed instead.
+                logger.warning(
+                    'OrganizationTreeViewSet.hierarchy: user %s has no resolvable %s '
+                    'scope - DENYING the whole tree',
+                    user, self.scope_type,
+                )
+                sectors = sectors.none()
+            else:
                 sectors = sectors.filter(id__in=allowed)
         roots = OrgPosition.objects.filter(parent=None, is_active=True).order_by('level', 'order')
         positions = [build_position_tree(p) for p in roots]

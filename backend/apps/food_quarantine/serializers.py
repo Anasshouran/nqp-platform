@@ -343,10 +343,18 @@ class FoodSampleSerializer(serializers.ModelSerializer):
         return SampleTestSerializer(tests, many=True).data
 
     def get_lab_invoice(self, obj):
-        invoice = obj.finance_invoices.order_by('-created_at').first()
-        if not invoice:
+        # فاتورة تحليل العينة نفسها (`SampleInvoice`)، لا فواتير الشحنات
+        # المرتبطة بالعينة عبر `finance_invoices`. الواجهة تعرض
+        # `invoice_number` و`items` و`exemption_reason` أي نموذج العينة.
+        #
+        # `lab_invoice` OneToOne عكسي: الوصول لمحرّك يرمي
+        # `RelatedObjectDoesNotExist` بدل None، فيجب التقاطه صراحةً — عيّنة
+        # بلا فاتورة بعد غير استثناء وتُخزّن كـ null.
+        try:
+            invoice = obj.lab_invoice
+        except SampleInvoice.DoesNotExist:
             return None
-        return FinanceSampleInvoiceSerializer(invoice).data
+        return SampleInvoiceSerializer(invoice).data
 
     def get_custody(self, obj):
         events = obj.custody_events.select_related('transferred_by', 'received_by').order_by('transferred_at')

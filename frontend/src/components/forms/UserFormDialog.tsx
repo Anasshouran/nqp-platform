@@ -5,8 +5,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
@@ -14,6 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { FormTextField, FormSelect } from '../uikit';
 import { createUser, getRoles, updateUser } from '../../api/endpoints/users';
 import { notifySuccess } from '../../utils/toast';
 import PermissionPicker from './PermissionPicker';
@@ -106,7 +105,7 @@ const UserFormDialog = ({ open, user, onClose, onSaved }: UserFormDialogProps) =
         sx={{
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
-          background: 'linear-gradient(120deg, #0a6b58, #0e8a72, #12a585)',
+          background: 'linear-gradient(120deg, #075e4d, #0a6b58, #0c7f6a)',
           px: 3,
           py: 2,
           display: 'flex',
@@ -138,77 +137,63 @@ const UserFormDialog = ({ open, user, onClose, onSaved }: UserFormDialogProps) =
             {error}
           </Alert>
         )}
-        <TextField
+        <FormTextField
           label="الاسم الكامل"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          fullWidth
           margin="dense"
         />
-        <TextField
+        <FormTextField
           label="البريد الإلكتروني"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
-          fullWidth
           margin="dense"
           disabled={!!user}
         />
-        <TextField
+        <FormTextField
           label="اسم المستخدم"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          fullWidth
           margin="dense"
-          helperText="اختياري — يستخدم لتسجيل الدخول"
+          hint="اختياري — يستخدم لتسجيل الدخول"
           inputProps={{ dir: 'ltr', autoComplete: 'username' }}
         />
-        <TextField
+        <FormTextField
           label="الرقم الوظيفي"
           value={employeeNumber}
           onChange={(e) => setEmployeeNumber(e.target.value)}
-          fullWidth
           margin="dense"
           inputProps={{ dir: 'ltr' }}
         />
-        <TextField
+        <FormTextField
           label="رقم الهاتف"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          fullWidth
           margin="dense"
         />
-        <TextField
+        <FormTextField
           label="الرقم الوطني"
           value={nationalId}
           onChange={(e) => setNationalId(e.target.value)}
-          fullWidth
           margin="dense"
         />
-        <TextField
-          select
+        <FormSelect
           label="الدور"
           value={role}
-          onChange={(e) => setRole(e.target.value)}
-          fullWidth
+          onChange={setRole}
+          options={roles.map((r) => ({ value: r.code, label: `${r.name_ar} (${r.code})` }))}
+          placeholder="بدون دور"
           margin="dense"
-        >
-          <MenuItem value="">بدون دور</MenuItem>
-          {roles.map((r) => (
-            <MenuItem key={r.id} value={r.code}>
-              {r.name_ar} ({r.code})
-            </MenuItem>
-          ))}
-        </TextField>
+        />
         {!user && (
-          <TextField
+          <FormTextField
             label="كلمة المرور"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
-            fullWidth
             margin="dense"
-            helperText="8 أحرف على الأقل"
+            hint="8 أحرف على الأقل"
           />
         )}
         <FormControlLabel

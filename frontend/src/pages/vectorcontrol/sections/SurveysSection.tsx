@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -63,7 +64,7 @@ const NewSurveyForm = ({ onSaved }: { onSaved: () => void }) => {
       }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ المسح — تأكد من نقطة الدخول والناقل');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ المسح — تأكد من نقطة الدخول والناقل');
     } finally {
       setSaving(false);
     }
@@ -113,7 +114,7 @@ const SurveysSection = () => {
   const t = useServerTable<VectorSurvey>({ fetchData: getSurveys });
   const [formOpen, setFormOpen] = useState(false);
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   return (
     <SectionCard id="surveys">

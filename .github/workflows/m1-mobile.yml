@@ -1,0 +1,138 @@
+# M1 lanes — contract / security baseline / mobile.
+# إضافي تماماً: لا يمسّ ci.yml القائم ولا يُضعف أي بوابة فيه.
+# البوابات إلزامية: فشل عقد، فشل نوع، فشل اختبار، فشل أمني فوق العتبة ⇒ فشل CI.
+
+name: M1 — Contract, Security & Mobile
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+env:
+  PYTHON_VERSION: '3.13'
+  NODE_VERSION: '22'
+
+jobs:
+  contract:
+    name: Contract — OpenAPI mobile + breaking-change gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: nqp_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SECRET_KEY: ci-secret-key-not-for-production
+      DEBUG: 'False'
+      DB_NAME: nqp_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      REDIS_HOST: localhost
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements/*.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/base.txt -r requirements/dev.txt
+      - name: Contract tests (authZ, envelope, classification, breaking-change)
+        run: python -m pytest apps/mobile_api -q --reuse-db
+      - name: OpenAPI generation + mobile namespace present
+        run: |
+          python manage.py spectacular --file /tmp/openapi.yaml
+          grep -q "/api/v1/mobile/auth/login/" /tmp/openapi.yaml
+          grep -q "/api/v1/mobile/sync/status/" /tmp/openapi.yaml
+          grep -q "MobileErrorEnvelope" /tmp/openapi.yaml
+
+  security-baseline:
+    name: Security baseline (new surfaces)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install bandit
+        run: python -m pip install --upgrade pip bandit
+      - name: Bandit on mobile API package (fail on HIGH+)
+        # العتبة المعتمدة: severity HIGH والأساس — يُفشل الـ CI.
+        run: bandit -r apps/mobile_api -ll -ii
+      - name: Secrets guard on new mobile surfaces
+        working-directory: .
+        run: |
+          set -euo pipefail
+          # أي مفتاح/سرّ مكتوب صراحة داخل الأسطح الجديدة = فشل.
+          if grep -rnE "(BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})" \
+              backend/apps/mobile_api mobile/src contracts/src 2>/dev/null; then
+            echo "::error::Hardcoded secret material detected in new surfaces"
+            exit 1
+          fi
+          echo "no secret patterns found"
+      - name: Dependency advisory scan (informational — does not gate yet)
+        continue-on-error: true
+        run: |
+          pip install pip-audit || true
+          pip-audit -r requirements/base.txt --progress-spinner off || true
+
+  mobile:
+    name: Mobile — lint, typecheck, unit, component, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install contracts dependencies (small, uncached)
+        working-directory: contracts
+        run: npm ci
+      - name: Contracts — typecheck + tests
+        working-directory: contracts
+        run: |
+          npm run typecheck
+          npm test
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+      - name: Mobile lint
+        working-directory: mobile
+        run: npm run lint
+      - name: Mobile typecheck
+        working-directory: mobile
+        run: npm run typecheck
+      - name: Mobile unit + component tests
+        working-directory: mobile
+        run: npm test
+      - name: Mobile build validation (Metro bundle for Android)
+        working-directory: mobile
+        run: npx expo export --platform android --output-dir /tmp/expo-export

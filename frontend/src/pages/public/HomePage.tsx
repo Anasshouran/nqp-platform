@@ -36,14 +36,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { getNews, getCirculars, getPublicStatistics, getPorts } from '../../api/endpoints/public';
 import type { NewsArticle, Circular, PublicStatistics, PublicPort } from '../../api/endpoints/public';
 import { SectionTitle, CardsGridSkeleton, Particles } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { accentTokens } from '../../styles/theme';
-
-const categoryLabels: Record<string, string> = {
-  GENERAL: 'عام',
-  HEALTH: 'صحي',
-  TRAVEL: 'سفر',
-  OFFICIAL: 'رسمي',
-};
 
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar') : '—';
@@ -618,21 +612,7 @@ const HomePage = () => {
                               alt={article.title}
                               sx={{ objectFit: 'cover' }}
                             />
-                            <Chip
-                              label={categoryLabels[article.category] || article.category}
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                position: 'absolute',
-                                top: 12,
-                                insetInlineStart: 12,
-                                bgcolor: 'rgba(255,255,255,0.9)',
-                                color: 'primary.dark',
-                                borderColor: 'rgba(255,255,255,0.7)',
-                                fontWeight: 700,
-                                backdropFilter: 'blur(8px)',
-                              }}
-                            />
+                            <NewsCategoryChip category={article.category} overMedia sx={{ position: 'absolute', top: 12, insetInlineStart: 12 }} />
                           </Box>
                         ) : (
                           <Box
@@ -644,13 +624,7 @@ const HomePage = () => {
                               pb: 0,
                             }}
                           >
-                            <Chip
-                              label={categoryLabels[article.category] || article.category}
-                              size="small"
-                              variant="outlined"
-                              color="primary"
-                              sx={{ fontWeight: 700 }}
-                            />
+                            <NewsCategoryChip category={article.category} sx={{ fontWeight: 700 }} />
                           </Box>
                         )}
                         <CardContent sx={{ p: 2.75, flex: 1 }}>

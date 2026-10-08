@@ -1,7 +1,9 @@
 import csv
 import io
 
-from django.http import HttpResponse
+from django.db import transaction
+from django.http import FileResponse, Http404, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -11,27 +13,37 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.filters import ExactFilterBackend
-from core.permissions import IsAdmin
+from core.permissions import AdminOrPermissionAction, IsAdmin
 from core.utils.response import success_response
+from core.utils.scoping import resolve_user_port_ids
+
+from apps.accounts.models import PermissionAudit
+from apps.accounts.views import _audit_request_context
 
 from .models import (
     Carrier,
+    CarrierApiUsageLog,
+    CarrierDocument,
+    CarrierMember,
     CarrierRegistrationRequest,
     CarrierRegistrationStatus,
-    CarrierApiUsageLog,
-    CarrierMember,
     Flight,
     FlightHealthEvent,
+    HealthDeclaration,
     HealthNotice,
     ManifestPassenger,
     NoticeAcknowledgement,
     PassengerManifest,
 )
-from .permissions import HasApiKey, IsCarrierRep
+from .permissions import HasApiKey, IsCarrierRep, manageable_carrier_ids
 from .serializers import (
     CarrierApiUsageLogSerializer,
     CarrierComplianceSerializer,
     CarrierDashboardSerializer,
+    CarrierDocumentSerializer,
+    CarrierMemberCreateSerializer,
+    CarrierMemberSerializer,
+    CarrierMemberUpdateSerializer,
     CarrierKpiSerializer,
     CarrierProfileSerializer,
     CarrierRegistrationRequestSerializer,
@@ -39,6 +51,7 @@ from .serializers import (
     CarrierUpcomingSerializer,
     FlightHealthEventSerializer,
     FlightSerializer,
+    HealthDeclarationSerializer,
     HealthNoticeSerializer,
     ManifestPassengerSerializer,
     PassengerManifestSerializer,
@@ -55,9 +68,83 @@ def get_portal_carrier(user):
     return member.carrier if member else None
 
 
+# ---------------------------------------------------------------------------
+# M8-B.0 (F-01): تصنيف نطاق الوصول لبيانات شركات النقل — فشل آمن
+# ---------------------------------------------------------------------------
+# كان العيب: `carrier = get_portal_carrier(user)` ثم `if carrier: qs.filter(...)`
+# دون فرع بديل — فغياب العضوية النشطة كان يعني "بلا تقييد"، أي أن مستخدمًا يحمل
+# `flights:*` بلا عضوية يقرأ رحلات كل الشركات وينشئ رحلات باسم شركة يختارها
+# من الطلب (يرسل `carrier` في BODY). كذلك كان `_guard_company` لا يفعل شيئًا
+# حين تكون `carrier is None`.
+#
+# التصنيف الحصري المتبادل:
+#   * ``global``: فاعل إداري قائم (superuser/موظف) ⇒ سلوكه غير محدد كما كان،
+#     تمامًا كالنمط الفاشل-آمن الموجود في `CarrierDocumentViewSet.get_queryset`.
+#     هذه *بوابة وصول* بالنطاق وليست سلطة منح (M8-S).
+#   * ``member`` : عضوية نشطة ⇒يُقص على شركة العضوية فقط.
+#   * ``none``   : لا عضوية ⇒ لا قراءة ولا كتابة (qs.none()/PermissionDenied).
+CARRIER_SCOPE_GLOBAL = 'global'
+CARRIER_SCOPE_MEMBER = 'member'
+CARRIER_SCOPE_NONE = 'none'
+
+NO_MEMBERSHIP_MESSAGE = 'لا توجد عضوية نشطة في شركة نقل — لا يمكن الوصول لبيانات شركات النقل'
+
+
+def resolve_carrier_scope(user):
+    """(نطاق الفاعل، شركة النطاق) — أحد الثلاثة أعلاه حصريًا."""
+    if not user or not user.is_authenticated:
+        return (CARRIER_SCOPE_NONE, None)
+    if user.is_superuser or user.is_staff:
+        return (CARRIER_SCOPE_GLOBAL, None)
+    carrier = get_portal_carrier(user)
+    if carrier is not None:
+        return (CARRIER_SCOPE_MEMBER, carrier)
+    return (CARRIER_SCOPE_NONE, None)
+
+
+def scope_queryset_to_carrier(qs, user, field='carrier'):
+    """يقصّ queryset على نطاق الفاعل. غياب العضوية = `qs.none()` لا queryset مفتوح."""
+    scope, carrier = resolve_carrier_scope(user)
+    if scope == CARRIER_SCOPE_GLOBAL:
+        return qs
+    if scope == CARRIER_SCOPE_MEMBER:
+        return qs.filter(**{field: carrier})
+    return qs.none()
+
+
 class FlightViewSet(viewsets.ModelViewSet):
+    """الرحلات الجوية.
+
+    كان بلا `permission_classes` فورث `IsAuthenticated` العام من DRF، فكان أي
+    حساب مسجّل يقرأ ويكتب ويحذف رحلات كل الشركات. الآن التفويض عبر
+    `flights:view/add/edit/delete`.
+
+    النطاق ليس من الصلاحيات: `get_queryset` يقصر النتائج على
+    `get_portal_carrier(user)` و`perform_create` يثبّت `carrier`، و
+    `_guard_company` يمنع التعديل على رحلة شركة أخرى. أي أن ممثّل الناقل
+    يدير رحلات شركته فقط، والإدارة (`is_staff`) ترى الكل.
+    """
+
     queryset = Flight.objects.select_related('carrier', 'origin_country', 'destination_port').all()
     serializer_class = FlightSerializer
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'flights'
+    # `AdminOrPermissionAction` يفشل مغلقًا على الإجراءات المخصصة، فكل `@action`
+    # أدناه يحتاج تعيينًا صريحًا: GET→view، PATCH/POST على الحالة والكشف→
+    # edit/add، وإدارة مفتاح API إدارية حصريًا.
+    action_permission_map = {
+        'upcoming': 'view',
+        'set_status': 'edit',
+        'upload_manifest': 'add',
+        'manifest_status': 'view',
+        'manifest_passengers': 'view',
+        'manifest_report': 'view',
+        'manifest_errors': 'view',
+        'manifest_reprocess': 'edit',
+        'api_key_info': 'edit',
+        'regenerate_api_key': 'edit',
+        'timeline': 'view',
+    }
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['flight_number', 'carrier__name', 'origin_code']
@@ -75,34 +162,40 @@ class FlightViewSet(viewsets.ModelViewSet):
             qs = qs.filter(scheduled_arrival__date__gte=from_date)
         if to_date:
             qs = qs.filter(scheduled_arrival__date__lte=to_date)
-        carrier = get_portal_carrier(self.request.user)
-        if carrier:
-            qs = qs.filter(carrier=carrier)
-        return qs
+        # M8-B.0 (F-01): النطاق يُقصّ عبر `scope_queryset_to_carrier` — غياب
+        # العضوية يعطي `qs.none()` بدل queryset مفتوح على كل الشركات.
+        return scope_queryset_to_carrier(qs, self.request.user)
 
     def _guard_company(self, serializer=None):
-        """ممثل البوابة يدير رحلات شركته فقط."""
-        carrier = get_portal_carrier(self.request.user)
-        if carrier:
-            instance_carrier = None
-            if serializer is not None and serializer.instance:
-                instance_carrier = serializer.instance.carrier
-            elif self.request.method in ('PUT', 'PATCH'):
-                instance_carrier = self.get_object().carrier
-            if instance_carrier and instance_carrier.id != carrier.id:
-                raise PermissionDenied('لا يمكن تعديل رحلات شركة أخرى')
+        """ممثل البوابة يدير رحلات شركته فقط (M8-B.0: لا فشل مفتوح)."""
+        scope, carrier = resolve_carrier_scope(self.request.user)
+        if scope == CARRIER_SCOPE_NONE:
+            raise PermissionDenied(NO_MEMBERSHIP_MESSAGE)
+        if scope == CARRIER_SCOPE_GLOBAL:
+            return
+        instance_carrier = None
+        if serializer is not None and serializer.instance:
+            instance_carrier = serializer.instance.carrier
+        elif self.request.method in ('PUT', 'PATCH'):
+            instance_carrier = self.get_object().carrier
+        if instance_carrier and instance_carrier.id != carrier.id:
+            raise PermissionDenied('لا يمكن تعديل رحلات شركة أخرى')
 
     def perform_create(self, serializer):
-        carrier = get_portal_carrier(self.request.user)
-        if carrier:
+        """شركة الناقل يثبّتها الخادم؛ ولا يُنشئ أحد شيئًا بلا عضوية."""
+        scope, carrier = resolve_carrier_scope(self.request.user)
+        if scope == CARRIER_SCOPE_MEMBER:
             serializer.save(carrier=carrier)
-        else:
+            return
+        if scope == CARRIER_SCOPE_GLOBAL:
             serializer.save()
+            return
+        raise PermissionDenied(NO_MEMBERSHIP_MESSAGE)
 
     def perform_update(self, serializer):
         self._guard_company(serializer)
-        carrier = get_portal_carrier(self.request.user)
-        if carrier:
+        scope, carrier = resolve_carrier_scope(self.request.user)
+        if scope == CARRIER_SCOPE_MEMBER:
             serializer.save(carrier=carrier)
         else:
             serializer.save()
@@ -125,8 +218,22 @@ class FlightViewSet(viewsets.ModelViewSet):
         new_status = request.data.get('status')
         if new_status not in Flight.FlightStatus.values:
             return Response({'status': 'error', 'message': 'حالة غير صالحة'}, status=status.HTTP_400_BAD_REQUEST)
-        flight.status = new_status
-        flight.save(update_fields=['status'])
+        manually_allowed = {
+            Flight.FlightStatus.SCHEDULED: {Flight.FlightStatus.CANCELLED},
+            Flight.FlightStatus.MANIFEST_UPLOADED: {Flight.FlightStatus.IN_TRANSIT, Flight.FlightStatus.CANCELLED},
+            Flight.FlightStatus.IN_TRANSIT: {Flight.FlightStatus.ARRIVED, Flight.FlightStatus.CANCELLED},
+            Flight.FlightStatus.ARRIVED: set(),
+            Flight.FlightStatus.CANCELLED: set(),
+        }
+        if new_status not in manually_allowed.get(flight.status, set()):
+            return Response(
+                {'status': 'error', 'message': 'انتقال غير مسموح أو غير قابل للتغيير القطعي يدويًا'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            flight.transition_to(new_status, user=request.user, note=request.data.get('note', ''))
+        except ValueError as exc:
+            return Response({'status': 'error', 'message': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(success_response(FlightSerializer(flight).data))
 
     @action(detail=True, methods=['post'], url_path='manifest/upload', serializer_class=PassengerManifestSerializer)
@@ -134,10 +241,16 @@ class FlightViewSet(viewsets.ModelViewSet):
         flight = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        if flight.status not in (Flight.FlightStatus.SCHEDULED, Flight.FlightStatus.MANIFEST_UPLOADED):
+            raise ValidationError('لا يمكن رفع كشف لرحلة بدأت أو أُغلقت')
         manifest = serializer.save(flight=flight)
         self._process_manifest(manifest)
-        flight.status = Flight.FlightStatus.MANIFEST_UPLOADED
-        flight.save(update_fields=['status'])
+        if flight.status == Flight.FlightStatus.SCHEDULED:
+            flight.transition_to(
+                Flight.FlightStatus.MANIFEST_UPLOADED,
+                user=request.user,
+                note='تم رفع الكشف',
+            )
         return Response(
             success_response(PassengerManifestSerializer(manifest).data),
             status=status.HTTP_201_CREATED,
@@ -194,6 +307,123 @@ class FlightViewSet(viewsets.ModelViewSet):
         self._process_manifest(manifest)
         return Response(success_response(PassengerManifestSerializer(manifest).data))
 
+    @action(detail=True, methods=['get'], url_path='timeline')
+    def timeline(self, request, pk=None):
+        """خط زمني موحّد لأحداث الرحلة، دون تفاصيل طبية أو علاجية."""
+        flight = self.get_object()
+        events = self._flight_timeline_payload(flight)
+        return Response(success_response({'flight_id': str(flight.id), 'events': events}))
+
+    def _flight_timeline_payload(self, flight):
+        events = []
+
+        for log in flight.status_logs.select_related('changed_by').all():
+            events.append({
+                '_timestamp': log.created_at,
+                'event_type': 'flight_status_changed',
+                'timestamp': log.created_at.isoformat(),
+                'title': 'تحديث حالة الرحلة',
+                'category': 'operational',
+                'from_status': log.from_status,
+                'to_status': log.to_status,
+                'status': log.to_status,
+                'actor_name': self._safe_actor(log.changed_by),
+                'source_id': str(log.id),
+                'source_type': 'flight_status_log',
+            })
+
+        declaration = getattr(flight, 'health_declaration', None)
+        if declaration:
+            for log in declaration.status_logs.select_related('changed_by').all():
+                events.append({
+                    '_timestamp': log.created_at,
+                    'event_type': 'health_declaration_status_changed',
+                    'timestamp': log.created_at.isoformat(),
+                    'title': 'تحديث حالة الإقرار الصحي',
+                    'category': 'health',
+                    'from_status': log.from_status,
+                    'to_status': log.to_status,
+                    'status': log.to_status,
+                    'actor_name': self._safe_actor(log.changed_by),
+                    'source_id': str(log.id),
+                    'source_type': 'health_declaration_log',
+                })
+
+        for event in flight.health_events.select_related('reporter_user').all():
+            events.append({
+                '_timestamp': event.reported_at,
+                'event_type': 'flight_health_event_created',
+                'timestamp': event.reported_at.isoformat(),
+                'title': f'حدث صحي: {event.get_category_display()}',
+                'category': 'health',
+                'status': event.status,
+                'details': {'severity': event.severity, 'affected_count': event.affected_count},
+                'actor_name': event.reporter_name or self._safe_actor(event.reporter_user),
+                'source_id': str(event.id),
+                'source_type': 'flight_health_event',
+            })
+            for log in event.status_logs.select_related('changed_by').all():
+                events.append({
+                    '_timestamp': log.created_at,
+                    'event_type': 'flight_health_event_status_changed',
+                    'timestamp': log.created_at.isoformat(),
+                    'title': 'تحديث حالة حدث صحي',
+                    'category': 'health',
+                    'from_status': log.from_status,
+                    'to_status': log.to_status,
+                    'status': log.to_status,
+                    'actor_name': self._safe_actor(log.changed_by),
+                    'source_id': str(log.id),
+                    'source_type': 'flight_health_event_log',
+                })
+
+        for referral in flight.clinic_referrals.select_related('clinic').all():
+            events.append({
+                '_timestamp': referral.created_at,
+                'event_type': 'clinic_referral_created',
+                'timestamp': referral.created_at.isoformat(),
+                'title': 'إنشاء إحالة عيادة',
+                'category': 'health',
+                'status': referral.status,
+                'details': {'source': referral.source, 'clinic_id': str(referral.clinic_id) if referral.clinic_id else None},
+                'source_id': str(referral.id),
+                'source_type': 'clinic_referral',
+            })
+
+        for manifest in flight.manifests.all():
+            events.append({
+                '_timestamp': manifest.created_at,
+                'event_type': 'passenger_manifest_uploaded',
+                'timestamp': manifest.created_at.isoformat(),
+                'title': 'رفع كشف المسافرين',
+                'category': 'operational',
+                'status': manifest.status,
+                'details': {'manifest_id': str(manifest.id), 'total_passengers': manifest.total_passengers},
+                'source_id': str(manifest.id),
+                'source_type': 'passenger_manifest',
+            })
+            if manifest.processed_at:
+                events.append({
+                    '_timestamp': manifest.processed_at,
+                    'event_type': 'passenger_manifest_processed',
+                    'timestamp': manifest.processed_at.isoformat(),
+                    'title': 'معالجة كشف المسافرين',
+                    'category': 'operational',
+                    'status': manifest.status,
+                    'details': {'manifest_id': str(manifest.id), 'total_passengers': manifest.total_passengers},
+                    'source_id': str(manifest.id),
+                    'source_type': 'passenger_manifest',
+                })
+
+        events.sort(key=lambda item: item['_timestamp'])
+        return [{k: v for k, v in event.items() if k != '_timestamp'} for event in events]
+
+    @staticmethod
+    def _safe_actor(user):
+        if not user:
+            return None
+        return getattr(user, 'full_name', '') or getattr(user, 'email', '') or str(user)
+
     def _process_manifest(self, manifest):
         from apps.travelers.models import Country, Traveler
 
@@ -238,6 +468,152 @@ class FlightViewSet(viewsets.ModelViewSet):
         manifest.save()
 
 
+class CarrierMemberViewSet(viewsets.GenericViewSet):
+    """إدارة أعضاء شركة نقل واحدة.
+
+    النطاق ليس من العضوية بل من تفويض صريح:
+
+        RoleAssignment(scope_type=COMPANY, carrier_members=*)  ──►  إدارة
+        CarrierMember  ──►  بوابة الناقل فقط، لا يمنح إدارة أبداً
+
+    `carrier_id` (من المسار) هو الرقم الحاكم للنطاق: إن لم يكن ضمن
+    `manageable_carrier_ids` للفاعل ⇒ 404 لكل رابط (لا تسريب للوجود).
+    لا DELETE: الإزالة التشغيلية = deactivate.
+    """
+
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'carrier_members'
+    queryset = CarrierMember.objects.select_related('user').all()
+    action_permission_map = {
+        'list': 'view',
+        'retrieve': 'view',
+        'create': 'add',
+        'partial_update': 'edit',
+        'activate': 'activate',
+        'deactivate': 'deactivate',
+    }
+
+    def _carrier(self):
+        carrier_id = self.kwargs['carrier_id']
+        allowed = manageable_carrier_ids(self.request.user)
+        # None ⇒ بلا تقييد (إدارة المنصّة)؛ وإلا يشترط أن يكون ضمن النطاق.
+        if allowed is not None and str(carrier_id) not in {str(c) for c in allowed}:
+            raise Http404
+        return get_object_or_404(Carrier, pk=carrier_id)
+
+    def _members_qs(self):
+        carrier = self._carrier()
+        return carrier, CarrierMember.objects.filter(carrier=carrier)
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CarrierMemberCreateSerializer
+        if self.action == 'partial_update':
+            return CarrierMemberUpdateSerializer
+        return CarrierMemberSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        carrier_id = self.kwargs.get('carrier_id')
+        context['carrier'] = (
+            get_object_or_404(Carrier, pk=carrier_id) if carrier_id else None
+        )
+        return context
+
+    def list(self, request, carrier_id=None, **kwargs):
+        carrier, qs = self._members_qs()
+        qs = qs.order_by('-is_primary', 'user__full_name')
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response(
+                self.get_serializer(page, many=True).data
+            )
+        return Response(
+            success_response(self.get_serializer(qs, many=True).data)
+        )
+
+    def create(self, request, carrier_id=None, **kwargs):
+        carrier = self._carrier()
+        with transaction.atomic():
+            # قفل صف الشركة لتسلسل فحص «ممثل واحد» مع الكتابات المتزامنة.
+            Carrier.objects.select_for_update().get(pk=carrier.pk)
+            serializer = CarrierMemberCreateSerializer(
+                data=request.data,
+                context={**self.get_serializer_context(), 'carrier': carrier},
+            )
+            serializer.is_valid(raise_exception=True)
+            member = serializer.save()
+            self._audit(
+                request, member,
+                carrier_id=carrier.pk, action=PermissionAudit.Action.GRANT,
+                reason='إنشاء عضوية عضو عبر /api/v1/carriers/companies/{id}/members/',
+            )
+        return Response(
+            success_response(CarrierMemberSerializer(member).data),
+            status=status.HTTP_201_CREATED,
+        )
+
+    def _get_member(self):
+        carrier, qs = self._members_qs()
+        return get_object_or_404(qs, pk=self.kwargs['pk'])
+
+    def retrieve(self, request, carrier_id=None, pk=None, **kwargs):
+        member = self._get_member()
+        return Response(success_response(CarrierMemberSerializer(member).data))
+
+    def partial_update(self, request, carrier_id=None, pk=None, **kwargs):
+        member = self._get_member()
+        carrier = member.carrier
+        with transaction.atomic():
+            Carrier.objects.select_for_update().get(pk=carrier.pk)
+            serializer = CarrierMemberUpdateSerializer(
+                member, data=request.data, partial=True,
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        return Response(success_response(CarrierMemberSerializer(member).data))
+
+    def activate(self, request, carrier_id=None, pk=None, **kwargs):
+        return self._toggle_active(request, activate=True)
+
+    def deactivate(self, request, carrier_id=None, pk=None, **kwargs):
+        return self._toggle_active(request, activate=False)
+
+    def _toggle_active(self, request, activate):
+        carrier, qs = self._members_qs()
+        with transaction.atomic():
+            Carrier.objects.select_for_update().get(pk=carrier.pk)
+            member = get_object_or_404(
+                CarrierMember.objects.select_for_update(),
+                pk=self.kwargs['pk'], carrier=carrier,
+            )
+            if activate and member.is_active:
+                raise ValidationError({'is_active': 'تم تفعيل هذه العضوية بالفعل'})
+            if not activate and not member.is_active:
+                raise ValidationError({'is_active': 'هذه العضوية معطّلة بالفعل'})
+            member.is_active = activate
+            member.save(update_fields=['is_active', 'updated_at'])
+            self._audit(
+                request, member,
+                carrier_id=carrier.pk,
+                action=PermissionAudit.Action.GRANT if activate else PermissionAudit.Action.REVOKE,
+                reason='تفعيل العضوية' if activate else 'تعطيل العضوية',
+            )
+        return Response(success_response(CarrierMemberSerializer(member).data))
+
+    def _audit(self, request, member, *, carrier_id, action, reason):
+        ip, ua = _audit_request_context(request)
+        PermissionAudit.objects.create(
+            user=member.user,
+            permission_code=f'carrier_membership:{carrier_id}',
+            action=action,
+            granted=action == PermissionAudit.Action.GRANT,
+            reason=reason,
+            ip_address=ip or None,
+            user_agent=ua,
+        )
+
+
 class CarrierViewSet(viewsets.ModelViewSet):
     queryset = Carrier.objects.select_related('country').prefetch_related('ports').all()
     serializer_class = CarrierSerializer
@@ -271,6 +647,13 @@ class CarrierViewSet(viewsets.ModelViewSet):
 
 
 class HealthNoticeViewSet(viewsets.ModelViewSet):
+    """الإشعارات الصحية — قراءة عامة مقصودة، وكتابة إدارية.
+
+    `get_permissions` أدناه يتجاوز `permission_classes` عمداً: القراءة
+    (`list/retrieve/archived/recent`) `AllowAny` لأن الإشعار الصحي نصيحة
+    عامة، و`acknowledge` لممثل الناقل، وكل ما عدا ذلك `IsAdmin`.
+    """
+
     queryset = HealthNotice.objects.all()
     serializer_class = HealthNoticeSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
@@ -902,11 +1285,9 @@ class FlightHealthEventViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        user = self.request.user
-        carrier = get_portal_carrier(user)
-        if carrier:
-            qs = qs.filter(flight__carrier=carrier)
-        return qs
+        # M8-B.0 (F-01): بلا عضوية نشطة ⇒ `qs.none()` (فشل آمن) بدل كشف
+        # أحداث كل الشركات.
+        return scope_queryset_to_carrier(qs, self.request.user, field='flight__carrier')
 
     @action(detail=False, methods=['get'], url_path='mine')
     def mine(self, request):
@@ -914,12 +1295,17 @@ class FlightHealthEventViewSet(viewsets.GenericViewSet):
         return Response(success_response(self.get_serializer(qs, many=True).data))
 
     def create(self, request):
-        carrier = get_portal_carrier(request.user)
+        scope, carrier = resolve_carrier_scope(request.user)
+        if scope == CARRIER_SCOPE_NONE:
+            raise PermissionDenied(NO_MEMBERSHIP_MESSAGE)
         flight_id = request.data.get('flight')
-        flight = Flight.objects.filter(id=flight_id).first()
+        # M8-B.0: الرحلة تُبحث داخل نطاق الفاعل، فلا يُقبل مُعرّف رحلة شركة
+        # أخرى كبوابة تجاوز للعزل.
+        flights = Flight.objects.filter(carrier=carrier) if scope == CARRIER_SCOPE_MEMBER else Flight.objects.all()
+        flight = flights.filter(id=flight_id).first()
         if not flight:
             raise ValidationError('الرحلة غير موجودة')
-        if carrier and flight.carrier_id != carrier.id:
+        if scope == CARRIER_SCOPE_MEMBER and flight.carrier_id != carrier.id:
             raise PermissionDenied('لا يمكن الإبلاغ عن حدث على رحلة شركة أخرى')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -958,6 +1344,253 @@ class FlightHealthEventViewSet(viewsets.GenericViewSet):
             summary=request.data.get('summary', ''),
         )
         return Response(success_response({'emergency_event_id': str(eoc_event.id)}))
+
+    @action(detail=True, methods=['post'], url_path='referral')
+    def create_referral(self, request, pk=None):
+        """إنشاء إحالة عيادة مرتبطة بالحدث الصحي والرحلة."""
+        event = self.get_object()
+        if event.status == FlightHealthEvent.EventStatus.CLOSED:
+            raise ValidationError('لا يمكن إنشاء إحالة لحدث مغلق')
+        traveler_id = request.data.get('traveler') or request.data.get('traveler_id')
+        if not traveler_id:
+            raise ValidationError('traveler مطلوب')
+        from apps.clinic.models import ClinicReferral
+        from apps.travelers.models import Traveler
+
+        traveler = Traveler.objects.filter(id=traveler_id).first()
+        if not traveler:
+            raise ValidationError('المسافر غير موجود')
+        port = event.destination_port or event.flight.destination_port
+        referral = ClinicReferral.objects.create(
+            traveler=traveler,
+            port=port,
+            source=ClinicReferral.Source.SCREENING,
+            status=ClinicReferral.ReferralStatus.PENDING,
+            flight=event.flight,
+            health_event=event,
+            notes=request.data.get('notes', '') or event.description,
+        )
+        if not event.quarantine_state:
+            event.quarantine_state = 'PENDING'
+            event.save(update_fields=['quarantine_state', 'updated_at'])
+        from apps.clinic.serializers import ClinicReferralSerializer
+
+        return Response(success_response(ClinicReferralSerializer(referral).data), status=status.HTTP_201_CREATED)
+
+
+class HealthDeclarationViewSet(viewsets.ModelViewSet):
+    """الإقرار الصحي للرحلة — يقدَّم من الناقل ويُراجع من صحة المطار.
+
+    - عمليات الناقل (create/partial_update/submit/list) تحت مورد `flights`.
+    - عمليات مراجعة الصحة (review/approve/reject) تحت مورد `airport_health`،
+      ويُقصر وصولها على منافذ الوجهة ضمن نطاق المستخدم.
+    - الحالة لا تُغيَّر مباشرة عبر PATCH؛ الانتقالات عبر actions فقط.
+    - الإقرار الواحد لكل رحلة؛ والرفض يتطلب سببًا ويُسجَّل.
+    """
+
+    queryset = HealthDeclaration.objects.select_related(
+        'flight', 'carrier', 'submitted_by', 'reviewed_by'
+    ).all()
+    serializer_class = HealthDeclarationSerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['flight__flight_number', 'carrier__name']
+    filter_fields = ['status', 'flight']
+    ordering_fields = ['created_at', 'submitted_at', 'reviewed_at']
+    ordering = ['-created_at']
+    http_method_names = ['get', 'post', 'patch']
+
+    AIRPORT_ACTIONS = {'review', 'approve', 'reject'}
+    CARRIER_ACTIONS = {'create', 'update', 'partial_update', 'submit'}
+
+    action_permission_map = {
+        'submit': 'edit',
+        'review': 'edit',
+        'approve': 'edit',
+        'reject': 'edit',
+    }
+
+    def _scope_context(self):
+        """نطاق الوصول: all للمشرفين، carrier للناقل، airport للمناطجية، none للغريب."""
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return ('none', None)
+        if user.is_superuser or user.is_staff:
+            return ('all', None)
+        if self.action in self.AIRPORT_ACTIONS:
+            return ('airport', resolve_user_port_ids(user))
+        if self.action in self.CARRIER_ACTIONS:
+            carrier = get_portal_carrier(user)
+            return ('carrier', carrier)
+        carrier = get_portal_carrier(user)
+        if carrier and user.can('flights:view'):
+            return ('carrier', carrier)
+        ports = resolve_user_port_ids(user)
+        if ports is not None and user.can('airport_health:view'):
+            return ('airport', ports)
+        if carrier:
+            return ('carrier', carrier)
+        return ('airport', ports)
+
+    def get_permissions(self):
+        scope, _ = self._scope_context()
+        if self.action in self.AIRPORT_ACTIONS or (self.action in ('list', 'retrieve') and scope == 'airport'):
+            self.permission_resource = 'airport_health'
+        else:
+            self.permission_resource = 'flights'
+        return [AdminOrPermissionAction()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        scope, target = self._scope_context()
+        if scope in ('all', 'none'):
+            return qs if scope == 'all' else qs.none()
+        if scope == 'carrier':
+            return qs.filter(carrier=target) if target else qs.none()
+        if target is None:
+            return qs
+        if not target:
+            return qs.none()
+        return qs.filter(flight__destination_port_id__in=target)
+
+    def perform_create(self, serializer):
+        scope, target = self._scope_context()
+        flight = serializer.validated_data.get('flight')
+        carrier = get_portal_carrier(self.request.user)
+        if scope == 'carrier' and carrier is not None and flight and flight.carrier_id != carrier.id:
+            raise PermissionDenied('لا يمكن إنشاء إقرار لرحلة شركة أخرى')
+        if flight and HealthDeclaration.objects.filter(flight=flight).exists():
+            raise ValidationError('يوجد إقرار صحي مسجل لهذه الرحلة بالفعل')
+        serializer.save(carrier=flight.carrier if flight else None)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self._ensure_editable(instance)
+        self._reject_direct_status_patch(request)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self._ensure_editable(instance)
+        self._reject_direct_status_patch(request)
+        return super().partial_update(request, *args, **kwargs)
+
+    def _reject_direct_status_patch(self, request):
+        if 'status' in request.data:
+            raise ValidationError('الحالة لا تُعدَّل مباشرة؛ استخدم submit/review/approve/reject')
+
+    def _ensure_editable(self, instance):
+        if instance.status != HealthDeclaration.Status.DRAFT:
+            raise ValidationError('لا يمكن تعديل الإقرار بعد تقديمه')
+
+    @action(detail=True, methods=['post'], url_path='submit')
+    def submit(self, request, pk=None):
+        decl = self.get_object()
+        if decl.status not in (HealthDeclaration.Status.DRAFT, HealthDeclaration.Status.REJECTED):
+            raise ValidationError('لا يمكن تقديم الإقرار في حالته الحالية')
+        if decl.status == HealthDeclaration.Status.REJECTED:
+            decl.rejection_reason = ''
+            decl.save(update_fields=['rejection_reason'])
+        decl.transition_to(HealthDeclaration.Status.SUBMITTED, user=request.user, note=request.data.get('note', ''))
+        return Response(success_response(self.get_serializer(decl).data))
+
+    @action(detail=True, methods=['post'], url_path='review')
+    def review(self, request, pk=None):
+        decl = self.get_object()
+        if decl.status != HealthDeclaration.Status.SUBMITTED:
+            raise ValidationError('يجب أن يكون الإقرار مُقدَّماً قبل المراجعة')
+        decl.transition_to(HealthDeclaration.Status.UNDER_REVIEW, user=request.user, note=request.data.get('note', ''))
+        return Response(success_response(self.get_serializer(decl).data))
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        decl = self.get_object()
+        if decl.status != HealthDeclaration.Status.UNDER_REVIEW:
+            raise ValidationError('لا يمكن الاعتماد إلا بعد المراجعة')
+        decl.transition_to(HealthDeclaration.Status.APPROVED, user=request.user, note=request.data.get('note', ''))
+        review_notes = request.data.get('review_notes', '')
+        if review_notes:
+            decl.review_notes = review_notes
+            decl.save(update_fields=['review_notes'])
+        return Response(success_response(self.get_serializer(decl).data))
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        decl = self.get_object()
+        if decl.status != HealthDeclaration.Status.UNDER_REVIEW:
+            raise ValidationError('لا يمكن الرفض إلا بعد المراجعة')
+        reason = (request.data.get('reason') or request.data.get('rejection_reason') or '').strip()
+        if not reason:
+            raise ValidationError('سبب الرفض مطلوب')
+        decl.transition_to(HealthDeclaration.Status.REJECTED, user=request.user, note=reason)
+        decl.rejection_reason = reason
+        review_notes = request.data.get('review_notes', '')
+        if review_notes:
+            decl.review_notes = review_notes
+        decl.save(update_fields=['rejection_reason', 'review_notes'])
+        return Response(success_response(self.get_serializer(decl).data))
+
+
+class CarrierDocumentViewSet(viewsets.ModelViewSet):
+    queryset = CarrierDocument.objects.select_related('carrier', 'flight', 'uploaded_by').all()
+    serializer_class = CarrierDocumentSerializer
+    permission_classes = [AdminOrPermissionAction]
+    permission_resource = 'flights'
+    action_permission_map = {'download': 'view'}
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['title', 'carrier__name', 'flight__flight_number', 'document_type']
+    filter_fields = ['document_type', 'flight', 'carrier']
+    ordering_fields = ['created_at', 'updated_at', 'file_size']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        carrier = get_portal_carrier(self.request.user)
+        if carrier:
+            return qs.filter(carrier=carrier)
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return qs
+        return qs.none()
+
+    def perform_create(self, serializer):
+        carrier = get_portal_carrier(self.request.user)
+        if carrier and self.request.data.get('carrier') and self.request.data.get('carrier') not in (str(carrier.id), carrier.iata_code):
+            raise ValidationError('لا يمكن إنشاء مستند باسم شركة أخرى')
+        flight = serializer.validated_data.get('flight')
+        if carrier:
+            if flight and flight.carrier_id != carrier.id:
+                raise ValidationError('الرحلة لا تتبع شركة الناقل الحالية')
+            carrier_obj = carrier
+        else:
+            carrier_obj = serializer.validated_data.get('carrier') or (flight.carrier if flight else None)
+            if carrier_obj and flight and flight.carrier_id != carrier_obj.id:
+                raise ValidationError('الرحلة لا تطابق شركة النقل')
+        if not carrier_obj and not self.request.user.is_staff:
+            raise PermissionDenied('شركة النقل مطلوبة')
+        document = serializer.save(carrier=carrier_obj, uploaded_by=self.request.user)
+        uploaded_file = serializer.validated_data.get('file')
+        if uploaded_file:
+            document.file_size = uploaded_file.size
+            document.mime_type = getattr(uploaded_file, 'content_type', '') or ''
+            document.original_filename = uploaded_file.name
+            document.save(update_fields=['file_size', 'mime_type', 'original_filename'])
+
+    def perform_update(self, serializer):
+        carrier = get_portal_carrier(self.request.user)
+        if carrier:
+            serializer.save(carrier=carrier)
+        else:
+            serializer.save()
+
+    @action(detail=True, methods=['get'], url_path='download')
+    def download(self, request, pk=None):
+        document = self.get_object()
+        if not document.file:
+            raise ValidationError('الملف غير متاح')
+        return FileResponse(
+            document.file.open('rb'),
+            as_attachment=True,
+            filename=document.original_filename or document.file.name.split('/')[-1] or 'document',
+        )
 
 
 class CarrierApiUsageLogViewSet(viewsets.ReadOnlyModelViewSet):

@@ -255,9 +255,11 @@ const NqlisDashboard = () => {
         action={
           <Stack direction="row" spacing={1} alignItems="center">
             <Tooltip title="تحديث البيانات">
-              <IconButton aria-label="تحديث" size="small" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} disabled={refreshing} onClick={() => load(true)}>
-                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? 'spin 1s linear infinite' : undefined }} />
-              </IconButton>
+              <Box component="span" sx={{ display: 'inline-flex' }}>
+                <IconButton aria-label="تحديث" size="small" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} disabled={refreshing} onClick={() => load(true)}>
+                  <RefreshIcon fontSize="small" sx={{ animation: refreshing ? 'spin 1s linear infinite' : undefined }} />
+                </IconButton>
+              </Box>
             </Tooltip>
             <ExportButton
               filename={`nql-dashboard-${new Date().toISOString().slice(0, 10)}`}

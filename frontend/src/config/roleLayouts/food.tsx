@@ -40,7 +40,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مفتش الغذاء',
     subtitle: 'Food Inspector',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#fd7e14',
+    color: '#c65f09',
     nav: [
       { label: 'لوحة التفتيش', target: '/app/inspector-dashboard', icon: <HomeIcon /> },
       { label: 'الغذاء', target: '/app/food', icon: <RestaurantIcon /> },
@@ -108,7 +108,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
         ],
       },
       {
-        label: 'نقاط الدخول',
+        label: 'المنافذ',
         icon: <AnchorIcon />,
         children: [
           { label: 'المطارات', target: '/dashboard/sector/red-sea/points' },

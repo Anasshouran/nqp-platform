@@ -277,9 +277,13 @@ const DataTable = <T,>({
 
             {onRefresh && (
               <Tooltip title="تحديث">
-                <IconButton aria-label="تحديث" onClick={onRefresh} disabled={refreshing || loading} sx={{ color: 'text.secondary' }}>
-                  <RefreshIcon sx={{ animation: refreshing ? 'none' : undefined, fontSize: 22 }} />
-                </IconButton>
+                {/* عنصر معطّل لا يلتقط أحداث الماوس، فيبقى تلميح الأداة غير
+                    قابل للوصول؛ الغلاف يمنع ذلك ويحافظ على هدف اللمس. */}
+                <Box component="span" sx={{ display: 'inline-flex' }}>
+                  <IconButton aria-label="تحديث" onClick={onRefresh} disabled={refreshing || loading} sx={{ color: 'text.secondary' }}>
+                    <RefreshIcon sx={{ animation: refreshing ? 'none' : undefined, fontSize: 22 }} />
+                  </IconButton>
+                </Box>
               </Tooltip>
             )}
             {onExport && (

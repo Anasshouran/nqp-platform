@@ -1,3 +1,4 @@
+import { labelOf } from '../../../utils/labels';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -187,7 +188,7 @@ export const Lab = () => (
           positive: { label: 'موجبة', color: C.danger },
           critical: { label: 'حرجة', color: C.danger },
         };
-        return <KpiCard key={k} icon={<BiotechIcon />} value={String(v)} label={meta[k].label} status={k === 'critical' ? 'يحتاج إبلاغ' : undefined} statusColor={C.danger} />;
+        return <KpiCard key={k} icon={<BiotechIcon />} value={String(v)} label={labelOf(meta, k)} status={k === 'critical' ? 'يحتاج إبلاغ' : undefined} statusColor={C.danger} />;
       })}
     </Grid>
 

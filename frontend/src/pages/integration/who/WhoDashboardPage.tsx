@@ -18,6 +18,7 @@ import CableIcon from '@mui/icons-material/Cable';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import AddIcon from '@mui/icons-material/Add';
+import WhoConnectivityCard from './WhoConnectivityCard';
 import { PageHeader, StatCard } from '../../../components/common';
 import { DataTable, StatusChip } from '../../../components/ui';
 import { useServerTable } from '../../../hooks/useServerTable';
@@ -27,23 +28,14 @@ import {
   createWhoIntegration,
   getWhoConnectionStatus,
   getWhoIntegrations,
-  getWhoSyncLogs,
   syncWhoNow,
   testWhoConnection,
   updateWhoIntegration,
   WHO_ENVIRONMENT_OPTIONS,
 } from '../../../api/endpoints/who';
-import type { WhoConnectionStatus, WhoEnvironment, WhoIntegration, WhoIntegrationInput, WhoSyncLog, WhoTestResult } from '../../../types/who';
-import { WHO_SYNC_OPERATION_LABELS, WHO_SYNC_STATUS_LABELS } from '../../../types/who';
-
-const STATUS_TONE: Record<string, 'success' | 'error' | 'warning' | 'neutral' | 'info' | 'primary'> = {
-  SUCCESS: 'success',
-  FAILED: 'error',
-  RETRY: 'warning',
-  PENDING: 'info',
-  PROCESSING: 'info',
-  CANCELLED: 'neutral',
-};
+import type { WhoConnectionStatus, WhoEnvironment, WhoIntegration, WhoIntegrationInput, WhoTestResult } from '../../../types/who';
+import WhoSyncLogsTable from './WhoSyncLogsTable';
+import { WHO_STATE_LABELS } from './WhoConnectivityCard';
 
 const IntegrationForm = ({
   open,
@@ -155,61 +147,6 @@ const IntegrationForm = ({
   );
 };
 
-const LogsTab = ({ refreshKey }: { refreshKey: number }) => {
-  const table = useServerTable<WhoSyncLog>({ fetchData: getWhoSyncLogs });
-  const { rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder, setSorting, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions } = table;
-
-  useEffect(() => {
-    if (refreshKey > 0) refresh();
-  }, [refreshKey, refresh]);
-
-  return (
-    <DataTable<WhoSyncLog>
-      columns={[
-        {
-          key: 'operation',
-          label: 'العملية',
-          sortable: true,
-          render: (l) => <StatusChip label={WHO_SYNC_OPERATION_LABELS[l.operation] ?? l.operation} tone="primary" variant="outlined" />,
-        },
-        {
-          key: 'status',
-          label: 'الحالة',
-          sortable: true,
-          render: (l) => <StatusChip label={WHO_SYNC_STATUS_LABELS[l.status] ?? l.status} tone={STATUS_TONE[l.status] ?? 'neutral'} />,
-        },
-        { key: 'http_status', label: 'HTTP', render: (l) => (l.http_status ? String(l.http_status) : '—'), hideOnMobile: true },
-        {
-          key: 'started_at',
-          label: 'الوقت',
-          sortable: true,
-          render: (l) => formatDateTime(l.started_at),
-        },
-      ]}
-      rows={rows}
-      rowKey={(l) => l.id}
-      count={count}
-      page={page}
-      rowsPerPage={rowsPerPage}
-      pageSizeOptions={pageSizeOptions}
-      loading={loading}
-      error={error}
-      title="سجلات المزامنة"
-      subtitle={`${count} عملية`}
-      searchInput={searchInput}
-      onSearchChange={setSearchInput}
-      searchPlaceholder="بحث في السجلات..."
-      sortBy={sortBy}
-      sortOrder={sortOrder}
-      onSortChange={setSorting}
-      onPageChange={setPage}
-      onRowsPerPageChange={setRowsPerPage}
-      onRefresh={refresh}
-      emptyTitle="لا توجد سجلات مزامنة"
-      emptyDescription="عمليات الاتصال بمنظمة الصحة العالمية تظهر هنا"
-    />
-  );
-};
 
 const WhoDashboardPage = () => {
   const [status, setStatus] = useState<WhoConnectionStatus | null>(null);
@@ -248,8 +185,8 @@ const WhoDashboardPage = () => {
       const res = await testWhoConnection();
       const r = res.data.data;
       setTestResult(r);
-      if (r.connected) notifySuccess('الاتصال ناجح');
-      else notifyError(r.error ?? 'فشل الاتصال');
+      if (r.verified) notifySuccess('نجح فحص الاتصال');
+      else notifyError(r.message ?? 'فشل فحص الاتصال');
       void loadStatus();
     } catch (err) {
       notifyError(extractErrorMessage(err, 'فشل اختبار الاتصال'));
@@ -296,6 +233,8 @@ const WhoDashboardPage = () => {
         }
       />
 
+      <WhoConnectivityCard status={status} />
+
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
         <StatCard
           icon={<LinkIcon fontSize="small" />}
@@ -306,34 +245,39 @@ const WhoDashboardPage = () => {
         <StatCard
           icon={<CableIcon fontSize="small" />}
           label="حالة الاتصال"
-          value={status?.configured ? (status?.connected ? 'متصل' : 'غير متصل') : '—'}
-          accent={status?.connected ? 'success.main' : 'error.main'}
+          value={status ? (WHO_STATE_LABELS[status.state] ?? status.state) : '—'}
+          accent={status?.state === 'READY' ? 'success.main' : status?.state === 'ERROR' ? 'error.main' : 'warning.main'}
         />
         <StatCard
           icon={<CloudSyncIcon fontSize="small" />}
-          label="آخر مزامنة"
-          value={status?.last_sync_at ? formatDateTime(status.last_sync_at) : '—'}
+          label="آخر تحقّق"
+          value={status?.verified_at ? formatDateTime(status.verified_at) : '—'}
           accent="info.main"
         />
         <StatCard
           icon={<SyncAltIcon fontSize="small" />}
           label="البيئة"
-          value={status?.environment ?? '—'}
+          value={status?.environment || '—'}
           accent="primary.main"
         />
       </Stack>
 
       {testResult && (
-        <Alert severity={testResult.connected ? 'success' : 'error'} sx={{ borderRadius: 2, mb: 3 }}>
-          {testResult.connected
-            ? `الاتصال ناجح عبر ${testResult.client_id ?? ''} ${testResult.latency_ms ? `(${testResult.latency_ms}ms)` : ''}`
-            : testResult.error ?? 'فشل الاتصال'}
+        <Alert severity={testResult.verified ? 'success' : 'error'} sx={{ borderRadius: 2, mb: 3 }}>
+          {testResult.verified
+            ? `نجح الفحص: مصادقة + مورد ICD${testResult.latency_ms ? ` (${testResult.latency_ms}ms)` : ''}`
+            : testResult.message ?? 'فشل الفحص'}
         </Alert>
       )}
 
       <Stack direction="row" spacing={1.5} sx={{ mb: 3 }}>
-        <Button variant="outlined" startIcon={<CableIcon />} disabled={busy !== null || !status?.configured} onClick={() => void handleTest()}>
-          {busy === 'test' ? 'جارٍ الاختبار…' : 'اختبار الاتصال'}
+        <Button
+          variant="outlined"
+          startIcon={<CableIcon />}
+          disabled={busy !== null || !status?.configured || status.state === 'DISABLED'}
+          onClick={() => void handleTest()}
+        >
+          {busy === 'test' ? 'جارٍ الفحص…' : 'فحص الاتصال'}
         </Button>
         <Button variant="contained" startIcon={<CloudSyncIcon />} disabled={busy !== null || !status?.configured} onClick={() => void handleSync()}>
           {busy === 'sync' ? 'جارٍ الجدولة…' : 'مزامنة فورية'}
@@ -343,9 +287,9 @@ const WhoDashboardPage = () => {
         </Button>
       </Stack>
 
-      {status?.last_error && (
-        <Alert severity="warning" sx={{ borderRadius: 2, mb: 3 }}>
-          آخر خطأ: {status.last_error}
+      {status?.state === 'ERROR' && status.verification_message && (
+        <Alert severity="error" sx={{ borderRadius: 2, mb: 3 }}>
+          فشل فحص الاتصال: {status.verification_message}
         </Alert>
       )}
 
@@ -401,7 +345,7 @@ const WhoDashboardPage = () => {
         />
       </Card>
 
-      <LogsTab refreshKey={logsKey} />
+      <WhoSyncLogsTable refreshKey={logsKey} />
 
       <IntegrationForm
         open={dialogOpen}

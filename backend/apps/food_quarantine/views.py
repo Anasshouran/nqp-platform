@@ -2,13 +2,18 @@ import uuid
 from datetime import timedelta
 from decimal import Decimal
 
+import logging
+
+from django.core.exceptions import FieldError
+from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
+from apps.accounts.models import RoleAssignment
 from apps.accounts.models import User as AccountUser
 from apps.finance.models import Invoice as FinanceInvoice
 from apps.finance.models import InvoiceStatus as FinanceInvoiceStatus
@@ -17,8 +22,13 @@ from apps.masterdata.models import EntryPoint as Port
 from apps.notifications.models import NotificationLog
 from apps.organization.models import Sector
 
-from core.utils.authorization import FOOD_REVIEW_ROLES, has_active_role
+from core.filters import ExactFilterBackend
+from core.permissions import PermissionAction, ScopeFilter
+from core.utils.authorization import FOOD_REVIEW_ROLES, has_active_global_scope, has_active_role
 from core.utils.response import error_response, success_response
+from core.utils.scoping import resolve_user_port_ids
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     AnalyticalMethod,
@@ -53,6 +63,7 @@ from .models import (
     RegulatoryRule,
     ResultEvaluation,
     SampleSource,
+    SampleInvoice,
     SampleTest,
     SampleTestRevision,
     SampleUnitResult,
@@ -80,6 +91,7 @@ from .serializers import (
     FoodProductSerializer,
     FoodSampleSerializer,
     FoodSampleWriteSerializer,
+    FoodShipmentEventSerializer,
     FoodShipmentSerializer,
     LabEquipmentSerializer,
     LabParameterSerializer,
@@ -99,6 +111,7 @@ from .serializers import (
     ResultEvaluationSerializer,
     SampleSourceSerializer,
     SampleTestSerializer,
+    SampleInvoiceSerializer,
     SampleUnitResultSerializer,
     SamplingPolicySerializer,
     ShipmentAttachmentSerializer,
@@ -169,6 +182,71 @@ def _persist_shipment(shipment, fields):
     shipment.save(update_fields=fields)
 
 
+class FoodPermissionMixin:
+    """تفويض موحّد لموديول الفسح الغذائي + تقييد النطاق على منافذ المستخدم.
+
+    كان كل الـ viewset في هذا الموديول يستخدم `[IsAuthenticated]` فقط، فأي حساب
+    مصادق (بما فيه المسجّل الذاتي) كان يقرأ ويعدّل كل الشحنات وطنياً.
+    """
+
+    permission_resource = 'food'
+    permission_classes = [PermissionAction, ScopeFilter]
+    scope_type = RoleAssignment.ScopeType.PORT
+    port_scope_field = 'port'
+
+    # إجراءات مسار العمل تتطلب صلاحيات أدق من CRUD الافتراضية.
+    action_permission_map = {
+        'submit': 'edit',
+        'review': 'review',
+        'inspection': 'edit',
+        'add_sample': 'edit',
+        'to_decision': 'edit',
+        'decide': 'review',
+        'release': 'review',
+        'refer': 'edit',
+        'open_invoice': 'add',
+        'pay': 'edit',
+        'assign_inspector': 'edit',
+        'approve': 'approve',
+    }
+    default_permission_action = 'view'
+
+    def get_permissions(self):
+        self.permission_action = self.action_permission_map.get(
+            self.action, self.default_permission_action,
+        )
+        return super().get_permissions()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if not user or user.is_anonymous or user.is_superuser:
+            return qs
+        if user.can_resource('food', 'view') and has_active_global_scope(user):
+            return qs
+        port_ids = resolve_user_port_ids(user)
+        # فشل آمن: لا منافذ على نطاق المستخدم ⇒ لا صفوف.
+        if port_ids is None:
+            return qs
+        if not port_ids:
+            return qs.none()
+        field = self.port_scope_field
+        if not field or not hasattr(qs.model, field.split('__')[0]):
+            logger.warning(
+                'FoodPermissionMixin: cannot scope %s (port_scope_field=%s) - DENYING all rows',
+                qs.model.__name__, field,
+            )
+            return qs.none()
+        try:
+            return qs.filter(**{f'{field}__in': port_ids})
+        except (FieldError, ValueError):
+            logger.exception(
+                'FoodPermissionMixin failed to scope %s (port_scope_field=%s) - DENYING all rows',
+                qs.model.__name__, field,
+            )
+            return qs.none()
+
+
 def _log_event(shipment, stage, actor, message=''):
     try:
         FoodShipmentEvent.objects.create(shipment=shipment, stage=stage, actor=actor, message=message)
@@ -176,10 +254,15 @@ def _log_event(shipment, stage, actor, message=''):
         pass
 
 
-class ShipmentViewSet(viewsets.ModelViewSet):
+class ShipmentViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = FoodShipment.objects.all()
     serializer_class = FoodShipmentSerializer
-    permission_classes = [IsAuthenticated]
+    # كان الموديول بلا filter_backends فكانت البحث والترتيب وتبويبات
+    # الوارد/الصادر تُتجاهل بصمت (convention في 8 تطبيقات أخرى).
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['manifest_number', 'supplier_name', 'origin_country', 'vessel_name']
+    ordering_fields = ['arrival_date', 'created_at', 'manifest_number', 'status']
+    ordering = ['-created_at']
 
     # ------------------------------------------------------------------
     #  القوائم / التصفية
@@ -194,7 +277,19 @@ class ShipmentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(assigned_inspector_id=inspector)
         shipment_status = self.request.query_params.get('status')
         if shipment_status:
-            qs = qs.filter(status=shipment_status)
+            # يقبل قائمة مفصولة بفواصل (تُستخدم في تصدير CSV/MES).
+            wanted = [s.strip() for s in str(shipment_status).split(',') if s.strip()]
+            if wanted:
+                qs = qs.filter(status__in=wanted)
+        # فلاتر الواجهة التي لا يغطيها ExactFilterBackend
+        shipment_type = self.request.query_params.get('shipment_type')
+        if shipment_type:
+            wanted_type = [t.strip() for t in str(shipment_type).split(',') if t.strip()]
+            if wanted_type:
+                qs = qs.filter(shipment_type__in=wanted_type)
+        fees_paid = self.request.query_params.get('fees_paid')
+        if fees_paid is not None and fees_paid != '':
+            qs = qs.filter(fees_paid=str(fees_paid).lower() in ('true', '1', 'yes'))
         return qs
 
     # ------------------------------------------------------------------
@@ -227,35 +322,47 @@ class ShipmentViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         as_draft = bool(data.get('as_draft'))
+        # `submit=true` ينشئ ثم يرسل داخل معاملة واحدة، فلا يبقى طلب يتيم
+        # في DRAFT إذا فشل الإرسال بعد الإنشاء (سلوك العميل السابق).
+        submit_now = bool(data.get('submit'))
         shipment_type = data.get('shipment_type') or FoodShipment.ShipmentType.IMPORT
         manifest = data.get('manifest_number') or FoodShipmentSerializer.generate_manifest_number(shipment_type)
         port = Port.objects.filter(code=data.get('port')).first()
         if not port:
             return Response(error_response('المنفذ غير موجود'), status=status.HTTP_400_BAD_REQUEST)
-        shipment = FoodShipment.objects.create(
-            manifest_number=manifest,
-            port=port,
-            supplier_name=data.get('supplier_name', ''),
-            origin_country=data.get('origin_country', ''),
-            product_list=data.get('product_list') or [],
-            arrival_date=data.get('arrival_date'),
-            shipment_type=shipment_type,
-            message_type=data.get('message_type') or FoodShipment.MessageType.COMMERCIAL,
-            transport_data=data.get('transport_data') or {},
-            customs_number=data.get('customs_number', ''),
-            certificate_no=data.get('certificate_no', ''),
-            vessel_name=data.get('vessel_name', ''),
-            clearing_agent=data.get('clearing_agent', ''),
-            exporter_name=data.get('exporter_name', ''),
-            loading_port=data.get('loading_port', ''),
-            bill_of_lading=data.get('bill_of_lading', ''),
-            status=FoodShipment.ShipmentStatus.DRAFT if as_draft else FoodShipment.ShipmentStatus.RECEIVED,
-            recorded_by=request.user,
-        )
-        self._set_items(shipment, data.get('items'))
-        if not as_draft:
-            apply_sampling(shipment)
-        _log_event(shipment, FoodShipmentEvent.Stage.CREATED, request.user)
+        with transaction.atomic():
+            shipment = FoodShipment.objects.create(
+                manifest_number=manifest,
+                port=port,
+                supplier_name=data.get('supplier_name', ''),
+                origin_country=data.get('origin_country', ''),
+                product_list=data.get('product_list') or [],
+                arrival_date=data.get('arrival_date'),
+                shipment_type=shipment_type,
+                message_type=data.get('message_type') or FoodShipment.MessageType.COMMERCIAL,
+                transport_data=data.get('transport_data') or {},
+                customs_number=data.get('customs_number', ''),
+                certificate_no=data.get('certificate_no', ''),
+                vessel_name=data.get('vessel_name', ''),
+                clearing_agent=data.get('clearing_agent', ''),
+                exporter_name=data.get('exporter_name', ''),
+                loading_port=data.get('loading_port', ''),
+                bill_of_lading=data.get('bill_of_lading', ''),
+                status=FoodShipment.ShipmentStatus.DRAFT if as_draft else FoodShipment.ShipmentStatus.RECEIVED,
+                recorded_by=request.user,
+            )
+            self._set_items(shipment, data.get('items'))
+            if submit_now or not as_draft:
+                apply_sampling(shipment)
+            if submit_now:
+                shipment.status = FoodShipment.ShipmentStatus.FEES_DUE
+                shipment.submitted_at = timezone.now()
+                shipment.save(update_fields=['status', 'submitted_at', 'samples_required'])
+            _log_event(shipment, FoodShipmentEvent.Stage.CREATED, request.user)
+            if submit_now:
+                _log_event(shipment, FoodShipmentEvent.Stage.SUBMITTED, request.user)
+                self._notify_accountants(shipment)
+                _audit(request, AuditLog.Action.UPDATE, obj=shipment, event='create_and_submit')
         serializer = FoodShipmentSerializer(shipment, context={'request': request})
         return Response(success_response(serializer.data), status=status.HTTP_201_CREATED)
 
@@ -355,6 +462,14 @@ class ShipmentViewSet(viewsets.ModelViewSet):
     def fee_preview(self, request, pk=None):
         shipment = self.get_object()
         return Response(success_response(compute_fee_breakdown(shipment)))
+
+    @action(detail=True, methods=['get'], url_path='timeline')
+    def timeline(self, request, pk=None):
+        """التسلسل الزمني للطلب — أحداث ثابتة (append-only) بترتيب زمني تصاعدي."""
+        shipment = self.get_object()
+        events = shipment.events.select_related('actor').order_by('occurred_at', 'created_at')
+        serializer = FoodShipmentEventSerializer(events, many=True)
+        return Response(success_response(serializer.data))
 
     @action(detail=True, methods=['post'], url_path='invoice')
     def open_invoice(self, request, pk=None):
@@ -597,7 +712,6 @@ class ShipmentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='clerk-stats')
     def clerk_stats(self, request):
         today = timezone.localdate()
-        drafts = FoodShipment.objects.filter(status=FoodShipment.ShipmentStatus.DRAFT).count()
         imports_today = (
             FoodShipment.objects.filter(
                 shipment_type=FoodShipment.ShipmentType.IMPORT
@@ -610,11 +724,32 @@ class ShipmentViewSet(viewsets.ModelViewSet):
                 'id', 'manifest_number', 'status', 'created_at'
             )
         )
+        status_counts = {
+            row['status']: row['n']
+            for row in FoodShipment.objects.values('status').annotate(n=Count('id'))
+        }
+
+        def _count(*statuses):
+            return sum(status_counts.get(s, 0) for s in statuses)
+
+        S = FoodShipment.ShipmentStatus
         stats = {
-            'drafts': drafts,
+            'drafts': status_counts.get(S.DRAFT, 0),
+            'submitted': _count(S.RECEIVED, S.FEES_DUE),
+            'under_review': _count(S.AWAITING_DECISION),
+            'inspection': _count(S.AWAITING_INSPECTION, S.UNDER_INSPECTION),
+            'sampling': _count(S.UNDER_INSPECTION),
+            'lab_testing': _count(S.AWAITING_LAB_RESULTS),
+            'final_review': _count(S.AWAITING_DECISION),
+            'completed_today': FoodShipment.objects.filter(
+                updated_at__date=today,
+                status__in=[S.RELEASED, S.CONDITIONAL_RELEASE],
+            ).count(),
+            'rejected': status_counts.get(S.REJECTED, 0),
+            'total': FoodShipment.objects.count(),
             'imports_today': imports_today,
-            'received': FoodShipment.objects.filter(status=FoodShipment.ShipmentStatus.RECEIVED).count(),
-            'fees_due': FoodShipment.objects.filter(status=FoodShipment.ShipmentStatus.FEES_DUE).count(),
+            'received': status_counts.get(S.RECEIVED, 0),
+            'fees_due': status_counts.get(S.FEES_DUE, 0),
         }
         return Response(success_response({'stats': stats, 'recent': recent}))
 
@@ -839,12 +974,11 @@ class ShipmentViewSet(viewsets.ModelViewSet):
         return Response(success_response(data))
 
 
-class FoodInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
+class FoodInvoiceViewSet(FoodPermissionMixin, viewsets.ReadOnlyModelViewSet):
     """فاتورة رقابة الأغذية من السجل المالي الموحد (وارد/صادر)."""
 
     queryset = FinanceInvoice.objects.all()
     serializer_class = FinanceFoodInvoiceSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = (
@@ -858,10 +992,9 @@ class FoodInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
         return qs
 
 
-class ShipmentAttachmentViewSet(viewsets.ModelViewSet):
+class ShipmentAttachmentViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = ShipmentAttachment.objects.all()
     serializer_class = ShipmentAttachmentSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = ShipmentAttachment.objects.all()
@@ -877,10 +1010,9 @@ class ShipmentAttachmentViewSet(viewsets.ModelViewSet):
         )
 
 
-class FoodInspectionViewSet(viewsets.ModelViewSet):
+class FoodInspectionViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = FoodInspection.objects.all()
     serializer_class = FoodInspectionSerializer
-    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=['post'], url_path='review')
     def review(self, request, pk=None):
@@ -927,10 +1059,9 @@ class FoodInspectionViewSet(viewsets.ModelViewSet):
         return Response(success_response(serializer.data))
 
 
-class FoodSampleViewSet(viewsets.ModelViewSet):
+class FoodSampleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = FoodSample.objects.all()
     serializer_class = FoodSampleSerializer
-    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = FoodSampleWriteSerializer(data=request.data)
@@ -989,6 +1120,340 @@ class FoodSampleViewSet(viewsets.ModelViewSet):
             sample.status = FoodSample.LifecycleStatus.UNDER_TESTING
             sample.save(update_fields=['status', 'updated_at'])
         return Response(success_response({'added': added, 'sample': str(sample.id)}))
+
+    # ---------------------------------------------------------------
+    # سير العمل التشغيلي للعينات — مسارات يطلبها `FoodLabPage`
+    # (إجراءات الاستلام، التنسيق، الإسناد، الأولوية، الاعتماد،
+    #  الفوترة، الإرسال، النقل). الحالة تتقدّم بالترتيب المبيّن في
+    #  `FoodSample.LifecycleStatus` وكل انتقال يتحقّق من شرطه.
+    # ---------------------------------------------------------------
+
+    def _sample_payload(self, sample, extra=None):
+        data = {
+            'id': str(sample.id),
+            'status': sample.status,
+            'reception_status': sample.reception_status,
+            'priority': sample.priority,
+            'collection_status': sample.collection_status,
+        }
+        data.update(extra or {})
+        return success_response(data)
+
+    def _advance(self, sample, target, allowed_from, error):
+        if sample.status not in allowed_from:
+            return Response(error_response(error), status=status.HTTP_400_BAD_REQUEST)
+        sample.status = target
+        return None
+
+    @action(detail=True, methods=['post'], url_path='accept')
+    def accept(self, request, pk=None):
+        sample = self.get_object()
+        sample.reception_status = FoodSample.ReceptionStatus.ACCEPTED
+        sample.reception_note = request.data.get('reception_note', '')
+        sample.reception_checklist = request.data.get('reception_checklist') or {}
+        sample.reception_decision_by = request.user
+        sample.reception_decision_at = timezone.now()
+        sample.save(update_fields=[
+            'reception_status', 'reception_note', 'reception_checklist',
+            'reception_decision_by', 'reception_decision_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='accept_sample',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='conditional-accept')
+    def conditional_accept(self, request, pk=None):
+        sample = self.get_object()
+        sample.reception_status = FoodSample.ReceptionStatus.CONDITIONALLY_ACCEPTED
+        sample.reception_note = request.data.get('reception_note', '')
+        sample.reception_checklist = request.data.get('reception_checklist') or {}
+        sample.reception_decision_by = request.user
+        sample.reception_decision_at = timezone.now()
+        sample.save(update_fields=[
+            'reception_status', 'reception_note', 'reception_checklist',
+            'reception_decision_by', 'reception_decision_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='conditional_accept_sample',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        sample = self.get_object()
+        reason = (request.data.get('rejection_reason') or '').strip()
+        if not reason:
+            return Response(error_response('سبب الرفض مطلوب'), status=status.HTTP_400_BAD_REQUEST)
+        sample.reception_status = FoodSample.ReceptionStatus.REJECTED
+        sample.reception_note = request.data.get('reception_note', '')
+        sample.rejection_reason = reason
+        sample.reception_decision_by = request.user
+        sample.reception_decision_at = timezone.now()
+        sample.status = FoodSample.LifecycleStatus.REJECTED
+        sample.save(update_fields=[
+            'reception_status', 'reception_note', 'rejection_reason',
+            'reception_decision_by', 'reception_decision_at', 'status', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='reject_sample',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='coordinate')
+    def coordinate(self, request, pk=None):
+        sample = self.get_object()
+        blocked = self._advance(
+            sample,
+            FoodSample.LifecycleStatus.COORDINATED,
+            [FoodSample.LifecycleStatus.RECEIVED],
+            'التنسيق متاح للعينات في حالة «مُستلمة» فقط',
+        )
+        if blocked:
+            return blocked
+        coordinator_id = request.data.get('coordinator')
+        if coordinator_id:
+            coordinator = AccountUser.objects.filter(pk=coordinator_id).first()
+            if coordinator is None:
+                return Response(error_response('المنسّق غير موجود'), status=status.HTTP_400_BAD_REQUEST)
+            sample.coordinator = coordinator
+        sample.save(update_fields=['status', 'coordinator', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='coordinate_sample',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='assign-section')
+    def assign_section(self, request, pk=None):
+        sample = self.get_object()
+        blocked = self._advance(
+            sample,
+            FoodSample.LifecycleStatus.ASSIGNED,
+            [FoodSample.LifecycleStatus.COORDINATED],
+            'الإسناد للقسم متاح بعد التنسيق',
+        )
+        if blocked:
+            return blocked
+        bench = request.data.get('bench')
+        if bench:
+            valid = {value for value, _ in FoodSample.LabBench.choices}
+            if bench not in valid:
+                return Response(
+                    error_response('قسم المختبر غير معروف: {}'.format(bench)),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            sample.bench = bench
+        head_id = request.data.get('department_head')
+        if head_id:
+            head = AccountUser.objects.filter(pk=head_id).first()
+            if head is None:
+                return Response(error_response('رئيس القسم غير موجود'), status=status.HTTP_400_BAD_REQUEST)
+            sample.department_head = head
+        sample.save(update_fields=['status', 'bench', 'department_head', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='assign_sample_section',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample, extra={'bench': sample.bench}))
+
+    @action(detail=True, methods=['post'], url_path='assign-analyst')
+    def assign_analyst(self, request, pk=None):
+        sample = self.get_object()
+        if sample.status != FoodSample.LifecycleStatus.ASSIGNED:
+            return Response(
+                error_response('إسناد المحلل متاح للعينات المُسندة للقسم'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        analyst_id = request.data.get('analyst')
+        if not analyst_id:
+            return Response(error_response('المحلّل مطلوب'), status=status.HTTP_400_BAD_REQUEST)
+        analyst = AccountUser.objects.filter(pk=analyst_id).first()
+        if analyst is None:
+            return Response(error_response('المحلّل غير موجود'), status=status.HTTP_400_BAD_REQUEST)
+        sample.analyst = analyst
+        sample.save(update_fields=['analyst', 'updated_at'])
+        for test in sample.tests.filter(status=SampleTest.TestStatus.PENDING):
+            test.assigned_to = analyst
+            test.save(update_fields=['assigned_to', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='assign_sample_analyst',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='set-priority')
+    def set_priority(self, request, pk=None):
+        sample = self.get_object()
+        priority = request.data.get('priority')
+        valid = {value for value, _ in FoodSample.Priority.choices}
+        if priority not in valid:
+            return Response(
+                error_response('أولوية غير معروفة: {}'.format(priority)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sample.priority = priority
+        sample.priority_updated_at = timezone.now()
+        sample.priority_updated_by = request.user
+        sample.save(update_fields=[
+            'priority', 'priority_updated_at', 'priority_updated_by', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='set_sample_priority',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='submit-for-approval')
+    def submit_for_approval(self, request, pk=None):
+        sample = self.get_object()
+        blocked = self._advance(
+            sample,
+            FoodSample.LifecycleStatus.READY_FOR_APPROVAL,
+            [FoodSample.LifecycleStatus.UNDER_TESTING, FoodSample.LifecycleStatus.ASSIGNED],
+            'رفع الاعتماد متاح بعد بدء الفحص',
+        )
+        if blocked:
+            return blocked
+        pending = sample.tests.filter(
+            status__in=[SampleTest.TestStatus.PENDING, SampleTest.TestStatus.DRAFT]
+        ).count()
+        if pending:
+            return Response(
+                error_response('لا يمكن الاعتماد: {} فحص لم تُرفع نتائجه بعد'.format(pending)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sample.save(update_fields=['status', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='submit_sample_for_approval',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='generate-invoice')
+    def generate_invoice(self, request, pk=None):
+        sample = self.get_object()
+        existing = SampleInvoice.objects.filter(sample=sample).first()
+        if existing:
+            serializer = SampleInvoiceSerializer(existing)
+            return Response(success_response(serializer.data), status=status.HTTP_200_OK)
+
+        items = []
+        total = Decimal('0')
+        for test in sample.tests.select_related('parameter'):
+            fee = QuarantineFee.objects.filter(
+                code=test.parameter.code, is_active=True
+            ).order_by('-year').first()
+            amount = fee.amount_sdg if fee else Decimal('0')
+            total += amount
+            items.append({
+                'parameter': str(test.parameter_id),
+                'code': test.parameter.code,
+                'name_ar': test.parameter.name_ar,
+                'quantity': 1,
+                'unit_price': str(amount),
+                'total': str(amount),
+            })
+        invoice = SampleInvoice.objects.create(
+            sample=sample,
+            invoice_number='SIN-{}-{}'.format(timezone.now().year, uuid.uuid4().hex[:8].upper()),
+            items=items,
+            total_amount=total,
+            currency='SDG',
+            status=SampleInvoice.PaymentStatus.PENDING,
+            issued_by=request.user,
+            issued_at=timezone.now(),
+            receipt_number='',
+        )
+        sample.fee_amount = total
+        sample.collection_status = FoodSample.CollectionStatus.PENDING
+        sample.save(update_fields=['fee_amount', 'collection_status', 'updated_at'])
+        _audit(request, AuditLog.Action.CREATE, obj=invoice, event='generate_sample_invoice',
+               object_type='SampleInvoice')
+        serializer = SampleInvoiceSerializer(invoice)
+        return Response(success_response(serializer.data), status=status.HTTP_201_CREATED)
+
+    def _sample_invoice(self, sample):
+        invoice = SampleInvoice.objects.filter(sample=sample).first()
+        if invoice is None:
+            return None, Response(
+                error_response('لا توجد فاتورة — أصدر الفاتورة أولاً'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return invoice, None
+
+    @action(detail=True, methods=['post'], url_path='pay-sample-fee')
+    def pay_sample_fee(self, request, pk=None):
+        sample = self.get_object()
+        invoice, failure = self._sample_invoice(sample)
+        if failure:
+            return failure
+        if invoice.status == SampleInvoice.PaymentStatus.PAID:
+            serializer = SampleInvoiceSerializer(invoice)
+            return Response(success_response(serializer.data))
+        invoice.status = SampleInvoice.PaymentStatus.PAID
+        invoice.payment_reference = request.data.get('payment_reference', '')
+        invoice.paid_by = request.user
+        invoice.paid_at = timezone.now()
+        invoice.save(update_fields=[
+            'status', 'payment_reference', 'paid_by', 'paid_at', 'updated_at',
+        ])
+        sample.collection_status = FoodSample.CollectionStatus.PAID
+        sample.save(update_fields=['collection_status', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=invoice, event='pay_sample_fee',
+               object_type='SampleInvoice')
+        serializer = SampleInvoiceSerializer(invoice)
+        return Response(success_response(serializer.data))
+
+    @action(detail=True, methods=['post'], url_path='exempt-sample-fee')
+    def exempt_sample_fee(self, request, pk=None):
+        sample = self.get_object()
+        invoice, failure = self._sample_invoice(sample)
+        if failure:
+            return failure
+        invoice.status = SampleInvoice.PaymentStatus.EXEMPT
+        invoice.exemption_reason = request.data.get('exemption_reason', 'إعفاء حكومي معتمد')
+        invoice.exempted_by = request.user
+        invoice.exempted_at = timezone.now()
+        invoice.save(update_fields=[
+            'status', 'exemption_reason', 'exempted_by', 'exempted_at', 'updated_at',
+        ])
+        sample.collection_status = FoodSample.CollectionStatus.EXEMPT
+        sample.save(update_fields=['collection_status', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=invoice, event='exempt_sample_fee',
+               object_type='SampleInvoice')
+        serializer = SampleInvoiceSerializer(invoice)
+        return Response(success_response(serializer.data))
+
+    # اسم الدالة `dispatch_result` لا `dispatch`، لأن الأخير اسم
+    # `ViewSet.dispatch` الذي يوجّه الطلب نفسه — تسميتُه يخدش التوجيه.
+    @action(detail=True, methods=['post'], url_path='dispatch')
+    def dispatch_result(self, request, pk=None):
+        sample = self.get_object()
+        if sample.status != FoodSample.LifecycleStatus.COMPLETED:
+            return Response(
+                error_response('الإرسال متاح بعد اعتماد العينة واعتمادها نهائياً'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sample.status = FoodSample.LifecycleStatus.DISPATCHED
+        sample.dispatched_by = request.user
+        sample.dispatched_at = timezone.now()
+        sample.dispatch_notes = request.data.get('dispatch_notes', '') or request.data.get('notes', '')
+        sample.save(update_fields=[
+            'status', 'dispatched_by', 'dispatched_at', 'dispatch_notes', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=sample, event='dispatch_sample',
+               object_type='FoodSample')
+        return Response(self._sample_payload(sample))
+
+    @action(detail=True, methods=['post'], url_path='transfer')
+    def transfer(self, request, pk=None):
+        sample = self.get_object()
+        to_department = (request.data.get('to_department') or '').strip()
+        if not to_department:
+            return Response(error_response('القسم المستلم مطلوب'), status=status.HTTP_400_BAD_REQUEST)
+        event = ChainOfCustody.objects.create(
+            sample=sample,
+            from_department=request.data.get('from_department', sample.station or ''),
+            to_department=to_department,
+            transferred_by=request.user,
+            transferred_at=timezone.now(),
+            condition=request.data.get('condition', ''),
+            seal_number=request.data.get('seal_number', ''),
+            remarks=request.data.get('remarks', ''),
+            is_received=False,
+        )
+        _audit(request, AuditLog.Action.CREATE, obj=event, event='transfer_sample',
+               object_type='ChainOfCustody')
+        serializer = ChainOfCustodySerializer(event)
+        return Response(success_response(serializer.data), status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='approve')
     def approve(self, request, pk=None):
@@ -1065,10 +1530,212 @@ class FoodSampleViewSet(viewsets.ModelViewSet):
         return Response(success_response(serializer.data))
 
 
-class SampleTestViewSet(viewsets.ModelViewSet):
+class SampleTestViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SampleTest.objects.all()
     serializer_class = SampleTestSerializer
-    permission_classes = [IsAuthenticated]
+
+    # ---------------------------------------------------------------
+    # دورة حياة الفحص الواحد — المسارات التي يطلبها `FoodLabPage`:
+    # بدء ← حفظ مسودة ← رفع ← مراجعة ← اعتماد، مع الإرجاع والتصحيح
+    # ومراجعة الجودة. كل انتقال يتحقّق من الحالة السابقة.
+    # ---------------------------------------------------------------
+
+    RESULT_FIELDS = (
+        'result_value', 'result_text', 'unit', 'reference_limit',
+        'method_used', 'device_used', 'reagent_lot', 'decision',
+    )
+
+    def _test_payload(self, test):
+        return success_response({
+            'id': str(test.id),
+            'status': test.status,
+            'decision': test.decision,
+            'qc_status': test.qc_status,
+            'version': test.version,
+        })
+
+    def _require_state(self, test, allowed, error):
+        if test.status not in allowed:
+            return Response(error_response(error), status=status.HTTP_400_BAD_REQUEST)
+        return None
+
+    @action(detail=True, methods=['post'], url_path='start')
+    def start(self, request, pk=None):
+        test = self.get_object()
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.PENDING, SampleTest.TestStatus.DRAFT,
+             SampleTest.TestStatus.RETEST],
+            'لا يمكن بدء فحص في حالته الحالية',
+        )
+        if blocked:
+            return blocked
+        test.status = SampleTest.TestStatus.IN_PROGRESS
+        test.started_at = timezone.now()
+        test.save(update_fields=['status', 'started_at', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='start_sample_test',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post', 'patch'], url_path='save-result')
+    def save_result(self, request, pk=None):
+        test = self.get_object()
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.IN_PROGRESS, SampleTest.TestStatus.DRAFT,
+             SampleTest.TestStatus.RETEST, SampleTest.TestStatus.PENDING],
+            'لا يمكن حفظ نتيجة في حالتها الحالية',
+        )
+        if blocked:
+            return blocked
+        fields = []
+        for name in self.RESULT_FIELDS:
+            if name in request.data:
+                setattr(test, name, request.data.get(name))
+                fields.append(name)
+        test.status = SampleTest.TestStatus.DRAFT
+        test.entered_by = request.user
+        test.notes = request.data.get('notes', test.notes or '')
+        fields += ['status', 'entered_by', 'notes', 'updated_at']
+        test.save(update_fields=fields)
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='save_sample_test_result',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post'], url_path='review')
+    def review(self, request, pk=None):
+        test = self.get_object()
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.SUBMITTED, SampleTest.TestStatus.IN_PROGRESS,
+             SampleTest.TestStatus.DRAFT],
+            'المراجعة متاحة لفحص مُرفع أو قيد التنفيذ',
+        )
+        if blocked:
+            return blocked
+        if 'decision' in request.data:
+            test.decision = request.data.get('decision')
+        if 'notes' in request.data:
+            test.notes = request.data.get('notes', '')
+        test.status = SampleTest.TestStatus.REVIEWED
+        test.reviewed_by = request.user
+        test.reviewed_at = timezone.now()
+        test.save(update_fields=[
+            'decision', 'notes', 'status', 'reviewed_by', 'reviewed_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='review_sample_test',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post'], url_path='mark-qc')
+    def mark_qc(self, request, pk=None):
+        test = self.get_object()
+        qc_status = request.data.get('qc_status')
+        valid = {value for value, _ in SampleTest.QcStatus.choices}
+        if qc_status not in valid:
+            return Response(
+                error_response('نتيجة مراجعة الجودة غير معروفة: {}'.format(qc_status)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        test.qc_status = qc_status
+        test.qc_notes = request.data.get('qc_notes', '')
+        test.qc_reviewed_by = request.user
+        test.qc_reviewed_at = timezone.now()
+        test.save(update_fields=[
+            'qc_status', 'qc_notes', 'qc_reviewed_by', 'qc_reviewed_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='mark_sample_test_qc',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post'], url_path='return-result')
+    def return_result(self, request, pk=None):
+        test = self.get_object()
+        reason = (request.data.get('reason') or '').strip()
+        if not reason:
+            return Response(error_response('سبب الإعادة مطلوب'), status=status.HTTP_400_BAD_REQUEST)
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.SUBMITTED, SampleTest.TestStatus.REVIEWED,
+             SampleTest.TestStatus.APPROVED],
+            'الإعادة متاحة لفحص مُرفع أو مُراجَع أو معتمد',
+        )
+        if blocked:
+            return blocked
+        test.status = SampleTest.TestStatus.RETEST
+        test.decision = SampleTest.Decision.PENDING
+        test.notes = reason
+        test.approved_by = None
+        test.approved_at = None
+        test.save(update_fields=[
+            'status', 'decision', 'notes', 'approved_by', 'approved_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='return_sample_test',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post'], url_path='revise')
+    def revise(self, request, pk=None):
+        test = self.get_object()
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.APPROVED, SampleTest.TestStatus.REVIEWED,
+             SampleTest.TestStatus.COMPLETED],
+            'التصحيح متاح لفحص معتمد أو مُراجَع',
+        )
+        if blocked:
+            return blocked
+        reason = (request.data.get('reason') or '').strip()
+        if not reason:
+            return Response(error_response('سبب التصحيح مطلوب'), status=status.HTTP_400_BAD_REQUEST)
+        SampleTestRevision.objects.create(
+            test=test,
+            version=test.version,
+            snapshot={
+                'version': test.version,
+                'status': test.status,
+                'decision': test.decision,
+                'result_value': test.result_value,
+                'result_text': test.result_text,
+            },
+            reason=reason,
+            created_by=request.user,
+        )
+        test.version = (test.version or 1) + 1
+        test.status = SampleTest.TestStatus.DRAFT
+        test.decision = SampleTest.Decision.PENDING
+        test.approved_by = None
+        test.approved_at = None
+        test.reviewed_by = None
+        test.reviewed_at = None
+        test.save(update_fields=[
+            'version', 'status', 'decision', 'approved_by', 'approved_at',
+            'reviewed_by', 'reviewed_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='revise_sample_test',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        test = self.get_object()
+        blocked = self._require_state(
+            test,
+            [SampleTest.TestStatus.REVIEWED, SampleTest.TestStatus.SUBMITTED],
+            'الاعتماد متاح لفحص مُراجَع',
+        )
+        if blocked:
+            return blocked
+        test.status = SampleTest.TestStatus.APPROVED
+        test.approved_by = request.user
+        test.approved_at = timezone.now()
+        test.completed_at = timezone.now()
+        test.save(update_fields=[
+            'status', 'approved_by', 'approved_at', 'completed_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=test, event='approve_sample_test',
+               object_type='SampleTest')
+        return Response(self._test_payload(test))
 
     @action(detail=True, methods=['post'], url_path='enter-result')
     def enter_result(self, request, pk=None):
@@ -1123,10 +1790,9 @@ class SampleTestViewSet(viewsets.ModelViewSet):
         return Response(success_response(serializer.data))
 
 
-class LabParameterViewSet(viewsets.ModelViewSet):
+class LabParameterViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = LabParameter.objects.all()
     serializer_class = LabParameterSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = LabParameter.objects.all()
@@ -1136,24 +1802,21 @@ class LabParameterViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class CertificateViewSet(viewsets.ModelViewSet):
+class CertificateViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = AnalysisCertificate.objects.all()
     serializer_class = AnalysisCertificateSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class SamplingPolicyViewSet(viewsets.ModelViewSet):
+class SamplingPolicyViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SamplingPolicy.objects.all()
     serializer_class = SamplingPolicySerializer
-    permission_classes = [IsAuthenticated]
 
 
-class QuarantineFeeViewSet(viewsets.ReadOnlyModelViewSet):
+class QuarantineFeeViewSet(FoodPermissionMixin, viewsets.ReadOnlyModelViewSet):
     """تعرفة رسوم الكرنتينة — مرجع قراءة فقط، غير قابل للتعديل عبر الـAPI."""
 
     queryset = QuarantineFee.objects.all()
     serializer_class = QuarantineFeeSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return QuarantineFee.objects.filter(is_active=True)
@@ -1206,195 +1869,224 @@ class QuarantineFeeViewSet(viewsets.ReadOnlyModelViewSet):
         return year
 
 
-class SampleSourceViewSet(viewsets.ModelViewSet):
+class SampleSourceViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SampleSource.objects.all()
     serializer_class = SampleSourceSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class ReferenceSampleViewSet(viewsets.ModelViewSet):
+class ReferenceSampleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = ReferenceSample.objects.all()
     serializer_class = ReferenceSampleSerializer
-    permission_classes = [IsAuthenticated]
+
+    # دورة حياة العيّنة المرجعية: محفوظة → مُسترجعة | مُعدمة
+    def _retire(self, request, target, error):
+        ref = self.get_object()
+        if ref.status != ReferenceSample.Status.STORED:
+            return Response(
+                error_response(error),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ref.status = target
+        ref.remarks = request.data.get('remarks', ref.remarks or '')
+        if target == ReferenceSample.Status.RETRIEVED:
+            ref.retrieved_by = request.user
+            ref.retrieved_at = timezone.now()
+            ref.save(update_fields=[
+                'status', 'remarks', 'retrieved_by', 'retrieved_at', 'updated_at',
+            ])
+        else:
+            ref.save(update_fields=['status', 'remarks', 'updated_at'])
+        _audit(request, AuditLog.Action.UPDATE, obj=ref,
+               event='retrieve_reference_sample' if target == ReferenceSample.Status.RETRIEVED
+               else 'discard_reference_sample',
+               object_type='ReferenceSample')
+        serializer = ReferenceSampleSerializer(ref)
+        return Response(success_response(serializer.data))
+
+    @action(detail=True, methods=['post'], url_path='retrieve-ref')
+    def retrieve_ref(self, request, pk=None):
+        return self._retire(
+            request, ReferenceSample.Status.RETRIEVED,
+            'الرجوع متاح للعيّنات المحفوظة فقط',
+        )
+
+    @action(detail=True, methods=['post'], url_path='discard')
+    def discard(self, request, pk=None):
+        return self._retire(
+            request, ReferenceSample.Status.DISCARDED,
+            'الإعدام متاح للعيّنات المحفوظة فقط',
+        )
 
 
-class ChainOfCustodyViewSet(viewsets.ModelViewSet):
+class ChainOfCustodyViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = ChainOfCustody.objects.all()
     serializer_class = ChainOfCustodySerializer
-    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['post'], url_path='acknowledge')
+    def acknowledge(self, request, pk=None):
+        event = self.get_object()
+        if event.is_received:
+            serializer = ChainOfCustodySerializer(event)
+            return Response(success_response(serializer.data))
+        if not event.to_department:
+            return Response(
+                error_response('القسم المستلم غير محدّد'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        event.is_received = True
+        event.received_by = request.user
+        event.received_at = timezone.now()
+        event.save(update_fields=[
+            'is_received', 'received_by', 'received_at', 'updated_at',
+        ])
+        _audit(request, AuditLog.Action.UPDATE, obj=event, event='acknowledge_custody',
+               object_type='ChainOfCustody')
+        serializer = ChainOfCustodySerializer(event)
+        return Response(success_response(serializer.data))
 
 
-class LabEquipmentViewSet(viewsets.ModelViewSet):
+class LabEquipmentViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = LabEquipment.objects.all()
     serializer_class = LabEquipmentSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MicroorganismViewSet(viewsets.ModelViewSet):
+class MicroorganismViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = Microorganism.objects.all()
     serializer_class = MicroorganismSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class ProductCategoryViewSet(viewsets.ModelViewSet):
+class ProductCategoryViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
-    permission_classes = [IsAuthenticated]
 
 
-class FoodProductViewSet(viewsets.ModelViewSet):
+class FoodProductViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = FoodProduct.objects.all()
     serializer_class = FoodProductSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class TestMethodViewSet(viewsets.ModelViewSet):
+class TestMethodViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = TestMethod.objects.all()
     serializer_class = TestMethodSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class AnalyticalMethodViewSet(viewsets.ModelViewSet):
+class AnalyticalMethodViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = AnalyticalMethod.objects.all()
     serializer_class = AnalyticalMethodSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MicrobiologicalSpecificationViewSet(viewsets.ModelViewSet):
+class MicrobiologicalSpecificationViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = MicrobiologicalSpecification.objects.all()
     serializer_class = MicrobiologicalSpecificationSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class SpecificationVersionViewSet(viewsets.ModelViewSet):
+class SpecificationVersionViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SpecificationVersion.objects.all()
     serializer_class = SpecificationVersionSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MicrobiologicalLimitViewSet(viewsets.ModelViewSet):
+class MicrobiologicalLimitViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = MicrobiologicalLimit.objects.all()
     serializer_class = MicrobiologicalLimitSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class SampleUnitResultViewSet(viewsets.ModelViewSet):
+class SampleUnitResultViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SampleUnitResult.objects.all()
     serializer_class = SampleUnitResultSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class ResultEvaluationViewSet(viewsets.ModelViewSet):
+class ResultEvaluationViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = ResultEvaluation.objects.all()
     serializer_class = ResultEvaluationSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class QualityDashboardViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+class QualityDashboardViewSet(FoodPermissionMixin, viewsets.ViewSet):
 
     def list(self, request):
         return Response({'status': 'ok', 'data': []})
 
 
-class QCRecordViewSet(viewsets.ModelViewSet):
+class QCRecordViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = QCRecord.objects.all()
     serializer_class = QCRecordSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class ReagentViewSet(viewsets.ModelViewSet):
+class ReagentViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = Reagent.objects.all()
     serializer_class = ReagentSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class NonConformityViewSet(viewsets.ModelViewSet):
+class NonConformityViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = NonConformity.objects.all()
     serializer_class = NonConformitySerializer
-    permission_classes = [IsAuthenticated]
 
 
-class CpaRecordViewSet(viewsets.ModelViewSet):
+class CpaRecordViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = CpaRecord.objects.all()
     serializer_class = CpaRecordSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class AuditLogViewSet(viewsets.ModelViewSet):
+class AuditLogViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MaterialCatalogViewSet(viewsets.ModelViewSet):
+class MaterialCatalogViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = MaterialCatalog.objects.all()
     serializer_class = MaterialCatalogSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MaterialLotViewSet(viewsets.ModelViewSet):
+class MaterialLotViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = MaterialLot.objects.all()
     serializer_class = MaterialLotSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class SolutionViewSet(viewsets.ModelViewSet):
+class SolutionViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = Solution.objects.all()
     serializer_class = SolutionSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class MaterialIssueViewSet(viewsets.ModelViewSet):
+class MaterialIssueViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = MaterialIssue.objects.all()
     serializer_class = MaterialIssueSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class DisposalRequestViewSet(viewsets.ModelViewSet):
+class DisposalRequestViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = DisposalRequest.objects.all()
     serializer_class = DisposalRequestSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class StorageLocationViewSet(viewsets.ModelViewSet):
+class StorageLocationViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = StorageLocation.objects.all()
     serializer_class = StorageLocationSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class ReagentManagementViewSet(viewsets.ModelViewSet):
+class ReagentManagementViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = Reagent.objects.all()
     serializer_class = ReagentSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class StandardViewSet(viewsets.ModelViewSet):
+class StandardViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = Standard.objects.all()
     serializer_class = StandardSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class StandardVersionViewSet(viewsets.ModelViewSet):
+class StandardVersionViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = StandardVersion.objects.all()
     serializer_class = StandardVersionSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class StandardRequirementViewSet(viewsets.ModelViewSet):
+class StandardRequirementViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = StandardRequirement.objects.all()
     serializer_class = StandardRequirementSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class RegulatoryRuleViewSet(viewsets.ModelViewSet):
+class RegulatoryRuleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = RegulatoryRule.objects.all()
     serializer_class = RegulatoryRuleSerializer
-    permission_classes = [IsAuthenticated]
 
 
-class StandardsManagementViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+class StandardsManagementViewSet(FoodPermissionMixin, viewsets.ViewSet):
 
     def list(self, request):
         return Response({'status': 'ok', 'data': []})

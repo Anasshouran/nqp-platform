@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,14 +12,19 @@ export interface FormTextFieldProps extends Omit<TextFieldProps, 'variant'> {
 }
 
 const FormTextField = forwardRef<HTMLDivElement, FormTextFieldProps>(
-  ({ label, required, requiredMark, error, helperText, hint, fullWidth = true, ...props }, ref) => {
+  ({ label, required, requiredMark, error, helperText, hint, fullWidth = true, id, ...props }, ref) => {
     const hasError = Boolean(error);
     const effectiveHelper = hasError ? helperText : hint ?? ' ';
+    // بدون `htmlFor` لا يصل الـ`<label>` إلى الحقل: يفقد الربط بين
+    // التسمية والمُدخل، ولا يقرؤه قارئ الشاشة، ويفشل `getByLabelText`.
+    const autoId = useId();
+    const inputId = id ?? props.name ?? autoId;
     return (
       <Box>
         {label && (
           <Typography
             component="label"
+            htmlFor={inputId}
             variant="body2"
             sx={{
               display: 'block',
@@ -38,6 +43,7 @@ const FormTextField = forwardRef<HTMLDivElement, FormTextFieldProps>(
         )}
         <TextField
           ref={ref}
+          id={inputId}
           fullWidth={fullWidth}
           label={undefined}
           error={hasError}

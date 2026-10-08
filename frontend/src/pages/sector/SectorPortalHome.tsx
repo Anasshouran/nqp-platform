@@ -22,7 +22,8 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { useSectorPortal } from '../../components/sectors/SectorPortalLayout';
 import { EmptyState } from '../../components/common';
-import { NEWS_CATEGORY_LABELS, sectorBareName } from '../sector-cms/SectorCmsShared';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
+import { sectorBareName } from '../sector-cms/SectorCmsShared';
 import { getSectorPorts, getPublicStatistics, getNews } from '../../api/endpoints/public';
 import type { PublicPort, NewsArticle } from '../../api/endpoints/public';
 
@@ -186,7 +187,7 @@ const SectorPortalHome = () => {
               <Grid item xs={12} sm={4} key={article.id}>
                 <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                   <CardContent>
-                    <Chip label={NEWS_CATEGORY_LABELS[article.category] || 'عام'} size="small" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                    <NewsCategoryChip category={article.category} sx={{ mb: 1 }} />
                     <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{article.title}</Typography>
                     <Typography variant="caption" color="text.secondary">{formatDate(article.published_at)}</Typography>
                   </CardContent>

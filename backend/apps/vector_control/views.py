@@ -7,10 +7,10 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.filters import ExactFilterBackend
+from core.permissions import PermissionAction
 from core.utils.scoping import SectorFieldScopedMixin, SectorScopedMixin, resolve_user_port_ids
 
 from .models import (
@@ -163,6 +163,32 @@ def apply_inventory_use(chemical, requested_qty, operation, user, item=None, uni
     return selected
 
 
+class VectorPermissionMixin:
+    """تفويض موحّد لموديول مكافحة النواقل.
+
+    كان الموديول يستخدم `[IsAuthenticated]` فقط، فأي حساب مصادق كان يقرأ
+    ويعدّل كل المصائد والمواقع والفرق والبلاغات وطنياً. الآن كل إجراء
+    يتطلّب صلاحية `vector:<action>`، وSectorScopedMixin/SectorFieldScopedMixin
+    يقيّدان البيانات على نطاق المستخدم.
+    """
+
+    permission_resource = 'vector'
+    permission_classes = [PermissionAction]
+
+    action_permission_map = {
+        'approve': 'approve',
+        'close': 'close',
+        'assess': 'assess',
+    }
+    default_permission_action = 'view'
+
+    def get_permissions(self):
+        self.permission_action = self.action_permission_map.get(
+            self.action, self.default_permission_action,
+        )
+        return super().get_permissions()
+
+
 class AuditedCreateMixin:
     def perform_create(self, serializer):
         if 'created_by' in serializer.fields or hasattr(serializer, 'Meta'):
@@ -180,10 +206,9 @@ class AuditedCreateMixin:
             serializer.save()
 
 
-class VectorRegistryViewSet(viewsets.ModelViewSet):
+class VectorRegistryViewSet(VectorPermissionMixin, viewsets.ModelViewSet):
     queryset = VectorRegistry.objects.all()
     serializer_class = VectorRegistrySerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['vector_type', 'is_active']
@@ -196,10 +221,9 @@ class VectorRegistryViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class VectorUnitViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
+class VectorUnitViewSet(VectorPermissionMixin, SectorFieldScopedMixin, viewsets.ModelViewSet):
     queryset = VectorUnit.objects.select_related('sector').all()
     serializer_class = VectorUnitSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['kind', 'sector', 'is_active']
@@ -207,10 +231,9 @@ class VectorUnitViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
 
 
-class VectorSiteViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorSiteViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorSite.objects.select_related('entry_point').all()
     serializer_class = VectorSiteSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'site_type', 'is_active']
@@ -218,10 +241,9 @@ class VectorSiteViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelVie
     port_field = 'entry_point'
 
 
-class VectorTeamViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
+class VectorTeamViewSet(VectorPermissionMixin, SectorFieldScopedMixin, viewsets.ModelViewSet):
     queryset = VectorTeam.objects.select_related('sector', 'entry_point', 'leader').prefetch_related('members').all()
     serializer_class = VectorTeamSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['team_type', 'sector', 'entry_point', 'is_active']
@@ -229,12 +251,11 @@ class VectorTeamViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
 
 
-class VectorReportViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorReportViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorReport.objects.select_related(
         'entry_point', 'site', 'vector', 'reported_by', 'assessed_by'
     ).all()
     serializer_class = VectorReportSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['report_type', 'source', 'severity', 'status', 'entry_point']
@@ -334,12 +355,11 @@ class VectorReportViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelV
         return Response(self.get_serializer(report).data)
 
 
-class VectorFocusViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorFocusViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorFocus.objects.select_related(
         'entry_point', 'entry_point__sector', 'site', 'vector', 'opened_by', 'closed_by', 'source_report'
     ).prefetch_related('control_operations').all()
     serializer_class = VectorFocusSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'vector', 'severity', 'status', 'origin']
@@ -387,12 +407,11 @@ class VectorFocusViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelVi
         return Response(self.get_serializer(focus).data)
 
 
-class VectorInspectionViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorInspectionViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorInspection.objects.select_related(
         'entry_point', 'site', 'team', 'inspector', 'linked_focus'
     ).all()
     serializer_class = VectorInspectionSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'site', 'purpose', 'findings_severity', 'status', 'inspector']
@@ -418,12 +437,11 @@ class VectorInspectionViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.Mo
         return Response(self.get_serializer(inspection).data)
 
 
-class VectorSurveyViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorSurveyViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorSurvey.objects.select_related(
         'entry_point', 'site', 'vector', 'team', 'approved_by', 'suggested_focus'
     ).all()
     serializer_class = VectorSurveySerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'vector', 'density', 'proposed_risk', 'status', 'method']
@@ -474,12 +492,11 @@ class VectorSurveyViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelV
         return Response(VectorFocusSerializer(focus).data, status=201)
 
 
-class VectorSampleViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorSampleViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorSample.objects.select_related(
         'entry_point', 'focus', 'inspection', 'survey', 'vector', 'collector', 'received_by'
     ).all()
     serializer_class = VectorSampleSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'focus', 'vector', 'stage', 'status']
@@ -533,12 +550,11 @@ class VectorSampleViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelV
         return Response(VectorLabResultSerializer(lab_result).data)
 
 
-class VectorLabResultViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorLabResultViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorLabResult.objects.select_related(
         'sample', 'sample__entry_point', 'sample__vector', 'analyst', 'approved_by'
     ).all()
     serializer_class = VectorLabResultSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['result', 'status', 'sample']
@@ -595,10 +611,9 @@ class VectorLabResultViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.Mod
         return Response(self.get_serializer(result).data)
 
 
-class VectorChemicalViewSet(viewsets.ModelViewSet):
+class VectorChemicalViewSet(VectorPermissionMixin, viewsets.ModelViewSet):
     queryset = VectorChemical.objects.all()
     serializer_class = VectorChemicalSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['target', 'form', 'hazard_class', 'is_active', 'is_restricted']
@@ -611,10 +626,9 @@ class VectorChemicalViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class VectorEquipmentViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorEquipmentViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorEquipment.objects.select_related('assigned_team', 'entry_point').all()
     serializer_class = VectorEquipmentSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['kind', 'status', 'entry_point', 'is_active']
@@ -622,10 +636,9 @@ class VectorEquipmentViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.Mod
     port_field = 'entry_point'
 
 
-class VectorInventoryItemViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorInventoryItemViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorInventoryItem.objects.select_related('chemical', 'entry_point').all()
     serializer_class = VectorInventoryItemSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['chemical', 'entry_point', 'expiry_date']
@@ -680,10 +693,9 @@ class VectorInventoryItemViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets
         return Response(self.get_serializer(items, many=True).data)
 
 
-class InventoryMovementViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class InventoryMovementViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = InventoryMovement.objects.select_related('item', 'item__chemical', 'operation', 'performed_by').all()
     serializer_class = InventoryMovementSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['item', 'movement_type', 'operation']
@@ -712,12 +724,11 @@ class InventoryMovementViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.M
             )
 
 
-class VectorControlOperationViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorControlOperationViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorControlOperation.objects.select_related(
         'focus', 'report', 'entry_point', 'site', 'vector', 'team', 'leader', 'review_by'
     ).prefetch_related('chemical_lines', 'chemical_lines__chemical', 'equipment_used').all()
     serializer_class = VectorControlOperationSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['entry_point', 'focus', 'operation_type', 'status', 'team']
@@ -831,12 +842,11 @@ class VectorControlOperationViewSet(SectorScopedMixin, AuditedCreateMixin, views
         return Response(self.get_serializer(operation).data)
 
 
-class VectorFollowUpViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorFollowUpViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorFollowUp.objects.select_related(
         'focus', 'focus__entry_point', 'operation', 'team', 'performed_by'
     ).all()
     serializer_class = VectorFollowUpSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['focus', 'operation', 'status', 'controlled']
@@ -898,10 +908,9 @@ class VectorFollowUpViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.Mode
         return Response(self.get_serializer(followup).data)
 
 
-class VectorCaseViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
+class VectorCaseViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
     queryset = VectorCase.objects.select_related('focus', 'focus__entry_point').all()
     serializer_class = VectorCaseSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['focus', 'classification', 'disease']
@@ -910,10 +919,9 @@ class VectorCaseViewSet(SectorScopedMixin, AuditedCreateMixin, viewsets.ModelVie
     port_field = 'focus__entry_point'
 
 
-class VectorAlertViewSet(viewsets.ModelViewSet):
+class VectorAlertViewSet(VectorPermissionMixin, viewsets.ModelViewSet):
     queryset = VectorAlert.objects.all()
     serializer_class = VectorAlertSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'patch', 'delete']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['alert_type', 'severity', 'is_read']
@@ -941,10 +949,9 @@ class VectorAlertViewSet(viewsets.ModelViewSet):
         return Response({'detail': 'تم تعليم كل التنبيهات كمقروءة'})
 
 
-class VectorAttachmentViewSet(viewsets.ModelViewSet):
+class VectorAttachmentViewSet(VectorPermissionMixin, viewsets.ModelViewSet):
     queryset = VectorAttachment.objects.select_related('uploaded_by').all()
     serializer_class = VectorAttachmentSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'delete']
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['caption', 'file']
@@ -953,18 +960,16 @@ class VectorAttachmentViewSet(viewsets.ModelViewSet):
         serializer.save(uploaded_by=self.request.user if self.request.user.is_authenticated else None)
 
 
-class VectorAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+class VectorAuditLogViewSet(VectorPermissionMixin, viewsets.ReadOnlyModelViewSet):
     queryset = VectorAuditLog.objects.select_related('user').all()
     serializer_class = VectorAuditLogSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     filter_fields = ['action', 'model_name', 'user']
     search_fields = ['action', 'model_name']
     ordering_fields = ['created_at']
 
 
-class VectorControlDashboardViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+class VectorControlDashboardViewSet(VectorPermissionMixin, viewsets.ViewSet):
 
     def _port_ids(self):
         return resolve_user_port_ids(self.request.user)

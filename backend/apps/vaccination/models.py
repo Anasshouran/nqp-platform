@@ -1,10 +1,13 @@
+import hmac
 import uuid
+from datetime import date
 
 from django.conf import settings
 from django.db import models
 
 from apps.travelers.models import Traveler
 from core.models import BaseModel
+from core.utils.qr_payload import sign_payload
 
 
 class Vaccine(BaseModel):
@@ -169,6 +172,21 @@ class VaccinationRule(BaseModel):
         return self.title_ar
 
 
+class VaccinationCertificateQuerySet(models.QuerySet):
+    def active(self, on=None):
+        """الشهادات السارية فعلاً: `ACTIVE` لم تنتهِ صلاحيتها بعد.
+
+        حالة `EXPIRED` تُشتق عند الاستعلام ولا تُكتب في الجدول: انتهاء
+        الصلاحية يمرّ بالزمن ولا توجد مهمة دورية تُحدِّث العمود. لذلك
+        الاعتماد على `status=ACTIVE` وحده يعدّ كل شهادة منتهيةً سارية —
+        في العدّادات وفي ملخّص المسافر وفي استعلام المنفذ العام.
+        """
+        return self.filter(
+            status=VaccinationCertificate.Status.ACTIVE,
+            valid_until__gte=on or date.today(),
+        )
+
+
 class VaccinationCertificate(BaseModel):
     """شهادة التطعيم الدولية (International Vaccination Certificate)."""
 
@@ -198,6 +216,29 @@ class VaccinationCertificate(BaseModel):
     validity_days = models.PositiveIntegerField(default=0, verbose_name='مدة الصلاحية (يوم)')
     qr_token = models.UUIDField(default=uuid.uuid4, unique=True, verbose_name='رمز التحقق')
     verification_path = models.CharField(max_length=200, blank=True, verbose_name='مسار التحقق')
+    replaces = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='replacement_chain',
+        db_index=True,
+        verbose_name='الشهادة الأصل',
+    )
+    replacement_reason = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        default='',
+        verbose_name='سبب الاستبدال',
+    )
+    replaced_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='تاريخ الاستبدال',
+    )
+
+    objects = VaccinationCertificateQuerySet.as_manager()
 
     class Meta:
         ordering = ['-issued_at']
@@ -206,6 +247,38 @@ class VaccinationCertificate(BaseModel):
 
     def __str__(self):
         return self.certificate_number
+
+    @property
+    def effective_status(self):
+        """الحالة المعروضة: `EXPIRED` عند تجاوز `valid_until` ما دامت ACTIVE."""
+        if self.status == self.Status.ACTIVE and self.valid_until < date.today():
+            return self.Status.EXPIRED
+        return self.status
+
+    @property
+    def is_valid(self):
+        return self.effective_status == self.Status.ACTIVE
+
+    @property
+    def verification_signature(self):
+        """توقيع HMAC ثابت للشهادة — بلا تخزين، يُشتق من رقمها ورمزها.
+
+        الشهادة تُطبع على ورق وتبقى سنوات، فلا يصحّ ربطها بحمولة ذات عمر
+        24 ساعة كما هو حال QR المسافر. التوقيع هنا لكشف الغش: رمز يشير إلى
+        شهادة أخرى أو مزالة يختلف عن حسابه.
+        """
+        return sign_payload(
+            {'certificate_number': self.certificate_number, 'qr_token': str(self.qr_token)}
+        )
+
+    def verification_url(self, base=''):
+        """رابط التحقق المطلق المطبوع في الـ QR."""
+        base = (base or '').rstrip('/')
+        url = f'{base}{self.verification_path}' if self.verification_path else ''
+        return f'{url}?sig={self.verification_signature}'
+
+    def signature_matches(self, signature):
+        return bool(signature) and hmac.compare_digest(self.verification_signature, signature)
 
 
 class CertificateVerification(BaseModel):
@@ -233,6 +306,63 @@ class CertificateVerification(BaseModel):
 
     def __str__(self):
         return f'{self.certificate.certificate_number} — {"نجاح" if self.success else "فشل"}'
+
+
+class VaccinationAuditLog(BaseModel):
+    """تدقيق دورة حياة الشهادة: إصدار/استبدال/إعادة إصدار/إلغاء.
+
+    يُنشأ داخل نفس معاملة قاعدة البيانات التي تُنفّذ التغيير؛ أي فشل في
+    الكتابة يُرجِع التغيير بأكمله (لا يوجد best-effort ولا تسجيل غير متزامن).
+    """
+
+    class Action(models.TextChoices):
+        ISSUE = 'ISSUE', 'إصدار'
+        REPLACE = 'REPLACE', 'استبدال'
+        REISSUE = 'REISSUE', 'إعادة إصدار'
+        REVOKE = 'REVOKE', 'إلغاء'
+
+    action = models.CharField(max_length=20, choices=Action.choices, verbose_name='الإجراء')
+    certificate = models.ForeignKey(
+        VaccinationCertificate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='audit_logs',
+        verbose_name='الشهادة',
+    )
+    source_certificate = models.ForeignKey(
+        VaccinationCertificate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='derived_audit_logs',
+        verbose_name='الشهادة الأصل',
+    )
+    record = models.ForeignKey(
+        VaccinationRecord,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='certificate_audit_logs',
+        verbose_name='الجرعة',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vaccination_audit_logs',
+        verbose_name='المستخدم',
+    )
+    details = models.JSONField(default=dict, blank=True, verbose_name='التفاصيل')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'تدقيق حياة الشهادة'
+        verbose_name_plural = 'تدقيق دورة حياة الشهادات'
+
+    def __str__(self):
+        return f'{self.action} — {self.certificate.certificate_number if self.certificate else "-"}'
 
 
 class InventoryTransaction(BaseModel):

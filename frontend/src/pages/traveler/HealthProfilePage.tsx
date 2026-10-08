@@ -32,6 +32,7 @@ import type { Traveler } from '../../types/traveler';
 import { getCountries, getPorts } from '../../api/endpoints/public';
 import type { PublicCountry, PublicPort } from '../../api/endpoints/public';
 import { getTravelerSession, clearTravelerSession } from '../../utils/travelerSession';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const registrationLabels: Record<string, string> = {
   PENDING_DOCUMENTS: 'بانتظار المستندات',
@@ -459,9 +460,9 @@ const HealthProfilePage = () => {
                                     size="small"
                                     variant="outlined"
                                     startIcon={<DownloadIcon />}
-                                    href={doc.file_url}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                    {...(safeExternalUrl(doc.file_url)
+                                      ? { href: safeExternalUrl(doc.file_url), target: '_blank', rel: 'noreferrer' }
+                                      : { disabled: true })}
                                     sx={{ flexShrink: 0 }}
                                   >
                                     تحميل

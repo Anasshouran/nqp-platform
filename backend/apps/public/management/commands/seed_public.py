@@ -8,7 +8,17 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.carriers.models import HealthNotice
-from apps.cms.models import CmsDocument, DirectorProfile, FaqItem, NewsArticle, Page, SiteSetting
+from apps.cms.models import (
+    Announcement,
+    Circular,
+    CmsDocument,
+    ContentStatus,
+    DirectorProfile,
+    FaqItem,
+    NewsArticle,
+    Page,
+    SiteSetting,
+)
 from apps.laboratory.models import Disease
 from apps.organization.models import Sector
 from apps.public.models import HealthCertificate
@@ -92,6 +102,75 @@ NOTICES = [
         'category': HealthNotice.NoticeCategory.EPIDEMIC_ALERT,
         'priority': HealthNotice.NoticePriority.HIGH,
     },
+    {
+        'title': 'تنبيه بشأن حمى الضنك في المناطق الساحلية',
+        'description': 'ننصح القادمين من المناطق الساحلية بالحماية من لدغات البعوض ومراجعة أقرب وحدة صحية عند ظهور أعراض الحمى.',
+        'category': HealthNotice.NoticeCategory.EPIDEMIC_ALERT,
+        'priority': HealthNotice.NoticePriority.HIGH,
+    },
+    {
+        'title': 'إرشادات صحية للمسافرين خلال موسم الحج والعمرة',
+        'description': 'يُنصح المسافرون باستكمال التطعيمات المطلوبة قبل السفر، وحمل الأدوية الشخصية، وارتداء الكمامة في الأماكن المزدحمة.',
+        'category': HealthNotice.NoticeCategory.GENERAL,
+        'priority': HealthNotice.NoticePriority.MEDIUM,
+    },
+    {
+        'title': 'تحديث مواعيد عمل مراكز التطعيم الدولية',
+        'description': 'تعمل مراكز التطعيم الدولية من الأحد إلى الخميس بين الثامنة صباحاً والثالثة عصراً، ويوم السبت بوردية واحدة.',
+        'category': HealthNotice.NoticeCategory.GENERAL,
+        'priority': HealthNotice.NoticePriority.LOW,
+    },
+]
+
+ANNOUNCEMENTS = [
+    {
+        'title': 'بدء العمل بالتسجيل الإلكتروني الإلزامي للمسافرين',
+        'title_en': 'Mandatory electronic registration for incoming travelers',
+        'body': (
+            'اعتباراً من الأول من الشهر القادم، يصبح التسجيل الإلكتروني عبر بوابة المنصة إلزامياً لجميع '
+            'المسافرين القادمين قبل الوصول باثنتي عشرة ساعة على الأقل، مع إبراز رقم التسجيل عند نقطة الدخول.'
+        ),
+        'priority': Announcement.Priority.URGENT,
+        'audience': ['PUBLIC', 'TRAVELERS', 'PORT_STAFF'],
+        'start_days_ago': 1,
+        'end_in_days': 45,
+    },
+    {
+        'title': 'تفعيل إجراءات الفحص الموسّع في منافذ البحر الأحمر',
+        'title_en': 'Enhanced screening at Red Sea entry points',
+        'body': (
+            'تم تفعيل إجراءات الفحص الموسّع في منافذ البحر الأحمر الجوية والبحرية، وتشمل الفحص الحراري '
+            'وتحليل العينات العشوائية للقادمين من الدول المصنفة عالية الخطورة.'
+        ),
+        'priority': Announcement.Priority.IMPORTANT,
+        'audience': ['PUBLIC', 'PORT_STAFF'],
+        'start_days_ago': 3,
+        'end_in_days': 30,
+    },
+    {
+        'title': 'حملة تطعيم مجانية ضد الحمى الصفراء في المنافذ',
+        'title_en': 'Free yellow fever vaccination campaign at entry points',
+        'body': (
+            'تُطلق الإدارة حملة تطعيم مجانية ضد الحمى الصفراء في المنافذ الحدودية لمدة شهر، مع إصدار '
+            'شهادات التطعيم الدولية في الموقع للمسافرين المستوفين للاشتراطات.'
+        ),
+        'priority': Announcement.Priority.IMPORTANT,
+        'audience': ['PUBLIC', 'TRAVELERS'],
+        'start_days_ago': 6,
+        'end_in_days': 24,
+    },
+    {
+        'title': 'إتاحة التقارير الشهرية لمؤشرات الأداء على المنصة',
+        'title_en': 'Monthly performance indicator reports now available',
+        'body': (
+            'أصبحت تقارير مؤشرات الأداء الشهرية لأعمال الحجر الصحي متاحة على المنصة لجميع القطاعات '
+            'والمنافذ، ويمكن تنزيلها من لوحة التقارير بعد اعتمادها من إدارة القطاع.'
+        ),
+        'priority': Announcement.Priority.NORMAL,
+        'audience': ['STAFF', 'SECTOR_MANAGERS'],
+        'start_days_ago': 10,
+        'end_in_days': None,
+    },
 ]
 
 COUNTRIES = [
@@ -123,6 +202,83 @@ NEWS = [
         'content': 'أعلنت الإدارة عن تحديث متطلبات السفر والدخول للمسافرين القادمين من الدول الموبوءة وفق أحدث الإرشادات الصحية.',
         'category': NewsArticle.Category.TRAVEL,
         'days_ago': 9,
+    },
+]
+
+CIRCULARS = [
+    {
+        'title': 'تعميم بشأن تفعيل إجراءات الترصد الوبائي للكوليرا في منافذ الدخول',
+        'body': (
+            'على جميع وحدات الحجر الصحي في المنافذ الجوية والبحرية والبرية تفعيل إجراءات الترصد الوبائي '
+            'للكوليرا، وتشمل الفحص السريري للقادمين من المناطق الموبوءة، وسحب العينات المائية العشوائية، '
+            'وإبلاغ غرفة الطوارئ خلال ساعتين من رصد أي حالة مشتبهة، مع تفعيل مسار العزل الميداني '
+            'وتوثيق بيانات المخالطين.'
+        ),
+        'category': Circular.Category.HEALTH,
+        'priority': Circular.Priority.URGENT,
+        'reference_number': 'NQP-CIR-2026-014',
+        'days_ago': 1,
+    },
+    {
+        'title': 'تعميم بشأن تحديث متطلبات شهادة الحمى الصفراء للقادمين',
+        'body': (
+            'يُشترط على القادمين من الدول الموبوءة بالحمى الصفراء تقديم شهادة تطعيم سارية صادرة وفق '
+            'اللوائح الصحية الدولية (IHR 2005)، ويبدأ سريان الشهادة بعد عشرة أيام من التطعيم. '
+            'تُمنع شهادات التطعيم غير المقروءة أو غير المختومة، ويُحوَّل حاملها إلى وحدة الحجر الصحي '
+            'لاستكمال الإجراءات.'
+        ),
+        'category': Circular.Category.OFFICIAL,
+        'priority': Circular.Priority.IMPORTANT,
+        'reference_number': 'NQP-CIR-2026-011',
+        'days_ago': 4,
+    },
+    {
+        'title': 'تعميم بشأن التوسع في التسجيل الإلكتروني للمسافرين قبل الوصول',
+        'body': (
+            'يبدأ العمل بالتسجيل الإلكتروني الإلزامي للمسافرين عبر بوابة المنصة قبل الوصول باثنتي عشرة '
+            'ساعة على الأقل، بهدف تسريع إجراءات الفحص وتقليل زمن الانتظار عند نقاط الدخول. '
+            'على موظفي الاستقبال التحقق من رقم التسجيل الإلكتروني ومطابقته مع جواز السفر قبل تمرير المسافر.'
+        ),
+        'category': Circular.Category.TRAVEL,
+        'priority': Circular.Priority.NORMAL,
+        'reference_number': 'NQP-CIR-2026-009',
+        'days_ago': 7,
+    },
+    {
+        'title': 'تعميم إداري بشأن مواعيد العمل في المنافذ خلال العطلات الرسمية',
+        'body': (
+            'تُنظَّم مواعيد العمل في جميع المنافذ خلال العطلات الرسمية بثلاث ورديات متتالية لتغطية '
+            'ساعات العمل الكاملة دون توقف، على أن ترفع كل وحدة جدول الورديات المعتمد إلى إدارة '
+            'المنفذ قبل أسبوع من بداية العطلة، مع تثبيت وردية الطوارئ ليلاً.'
+        ),
+        'category': Circular.Category.ADMIN,
+        'priority': Circular.Priority.NORMAL,
+        'reference_number': 'NQP-CIR-2026-007',
+        'days_ago': 11,
+    },
+    {
+        'title': 'تعميم بشأن ضبط شروط نقل العينات البيولوجية إلى المختبر القومي',
+        'body': (
+            'يجب نقل العينات البيولوجية من المنافذ إلى المختبر القومي وفق شروط النقل الآمن: حاويات '
+            'ثلاثية الطبقات، وحفظ العينات في نطاق حرارة 2 إلى 8 درجات، ورفع بيان إرسال إلكتروني '
+            'يتضمن رقم العينة ونوعها وتاريخ السحب والفحص المطلوب، مع تسليم العينات خلال أربع وعشرين ساعة.'
+        ),
+        'category': Circular.Category.HEALTH,
+        'priority': Circular.Priority.IMPORTANT,
+        'reference_number': 'NQP-CIR-2026-005',
+        'days_ago': 15,
+    },
+    {
+        'title': 'تعميم بشأن اعتماد نماذج التقارير الشهرية الموحدة للحجر الصحي',
+        'body': (
+            'تُعتمد النماذج الموحدة للتقارير الشهرية لأعمال الحجر الصحي، وتُقدَّم إلكترونياً قبل اليوم '
+            'الخامس من الشهر التالي، مع إرفاق مؤشرات الأداء المعتمدة. تُرفض التقارير غير المستوفاة '
+            'وتُعاد إلى الوحدة لاستكمال ما نقص خلال ثلاثة أيام عمل.'
+        ),
+        'category': Circular.Category.OFFICIAL,
+        'priority': Circular.Priority.NORMAL,
+        'reference_number': 'NQP-CIR-2026-002',
+        'days_ago': 21,
     },
 ]
 
@@ -189,12 +345,50 @@ class Command(BaseCommand):
                 defaults={
                     'content': entry['content'],
                     'category': entry['category'],
+                    'status': ContentStatus.PUBLISHED,
                     'is_published': True,
                     'published_at': timezone.now() - timedelta(days=entry['days_ago']),
                 },
             )
             if created:
                 self.stdout.write(f'تم إنشاء خبر: {obj.title}')
+
+        for entry in CIRCULARS:
+            obj, created = Circular.objects.get_or_create(
+                reference_number=entry['reference_number'],
+                defaults={
+                    'title': entry['title'],
+                    'body': entry['body'],
+                    'category': entry['category'],
+                    'priority': entry['priority'],
+                    'status': ContentStatus.PUBLISHED,
+                    'published_at': timezone.now() - timedelta(days=entry['days_ago']),
+                    'author': 'الإدارة العامة للحجر الصحي القومي',
+                    'approver': 'المدير العام للحجر الصحي القومي',
+                },
+            )
+            self.stdout.write(f"{'تم إنشاء' if created else 'موجود'} تعميم: {obj.title}")
+
+        for entry in ANNOUNCEMENTS:
+            start = timezone.now() - timedelta(days=entry['start_days_ago'])
+            end = timezone.now() + timedelta(days=entry['end_in_days']) if entry['end_in_days'] is not None else None
+            obj, created = Announcement.objects.get_or_create(
+                title=entry['title'],
+                defaults={
+                    'title_en': entry['title_en'],
+                    'body': entry['body'],
+                    'priority': entry['priority'],
+                    'audience': entry['audience'],
+                    'status': ContentStatus.PUBLISHED,
+                    'is_published': True,
+                    'published_at': start,
+                    'start_at': start,
+                    'end_at': end,
+                    'author': 'الإدارة العامة للحجر الصحي القومي',
+                    'approver': 'المدير العام للحجر الصحي القومي',
+                },
+            )
+            self.stdout.write(f"{'تم إنشاء' if created else 'موجود'} إعلان: {obj.title}")
 
         for entry in FAQ:
             obj, created = FaqItem.objects.get_or_create(

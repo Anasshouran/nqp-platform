@@ -1,8 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { purgeServiceWorkerCaches } from '../../api/client';
+import { clearPendingMutations } from '../../utils/vectorOffline';
 
 interface AuthRoleAssignment {
   role: string;
   role_name?: string;
+  /** رمز الدور (CARRIER_ADMIN, SHIPPING_COMPANY, …) — المصدر: `RoleAssignmentSerializer.role_code`. */
+  role_code?: string;
   scope_type: string;
   scope_id?: string | null;
   is_active?: boolean;
@@ -30,8 +34,17 @@ interface AuthState {
   refreshToken: string | null;
 }
 
+function restoreUser(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem('auth_user');
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+
 const initialState: AuthState = {
-  user: null,
+  user: restoreUser(),
   token: localStorage.getItem('access_token'),
   refreshToken: localStorage.getItem('refresh_token'),
 };
@@ -54,6 +67,7 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
       }
       localStorage.setItem('access_token', action.payload.token);
+      localStorage.setItem('auth_user', JSON.stringify(action.payload.user));
       if (action.payload.refreshToken) {
         localStorage.setItem('refresh_token', action.payload.refreshToken);
       }
@@ -71,6 +85,11 @@ const authSlice = createSlice({
       state.refreshToken = null;
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_user');
+      purgeServiceWorkerCaches();
+      clearPendingMutations().catch(() => {
+        /* ignore — clearing queue on logout must never throw */
+      });
     },
   },
 });

@@ -1,3 +1,4 @@
+import { labelOf, colorOf } from '../../utils/labels';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -131,8 +132,8 @@ const SudanMap = ({ sectors, height = 520 }: SudanMapProps) => {
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
             {tooltip.sector.name}
-            <Box component="span" sx={{ color: statusMeta[tooltip.sector.status].color, mr: 0.5 }}>
-              {' '}· {statusMeta[tooltip.sector.status].label}
+            <Box component="span" sx={{ color: colorOf(statusMeta, tooltip.sector.status, 'color'), mr: 0.5 }}>
+              {' '}· {labelOf(statusMeta, tooltip.sector.status)}
             </Box>
           </Typography>
           <Stack spacing={0.4}>
@@ -141,7 +142,7 @@ const SudanMap = ({ sectors, height = 520 }: SudanMapProps) => {
             <MiniRow label="الفحوصات" value={tooltip.sector.screenings.toLocaleString('en-US')} />
             <MiniRow label="مشتبه بها" value={tooltip.sector.suspected} />
             <MiniRow label="محوّلة" value={tooltip.sector.referred} />
-            <ProgressLine label="الجاهزية" value={tooltip.sector.readiness} color={statusMeta[tooltip.sector.status].color} />
+            <ProgressLine label="الجاهزية" value={tooltip.sector.readiness} color={colorOf(statusMeta, tooltip.sector.status, 'color')} />
           </Stack>
         </Paper>
       )}

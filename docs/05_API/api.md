@@ -23,7 +23,10 @@
 | **Risk Engine** | (داخلي بشكل أساسي) استدعاء خوارزميات التقييم. | `Risk_API.md` |
 | **Reports** | إنشاء وتصدير التقارير ولوحات المعلومات. | `Reports_API.md` |
 | **Food Quarantine** | إدارة الشحنات الغذائية والتفتيش. | `Food_API.md` |
+| **Borders Health (المعابر البرية)** | إدارة المعابر البرية: الفحص، المركبات، الشحنات، العيّنات، الحجر والعزل، الشهادات. | `Borders_Health_API.md` |
 | **Emergency (EOC)** | إدارة الإنذارات (جزء من Screening و Reports). | `Screening_API.md` |
+
+> **المجموعات الإضافية:** أنظمة المنافذ (`/api/v1/airport/` في `Airport_API.md`، `/api/v1/port-health/`)، ونظام صحة المعابر البرية في `Borders_Health_API.md` (بادئة المسارات: `/api/v1/borders-health/`).
 
 ## 4. التوثيق التفاعلي
 - يتم توفير واجهة **Swagger UI** على المسار: `https://nqp.gov.sd/api/docs/`.

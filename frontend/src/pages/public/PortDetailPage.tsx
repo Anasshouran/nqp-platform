@@ -12,28 +12,13 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import FlightIcon from '@mui/icons-material/Flight';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import PeopleIcon from '@mui/icons-material/People';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
-import type { ReactElement } from 'react';
 import { getPort, getPortStats } from '../../api/endpoints/public';
 import type { PublicPort, PortStats } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton } from '../../components/common';
-
-const portTypeLabels: Record<string, string> = {
-  AIRPORT: 'منفذ جوي',
-  SEAPORT: 'منفذ بحري',
-  LAND_PORT: 'منفذ بري',
-};
-
-const portTypeIcons: Record<string, ReactElement> = {
-  AIRPORT: <FlightIcon />,
-  SEAPORT: <DirectionsBoatIcon />,
-  LAND_PORT: <DirectionsBusIcon />,
-};
+import { portTypeMeta } from '../../config/portTypes';
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -83,11 +68,10 @@ const PortDetailPage = () => {
             eyebrow="منفذ دخول"
             action={
               <Chip
-                icon={portTypeIcons[port.type] || <LocationOnIcon />}
-                label={portTypeLabels[port.type] || port.type}
-                color="primary"
+                icon={portTypeMeta(port.type).icon}
+                label={portTypeMeta(port.type).label}
                 variant="outlined"
-                sx={{ fontWeight: 700, py: 1.25, px: 1, fontSize: 14 }}
+                sx={{ fontWeight: 700, py: 1.25, px: 1, fontSize: 14, ...portTypeMeta(port.type).chipSx }}
               />
             }
           />
@@ -100,14 +84,14 @@ const PortDetailPage = () => {
                     height: 200,
                     display: 'grid',
                     placeItems: 'center',
-                    bgcolor: `${portTypeColors(port.type)}18`,
-                    color: portTypeColors(port.type),
+                    bgcolor: `${portTypeMeta(port.type).tone}12`,
+                    color: portTypeMeta(port.type).tone,
                   }}
                 >
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ fontSize: 64, mb: 1 }}>{portTypeIcons[port.type]}</Box>
+                    <Box sx={{ fontSize: 64, mb: 1 }}>{portTypeMeta(port.type).icon}</Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      {portTypeLabels[port.type] || port.type}
+                      {portTypeMeta(port.type).label}
                     </Typography>
                   </Box>
                 </Box>
@@ -135,7 +119,7 @@ const PortDetailPage = () => {
                     icon={<PeopleIcon />}
                     label="إجمالي الفحوصات الصحية"
                     value={stats?.screenings_total ?? 0}
-                    accent="#0e8a72"
+                    accent="#0c7f6a"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -173,9 +157,6 @@ const PortDetailPage = () => {
     </Container>
   );
 };
-
-const portTypeColors = (type: string) =>
-  type === 'AIRPORT' ? '#2f6f9f' : type === 'SEAPORT' ? '#c8a13a' : '#b3544b';
 
 const InfoRow = ({ label, value, dir }: { label: string; value: React.ReactNode; dir?: 'ltr' | 'rtl' }) => (
   <Stack direction="row" justifyContent="space-between" alignItems="center">

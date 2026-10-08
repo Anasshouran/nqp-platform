@@ -31,7 +31,9 @@ nqp-platform/
 │   │   ├── reporting/                  # التقارير ولوحات المعلومات
 │   │   ├── integration/                # التكامل مع الأنظمة الخارجية
 │   │   ├── cms/                        # إدارة محتوى الموقع العام
-│   │   └── airport_health/             # نظام صحة المطارات
+│   │   ├── airport_health/             # نظام صحة المطارات
+│   │   ├── port_health/                # نظام صحة الموانئ
+│   │   └── borders_health/             # نظام صحة المعابر البرية
 │   ├── core/                           # الوظائف المشتركة (Common)
 │   │   ├── models/                     # نماذج أساسية
 │   │   ├── permissions/                # صلاحيات مخصصة
@@ -63,7 +65,9 @@ nqp-platform/
 │   │   │   └── endpoints/              # نقاط النهاية (مقسمة حسب الميزة)
 │   │   │       ├── auth.ts
 │   │   │       ├── travelers.ts
-│   │   │       └── screening.ts
+│   │   │       ├── screening.ts
+│   │   │       ├── portHealth.ts
+│   │   │       └── bordersHealth.ts     # نظام صحة المعابر البرية
 │   │   ├── components/                 # مكونات React
 │   │   │   ├── ui/                     # MUI Components (مُغلفة)
 │   │   │   │   ├── Button.tsx
@@ -91,6 +95,8 @@ nqp-platform/
 │   │   │   │   └── ...
 │   │   │   ├── TravelerPortal/         # بوابة المسافرين (2)
 │   │   │   ├── PortHealth/             # بوابة موظفي الحجر (4)
+│   │   │   ├── porthealth/             # نظام صحة الموانئ
+│   │   │   ├── bordershealth/          # نظام صحة المعابر البرية (صفحة واحدة بـ 17 قسماً)
 │   │   │   ├── ClinicPortal/           # بوابة العيادات (5)
 │   │   │   ├── LaboratoryPortal/       # بوابة المختبرات (6)
 │   │   │   ├── FoodQuarantine/         # بوابة الحجر الغذائي (7)
@@ -111,11 +117,19 @@ nqp-platform/
 │   │   ├── utils/                      # دوال مساعدة
 │   │   │   ├── validators.ts
 │   │   │   ├── formatters.ts
-│   │   │   └── qr-generator.ts
+│   │   │   ├── qr-generator.ts
+│   │   │   └── status/                # خرائط حالات العرض
+│   │   │   │   └── bordershealth.ts    # حالات نظام صحة المعابر البرية
 │   │   ├── types/                      # TypeScript Types & Interfaces
 │   │   │   ├── traveler.ts
 │   │   │   ├── screening.ts
+│   │   │   ├── bordersHealth.ts       # أنواع نظام صحة المعابر البرية
 │   │   │   └── api.ts
+│   │   ├── config/                     # إعدادات الواجهة حسب الدور
+│   │   │   └── roleLayouts/
+│   │   │   │   ├── core.ts
+│   │   │   │   ├── admin.tsx
+│   │   │   │   └── borders.tsx          # تخطيط أدوار المعابر البرية (16 دوراً)
 │   │   ├── styles/                     # Tailwind CSS
 │   │   │   ├── globals.css
 │   │   │   └── theme.ts                # MUI Theme (مع RTL)
@@ -400,11 +414,22 @@ nqp-platform/
 │   │       ├── 02_Database_Schema.md
 │   │       ├── 03_Airport_Modules.md
 │   │       └── 04_Airport_Workflow.md
+│   │   ├── 📁 18_Food_Safety_System/ # (18) نظام سلامة الغذاء
+│   │       ├── 01_System_Overview.md
+│   │       └── 02_Database_Schema.md
+│   │   ├── 📁 19_Port_Health_System/ # (19) نظام صحة الموانئ
+│   │       ├── 01_System_Overview.md
+│   │       └── 02_Database_Schema.md
+│   │   └── 📁 20_Land_Border_Health_System/ # (20) نظام صحة المعابر البرية
+│   │       ├── 01_System_Overview.md
+│   │       ├── 02_Database_Schema.md
+│   │       └── 03_Border_Health_Command.md
 │   ├── 📁 05_API/                      # توثيق واجهات البرمجة (OpenAPI)
 │   │   ├── api.md
 │   │   ├── API_Standards.md
 │   │   ├── Airport_API.md              # (جديد) نظام صحة المطارات
 │   │   ├── Authentication_API.md
+│   │   ├── Borders_Health_API.md      # (جديد) نظام صحة المعابر البرية
 │   │   ├── Clinic_API.md
 │   │   ├── CMS-API.md
 │   │   ├── Crisis_API.md               # (جديد) إدارة الأزمات
@@ -545,11 +570,12 @@ nqp-platform/
 │   │   │   ├── Profile.md
 │   │   │   ├── RecoveryCertificate.md
 │   │   │   └── Register.md
-│   │   └── 📁 17_Airport_Health_System/ # نظام صحة المطارات
+│   │   ├── 📁 17_Airport_Health_System/ # نظام صحة المطارات
 │   │       ├── Dashboard.md
 │   │       ├── Emergency.md
 │   │       ├── Quarantine.md
 │   │       └── Screening.md
+│   │   └── 📁 11_Land_Border_Health/ # نظام صحة المعابر البرية (صفحة واحدة بأقسام)
 │   ├── 📁 07_Workflows/                # سيناريوهات التشغيل (BPMN)
 │   │   ├── workflows.md                # الفهرس الرئيسي
 │   │   ├── Aircraft_Inspection_Workflow.md   # (جديد) تفتيش الطائرات
@@ -558,6 +584,7 @@ nqp-platform/
 │   │   ├── Airport_Emergency_Workflow.md     # (جديد) طوارئ المطار
 │   │   ├── Airport_Quarantine_Workflow.md    # (جديد) عزل المطار
 │   │   ├── Airport_Transit_Workflow.md       # (جديد) عبور المطار
+│   │   ├── Border_Health_Workflow.md        # (جديد) نظام صحة المعابر البرية
 │   │   ├── Carrier_Manifest_Workflow.md
 │   │   ├── Clinic_Workflow.md
 │   │   ├── Contact_Tracing_Workflow.md
@@ -712,12 +739,3 @@ nqp-platform/
         ├── ci-cd.yml
         ├── test-backend.yml
         └── test-frontend.yml
-│   ├── 📁 18_Food_Safety_System/   # (18) نظام سلامة الغذاء [جديد]
-│   │   ├── 01_System_Overview.md
-│   │   └── 02_Database_Schema.md
-│   ├── 📁 19_Port_Health_System/   # (19) نظام صحة الموانئ [جديد]
-│   │   ├── 01_System_Overview.md
-│   │   └── 02_Database_Schema.md
-│   └── 📁 20_Land_Border_Health_System/ # (20) نظام صحة المعابر البرية [جديد]
-│       ├── 01_System_Overview.md
-│       └── 02_Database_Schema.md

@@ -33,7 +33,6 @@ import HandshakeIcon from '@mui/icons-material/Handshake';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -42,6 +41,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { getSectors, getPorts } from '../../api/endpoints/public';
 import type { Sector, PublicPort } from '../../api/endpoints/public';
 import { PageHeader, SectionTitle, CardsGridSkeleton } from '../../components/common';
+import { portTypeMeta } from '../../config/portTypes';
 
 interface Gateway {
   id: string;
@@ -86,7 +86,7 @@ const GATEWAYS: Gateway[] = [
     title: 'بوابة العيادات',
     subtitle: 'نظام العيادات: الفحوصات، العزل، الأدوية، وسجلات المرضى',
     icon: <LocalHospitalIcon />,
-    color: '#d32f2f',
+    color: '#c63a3a',
     path: '/app/clinic',
     public: false,
   },
@@ -104,7 +104,7 @@ const GATEWAYS: Gateway[] = [
     title: 'بوابة رقابة الأغذية',
     subtitle: 'فحص وتحليل ورقابة الأغذية والمستوردات الغذائية',
     icon: <RestaurantIcon />,
-    color: '#c8a13a',
+    color: '#8c6d1f',
     path: '/app/food',
     public: false,
   },
@@ -149,7 +149,7 @@ const GATEWAYS: Gateway[] = [
     title: 'بوابة شركات الطيران',
     subtitle: 'خدمات شركات الطيران: إدارة الرحلات والركاب والمتطلبات الصحية',
     icon: <LocalShippingIcon />,
-    color: '#1976d2',
+    color: '#2f6dd0',
     path: '/app/carrier',
     public: false,
   },
@@ -191,30 +191,12 @@ const regionLabels: Record<string, string> = {
   KORDOFAN: 'كردفان',
 };
 
-const portTypeLabels: Record<string, string> = {
-  AIRPORT: 'منفذ جوي',
-  SEAPORT: 'منفذ بحري',
-  LAND_PORT: 'منفذ بري',
-};
-
-const portTypeIcons: Record<string, React.ReactNode> = {
-  AIRPORT: <FlightIcon />,
-  SEAPORT: <DirectionsBoatIcon />,
-  LAND_PORT: <DirectionsBusIcon />,
-};
-
-const portTypeColors: Record<string, string> = {
-  AIRPORT: '#2f6f9f',
-  SEAPORT: '#c8a13a',
-  LAND_PORT: '#b3544b',
-};
-
 const sectorSlug = (code: string) => code.toLowerCase().replace('_', '-');
 
 const statsOverview = [
   { icon: <HealthAndSafetyIcon />, value: '5', label: 'قطاعات صحية', color: 'primary.main' },
   { icon: <LocalShippingIcon />, value: '14', label: 'منافذ دخول', color: '#2f6f9f' },
-  { icon: <LocalHospitalIcon />, value: '7', label: 'عيادات نشطة', color: '#d32f2f' },
+  { icon: <LocalHospitalIcon />, value: '7', label: 'عيادات نشطة', color: '#c63a3a' },
   { icon: <ScienceIcon />, value: '12', label: 'مختبر', color: '#7a5c9e' },
   { icon: <VaccinesIcon />, value: '6', label: 'مواقع تطعيم', color: '#2e7d32' },
 ];
@@ -570,16 +552,16 @@ const GatewayHubPage = () => {
                           display: 'grid',
                           placeItems: 'center',
                           color: '#fff',
-                          background: portTypeColors[port.type] || 'primary.main',
+                          background: portTypeMeta(port.type).fill,
                         }}
                       >
-                        {portTypeIcons[port.type] || <LocationOnIcon />}
+                        {portTypeMeta(port.type).icon}
                       </Box>
                       <Chip
-                        label={portTypeLabels[port.type] || port.type}
+                        label={portTypeMeta(port.type).label}
                         size="small"
                         variant="outlined"
-                        color="primary"
+                        sx={{ fontWeight: 700, ...portTypeMeta(port.type).chipSx }}
                       />
                     </Stack>
                     <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>

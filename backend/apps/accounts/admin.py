@@ -4,6 +4,25 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from .models import Permission, Role, User
 
 
+class SuperuserOnlyAdminSite(admin.AdminSite):
+    """بوابة `/admin/` للمشرف النشط فقط.
+
+    البوابة الافتراضية في Django تعتمد `is_staff` وحده، وكان أي حساب موظف
+    يستطيع دخول اللوحة وكتابة `is_superuser` و`extra_permissions` وحزمة
+    صلاحيات الأدوار من نماذج `UserAdmin`/`RoleAdmin`. المعيار الأمني هنا
+    هو `is_active and is_superuser`.
+    """
+
+    def has_permission(self, request):
+        user = getattr(request, 'user', None)
+        return bool(user and user.is_active and user.is_superuser)
+
+
+# كل تطبيقات المشروع تسجّل نماذجها على `admin.site` الافتراضية، لذا نرفع
+# مستوى البوابة نفسها (لا نبدّل الكائن) حتى يبقى كل تسجيل قائماً محمياً.
+admin.site.__class__ = SuperuserOnlyAdminSite
+
+
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     ordering = ['email']

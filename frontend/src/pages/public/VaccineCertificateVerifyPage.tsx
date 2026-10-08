@@ -93,7 +93,7 @@ const VaccineCertificateVerifyPage = () => {
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 220 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {result.traveler_name || '—'}
+                    {result.certificate_number}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {result.vaccine_name_ar || '—'} ({result.vaccine_code || '—'})
@@ -108,9 +108,6 @@ const VaccineCertificateVerifyPage = () => {
               <Stack spacing={1}>
                 <Typography variant="body2">
                   رقم الشهادة: <b style={{ fontFamily: 'monospace' }}>{result.certificate_number}</b>
-                </Typography>
-                <Typography variant="body2">
-                  جواز السفر: <b style={{ fontFamily: 'monospace' }}>{result.passport_number || '—'}</b>
                 </Typography>
                 <Typography variant="body2">
                   تاريخ الإصدار: <b>{formatDateTime(result.issued_at)}</b>

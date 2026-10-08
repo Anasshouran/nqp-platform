@@ -1,3 +1,4 @@
+import { labelOf, colorOf } from '../../utils/labels';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -293,9 +294,9 @@ const NationalCommandPage = () => {
                   <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap alignItems="center">
                     {(['NORMAL', 'WATCH', 'CRITICAL'] as OpsStatus[]).map((status) => (
                       <Stack key={status} direction="row" spacing={0.6} alignItems="center">
-                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: statusMeta[status].color }} />
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: colorOf(statusMeta, status, 'color') }} />
                         <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                          {statusMeta[status].label}
+                          {labelOf(statusMeta, status)}
                         </Typography>
                       </Stack>
                     ))}

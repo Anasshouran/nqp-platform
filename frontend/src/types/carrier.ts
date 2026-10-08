@@ -13,6 +13,45 @@ export interface Flight {
   scheduled_arrival?: string | null;
   status: string;
   notes?: string;
+  aircraft_type?: string;
+  crew_count?: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface FlightTimelineEvent {
+  event_type: string;
+  timestamp: string;
+  title: string;
+  category: string;
+  status?: string;
+  from_status?: string;
+  to_status?: string;
+  actor_name?: string | null;
+  details?: Record<string, unknown>;
+  source_id?: string;
+  source_type?: string;
+}
+
+export interface FlightTimelineResponse {
+  flight_id: string;
+  events: FlightTimelineEvent[];
+}
+
+export interface CarrierDocument {
+  id: string;
+  carrier?: string | null;
+  carrier_name?: string | null;
+  flight?: string | null;
+  flight_number?: string | null;
+  document_type: string;
+  document_type_label?: string;
+  title?: string;
+  file?: string;
+  original_filename?: string;
+  mime_type?: string;
+  file_size?: number;
+  uploaded_by?: string | null;
   created_at: string;
   updated_at?: string;
 }
@@ -54,6 +93,26 @@ export interface CarrierProfile {
   address?: string;
   logo_url?: string;
   is_active: boolean;
+}
+
+export interface CarrierMember {
+  id: string;
+  user: string;
+  user_email: string;
+  user_full_name: string;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CarrierMemberCreatePayload {
+  user: string;
+  is_primary?: boolean;
+}
+
+export interface CarrierMemberUpdatePayload {
+  is_primary: boolean;
 }
 
 export interface CarrierApiKeyInfo {

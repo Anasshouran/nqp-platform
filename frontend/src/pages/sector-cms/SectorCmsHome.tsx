@@ -31,10 +31,10 @@ import {
   sectorBareName,
   useSectorSite,
   ErrorNotice,
-  NEWS_CATEGORY_LABELS,
   usePageTitle,
 } from './SectorCmsShared';
 import { EmptyState, ErrorState } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { getSectorPorts, getNews, getPublicStatistics } from '../../api/endpoints/public';
 import type { PublicPort, NewsArticle } from '../../api/endpoints/public';
 import { getServiceCategories } from '../../api/endpoints/services';
@@ -541,7 +541,7 @@ const SectorCmsHome = () => {
                     />
                   )}
                   <CardContent sx={{ p: 3, flex: 1 }}>
-                    <Chip label={NEWS_CATEGORY_LABELS[article.category] || 'عام'} size="small" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                    <NewsCategoryChip category={article.category} sx={{ mb: 1 }} />
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>{article.title}</Typography>
                     <Typography variant="caption" color="text.secondary">{formatDate(article.published_at)}</Typography>
                   </CardContent>

@@ -5,7 +5,7 @@ from .models import ClinicReferral, ClinicVisit, EMRRecord, LabRequest, Medicati
 
 @admin.register(ClinicReferral)
 class ClinicReferralAdmin(admin.ModelAdmin):
-    list_display = ['traveler', 'port', 'status', 'created_at']
+    list_display = ['traveler', 'port', 'status', 'created_at', 'flight', 'health_event']
     list_filter = ['status']
 
 

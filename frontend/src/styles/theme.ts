@@ -537,6 +537,20 @@ const theme = createTheme({
         },
         filled: { backgroundColor: alpha(brand.main, 0.1), color: brand.dark, '&:hover': { backgroundColor: alpha(brand.main, 0.16) } },
         colorPrimary: { backgroundColor: brand.main, color: '#fff' },
+        /* `colorPrimary` also lands on outlined chips, so the outlined variants get an
+           explicit rule: the tag stays light, its ink is the dark brand (7.7:1). */
+        outlinedPrimary: {
+          backgroundColor: 'rgba(255,255,255,0.62)',
+          color: brand.dark,
+          borderColor: alpha(brand.dark, 0.42),
+          '&:hover': { backgroundColor: alpha(brand.main, 0.08) },
+        },
+        outlinedSecondary: {
+          backgroundColor: 'rgba(255,255,255,0.62)',
+          color: gold.dark,
+          borderColor: alpha(gold.dark, 0.42),
+          '&:hover': { backgroundColor: alpha(gold.main, 0.08) },
+        },
         clickable: { '&:hover': { backgroundColor: alpha(brand.main, 0.1) } },
       },
     },

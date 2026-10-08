@@ -17,6 +17,7 @@ import { setCredentials } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store/store';
 import { loginSchema, LoginFormValues } from './schemas/auth';
 import { roleHomePathFor } from '../../utils/roleHome';
+import { sanitizeNextPath } from '../../utils/navigation';
 
 const loginMethods = [
   { value: 'email', label: 'البريد الإلكتروني', placeholder: 'name@example.com', dir: 'ltr' as const },
@@ -60,7 +61,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
           refreshToken: data.refresh_token,
         })
       );
-      const target = redirectPath && redirectPath.startsWith('/') ? redirectPath : roleHomePathFor(data.user);
+      const target = sanitizeNextPath(redirectPath) ?? roleHomePathFor(data.user);
       navigate(target, { replace: true });
     } catch (err: unknown) {
       const detail =

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Fab from '@mui/material/Fab';
 import Paper from '@mui/material/Paper';
@@ -15,6 +15,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SmartAssistant from './common/SmartAssistant';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import useTheme from '@mui/material/styles/useTheme';
+import { alpha } from '@mui/material/styles';
 
 type Lang = 'ar' | 'en';
 
@@ -34,6 +35,17 @@ const AssistantFab = () => {
   const [panelPos, setPanelPos] = useState<{ x: number; y: number } | null>(null);
   const panelDragging = useRef<{ offX: number; offY: number } | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // إغلاق اللوحة بمفتاح Escape — سلوك حوار لائق للوحة عائمة من نوع نافذة.
+  // يُستدعى قبل أي إرجاع شرطي كي يلتزم ترتيب الخطاطيف.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
 
   // لا نعرض الزر في صفحات الدخول/اللوحات (تجنب الصراعات)؛ أما صفحة المساعد فتبقى متاحة
   if (pathname.startsWith('/login') || pathname.startsWith('/app')) {
@@ -90,6 +102,7 @@ const AssistantFab = () => {
     setOpen((o) => !o);
   };
 
+  const panelId = 'nqp-assistant-panel';
   const panelWidth = isMobile ? '100vw' : 'min(92vw, 420px)';
   const panelHeight = isMobile ? '90vh' : 'min(88vh, 640px)';
 
@@ -111,7 +124,9 @@ const AssistantFab = () => {
             position: 'absolute',
             inset: 0,
             borderRadius: '50%',
-            background: 'rgba(14,138,114,0.45)',
+            // الـkeyframes نفسها تحرّك `opacity`، فلا نضع alpha ثابتاً هنا —
+            // نستخدم لوناً مشتقاً من الثيم بدل rgba المضمّن.
+            background: (t) => alpha(t.palette.primary.main, 0.45),
             animation: 'pulseRing 2.4s cubic-bezier(0.22,1,0.36,1) infinite',
             pointerEvents: 'none',
           }}
@@ -119,6 +134,8 @@ const AssistantFab = () => {
         <Fab
           ref={fabRef}
           aria-label="المساعد الذكي"
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
           title="اسأل NQP - المساعد الذكي (اسحب لنقله)"
           onClick={handleFabClick}
           onPointerDown={watchDrag('fab')}
@@ -127,12 +144,13 @@ const AssistantFab = () => {
           sx={{
             touchAction: 'none',
             cursor: 'grab',
-            background: 'linear-gradient(135deg, #0c7f6a, #12a585)',
-            color: '#fff',
-            boxShadow: '0 14px 32px rgba(14,138,114,0.5)',
+            background: (t) =>
+              `linear-gradient(135deg, ${t.palette.primary.main}, ${t.palette.primary.light})`,
+            color: 'primary.contrastText',
+            boxShadow: (t) => `0 14px 32px ${t.palette.primary.main}80`,
             '&:hover': {
               transform: 'scale(1.08)',
-              boxShadow: '0 18px 40px rgba(14,138,114,0.62)',
+              boxShadow: (t) => `0 18px 40px ${t.palette.primary.main}9E`,
             },
             transition: 'transform 200ms ease, box-shadow 200ms ease',
           }}
@@ -152,9 +170,10 @@ const AssistantFab = () => {
             width: 14,
             height: 14,
             borderRadius: '50%',
-            bgcolor: '#22c55e',
-            border: '2px solid #fff',
-            boxShadow: '0 0 10px rgba(34,197,94,0.9)',
+            bgcolor: 'success.main',
+            border: '2px solid',
+            borderColor: 'background.paper',
+            boxShadow: (t) => `0 0 10px ${t.palette.success.main}E6`,
             pointerEvents: 'none',
           }}
         />
@@ -162,7 +181,11 @@ const AssistantFab = () => {
 
       {open && (
         <Paper
+          id={panelId}
           ref={panelRef}
+          role="dialog"
+          aria-modal="false"
+          aria-label="المساعد الذكي لمنصة الحجر الصحي القومي"
           elevation={12}
           sx={{
             position: 'fixed',
@@ -176,7 +199,7 @@ const AssistantFab = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             borderRadius: isMobile ? 0 : '20px',
-            boxShadow: '0 24px 60px rgba(2,20,16,0.35)',
+            boxShadow: (t) => `0 24px 60px ${t.palette.primary.darker}59`,
             bgcolor: 'background.paper',
           }}
         >
@@ -193,8 +216,8 @@ const AssistantFab = () => {
               cursor: 'grab',
               touchAction: 'none',
               userSelect: 'none',
-              bgcolor: 'primary.900',
-              color: '#fff',
+              bgcolor: 'primary.dark',
+              color: 'primary.contrastText',
               borderTopLeftRadius: isMobile ? 0 : 20,
               borderTopRightRadius: isMobile ? 0 : 20,
             }}
@@ -212,8 +235,14 @@ const AssistantFab = () => {
               onChange={(_, v) => v && setLanguage(v as Lang)}
               aria-label="language"
               sx={{
-                '& .MuiToggleButton-root': { color: '#fff', borderColor: 'rgba(255,255,255,0.4)' },
-                '& .Mui-selected': { color: '#fff', bgcolor: 'rgba(255,255,255,0.2) !important' },
+                '& .MuiToggleButton-root': {
+                  color: 'primary.contrastText',
+                  borderColor: (t) => alpha(t.palette.primary.contrastText, 0.4),
+                },
+                '& .Mui-selected': {
+                  color: 'primary.contrastText',
+                  bgcolor: (t) => `${alpha(t.palette.primary.contrastText, 0.2)} !important`,
+                },
               }}
             >
               <ToggleButton value="ar" sx={{ fontWeight: 700, fontSize: '0.7rem' }}>عربي</ToggleButton>
@@ -224,7 +253,10 @@ const AssistantFab = () => {
               size="small"
               onClick={() => setOpen(false)}
               aria-label="إغلاق"
-              sx={{ color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' } }}
+              sx={{
+                color: 'primary.contrastText',
+                '&:hover': { bgcolor: (t) => alpha(t.palette.primary.contrastText, 0.15) },
+              }}
             >
               <CloseIcon fontSize="small" />
             </IconButton>

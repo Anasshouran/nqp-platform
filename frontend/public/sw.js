@@ -1,8 +1,7 @@
 /* Service Worker - إشعارات الويب + العمل دون اتصال لمكافحة النواقل */
 
-const VERSION = 'afyatna-v1.0.0';
-const VECTOR_API_CACHE = 'vector-control-api-v1';
-const SHELL_CACHE = 'afyatna-shell-v1';
+const VERSION = 'afyatna-v2.0.0';
+const SHELL_CACHE = 'afyatna-shell-v2';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -11,9 +10,18 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== VECTOR_API_CACHE && k !== SHELL_CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== SHELL_CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+// يُستدعى عند تسجيل الخروج أو انتهاء الجلسة: يمسح كل ما خُزّن محلياً.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'PURGE_CACHES') {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -21,17 +29,15 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  if (url.pathname.startsWith('/api/v1/vector-control/')) {
+  // استجابات الـ API مصادَق عليها (Bearer)، ويجب ألّا تُخزَّن: الكاش كان يحفظ
+  // بيانات المتابعة كاملة (بؤر، حالات، مخزون) ويبقى بعد تسجيل الخروج، فيقرأها
+  // مستخدم تالٍ من جهاز مشترك. نكتفي برسالة عدم الاتصال.
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      caches.open(VECTOR_API_CACHE).then((cache) =>
-        fetch(request).then((response) => {
-          if (response && response.status === 200) cache.put(request, response.clone());
-          return response;
-        }).catch(() => cache.match(request).then((hit) => hit || new Response(
-          JSON.stringify({ status: 'error', data: null, message: 'غير متصل بالإنترنت — استخدم الوضع الميداني لتسجيل العمليات محليًا' }),
-          { status: 503, headers: { 'Content-Type': 'application/json' } }
-        )))
-      )
+      fetch(request).catch(() => new Response(
+        JSON.stringify({ status: 'error', data: null, message: 'غير متصل بالإنترنت — استخدم الوضع الميداني لتسجيل العمليات محليًا' }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      ))
     );
     return;
   }
@@ -53,14 +59,19 @@ self.addEventListener('fetch', (event) => {
 
   if (request.destination === 'script' || request.destination === 'style') {
     event.respondWith(
-      caches.open(SHELL_CACHE).then((cache) =>
-        cache.match(request).then((cached) => {
-          const fetchAndCache = fetch(request).then((response) => {
-            if (response && response.status === 200) cache.put(request, response.clone());
-            return response;
-          }).catch(() => cached);
-          return cached || fetchAndCache;
-        })
+      fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(SHELL_CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      }).catch(() =>
+        caches.open(SHELL_CACHE).then((cache) =>
+          cache.match(request).then((hit) => hit || new Response('', {
+            status: 503,
+            statusText: 'فشل تحميل المورد — تحقق من الاتصال وأعد المحاولة',
+          }))
+        )
       )
     );
   }

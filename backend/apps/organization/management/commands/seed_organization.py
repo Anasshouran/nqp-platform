@@ -98,6 +98,36 @@ class Command(BaseCommand):
         ],
     }
 
+    # إدارات المعابر البرية خارج قطاع البحر الأحمر.
+    # الأساس المرجعي: وصف EL_OBEID في SECTORS يذكر صراحةً أن القطاع "نقطة إسناد
+    # للمعابر البرية الغربية (أدري وتينة والمعابر مع جنوب السودان)"، كما أن DEPARTMENT_STATIONS
+    # ينمذج محطة معبر باسم "محطة <الموقع> الحدودية" داخل إدارة LAND_PORTS.
+    # تُنشأ فقط للقطاعات التي تملك معابر برية مسمّاة — لا تُعمَّم قالباً على كل القطاعات.
+    LAND_BORDER_DEPARTMENTS = [
+        {'sector': 'NORTHERN', 'order': 4},
+        {'sector': 'GEDAREF', 'order': 4},
+        {'sector': 'EL_OBEID', 'order': 4},
+    ]
+
+    # محطات المعابر البرية: الاسم مقتبس من EntryPoint.name_ar (المصدر المرجعي الوحيد).
+    LAND_BORDER_STATIONS = [
+        {'sector': 'NORTHERN', 'code': 'ARGIN', 'name_ar': 'محطة أرقين الحدودية', 'location': 'أرقين', 'order': 1},
+        {'sector': 'NORTHERN', 'code': 'WADI_HALFA', 'name_ar': 'محطة وادي حلفا الحدودية', 'location': 'وادي حلفا', 'order': 2},
+        {'sector': 'NORTHERN', 'code': 'MUTHALLATH', 'name_ar': 'محطة المثلث الحدودية', 'location': 'المثلث', 'order': 3},
+        {'sector': 'GEDAREF', 'code': 'GALLABAT', 'name_ar': 'محطة القلابات الحدودية', 'location': 'القلابات', 'order': 1},
+        {'sector': 'RED_SEA', 'code': 'GABAIT', 'name_ar': 'محطة قباتيت الحدودية', 'location': 'قباتيت', 'order': 3},
+        {'sector': 'EL_OBEID', 'code': 'ADRE', 'name_ar': 'محطة أدري الحدودية', 'location': 'أدري', 'order': 1},
+        {'sector': 'EL_OBEID', 'code': 'TINE', 'name_ar': 'محطة تينة الحدودية', 'location': 'تينة', 'order': 2},
+        {'sector': 'EL_OBEID', 'code': 'ASHKEIT', 'name_ar': 'محطة أشكيت الحدودية', 'location': 'أشكيت', 'order': 3},
+        {'sector': 'EL_OBEID', 'code': 'ALAFIA', 'name_ar': 'محطة اللفة الحدودية', 'location': 'اللفة', 'order': 4},
+    ]
+
+    # معابر بحر الأحمر التي لها سجل قائم بالفعل: يُعاد استخدامه بنفس الكود
+    # (update_or_create-update) فلا تُنشأ نسخة موازية بنفس الاسم.
+    LAND_BORDER_STATIONS_REUSED = [
+        {'sector': 'RED_SEA', 'code': 'OSEIF_LAND', 'name_ar': 'محطة أوسيف البرية', 'location': 'أوسيف', 'order': 2},
+    ]
+
     UNIT_STAFF_POSITIONS = [
         ('STATION_HEAD', 'رئيس المحطة'),
         ('CLERK', 'كاتب'),
@@ -202,6 +232,48 @@ class Command(BaseCommand):
                 if was_created:
                     created['stations'] += 1
 
+        # ——— إدارات ومحطات المعابر البرية خارج البحر الأحمر ———
+        # كل سجل يُنشأ بـ update_or_create على code فالبذر متكرر لا يضاعف السجلات.
+        land_ports_template = next(d for d in self.DEPARTMENT_TEMPLATE if d['code'] == 'LAND_PORTS')
+        for row in self.LAND_BORDER_DEPARTMENTS:
+            sector_code = row['sector']
+            code = f'{sector_code}_LAND_PORTS'
+            obj, was_created = Department.objects.update_or_create(
+                code=code,
+                defaults={
+                    'name_ar': land_ports_template['name_ar'],
+                    'name_en': '',
+                    'sector': sectors[sector_code],
+                    'parent': None,
+                    'kind': 'DEPARTMENT',
+                    'order': row['order'],
+                    'is_active': True,
+                },
+            )
+            departments[code] = obj
+            if was_created:
+                created['departments'] += 1
+
+        for row in self.LAND_BORDER_STATIONS + self.LAND_BORDER_STATIONS_REUSED:
+            sector_code = row['sector']
+            code = f'{sector_code}_LAND_PORTS_{row["code"]}'
+            parent_dept = departments[f'{sector_code}_LAND_PORTS']
+            obj, was_created = Station.objects.update_or_create(
+                code=code,
+                defaults={
+                    'name_ar': row['name_ar'],
+                    'name_en': '',
+                    'department': parent_dept,
+                    'sector': sectors[sector_code],
+                    'location': row['location'],
+                    'description': '',
+                    'order': row['order'],
+                    'is_active': True,
+                },
+            )
+            if was_created:
+                created['stations'] += 1
+
         # وظائف المحطة (رئيس محطة، كاتب، محاسب، مفتش، مسؤول/فني مختبر)
         for staff_code, staff_name in self.UNIT_STAFF_POSITIONS:
             OrgPosition.objects.update_or_create(
@@ -223,6 +295,7 @@ class Command(BaseCommand):
                 f'تم بذر الهيكل الإداري: {len(self.POSITIONS)} منصباً وطنياً، '
                 f'{len(self.SECTORS)} قطاعاً، {len(self.DEPARTMENT_TEMPLATE)} إدارة قياسية '
                 f'في قطاع البحر الأحمر، {sum(len(v) for v in self.DEPARTMENT_STATIONS.values())} محطة، '
+                f'{len(self.LAND_BORDER_STATIONS) + len(self.LAND_BORDER_STATIONS_REUSED)} محطة معابر برية، '
                 f'و{len(self.UNIT_STAFF_POSITIONS)} وظيفة محطة '
                 f'({created["positions"]} منصباً، {created["sectors"]} قطاعاً، '
                 f'{created["departments"]} إدارة، {created["stations"]} محطة جديدة)'

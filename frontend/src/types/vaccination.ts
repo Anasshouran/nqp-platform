@@ -146,6 +146,8 @@ export interface AssessmentItem {
   missing: number;
   status: 'COMPLETE' | 'PARTIAL' | 'MISSING' | string;
   validity_days?: number | null;
+  destination_region?: string;
+  destination_confirmed?: boolean;
   note?: string;
 }
 

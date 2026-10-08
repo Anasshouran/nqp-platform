@@ -1482,6 +1482,37 @@
 - `19_Port_Health_System/Quarantine.md` - إدارة العزل
 
 ## 20. Land Border Health System (صحة المعابر البرية) 🆕
-- `20_Land_Border_Health_System/Dashboard.md` - لوحة تحكم المعبر
-- `20_Land_Border_Health_System/Screening.md` - شاشة الفحص
-- `20_Land_Border_Health_System/Shipments.md` - إدارة الشحنات البرية
+**صفحة واحدة (Single Page) بـ 20 قسماً** — ليست 20 مساراً منفصلاً.
+
+- المسار: `/app/borders-health` (صفحة lazy-loaded واحدة: `pages/bordershealth/BordersHealthPage.tsx`).
+- التنقل: شريط أقسام جانبي (Command Rail) ينقلك إلى القسم المحدد داخل الصفحة نفسها، عبر تمرير سلس (Scroll) دون إعادة تحميل.
+- الروابط: مُسجَّلة في `config/roleLayouts/borders.tsx` (16 دوراً) مع اختلاف ترتيب القائمة حسب الدور، ومربوطة أيضاً من تخطيط الإدارة تحت مجموعة «المنافذ والمسافرون».
+
+### الأقسام العشرون داخل الصفحة الواحدة
+
+| # | القسم | المسار (خلف الـ API) | المستخدم الرئيسي |
+| :--- | :--- | :--- | :--- |
+| 1 | لوحة القيادة (Dashboard) | `/dashboard/overview/` · `/dashboard/crossing-performance/` · `/dashboard/traffic-trend/` | مدير النظام |
+| 2 | المعابر | `/crossings/` | مدير المعبر |
+| 3 | المرافق | `/facilities/` | مدير المعبر |
+| 4 | الورديات | `/shifts/` | مشرف الوردية |
+| 5 | الكادر | `/staff/` | مدير المعبر |
+| 6 | المسافرون | `/traveler-records/` | مسجّل مسافر |
+| 7 | الإقرارات | `/declarations/` | مسجّل مسافر |
+| 8 | الفحوصات | `/screenings/` | ضابط صحي |
+| 9 | المركبات | `/vehicles/` | مفتش مركبات |
+| 10 | تفتيش المركبات | `/vehicle-inspections/` | مفتش مركبات |
+| 11 | الشحنات | `/cargo-inspections/` | مفتش شحنات / مفتش غذاء |
+| 12 | العيّنات | `/samples/` | فني مختبر |
+| 13 | الحجر | `/quarantine-cases/` | طبيب الحجر |
+| 14 | العزل | `/isolation-cases/` | طبيب العزل |
+| 15 | تتبع المخالطين | `/contact-tracing-cases/` · `/contacts/` | باحث الترصد الوبائي |
+| 16 | الطوارئ | `/emergencies/` | منسق الطوارئ |
+| 17 | الشهادات | `/certificates/` | صادر شهادة الإفراج / تصريح العبور |
+| 18 | القرارات | `/decisions/` | منسق الطوارئ / قائد المعبر |
+| 19 | الإشعارات | `/notifications/` | كادر المعبر |
+| 20 | الحصيلة اليومية | `/daily-statistics/` | قائد المعبر |
+
+> **الإجراءات المخصّصة** (5) تُنفَّذ من داخل الصفحة: تغيير حالة المعبر (`PATCH crossings/{id}/status/`)، إعادة التقييم (`POST screenings/{id}/reassess/`)، إصدار شهادة (`POST certificates/issue/`)، اتخاذ قرار في الشحنة (`POST cargo-inspections/{id}/decide/`)، وتحديث الإحصاءات اليومية (`POST daily-statistics/refresh/`).
+
+📌 التوثيق التفصيلي للشاشات والتخطيطات: [`11_Land_Border_Health/`](11_Land_Border_Health/)

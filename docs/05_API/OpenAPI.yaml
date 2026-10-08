@@ -23240,6 +23240,3046 @@ paths:
               schema:
                 $ref: '#/components/schemas/Traveler'
           description: ''
+  # Land Border Health System (apps.borders_health)
+  /api/v1/borders-health/cargo-inspections/:
+    get:
+      operationId: v1_borders_health_cargo_inspections_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthPaginatedCargoInspectionList'
+          description: ''
+    post:
+      operationId: v1_borders_health_cargo_inspections_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthCargoInspection'
+          description: ''
+  /api/v1/borders-health/cargo-inspections/{id}/:
+    get:
+      operationId: v1_borders_health_cargo_inspections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش شحنة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthCargoInspection'
+          description: ''
+    patch:
+      operationId: v1_borders_health_cargo_inspections_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش شحنة.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedCargoInspection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedCargoInspection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedCargoInspection'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthCargoInspection'
+          description: ''
+    delete:
+      operationId: v1_borders_health_cargo_inspections_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش شحنة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/cargo-inspections/{id}/decide/:
+    post:
+      operationId: v1_borders_health_cargo_inspections_decide_create
+      description: يحسب قرار الشحنة من عيّناتها، أو يثبّت قرار الفاحص الصريح.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش شحنة.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BordersHealthCargoInspection'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthCargoInspection'
+          description: ''
+  /api/v1/borders-health/certificates/:
+    get:
+      operationId: v1_borders_health_certificates_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderCertificateList'
+          description: ''
+    post:
+      operationId: v1_borders_health_certificates_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCertificate'
+          description: ''
+  /api/v1/borders-health/certificates/issue/:
+    post:
+      operationId: v1_borders_health_certificates_issue_create
+      description: يُصدر شهادة برقم ومحتوى QR مولَّدين من الخادم.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderCertificate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCertificate'
+          description: ''
+  /api/v1/borders-health/certificates/{id}/:
+    get:
+      operationId: v1_borders_health_certificates_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this شهادة معبرية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCertificate'
+          description: ''
+    patch:
+      operationId: v1_borders_health_certificates_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this شهادة معبرية.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCertificate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCertificate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCertificate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCertificate'
+          description: ''
+    delete:
+      operationId: v1_borders_health_certificates_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this شهادة معبرية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/contact-tracing-cases/:
+    get:
+      operationId: v1_borders_health_contact_tracing_cases_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedContactTracingCaseList'
+          description: ''
+    post:
+      operationId: v1_borders_health_contact_tracing_cases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactTracingCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactTracingCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactTracingCase'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactTracingCase'
+          description: ''
+  /api/v1/borders-health/contact-tracing-cases/{id}/:
+    get:
+      operationId: v1_borders_health_contact_tracing_cases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة تتبع مخالطين.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactTracingCase'
+          description: ''
+    patch:
+      operationId: v1_borders_health_contact_tracing_cases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة تتبع مخالطين.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedContactTracingCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedContactTracingCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedContactTracingCase'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactTracingCase'
+          description: ''
+    delete:
+      operationId: v1_borders_health_contact_tracing_cases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة تتبع مخالطين.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/contacts/:
+    get:
+      operationId: v1_borders_health_contacts_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedContactList'
+          description: ''
+    post:
+      operationId: v1_borders_health_contacts_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+  /api/v1/borders-health/contacts/{id}/:
+    get:
+      operationId: v1_borders_health_contacts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مخالط.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+    patch:
+      operationId: v1_borders_health_contacts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مخالط.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedContact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedContact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedContact'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+    delete:
+      operationId: v1_borders_health_contacts_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مخالط.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/crossings/:
+    get:
+      operationId: v1_borders_health_crossings_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderCrossingList'
+          description: ''
+    post:
+      operationId: v1_borders_health_crossings_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderCrossing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderCrossing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderCrossing'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCrossing'
+          description: ''
+  /api/v1/borders-health/crossings/{id}/:
+    get:
+      operationId: v1_borders_health_crossings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this معبر بري.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCrossing'
+          description: ''
+    patch:
+      operationId: v1_borders_health_crossings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this معبر بري.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCrossing'
+          description: ''
+    delete:
+      operationId: v1_borders_health_crossings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this معبر بري.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/crossings/{id}/status/:
+    patch:
+      operationId: v1_borders_health_crossings_status_partial_update
+      description: تغيير حالة تشغيل المعبر (مفتوح/مقيّد/مغلق/طوارئ).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this معبر بري.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderCrossing'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderCrossing'
+          description: ''
+  /api/v1/borders-health/daily-statistics/:
+    get:
+      operationId: v1_borders_health_daily_statistics_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderDailyStatisticsList'
+          description: ''
+    post:
+      operationId: v1_borders_health_daily_statistics_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDailyStatistics'
+          description: ''
+  /api/v1/borders-health/daily-statistics/refresh/:
+    post:
+      operationId: v1_borders_health_daily_statistics_refresh_create
+      description: يعيد حساب حصيلة معبر (أو كل معابر النطاق) ليوم محدّد.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderDailyStatistics'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDailyStatistics'
+          description: ''
+  /api/v1/borders-health/daily-statistics/{id}/:
+    get:
+      operationId: v1_borders_health_daily_statistics_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إحصاء يومي.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDailyStatistics'
+          description: ''
+    patch:
+      operationId: v1_borders_health_daily_statistics_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إحصاء يومي.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDailyStatistics'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDailyStatistics'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDailyStatistics'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDailyStatistics'
+          description: ''
+    delete:
+      operationId: v1_borders_health_daily_statistics_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إحصاء يومي.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/dashboard/crossing-performance/:
+    get:
+      operationId: v1_borders_health_dashboard_crossing_performance_retrieve
+      description: أداء كل معبر — يخدم لوحة القيادة القومية ومقارنة المعابر.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthDashboard'
+          description: ''
+  /api/v1/borders-health/dashboard/overview/:
+    get:
+      operationId: v1_borders_health_dashboard_overview_retrieve
+      description: ملخص وطني مجمّع عبر نقاط الدخول على نطاق المستخدم.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthDashboard'
+          description: ''
+  /api/v1/borders-health/dashboard/traffic-trend/:
+    get:
+      operationId: v1_borders_health_dashboard_traffic_trend_retrieve
+      description: اتجاه الحركة اليومية لـ N يوماً من إحصاءات المعابر.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthDashboard'
+          description: ''
+  /api/v1/borders-health/decisions/:
+    get:
+      operationId: v1_borders_health_decisions_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderDecisionList'
+          description: ''
+    post:
+      operationId: v1_borders_health_decisions_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderDecision'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderDecision'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderDecision'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDecision'
+          description: ''
+  /api/v1/borders-health/decisions/{id}/:
+    get:
+      operationId: v1_borders_health_decisions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this قرار.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDecision'
+          description: ''
+    patch:
+      operationId: v1_borders_health_decisions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this قرار.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDecision'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDecision'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderDecision'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderDecision'
+          description: ''
+    delete:
+      operationId: v1_borders_health_decisions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this قرار.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/declarations/:
+    get:
+      operationId: v1_borders_health_declarations_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthPaginatedHealthDeclarationList'
+          description: ''
+    post:
+      operationId: v1_borders_health_declarations_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+          description: ''
+  /api/v1/borders-health/declarations/{id}/:
+    get:
+      operationId: v1_borders_health_declarations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إقرار صحي.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+          description: ''
+    patch:
+      operationId: v1_borders_health_declarations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إقرار صحي.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedHealthDeclaration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedHealthDeclaration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BordersHealthPatchedHealthDeclaration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+          description: ''
+    delete:
+      operationId: v1_borders_health_declarations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إقرار صحي.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/emergencies/:
+    get:
+      operationId: v1_borders_health_emergencies_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderEmergencyList'
+          description: ''
+    post:
+      operationId: v1_borders_health_emergencies_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderEmergency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderEmergency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderEmergency'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderEmergency'
+          description: ''
+  /api/v1/borders-health/emergencies/{id}/:
+    get:
+      operationId: v1_borders_health_emergencies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this طوارئ صحية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderEmergency'
+          description: ''
+    patch:
+      operationId: v1_borders_health_emergencies_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this طوارئ صحية.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderEmergency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderEmergency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderEmergency'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderEmergency'
+          description: ''
+    delete:
+      operationId: v1_borders_health_emergencies_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this طوارئ صحية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/facilities/:
+    get:
+      operationId: v1_borders_health_facilities_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderFacilityList'
+          description: ''
+    post:
+      operationId: v1_borders_health_facilities_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderFacility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderFacility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderFacility'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderFacility'
+          description: ''
+  /api/v1/borders-health/facilities/{id}/:
+    get:
+      operationId: v1_borders_health_facilities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مرفق معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderFacility'
+          description: ''
+    patch:
+      operationId: v1_borders_health_facilities_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مرفق معبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderFacility'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderFacility'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderFacility'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderFacility'
+          description: ''
+    delete:
+      operationId: v1_borders_health_facilities_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مرفق معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/incidents/:
+    get:
+      operationId: v1_borders_health_incidents_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderHealthIncidentList'
+          description: ''
+    post:
+      operationId: v1_borders_health_incidents_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderHealthIncident'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderHealthIncident'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderHealthIncident'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderHealthIncident'
+          description: ''
+  /api/v1/borders-health/incidents/{id}/:
+    get:
+      operationId: v1_borders_health_incidents_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حادثة صحية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderHealthIncident'
+          description: ''
+    patch:
+      operationId: v1_borders_health_incidents_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حادثة صحية.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderHealthIncident'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderHealthIncident'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderHealthIncident'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderHealthIncident'
+          description: ''
+    delete:
+      operationId: v1_borders_health_incidents_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حادثة صحية.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/isolation-cases/:
+    get:
+      operationId: v1_borders_health_isolation_cases_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIsolationCaseList'
+          description: ''
+    post:
+      operationId: v1_borders_health_isolation_cases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IsolationCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IsolationCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IsolationCase'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsolationCase'
+          description: ''
+  /api/v1/borders-health/isolation-cases/{id}/:
+    get:
+      operationId: v1_borders_health_isolation_cases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة عزل.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsolationCase'
+          description: ''
+    patch:
+      operationId: v1_borders_health_isolation_cases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة عزل.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedIsolationCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedIsolationCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedIsolationCase'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsolationCase'
+          description: ''
+    delete:
+      operationId: v1_borders_health_isolation_cases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة عزل.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/notifications/:
+    get:
+      operationId: v1_borders_health_notifications_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderNotificationList'
+          description: ''
+    post:
+      operationId: v1_borders_health_notifications_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderNotification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderNotification'
+          description: ''
+  /api/v1/borders-health/notifications/{id}/:
+    get:
+      operationId: v1_borders_health_notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إشعار معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderNotification'
+          description: ''
+    patch:
+      operationId: v1_borders_health_notifications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إشعار معبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderNotification'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderNotification'
+          description: ''
+    delete:
+      operationId: v1_borders_health_notifications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إشعار معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/quarantine-cases/:
+    get:
+      operationId: v1_borders_health_quarantine_cases_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuarantineCaseList'
+          description: ''
+    post:
+      operationId: v1_borders_health_quarantine_cases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuarantineCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuarantineCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuarantineCase'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineCase'
+          description: ''
+  /api/v1/borders-health/quarantine-cases/{id}/:
+    get:
+      operationId: v1_borders_health_quarantine_cases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة حجر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineCase'
+          description: ''
+    patch:
+      operationId: v1_borders_health_quarantine_cases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة حجر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuarantineCase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuarantineCase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuarantineCase'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineCase'
+          description: ''
+    delete:
+      operationId: v1_borders_health_quarantine_cases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this حالة حجر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/samples/:
+    get:
+      operationId: v1_borders_health_samples_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderSampleList'
+          description: ''
+    post:
+      operationId: v1_borders_health_samples_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderSample'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderSample'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderSample'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderSample'
+          description: ''
+  /api/v1/borders-health/samples/{id}/:
+    get:
+      operationId: v1_borders_health_samples_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this عيّنة معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderSample'
+          description: ''
+    patch:
+      operationId: v1_borders_health_samples_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this عيّنة معبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderSample'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderSample'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderSample'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderSample'
+          description: ''
+    delete:
+      operationId: v1_borders_health_samples_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this عيّنة معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/screenings/:
+    get:
+      operationId: v1_borders_health_screenings_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderScreeningList'
+          description: ''
+    post:
+      operationId: v1_borders_health_screenings_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderScreening'
+          description: ''
+  /api/v1/borders-health/screenings/{id}/:
+    get:
+      operationId: v1_borders_health_screenings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this فحص مسافر بمعبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderScreening'
+          description: ''
+    patch:
+      operationId: v1_borders_health_screenings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this فحص مسافر بمعبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderScreening'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderScreening'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderScreening'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderScreening'
+          description: ''
+    delete:
+      operationId: v1_borders_health_screenings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this فحص مسافر بمعبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/screenings/{id}/reassess/:
+    post:
+      operationId: v1_borders_health_screenings_reassess_create
+      description: يعيد حساب القرار من القياسات والأعراض دون تعديل يدوي.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this فحص مسافر بمعبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderScreening'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderScreening'
+          description: ''
+  /api/v1/borders-health/shifts/:
+    get:
+      operationId: v1_borders_health_shifts_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderShiftList'
+          description: ''
+    post:
+      operationId: v1_borders_health_shifts_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderShift'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderShift'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderShift'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderShift'
+          description: ''
+  /api/v1/borders-health/shifts/{id}/:
+    get:
+      operationId: v1_borders_health_shifts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this وردية معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderShift'
+          description: ''
+    patch:
+      operationId: v1_borders_health_shifts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this وردية معبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderShift'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderShift'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderShift'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderShift'
+          description: ''
+    delete:
+      operationId: v1_borders_health_shifts_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this وردية معبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/staff/:
+    get:
+      operationId: v1_borders_health_staff_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBorderStaffList'
+          description: ''
+    post:
+      operationId: v1_borders_health_staff_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorderStaff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BorderStaff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BorderStaff'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderStaff'
+          description: ''
+  /api/v1/borders-health/staff/{id}/:
+    get:
+      operationId: v1_borders_health_staff_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إسناد كادر بالمعبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderStaff'
+          description: ''
+    patch:
+      operationId: v1_borders_health_staff_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إسناد كادر بالمعبر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderStaff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderStaff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBorderStaff'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorderStaff'
+          description: ''
+    delete:
+      operationId: v1_borders_health_staff_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this إسناد كادر بالمعبر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/traveler-records/:
+    get:
+      operationId: v1_borders_health_traveler_records_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTravelerHealthRecordList'
+          description: ''
+    post:
+      operationId: v1_borders_health_traveler_records_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TravelerHealthRecord'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TravelerHealthRecord'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TravelerHealthRecord'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TravelerHealthRecord'
+          description: ''
+  /api/v1/borders-health/traveler-records/{id}/:
+    get:
+      operationId: v1_borders_health_traveler_records_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this سجل صحي للمسافر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TravelerHealthRecord'
+          description: ''
+    patch:
+      operationId: v1_borders_health_traveler_records_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this سجل صحي للمسافر.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTravelerHealthRecord'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTravelerHealthRecord'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTravelerHealthRecord'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TravelerHealthRecord'
+          description: ''
+    delete:
+      operationId: v1_borders_health_traveler_records_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this سجل صحي للمسافر.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/vehicle-inspections/:
+    get:
+      operationId: v1_borders_health_vehicle_inspections_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVehicleInspectionList'
+          description: ''
+    post:
+      operationId: v1_borders_health_vehicle_inspections_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInspection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleInspection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleInspection'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleInspection'
+          description: ''
+  /api/v1/borders-health/vehicle-inspections/{id}/:
+    get:
+      operationId: v1_borders_health_vehicle_inspections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش مركبة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleInspection'
+          description: ''
+    patch:
+      operationId: v1_borders_health_vehicle_inspections_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش مركبة.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleInspection'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleInspection'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleInspection'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleInspection'
+          description: ''
+    delete:
+      operationId: v1_borders_health_vehicle_inspections_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this تفتيش مركبة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/borders-health/vehicles/:
+    get:
+      operationId: v1_borders_health_vehicles_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVehicleList'
+          description: ''
+    post:
+      operationId: v1_borders_health_vehicles_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+  /api/v1/borders-health/vehicles/{id}/:
+    get:
+      operationId: v1_borders_health_vehicles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مركبة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    patch:
+      operationId: v1_borders_health_vehicles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مركبة.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicle'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    delete:
+      operationId: v1_borders_health_vehicles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this مركبة.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  # BlankEnum -> BordersHealthBlankEnum, CargoInspection -> BordersHealthCargoInspection, CargoInspectionStatusEnum -> BordersHealthCargoInspectionStatusEnum, HealthDeclaration -> BordersHealthHealthDeclaration, HealthDeclarationStatusEnum -> BordersHealthHealthDeclarationStatusEnum, PaginatedCargoInspectionList -> BordersHealthPaginatedCargoInspectionList, PaginatedHealthDeclarationList -> BordersHealthPaginatedHealthDeclarationList, PatchedCargoInspection -> BordersHealthPatchedCargoInspection, PatchedHealthDeclaration -> BordersHealthPatchedHealthDeclaration
 components:
   schemas:
     ActionEnum:
@@ -44770,6 +47810,3687 @@ components:
       - event_type
       - id
       - updated_at
+  # BlankEnum -> BordersHealthBlankEnum, CargoInspection -> BordersHealthCargoInspection, CargoInspectionStatusEnum -> BordersHealthCargoInspectionStatusEnum, HealthDeclaration -> BordersHealthHealthDeclaration, HealthDeclarationStatusEnum -> BordersHealthHealthDeclarationStatusEnum, PaginatedCargoInspectionList -> BordersHealthPaginatedCargoInspectionList, PaginatedHealthDeclarationList -> BordersHealthPaginatedHealthDeclarationList, PatchedCargoInspection -> BordersHealthPatchedCargoInspection, PatchedHealthDeclaration -> BordersHealthPatchedHealthDeclaration
+  # Land Border Health System components (apps.borders_health)
+    AssignmentTypeEnum:
+      enum:
+      - FULL_TIME
+      - PART_TIME
+      - SECONDMENT
+      type: string
+      description: '* `FULL_TIME` - دوام كامل
+
+        * `PART_TIME` - دوام جزئي
+
+        * `SECONDMENT` - إعارة'
+    BorderCertificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        certificate_number:
+          type: string
+          title: رقم الشهادة
+          maxLength: 50
+        certificate_type:
+          allOf:
+          - $ref: '#/components/schemas/BorderCertificateCertificateTypeEnum'
+          title: نوع الشهادة
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        vehicle_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش المركبة
+        issue_date:
+          type: string
+          format: date
+          title: تاريخ الإصدار
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderCertificateStatusEnum'
+          title: الحالة
+        qr_payload:
+          type: string
+          title: محتوى رمز QR
+          maxLength: 500
+        issued_by_name:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - certificate_number
+      - certificate_type
+      - crossing
+      - crossing_name
+      - id
+      - issue_date
+      - issued_by_name
+    BorderCertificateCertificateTypeEnum:
+      enum:
+      - HEALTH_CLEARANCE
+      - INSPECTION
+      - PASSAGE_PERMIT
+      - QUARANTINE_RELEASE
+      - REJECTION
+      type: string
+      description: '* `HEALTH_CLEARANCE` - شهادة إفراج صحي
+
+        * `INSPECTION` - شهادة فحص
+
+        * `PASSAGE_PERMIT` - تصريح عبور
+
+        * `QUARANTINE_RELEASE` - شهادة خروج من الحجر
+
+        * `REJECTION` - شهادة رفض'
+    BorderCertificateStatusEnum:
+      enum:
+      - DRAFT
+      - ISSUED
+      - EXPIRED
+      - REVOKED
+      - CANCELLED
+      type: string
+      description: '* `DRAFT` - مسودة
+
+        * `ISSUED` - صادرة
+
+        * `EXPIRED` - منتهية
+
+        * `REVOKED` - ملغاة
+
+        * `CANCELLED` - ملغاة بطلب'
+    BorderCrossing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        entry_point:
+          type: string
+          format: uuid
+          title: منفذ الدخول
+        entry_point_code:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        neighbor_state:
+          type: string
+          readOnly: true
+        border_type:
+          allOf:
+          - $ref: '#/components/schemas/BorderTypeEnum'
+          title: نوع المعبر
+        neighbor_country:
+          type: string
+          title: الدولة المجاورة
+          maxLength: 100
+        operating_status:
+          allOf:
+          - $ref: '#/components/schemas/OperatingStatusEnum'
+          title: حالة التشغيل
+        operating_hours:
+          type: string
+          title: ساعات العمل
+          maxLength: 200
+        daily_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: الطاقة اليومية
+        working_agencies:
+          type: string
+          title: الجهات العاملة
+        has_health_facility:
+          type: boolean
+          title: يوجد مرفق صحي
+        has_laboratory:
+          type: boolean
+          title: يوجد مختبر
+        has_quarantine_facility:
+          type: boolean
+          title: يوجد مرفق حجر
+        has_isolation_facility:
+          type: boolean
+          title: يوجد مرفق عزل
+        quarantine_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: طاقة الحجر
+        closure_reason:
+          type: string
+          title: سبب الإغلاق أو التقييد
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - entry_point
+      - entry_point_code
+      - id
+      - name_ar
+      - neighbor_state
+    BorderDailyStatistics:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        stat_date:
+          type: string
+          format: date
+          title: التاريخ
+        travelers_inbound:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المسافرون الداخليون
+        travelers_outbound:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المسافرون الخارجون
+        vehicles_inspected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المركبات المفحوصة
+        cargo_inspections:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: تفتيش الشحنات
+        quarantine_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: حالات الحجر
+        isolation_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: حالات العزل
+        suspected_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: الحالات المشتبه بها
+        certificates_issued:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: الشهادات الصادرة
+        samples_collected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: العينات المسحوبة
+        average_processing_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: متوسط زمن المعاملة (دقائق)
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - stat_date
+    BorderDecision:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        subject_type:
+          type: string
+          title: نوع المخاطَب
+          maxLength: 30
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        cargo_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش الشحنة
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        outcome:
+          allOf:
+          - $ref: '#/components/schemas/BorderDecisionOutcomeEnum'
+          title: القرار
+        reason:
+          type: string
+          title: المبرر
+        decided_by_name:
+          type: string
+          readOnly: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت القرار
+      required:
+      - crossing
+      - crossing_name
+      - decided_at
+      - decided_by_name
+      - id
+      - outcome
+    BorderDecisionOutcomeEnum:
+      enum:
+      - CLEARED
+      - CONDITIONAL
+      - HOLD
+      - REFERRED
+      - REJECTED
+      - ENFORCEMENT
+      type: string
+      description: '* `CLEARED` - إفراج
+
+        * `CONDITIONAL` - إفراج مشروط
+
+        * `HOLD` - حجز
+
+        * `REFERRED` - إحالة
+
+        * `REJECTED` - رفض
+
+        * `ENFORCEMENT` - إجراء إنفاذي'
+    BorderEmergency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        shared_event:
+          type: string
+          format: uuid
+          nullable: true
+          title: حدث الطوارئ المشترك
+        disease:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرض
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        description:
+          type: string
+          title: الوصف
+        restriction_level:
+          allOf:
+          - $ref: '#/components/schemas/RestrictionLevelEnum'
+          title: مستوى التقييد
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderEmergencyStatusEnum'
+          title: الحالة
+        reported_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت البلاغ
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإنهاء
+        reported_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المبلِّغ
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - reported_at
+      - title
+    BorderEmergencyStatusEnum:
+      enum:
+      - OPEN
+      - ACTIVE
+      - CONTROLLED
+      - CLOSED
+      type: string
+      description: '* `OPEN` - مفتوحة
+
+        * `ACTIVE` - نشطة
+
+        * `CONTROLLED` - مسيطر عليها
+
+        * `CLOSED` - مغلقة'
+    BorderFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/BorderFacilityKindEnum'
+          title: نوع المرفق
+        name_ar:
+          type: string
+          title: الاسم بالعربية
+          maxLength: 150
+        name_en:
+          type: string
+          title: الاسم بالإنجليزية
+          maxLength: 150
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: الطاقة
+        staff_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: عدد الكوادر
+        is_operational:
+          type: boolean
+          title: يعمل
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - kind
+      - name_ar
+    BorderFacilityKindEnum:
+      enum:
+      - HEALTH
+      - LABORATORY
+      - QUARANTINE
+      - ISOLATION
+      - STORAGE
+      - WATER_SANITATION
+      - WASTE
+      - VECTOR_CONTROL
+      type: string
+      description: '* `HEALTH` - مرفق صحي
+
+        * `LABORATORY` - مختبر
+
+        * `QUARANTINE` - مرفق حجر
+
+        * `ISOLATION` - مرفق عزل
+
+        * `STORAGE` - مخزن
+
+        * `WATER_SANITATION` - مياه وصرف صحي
+
+        * `WASTE` - إدارة نفايات
+
+        * `VECTOR_CONTROL` - مكافحة نواقل'
+    BorderHealthIncident:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        description:
+          type: string
+          title: الوصف
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/Severity9e8Enum'
+          title: الخطورة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderHealthIncidentStatusEnum'
+          title: الحالة
+        reported_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت البلاغ
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإغلاق
+        reported_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المبلِّغ
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - reported_at
+      - title
+    BorderHealthIncidentStatusEnum:
+      enum:
+      - OPEN
+      - INVESTIGATING
+      - CONTROLLED
+      - CLOSED
+      type: string
+      description: '* `OPEN` - مفتوحة
+
+        * `INVESTIGATING` - قيد التحقيق
+
+        * `CONTROLLED` - مسيطر عليها
+
+        * `CLOSED` - مغلقة'
+    BorderNotification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        recipient_role:
+          type: string
+          title: الدور المستلم
+          maxLength: 40
+        recipient_contact:
+          type: string
+          title: جهة الاتصال
+          maxLength: 120
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        body:
+          type: string
+          title: النص
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/BorderNotificationChannelEnum'
+          title: القناة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderNotificationStatusEnum'
+          title: الحالة
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإرسال
+        sent_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرسل
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - title
+    BorderNotificationChannelEnum:
+      enum:
+      - INTERNAL
+      - EMAIL
+      - SMS
+      - PUSH
+      type: string
+      description: '* `INTERNAL` - داخلي
+
+        * `EMAIL` - بريد إلكتروني
+
+        * `SMS` - رسالة نصية
+
+        * `PUSH` - إشعار'
+    BorderNotificationStatusEnum:
+      enum:
+      - PENDING
+      - SENT
+      - FAILED
+      type: string
+      description: '* `PENDING` - قيد الإرسال
+
+        * `SENT` - أُرسل
+
+        * `FAILED` - فشل'
+    BorderSample:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        lab_sample:
+          type: string
+          format: uuid
+          nullable: true
+          title: عيّنة المختبر
+        cargo_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش الشحنة
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        sample_code:
+          type: string
+          title: رمز العيّنة
+          maxLength: 40
+        sample_type:
+          type: string
+          title: نوع العيّنة
+          maxLength: 100
+        collected_by_name:
+          type: string
+          readOnly: true
+        collected_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ السحب
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderSampleStatusEnum'
+          title: الحالة
+        result:
+          type: string
+          title: النتيجة
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - collected_at
+      - collected_by_name
+      - crossing
+      - crossing_name
+      - id
+    BorderSampleStatusEnum:
+      enum:
+      - COLLECTED
+      - SENT
+      - UNDER_TEST
+      - RESULT_RECEIVED
+      - REJECTED
+      type: string
+      description: '* `COLLECTED` - مسحوبة
+
+        * `SENT` - أُرسلت للمختبر
+
+        * `UNDER_TEST` - قيد الفحص
+
+        * `RESULT_RECEIVED` - وصلت النتيجة
+
+        * `REJECTED` - مرفوضة'
+    BorderScreening:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        passport_number:
+          type: string
+          readOnly: true
+        shared_screening:
+          type: string
+          format: uuid
+          nullable: true
+          title: الفحص المشترك
+        body_temperature:
+          type: number
+          format: double
+          nullable: true
+          title: درجة الحرارة
+        oxygen_saturation:
+          type: number
+          format: double
+          nullable: true
+          title: نسبة الأكسجين
+        observed_symptoms:
+          title: الأعراض المرصودة
+        risk_level:
+          type: string
+          title: مستوى الخطورة
+          maxLength: 10
+        document_verified:
+          type: boolean
+          title: تم التحقق من الوثائق
+        vaccination_verified:
+          type: boolean
+          title: تم التحقق من التطعيمات
+        screening_certificate:
+          type: string
+          format: uuid
+          nullable: true
+          title: شهادة التطعيم
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/BorderScreeningDecisionEnum'
+          title: القرار
+        screened_by_name:
+          type: string
+          readOnly: true
+        screened_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت الفحص
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - passport_number
+      - screened_at
+      - screened_by_name
+      - traveler
+      - traveler_name
+    BorderScreeningDecisionEnum:
+      enum:
+      - CLEARED
+      - HOLD
+      - REFERRED
+      - QUARANTINED
+      type: string
+      description: '* `CLEARED` - أُفرج عنه
+
+        * `HOLD` - موقوف
+
+        * `REFERRED` - مُحال
+
+        * `QUARANTINED` - محجور'
+    BorderShift:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        shift_date:
+          type: string
+          format: date
+          title: التاريخ
+        shift_type:
+          allOf:
+          - $ref: '#/components/schemas/ShiftTypeEnum'
+          title: نوع الوردية
+        started_at:
+          type: string
+          format: time
+          nullable: true
+          title: البداية
+        ended_at:
+          type: string
+          format: time
+          nullable: true
+          title: النهاية
+        supervisor:
+          type: string
+          format: uuid
+          nullable: true
+          title: المشرف
+        supervisor_name:
+          type: string
+          readOnly: true
+        is_staffed:
+          type: boolean
+          title: مؤمَّنة
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - shift_date
+      - supervisor_name
+    BorderStaff:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          title: المستخدم
+        user_name:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/BorderStaffRoleEnum'
+          title: الدور
+        assignment_type:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentTypeEnum'
+          title: نوع الإسناد
+        starts_on:
+          type: string
+          format: date
+          nullable: true
+          title: يبدأ من
+        ends_on:
+          type: string
+          format: date
+          nullable: true
+          title: ينتهي في
+        is_active:
+          type: boolean
+          title: نشط
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - role
+      - user
+      - user_name
+    BorderStaffRoleEnum:
+      enum:
+      - MANAGER
+      - DOCTOR
+      - INSPECTOR
+      - FOOD_INSPECTOR
+      - ENVIRONMENTAL_INSPECTOR
+      - REGISTRATION_OFFICER
+      - LAB_TECHNICIAN
+      - EPIDEMIOLOGY_OFFICER
+      - EMERGENCY_OFFICER
+      type: string
+      description: '* `MANAGER` - مدير محطة المعبر
+
+        * `DOCTOR` - طبيب حجر صحي
+
+        * `INSPECTOR` - مفتش حجر صحي
+
+        * `FOOD_INSPECTOR` - مفتش رقابة أغذية
+
+        * `ENVIRONMENTAL_INSPECTOR` - مفتش صحة بيئة
+
+        * `REGISTRATION_OFFICER` - موظف تسجيل مسافرين
+
+        * `LAB_TECHNICIAN` - أخصائي مختبر
+
+        * `EPIDEMIOLOGY_OFFICER` - أخصائي وبائي
+
+        * `EMERGENCY_OFFICER` - مسؤول طوارئ'
+    BorderTypeEnum:
+      enum:
+      - ROAD
+      - RAIL
+      - RIVER
+      type: string
+      description: '* `ROAD` - بري (طرق)
+
+        * `RAIL` - سكة حديد
+
+        * `RIVER` - نهر'
+    BordersHealthBlankEnum:
+      enum:
+      - ''
+    BordersHealthCargoInspection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/CargoInspectionScopeEnum'
+          title: نطاق التفتيش
+        food_shipment:
+          type: string
+          format: uuid
+          nullable: true
+          title: شحنة سلامة الغذاء
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرفق
+        declaration_number:
+          type: string
+          title: رقم الإقرار
+          maxLength: 50
+        product_type:
+          type: string
+          title: نوع المنتج
+          maxLength: 150
+        country_of_origin:
+          type: string
+          title: بلد المنشأ
+          maxLength: 100
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        plate_number:
+          type: string
+          readOnly: true
+        samples_collected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: عدد العينات المسحوبة
+        laboratory_result:
+          type: string
+          title: نتيجة المختبر
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BordersHealthCargoInspectionStatusEnum'
+          title: حالة الفحص
+        decision:
+          title: القرار
+          oneOf:
+          - $ref: '#/components/schemas/CargoInspectionDecisionEnum'
+          - $ref: '#/components/schemas/BordersHealthBlankEnum'
+        decided_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المُقرِّر
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت القرار
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - plate_number
+    BordersHealthCargoInspectionStatusEnum:
+      enum:
+      - PENDING
+      - INSPECTING
+      - SAMPLES_SENT
+      - AWAITING_DECISION
+      - RELEASED
+      - REJECTED
+      - HOLD
+      type: string
+      description: '* `PENDING` - قيد الفحص
+
+        * `INSPECTING` - جاري الفحص
+
+        * `SAMPLES_SENT` - أُرسلت العينات
+
+        * `AWAITING_DECISION` - بانتظار القرار
+
+        * `RELEASED` - أُفرج عنها
+
+        * `REJECTED` - مرفوضة
+
+        * `HOLD` - محجوزة'
+    BordersHealthDashboard:
+      type: object
+      properties:
+        crossings:
+          type: integer
+        open_crossings:
+          type: integer
+        restricted_crossings:
+          type: integer
+        closed_crossings:
+          type: integer
+        travelers_today:
+          type: integer
+        vehicles_inspected:
+          type: integer
+        cargo_inspections:
+          type: integer
+        active_quarantine:
+          type: integer
+        active_isolation:
+          type: integer
+        suspected_cases:
+          type: integer
+        open_emergencies:
+          type: integer
+        certificates_issued:
+          type: integer
+        samples_collected:
+          type: integer
+      required:
+      - active_isolation
+      - active_quarantine
+      - cargo_inspections
+      - certificates_issued
+      - closed_crossings
+      - crossings
+      - open_crossings
+      - open_emergencies
+      - restricted_crossings
+      - samples_collected
+      - suspected_cases
+      - travelers_today
+      - vehicles_inspected
+    BordersHealthHealthDeclaration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        departure_country:
+          type: string
+          title: بلد المغادرة
+          maxLength: 100
+        departure_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ السفر
+        visited_countries:
+          title: الدول التي زارها
+        health_conditions:
+          type: string
+          title: الحالة الصحية
+        current_symptoms:
+          type: string
+          title: الأعراض الحالية
+        contact_name:
+          type: string
+          title: اسم جهة الاتصال
+          maxLength: 150
+        contact_phone:
+          type: string
+          title: هاتف التواصل
+          maxLength: 30
+        declared_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ الإقرار
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BordersHealthHealthDeclarationStatusEnum'
+          title: الحالة
+        reviewed_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المراجع
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - declared_at
+      - id
+      - traveler
+      - traveler_name
+    BordersHealthHealthDeclarationStatusEnum:
+      enum:
+      - RECEIVED
+      - REVIEWED
+      - APPROVED
+      - REJECTED
+      type: string
+      description: '* `RECEIVED` - مستلم
+
+        * `REVIEWED` - قيد المراجعة
+
+        * `APPROVED` - معتمد
+
+        * `REJECTED` - مرفوض'
+    BordersHealthPaginatedCargoInspectionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BordersHealthCargoInspection'
+    BordersHealthPaginatedHealthDeclarationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BordersHealthHealthDeclaration'
+    BordersHealthPatchedCargoInspection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/CargoInspectionScopeEnum'
+          title: نطاق التفتيش
+        food_shipment:
+          type: string
+          format: uuid
+          nullable: true
+          title: شحنة سلامة الغذاء
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرفق
+        declaration_number:
+          type: string
+          title: رقم الإقرار
+          maxLength: 50
+        product_type:
+          type: string
+          title: نوع المنتج
+          maxLength: 150
+        country_of_origin:
+          type: string
+          title: بلد المنشأ
+          maxLength: 100
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        plate_number:
+          type: string
+          readOnly: true
+        samples_collected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: عدد العينات المسحوبة
+        laboratory_result:
+          type: string
+          title: نتيجة المختبر
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BordersHealthCargoInspectionStatusEnum'
+          title: حالة الفحص
+        decision:
+          title: القرار
+          oneOf:
+          - $ref: '#/components/schemas/CargoInspectionDecisionEnum'
+          - $ref: '#/components/schemas/BordersHealthBlankEnum'
+        decided_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المُقرِّر
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت القرار
+        notes:
+          type: string
+          title: ملاحظات
+    BordersHealthPatchedHealthDeclaration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        departure_country:
+          type: string
+          title: بلد المغادرة
+          maxLength: 100
+        departure_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ السفر
+        visited_countries:
+          title: الدول التي زارها
+        health_conditions:
+          type: string
+          title: الحالة الصحية
+        current_symptoms:
+          type: string
+          title: الأعراض الحالية
+        contact_name:
+          type: string
+          title: اسم جهة الاتصال
+          maxLength: 150
+        contact_phone:
+          type: string
+          title: هاتف التواصل
+          maxLength: 30
+        declared_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ الإقرار
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BordersHealthHealthDeclarationStatusEnum'
+          title: الحالة
+        reviewed_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المراجع
+        notes:
+          type: string
+          title: ملاحظات
+    CargoInspectionDecisionEnum:
+      enum:
+      - CLEARED
+      - CONDITIONAL
+      - REJECTED
+      - HOLD
+      type: string
+      description: '* `CLEARED` - إفراج
+
+        * `CONDITIONAL` - إفراج مشروط
+
+        * `REJECTED` - رفض
+
+        * `HOLD` - حجز'
+    CargoInspectionScopeEnum:
+      enum:
+      - CARGO
+      - FOOD
+      - WAREHOUSE
+      - WATER_SANITATION
+      type: string
+      description: '* `CARGO` - شحنة
+
+        * `FOOD` - أغذية
+
+        * `WAREHOUSE` - مخزن المعبر
+
+        * `WATER_SANITATION` - مياه وصرف صحي'
+    CleanlinessStatusEe5Enum:
+      enum:
+      - COMPLIANT
+      - NON_COMPLIANT
+      - NOT_APPLICABLE
+      type: string
+      description: '* `COMPLIANT` - مطابق
+
+        * `NON_COMPLIANT` - غير مطابق
+
+        * `NOT_APPLICABLE` - غير منطبق'
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tracing_case:
+          type: string
+          format: uuid
+          title: حالة التتبع
+        full_name:
+          type: string
+          title: الاسم الكامل
+          maxLength: 200
+        passport_number:
+          type: string
+          title: رقم الجواز
+          maxLength: 40
+        phone:
+          type: string
+          title: رقم الجوال
+          maxLength: 30
+        seat_or_relation:
+          type: string
+          title: المقعد أو صلة القرابة
+          maxLength: 60
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContactStatusEnum'
+          title: الحالة
+        follow_up_day:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: يوم المتابعة
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - full_name
+      - id
+      - tracing_case
+    ContactStatusEnum:
+      enum:
+      - IDENTIFIED
+      - CONTACTED
+      - QUARANTINED
+      - MONITORING
+      - CLEARED
+      - LOST
+      type: string
+      description: '* `IDENTIFIED` - مُعرَّف
+
+        * `CONTACTED` - تم التواصل
+
+        * `QUARANTINED` - محجور
+
+        * `MONITORING` - قيد المتابعة
+
+        * `CLEARED` - أُعلن سلامته
+
+        * `LOST` - مفقود المتابعة'
+    ContactTracingCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        index_case_name:
+          type: string
+          title: الحالة المفهرسة
+          maxLength: 200
+        transport_mode:
+          type: string
+          title: وسيلة النقل
+          maxLength: 50
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        shared_contact_trace:
+          type: string
+          format: uuid
+          nullable: true
+          title: سجل التتبع المشترك
+        follow_up_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: مدة المتابعة (أيام)
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ البدء
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContactTracingCaseStatusEnum'
+          title: الحالة
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - started_at
+    ContactTracingCaseStatusEnum:
+      enum:
+      - OPEN
+      - MONITORING
+      - COMPLETED
+      - ESCALATED
+      type: string
+      description: '* `OPEN` - مفتوحة
+
+        * `MONITORING` - قيد المتابعة
+
+        * `COMPLETED` - مكتملة
+
+        * `ESCALATED` - مُصعَّدة'
+    CoolingStatusEnum:
+      enum:
+      - COMPLIANT
+      - NON_COMPLIANT
+      - NOT_APPLICABLE
+      type: string
+      description: '* `COMPLIANT` - مطابق
+
+        * `NON_COMPLIANT` - غير مطابق
+
+        * `NOT_APPLICABLE` - غير منطبق'
+    HealthStatus454Enum:
+      enum:
+      - FIT
+      - UNFIT
+      - UNDER_OBSERVATION
+      type: string
+      description: '* `FIT` - لائق
+
+        * `UNFIT` - غير لائق
+
+        * `UNDER_OBSERVATION` - قيد المراقبة'
+    InspectionTypeEnum:
+      enum:
+      - EXTERIOR
+      - CARGO_HOLD
+      - TEMPERATURE
+      - DISINFECTION
+      - PEST_CONTROL
+      - WASTE
+      - CABIN
+      type: string
+      description: '* `EXTERIOR` - الهيكل الخارجي
+
+        * `CARGO_HOLD` - حمولة البضاعة
+
+        * `TEMPERATURE` - وسائل التبريد
+
+        * `DISINFECTION` - التعقيم
+
+        * `PEST_CONTROL` - مكافحة الحشرات
+
+        * `WASTE` - النفايات
+
+        * `CABIN` - المقصورة'
+    IsolationCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        clinic_isolation:
+          type: string
+          format: uuid
+          nullable: true
+          title: سجل العزل بالعيادة
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: مرفق العزل
+        start_date:
+          type: string
+          format: date
+          title: تاريخ البدء
+        expected_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء المتوقع
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء الفعلي
+        status:
+          allOf:
+          - $ref: '#/components/schemas/IsolationCaseStatusEnum'
+          title: الحالة
+        started_by_name:
+          type: string
+          readOnly: true
+        closed_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: أغلقها
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - start_date
+      - started_by_name
+    IsolationCaseStatusEnum:
+      enum:
+      - ACTIVE
+      - RELEASED
+      - REMOVED
+      type: string
+      description: '* `ACTIVE` - نشطة
+
+        * `RELEASED` - أُفرج عنه
+
+        * `REMOVED` - مُنقلت'
+    OperatingStatusEnum:
+      enum:
+      - OPEN
+      - RESTRICTED
+      - LIMITED
+      - CLOSED
+      - EMERGENCY
+      type: string
+      description: '* `OPEN` - مفتوح
+
+        * `RESTRICTED` - مقيّد
+
+        * `LIMITED` - محدود التشغيل
+
+        * `CLOSED` - مغلق
+
+        * `EMERGENCY` - طوارئ'
+    PaginatedBorderCertificateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderCertificate'
+    PaginatedBorderCrossingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderCrossing'
+    PaginatedBorderDailyStatisticsList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderDailyStatistics'
+    PaginatedBorderDecisionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderDecision'
+    PaginatedBorderEmergencyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderEmergency'
+    PaginatedBorderFacilityList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderFacility'
+    PaginatedBorderHealthIncidentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderHealthIncident'
+    PaginatedBorderNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderNotification'
+    PaginatedBorderSampleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderSample'
+    PaginatedBorderScreeningList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderScreening'
+    PaginatedBorderShiftList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderShift'
+    PaginatedBorderStaffList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorderStaff'
+    PaginatedContactList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+    PaginatedContactTracingCaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactTracingCase'
+    PaginatedIsolationCaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/IsolationCase'
+    PaginatedQuarantineCaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuarantineCase'
+    PaginatedTravelerHealthRecordList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TravelerHealthRecord'
+    PaginatedVehicleInspectionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleInspection'
+    PaginatedVehicleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+    PatchedBorderCertificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        certificate_number:
+          type: string
+          title: رقم الشهادة
+          maxLength: 50
+        certificate_type:
+          allOf:
+          - $ref: '#/components/schemas/BorderCertificateCertificateTypeEnum'
+          title: نوع الشهادة
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        vehicle_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش المركبة
+        issue_date:
+          type: string
+          format: date
+          title: تاريخ الإصدار
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderCertificateStatusEnum'
+          title: الحالة
+        qr_payload:
+          type: string
+          title: محتوى رمز QR
+          maxLength: 500
+        issued_by_name:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderCrossing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        entry_point:
+          type: string
+          format: uuid
+          title: منفذ الدخول
+        entry_point_code:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        neighbor_state:
+          type: string
+          readOnly: true
+        border_type:
+          allOf:
+          - $ref: '#/components/schemas/BorderTypeEnum'
+          title: نوع المعبر
+        neighbor_country:
+          type: string
+          title: الدولة المجاورة
+          maxLength: 100
+        operating_status:
+          allOf:
+          - $ref: '#/components/schemas/OperatingStatusEnum'
+          title: حالة التشغيل
+        operating_hours:
+          type: string
+          title: ساعات العمل
+          maxLength: 200
+        daily_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: الطاقة اليومية
+        working_agencies:
+          type: string
+          title: الجهات العاملة
+        has_health_facility:
+          type: boolean
+          title: يوجد مرفق صحي
+        has_laboratory:
+          type: boolean
+          title: يوجد مختبر
+        has_quarantine_facility:
+          type: boolean
+          title: يوجد مرفق حجر
+        has_isolation_facility:
+          type: boolean
+          title: يوجد مرفق عزل
+        quarantine_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: طاقة الحجر
+        closure_reason:
+          type: string
+          title: سبب الإغلاق أو التقييد
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderDailyStatistics:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        stat_date:
+          type: string
+          format: date
+          title: التاريخ
+        travelers_inbound:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المسافرون الداخليون
+        travelers_outbound:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المسافرون الخارجون
+        vehicles_inspected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: المركبات المفحوصة
+        cargo_inspections:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: تفتيش الشحنات
+        quarantine_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: حالات الحجر
+        isolation_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: حالات العزل
+        suspected_cases:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: الحالات المشتبه بها
+        certificates_issued:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: الشهادات الصادرة
+        samples_collected:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: العينات المسحوبة
+        average_processing_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: متوسط زمن المعاملة (دقائق)
+    PatchedBorderDecision:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        subject_type:
+          type: string
+          title: نوع المخاطَب
+          maxLength: 30
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        cargo_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش الشحنة
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        outcome:
+          allOf:
+          - $ref: '#/components/schemas/BorderDecisionOutcomeEnum'
+          title: القرار
+        reason:
+          type: string
+          title: المبرر
+        decided_by_name:
+          type: string
+          readOnly: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت القرار
+    PatchedBorderEmergency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        shared_event:
+          type: string
+          format: uuid
+          nullable: true
+          title: حدث الطوارئ المشترك
+        disease:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرض
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        description:
+          type: string
+          title: الوصف
+        restriction_level:
+          allOf:
+          - $ref: '#/components/schemas/RestrictionLevelEnum'
+          title: مستوى التقييد
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderEmergencyStatusEnum'
+          title: الحالة
+        reported_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت البلاغ
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإنهاء
+        reported_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المبلِّغ
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/BorderFacilityKindEnum'
+          title: نوع المرفق
+        name_ar:
+          type: string
+          title: الاسم بالعربية
+          maxLength: 150
+        name_en:
+          type: string
+          title: الاسم بالإنجليزية
+          maxLength: 150
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: الطاقة
+        staff_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: عدد الكوادر
+        is_operational:
+          type: boolean
+          title: يعمل
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderHealthIncident:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        description:
+          type: string
+          title: الوصف
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/Severity9e8Enum'
+          title: الخطورة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderHealthIncidentStatusEnum'
+          title: الحالة
+        reported_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت البلاغ
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإغلاق
+        reported_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المبلِّغ
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderNotification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        recipient_role:
+          type: string
+          title: الدور المستلم
+          maxLength: 40
+        recipient_contact:
+          type: string
+          title: جهة الاتصال
+          maxLength: 120
+        title:
+          type: string
+          title: العنوان
+          maxLength: 200
+        body:
+          type: string
+          title: النص
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/BorderNotificationChannelEnum'
+          title: القناة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderNotificationStatusEnum'
+          title: الحالة
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: وقت الإرسال
+        sent_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرسل
+    PatchedBorderSample:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        lab_sample:
+          type: string
+          format: uuid
+          nullable: true
+          title: عيّنة المختبر
+        cargo_inspection:
+          type: string
+          format: uuid
+          nullable: true
+          title: تفتيش الشحنة
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        sample_code:
+          type: string
+          title: رمز العيّنة
+          maxLength: 40
+        sample_type:
+          type: string
+          title: نوع العيّنة
+          maxLength: 100
+        collected_by_name:
+          type: string
+          readOnly: true
+        collected_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ السحب
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BorderSampleStatusEnum'
+          title: الحالة
+        result:
+          type: string
+          title: النتيجة
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderScreening:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        passport_number:
+          type: string
+          readOnly: true
+        shared_screening:
+          type: string
+          format: uuid
+          nullable: true
+          title: الفحص المشترك
+        body_temperature:
+          type: number
+          format: double
+          nullable: true
+          title: درجة الحرارة
+        oxygen_saturation:
+          type: number
+          format: double
+          nullable: true
+          title: نسبة الأكسجين
+        observed_symptoms:
+          title: الأعراض المرصودة
+        risk_level:
+          type: string
+          title: مستوى الخطورة
+          maxLength: 10
+        document_verified:
+          type: boolean
+          title: تم التحقق من الوثائق
+        vaccination_verified:
+          type: boolean
+          title: تم التحقق من التطعيمات
+        screening_certificate:
+          type: string
+          format: uuid
+          nullable: true
+          title: شهادة التطعيم
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/BorderScreeningDecisionEnum'
+          title: القرار
+        screened_by_name:
+          type: string
+          readOnly: true
+        screened_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت الفحص
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderShift:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        shift_date:
+          type: string
+          format: date
+          title: التاريخ
+        shift_type:
+          allOf:
+          - $ref: '#/components/schemas/ShiftTypeEnum'
+          title: نوع الوردية
+        started_at:
+          type: string
+          format: time
+          nullable: true
+          title: البداية
+        ended_at:
+          type: string
+          format: time
+          nullable: true
+          title: النهاية
+        supervisor:
+          type: string
+          format: uuid
+          nullable: true
+          title: المشرف
+        supervisor_name:
+          type: string
+          readOnly: true
+        is_staffed:
+          type: boolean
+          title: مؤمَّنة
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedBorderStaff:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          title: المستخدم
+        user_name:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/BorderStaffRoleEnum'
+          title: الدور
+        assignment_type:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentTypeEnum'
+          title: نوع الإسناد
+        starts_on:
+          type: string
+          format: date
+          nullable: true
+          title: يبدأ من
+        ends_on:
+          type: string
+          format: date
+          nullable: true
+          title: ينتهي في
+        is_active:
+          type: boolean
+          title: نشط
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tracing_case:
+          type: string
+          format: uuid
+          title: حالة التتبع
+        full_name:
+          type: string
+          title: الاسم الكامل
+          maxLength: 200
+        passport_number:
+          type: string
+          title: رقم الجواز
+          maxLength: 40
+        phone:
+          type: string
+          title: رقم الجوال
+          maxLength: 30
+        seat_or_relation:
+          type: string
+          title: المقعد أو صلة القرابة
+          maxLength: 60
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContactStatusEnum'
+          title: الحالة
+        follow_up_day:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: يوم المتابعة
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedContactTracingCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        index_case_name:
+          type: string
+          title: الحالة المفهرسة
+          maxLength: 200
+        transport_mode:
+          type: string
+          title: وسيلة النقل
+          maxLength: 50
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        shared_contact_trace:
+          type: string
+          format: uuid
+          nullable: true
+          title: سجل التتبع المشترك
+        follow_up_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: مدة المتابعة (أيام)
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ البدء
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContactTracingCaseStatusEnum'
+          title: الحالة
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedIsolationCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        quarantine_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الحجر
+        clinic_isolation:
+          type: string
+          format: uuid
+          nullable: true
+          title: سجل العزل بالعيادة
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: مرفق العزل
+        start_date:
+          type: string
+          format: date
+          title: تاريخ البدء
+        expected_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء المتوقع
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء الفعلي
+        status:
+          allOf:
+          - $ref: '#/components/schemas/IsolationCaseStatusEnum'
+          title: الحالة
+        started_by_name:
+          type: string
+          readOnly: true
+        closed_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: أغلقها
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedQuarantineCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        case_number:
+          type: string
+          nullable: true
+          title: رقم الحالة
+          maxLength: 30
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        person_name:
+          type: string
+          readOnly: true
+        health_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الترصد المشتركة
+        disease:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرض
+        clinic:
+          type: string
+          format: uuid
+          nullable: true
+          title: العيادة
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: مرفق الحجر
+        entry_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت الدخول للحجر
+        required_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: المدة المطلوبة (أيام)
+        expected_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء المتوقع
+        actual_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء الفعلي
+        phase:
+          allOf:
+          - $ref: '#/components/schemas/QuarantineCasePhaseEnum'
+          title: المرحلة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/QuarantineCaseStatusEnum'
+          title: الحالة
+        follow_up_notes:
+          type: string
+          title: ملاحظات المتابعة
+    PatchedTravelerHealthRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        passport_number:
+          type: string
+          readOnly: true
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordDirectionEnum'
+          title: اتجاه الحركة
+        entry_at:
+          type: string
+          format: date-time
+          title: وقت العبور
+        departure_country:
+          type: string
+          title: بلد المغادرة
+          maxLength: 100
+        visited_countries:
+          title: الدول التي زارها
+        transport_mode:
+          type: string
+          title: وسيلة النقل
+          maxLength: 50
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        health_status:
+          allOf:
+          - $ref: '#/components/schemas/HealthStatus454Enum'
+          title: الحالة الصحية
+        risk_level:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordRiskLevelEnum'
+          title: مستوى الخطورة
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordDecisionEnum'
+          title: القرار
+        assessed_by_name:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedVehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        plate_number:
+          type: string
+          title: رقم اللوحة
+          maxLength: 30
+        chassis_number:
+          type: string
+          title: رقم الهيكل
+          maxLength: 50
+        vehicle_type:
+          allOf:
+          - $ref: '#/components/schemas/VehicleTypeEnum'
+          title: نوع المركبة
+        make_model:
+          type: string
+          title: الصنع والطراز
+          maxLength: 100
+        year_of_manufacture:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          title: سنة الصنع
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: السعة
+        owner_name:
+          type: string
+          title: اسم المالك
+          maxLength: 200
+        driver_name:
+          type: string
+          title: اسم السائق
+          maxLength: 150
+        driver_phone:
+          type: string
+          title: هاتف السائق
+          maxLength: 30
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VehicleStatusEnum'
+          title: الحالة
+        notes:
+          type: string
+          title: ملاحظات
+    PatchedVehicleInspection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+          title: المركبة
+        plate_number:
+          type: string
+          readOnly: true
+        inspection_type:
+          allOf:
+          - $ref: '#/components/schemas/InspectionTypeEnum'
+          title: نوع التفتيش
+        inspection_date:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ التفتيش
+        inspector_name:
+          type: string
+          readOnly: true
+        cleanliness_status:
+          allOf:
+          - $ref: '#/components/schemas/CleanlinessStatusEe5Enum'
+          title: النظافة
+        pest_control_status:
+          allOf:
+          - $ref: '#/components/schemas/PestControlStatusEe5Enum'
+          title: مكافحة الحشرات
+        waste_status:
+          allOf:
+          - $ref: '#/components/schemas/WasteStatusEnum'
+          title: النفايات
+        cooling_status:
+          allOf:
+          - $ref: '#/components/schemas/CoolingStatusEnum'
+          title: وسائل التبريد
+        findings:
+          type: string
+          title: الملاحظات
+        overall_status:
+          allOf:
+          - $ref: '#/components/schemas/VehicleInspectionOverallStatusEnum'
+          title: الحالة العامة
+        reinspection_required:
+          type: boolean
+          title: يلزم إعادة تفتيش
+    PestControlStatusEe5Enum:
+      enum:
+      - COMPLIANT
+      - NON_COMPLIANT
+      - NOT_APPLICABLE
+      type: string
+      description: '* `COMPLIANT` - مطابق
+
+        * `NON_COMPLIANT` - غير مطابق
+
+        * `NOT_APPLICABLE` - غير منطبق'
+    QuarantineCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        case_number:
+          type: string
+          nullable: true
+          title: رقم الحالة
+          maxLength: 30
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          nullable: true
+          title: المسافر
+        person_name:
+          type: string
+          readOnly: true
+        health_case:
+          type: string
+          format: uuid
+          nullable: true
+          title: حالة الترصد المشتركة
+        disease:
+          type: string
+          format: uuid
+          nullable: true
+          title: المرض
+        clinic:
+          type: string
+          format: uuid
+          nullable: true
+          title: العيادة
+        facility:
+          type: string
+          format: uuid
+          nullable: true
+          title: مرفق الحجر
+        entry_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: وقت الدخول للحجر
+        required_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          title: المدة المطلوبة (أيام)
+        expected_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء المتوقع
+        actual_end_date:
+          type: string
+          format: date
+          nullable: true
+          title: تاريخ الانتهاء الفعلي
+        phase:
+          allOf:
+          - $ref: '#/components/schemas/QuarantineCasePhaseEnum'
+          title: المرحلة
+        status:
+          allOf:
+          - $ref: '#/components/schemas/QuarantineCaseStatusEnum'
+          title: الحالة
+        follow_up_notes:
+          type: string
+          title: ملاحظات المتابعة
+      required:
+      - crossing
+      - crossing_name
+      - entry_at
+      - id
+      - person_name
+    QuarantineCasePhaseEnum:
+      enum:
+      - SCREENED
+      - ASSESSED
+      - QUARANTINED
+      - UNDER_TREATMENT
+      - RECOVERED
+      - RELEASED
+      - REFERRED_OUT
+      type: string
+      description: '* `SCREENED` - مفحوص
+
+        * `ASSESSED` - مُقيَّم
+
+        * `QUARANTINED` - محجور
+
+        * `UNDER_TREATMENT` - تحت العلاج
+
+        * `RECOVERED` - تعافى
+
+        * `RELEASED` - مُفرج عنه
+
+        * `REFERRED_OUT` - مُحال خارج المعبر'
+    QuarantineCaseStatusEnum:
+      enum:
+      - ADMITTED
+      - UNDER_QUARANTINE
+      - REFERRED
+      - RELEASED
+      - ESCALATED
+      type: string
+      description: '* `ADMITTED` - مقبول
+
+        * `UNDER_QUARANTINE` - قيد الحجر
+
+        * `REFERRED` - مُحال
+
+        * `RELEASED` - أُفرج عنه
+
+        * `ESCALATED` - مُصعَّد'
+    RestrictionLevelEnum:
+      enum:
+      - ADVISORY
+      - INCREASED_SURVEILLANCE
+      - MOVEMENT_REDUCED
+      - MOVEMENT_SUSPENDED
+      - CLOSED
+      type: string
+      description: '* `ADVISORY` - توصية
+
+        * `INCREASED_SURVEILLANCE` - مراقبة مكثفة
+
+        * `MOVEMENT_REDUCED` - تقليل الحركة
+
+        * `MOVEMENT_SUSPENDED` - إيقاف الحركة
+
+        * `CLOSED` - إغلاق المعبر'
+    Severity9e8Enum:
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+      - CRITICAL
+      type: string
+      description: '* `LOW` - منخفضة
+
+        * `MEDIUM` - متوسطة
+
+        * `HIGH` - عالية
+
+        * `CRITICAL` - حرجة'
+    ShiftTypeEnum:
+      enum:
+      - MORNING
+      - AFTERNOON
+      - NIGHT
+      - ROTATING
+      type: string
+      description: '* `MORNING` - الوردية الصباحية
+
+        * `AFTERNOON` - الوردية المسائية
+
+        * `NIGHT` - الوردية الليلية
+
+        * `ROTATING` - تناوبية'
+    TravelerHealthRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        traveler:
+          type: string
+          format: uuid
+          title: المسافر
+        traveler_name:
+          type: string
+          readOnly: true
+        passport_number:
+          type: string
+          readOnly: true
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordDirectionEnum'
+          title: اتجاه الحركة
+        entry_at:
+          type: string
+          format: date-time
+          title: وقت العبور
+        departure_country:
+          type: string
+          title: بلد المغادرة
+          maxLength: 100
+        visited_countries:
+          title: الدول التي زارها
+        transport_mode:
+          type: string
+          title: وسيلة النقل
+          maxLength: 50
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+          title: المركبة
+        health_status:
+          allOf:
+          - $ref: '#/components/schemas/HealthStatus454Enum'
+          title: الحالة الصحية
+        risk_level:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordRiskLevelEnum'
+          title: مستوى الخطورة
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/TravelerHealthRecordDecisionEnum'
+          title: القرار
+        assessed_by_name:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - assessed_by_name
+      - crossing
+      - crossing_name
+      - id
+      - passport_number
+      - traveler
+      - traveler_name
+    TravelerHealthRecordDecisionEnum:
+      enum:
+      - CLEARED
+      - HOLD
+      - REFERRED
+      - QUARANTINED
+      - REFUSED_ENTRY
+      type: string
+      description: '* `CLEARED` - أُفرج عنه
+
+        * `HOLD` - موقوف
+
+        * `REFERRED` - مُحال
+
+        * `QUARANTINED` - محجور
+
+        * `REFUSED_ENTRY` - ممنوع الدخول'
+    TravelerHealthRecordDirectionEnum:
+      enum:
+      - INBOUND
+      - OUTBOUND
+      type: string
+      description: '* `INBOUND` - داخل
+
+        * `OUTBOUND` - خارج'
+    TravelerHealthRecordRiskLevelEnum:
+      enum:
+      - GREEN
+      - YELLOW
+      - RED
+      type: string
+      description: '* `GREEN` - منخفض
+
+        * `YELLOW` - متوسط
+
+        * `RED` - مرتفع'
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        crossing:
+          type: string
+          format: uuid
+          title: المعبر
+        crossing_name:
+          type: string
+          readOnly: true
+        plate_number:
+          type: string
+          title: رقم اللوحة
+          maxLength: 30
+        chassis_number:
+          type: string
+          title: رقم الهيكل
+          maxLength: 50
+        vehicle_type:
+          allOf:
+          - $ref: '#/components/schemas/VehicleTypeEnum'
+          title: نوع المركبة
+        make_model:
+          type: string
+          title: الصنع والطراز
+          maxLength: 100
+        year_of_manufacture:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          title: سنة الصنع
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: السعة
+        owner_name:
+          type: string
+          title: اسم المالك
+          maxLength: 200
+        driver_name:
+          type: string
+          title: اسم السائق
+          maxLength: 150
+        driver_phone:
+          type: string
+          title: هاتف السائق
+          maxLength: 30
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VehicleStatusEnum'
+          title: الحالة
+        notes:
+          type: string
+          title: ملاحظات
+      required:
+      - crossing
+      - crossing_name
+      - id
+      - plate_number
+    VehicleInspection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+          title: المركبة
+        plate_number:
+          type: string
+          readOnly: true
+        inspection_type:
+          allOf:
+          - $ref: '#/components/schemas/InspectionTypeEnum'
+          title: نوع التفتيش
+        inspection_date:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاريخ التفتيش
+        inspector_name:
+          type: string
+          readOnly: true
+        cleanliness_status:
+          allOf:
+          - $ref: '#/components/schemas/CleanlinessStatusEe5Enum'
+          title: النظافة
+        pest_control_status:
+          allOf:
+          - $ref: '#/components/schemas/PestControlStatusEe5Enum'
+          title: مكافحة الحشرات
+        waste_status:
+          allOf:
+          - $ref: '#/components/schemas/WasteStatusEnum'
+          title: النفايات
+        cooling_status:
+          allOf:
+          - $ref: '#/components/schemas/CoolingStatusEnum'
+          title: وسائل التبريد
+        findings:
+          type: string
+          title: الملاحظات
+        overall_status:
+          allOf:
+          - $ref: '#/components/schemas/VehicleInspectionOverallStatusEnum'
+          title: الحالة العامة
+        reinspection_required:
+          type: boolean
+          title: يلزم إعادة تفتيش
+      required:
+      - id
+      - inspection_date
+      - inspector_name
+      - plate_number
+      - vehicle
+    VehicleInspectionOverallStatusEnum:
+      enum:
+      - PASSED
+      - CONDITIONAL
+      - FAILED
+      type: string
+      description: '* `PASSED` - نجح
+
+        * `CONDITIONAL` - مشروط
+
+        * `FAILED` - فشل'
+    VehicleStatusEnum:
+      enum:
+      - ACTIVE
+      - UNDER_QUARANTINE
+      - CONDEMNED
+      type: string
+      description: '* `ACTIVE` - نشطة
+
+        * `UNDER_QUARANTINE` - محجورة
+
+        * `CONDEMNED` - مرفوضة'
+    VehicleTypeEnum:
+      enum:
+      - BUS
+      - TRUCK
+      - PRIVATE_CAR
+      - AMBULANCE
+      - LIVESTOCK_TRANSPORT
+      - REFRIGERATED_TRUCK
+      - TANKER
+      - OTHER
+      type: string
+      description: '* `BUS` - حافلة ركاب
+
+        * `TRUCK` - شاحنة بضائع
+
+        * `PRIVATE_CAR` - سيارة خاصة
+
+        * `AMBULANCE` - سيارة إسعاف
+
+        * `LIVESTOCK_TRANSPORT` - نقل حيوانات
+
+        * `REFRIGERATED_TRUCK` - شاحنة مبرّدة
+
+        * `TANKER` - ناقلة سوائل
+
+        * `OTHER` - أخرى'
+    WasteStatusEnum:
+      enum:
+      - COMPLIANT
+      - NON_COMPLIANT
+      - NOT_APPLICABLE
+      type: string
+      description: '* `COMPLIANT` - مطابق
+
+        * `NON_COMPLIANT` - غير مطابق
+
+        * `NOT_APPLICABLE` - غير منطبق'
   securitySchemes:
     jwtAuth:
       type: http
