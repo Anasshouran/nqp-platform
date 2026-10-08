@@ -1,0 +1,18 @@
+name: SSH connectivity test
+on: workflow_dispatch
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test port 22
+        run: |
+          timeout 15 bash -c 'cat < /dev/null > /dev/tcp/196.1.246.63/22' && echo "PORT22_OPEN" || echo "PORT22_CLOSED_OR_TIMEOUT"
+      - name: Test HTTPS
+        run: |
+          curl -sfI --max-time 10 https://196.1.246.63 2>&1 | head -3 || echo "HTTPS_FAILED"
+      - name: Test HTTP
+        run: |
+          curl -sfI --max-time 10 http://196.1.246.63 2>&1 | head -3 || echo "HTTP_FAILED"
+      - name: Test ssh-keyscan verbose
+        run: |
+          ssh-keyscan -T 10 -v 196.1.246.63 2>&1 | head -10
