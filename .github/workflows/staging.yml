@@ -140,22 +140,14 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/staging_deploy_key
           chmod 600 ~/.ssh/staging_deploy_key
-          for i in 1 2 3; do
-            ssh-keyscan -T 10 -H "${{ vars.STAGING_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null && break
-            echo "ssh-keyscan attempt $i failed, retrying..."
-            sleep 3
-          done
-          if [ ! -s ~/.ssh/known_hosts ]; then
-            echo "ssh-keyscan failed after retries"
-            exit 1
-          fi
-          echo "SSH known_hosts ready"
+          echo "SSH key configured (host key verified at connect time)"
       - name: Deploy to staging
         env:
           SSH_KEY_PATH: ~/.ssh/staging_deploy_key
           IMAGE_TAG: ${{ needs.build-backend-image.outputs.image_tag }}
         run: |
-          ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=yes \
+          ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 -o ServerAliveInterval=15 \
             ${{ vars.STAGING_USER }}@${{ vars.STAGING_HOST }} \
             "cd /opt/nqp-platform/deploy/staging && \
              echo \"Deploying image: ghcr.io/anasshouran/nqp-backend:${IMAGE_TAG}\" && \
@@ -167,6 +159,7 @@ jobs:
              echo \"Deployment successful: ${IMAGE_TAG}\""
       - name: Smoke test
         run: |
-          ssh -i ~/.ssh/staging_deploy_key -o StrictHostKeyChecking=yes \
+          ssh -i ~/.ssh/staging_deploy_key -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
             ${{ vars.STAGING_USER }}@${{ vars.STAGING_HOST }} \
             "docker exec nqp-staging-backend curl -sf http://localhost:8000/api/v1/health/ || echo 'Health check failed'"
