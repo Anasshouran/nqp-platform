@@ -150,6 +150,7 @@ def test_sync_log_payload_does_not_leak_secret():
 # ---------------------------------------------------------------------------
 def test_ihr_reported_as_unconfigured_without_credentials(settings):
     from apps.who.config import load_ihr_configuration
+    settings.WHO_ENABLED = 'true'
     for name in ('WHO_IHR_BASE_URL', 'WHO_IHR_TOKEN_URL', 'WHO_IHR_CLIENT_ID', 'WHO_IHR_CLIENT_SECRET'):
         settings.__dict__.pop(name, None)
     config = load_ihr_configuration(base_url='', token_url='', client_id='', client_secret='')

@@ -177,6 +177,7 @@ class KillSwitchViewSet(
         qs = self.get_queryset()
         if port_id:
             qs = qs.filter(port_id=port_id)
+        qs = qs.filter(deactivated_at__isnull=True)
         active = qs.order_by('-activated_at').first()
         return Response(success_response({
             'active': active is not None,
