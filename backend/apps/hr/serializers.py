@@ -17,6 +17,7 @@ from apps.organization.models import Department, OrgAssignment
 from .models import (
     AttendanceRecord,
     CycleStatus,
+    EnrollmentStatus,
     EnrollmentStatusLog,
     PerformanceCycle,
     PerformanceKPI,
@@ -913,6 +914,18 @@ class TrainingEnrollmentWriteSerializer(serializers.ModelSerializer):
         plan = attrs.get('plan') or getattr(instance, 'plan', None)
         if plan is not None and not plan.is_active:
             raise serializers.ValidationError({'plan': 'الدورة غير نشطة'})
+        employee = attrs.get('employee') or getattr(instance, 'employee', None)
+        if employee is not None and plan is not None:
+            duplicates = TrainingEnrollment.objects.filter(
+                employee=employee,
+                plan=plan,
+            ).exclude(status__in=[EnrollmentStatus.CANCELLED, EnrollmentStatus.REJECTED])
+            if instance is not None:
+                duplicates = duplicates.exclude(pk=instance.pk)
+            if duplicates.exists():
+                raise serializers.ValidationError(
+                    {'employee': 'مسجَّل في هذه الدورة بالفعل (تسجيل قائم غير ملغى)'}
+                )
         score = attrs.get('score', getattr(instance, 'score', None))
         if score is not None and not (0 <= score <= 100):
             raise serializers.ValidationError({'score': 'الدرجة بين 0 و100'})

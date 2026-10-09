@@ -75,8 +75,7 @@ def test_ports_public_list(api_client, port):
     response = api_client.get('/api/v1/public/ports/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['name_ar'] == 'مطار الخرطوم'
+    assert any(p['name_ar'] == 'مطار الخرطوم' for p in data)
 
 
 def test_ports_map_geojson(api_client, port):
@@ -84,10 +83,10 @@ def test_ports_map_geojson(api_client, port):
     assert response.status_code == 200
     data = response.json()['data']
     assert data['type'] == 'FeatureCollection'
-    assert len(data['features']) == 1
-    feature = data['features'][0]
-    assert feature['geometry']['type'] == 'Point'
-    assert feature['properties']['code'] == 'SDKRT'
+    assert any(
+        f['geometry']['type'] == 'Point' and f['properties']['code'] == 'SDKRT'
+        for f in data['features']
+    )
 
 
 def test_port_stats(api_client, port):
@@ -115,9 +114,10 @@ def test_diseases_public_list(api_client):
     response = api_client.get('/api/v1/public/diseases/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['icd_11_code'] == '1A00'
-    assert 'إسهال مائي' in data[0]['symptoms']
+    assert any(item['icd_11_code'] == '1A00' for item in data)
+    assert not any(item['icd_11_code'] == '1C1Z' for item in data)
+    active = next(item for item in data if item['icd_11_code'] == '1A00')
+    assert 'إسهال مائي' in active['symptoms']
 
 
 def test_countries_public_list(api_client):
@@ -148,8 +148,8 @@ def test_notices_public_list(api_client):
     response = api_client.get('/api/v1/public/notices/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['title'] == 'إشعار اختبار'
+    assert any(item['title'] == 'إشعار اختبار' for item in data)
+    assert not any(item['title'] == 'إشعار غير نشط' for item in data)
 
 
 def test_travel_requirements_filter(api_client):

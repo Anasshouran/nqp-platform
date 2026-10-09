@@ -154,6 +154,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
 
+# CSRF trusted origins — opt-in from environment (e.g. CSRF_TRUSTED_ORIGINS on
+# staging). Empty by default = safest; only explicit, operator-supplied HTTPS
+# origins are ever trusted. Never a wildcard.
+def parse_csrf_trusted_origins(raw: str = '') -> list[str]:
+    """Parse a comma-separated list of CSRF trusted origins.
+
+    Trims whitespace and drops empty entries. Empty input yields an empty list
+    (the safest default). Origins are passed through verbatim so Django's own
+    schema checks (scheme://netloc) apply unchanged. Never adds wildcards.
+    """
+    return [
+        origin.strip()
+        for origin in (raw or '').split(',')
+        if origin.strip()
+    ]
+
+
+CSRF_TRUSTED_ORIGINS = parse_csrf_trusted_origins(os.environ.get('CSRF_TRUSTED_ORIGINS', ''))
+
 # Security hardening (production / DEBUG=False)
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

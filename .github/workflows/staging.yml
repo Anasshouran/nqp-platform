@@ -69,9 +69,10 @@ jobs:
         run: python -m pytest apps -q --reuse-db
 
   frontend-checks:
-    name: Frontend — typecheck + lint + build
+    # BLOCKING release gate (F-02): typecheck, lint, tests and production
+    # build must all pass before any image is published.
+    name: Frontend — typecheck + lint + test + build
     runs-on: ubuntu-latest
-    continue-on-error: true
     defaults:
       run:
         working-directory: frontend
@@ -88,6 +89,8 @@ jobs:
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
+      - name: Test
+        run: npm test -- --run
       - name: Build
         run: npm run build
 
@@ -127,39 +130,82 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  build-frontend-image:
+    # F-02: the frontend is a first-class image with the SAME immutable
+    # release identity (<sha>) as the backend.
+    name: Build & publish frontend image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: [frontend-checks]
+    outputs:
+      image_tag: ${{ steps.tags.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:staging
+            ${{ env.IMAGE_NAMESPACE }}/afyatna-frontend:${{ steps.tags.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_URL=/api/v1
+
   # Deployment model: PULL-BASED
-  # GitHub Actions cannot SSH to the staging VPS (port 22 blocked by
+  # GitHub Actions cannot SSH to the staging VPS (port 22 blocked by the
   # cloud provider firewall between Azure runners and SudaniCloud).
   # The staging VPS runs deploy-poll.sh (cron every 60s) which detects
-  # new :staging tag on GHCR and deploys automatically.
-  # This job verifies the image is published and reports the SHA.
+  # a new :staging tag on GHCR and deploys the IMMUTABLE <sha> images.
+  # This job verifies BOTH images are published with the same SHA.
   verify-image-published:
-    name: Verify image published to GHCR
+    name: Verify images published to GHCR
     runs-on: ubuntu-latest
-    needs: [build-backend-image]
+    needs: [build-backend-image, build-frontend-image]
     environment: staging
     steps:
-      - name: Verify GHCR image is accessible
+      - name: Verify backend + frontend images are accessible
         run: |
-          IMAGE="${{ env.IMAGE_NAMESPACE }}/nqp-backend:${{ needs.build-backend-image.outputs.image_tag }}"
-          echo "Verifying image: $IMAGE"
-          # Check that the staging tag exists and is recent
-          TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:anasshouran/nqp-backend:pull" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
-            "https://ghcr.io/v2/anasshouran/nqp-backend/manifests/${{ needs.build-backend-image.outputs.image_tag }}")
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "✓ Image verified in GHCR: $IMAGE"
-          else
-            echo "✗ Image not found in GHCR (HTTP $HTTP_CODE)"
-            exit 1
-          fi
+          SHA="${{ needs.build-backend-image.outputs.image_tag }}"
+          echo "Verifying release SHA: $SHA"
+          went_wrong=0
+          for image in nqp-backend afyatna-frontend; do
+            TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:anasshouran/${image}:pull" | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))")
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+              "https://ghcr.io/v2/anasshouran/${image}/manifests/${SHA}")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✓ ghcr.io/anasshouran/${image}:${SHA} verified in GHCR"
+            else
+              echo "✗ ghcr.io/anasshouran/${image}:${SHA} NOT found (HTTP $HTTP_CODE)"
+              went_wrong=1
+            fi
+          done
+          exit "$went_wrong"
       - name: Report deployment status
         run: |
           echo "=== STAGING DEPLOYMENT STATUS ==="
-          echo "Image: ghcr.io/anasshouran/nqp-backend:${{ needs.build-backend-image.outputs.image_tag }}"
+          echo "Release SHA: ${{ needs.build-backend-image.outputs.image_tag }}"
           echo "Git SHA: ${{ needs.build-backend-image.outputs.image_sha }}"
+          echo "Backend:  ghcr.io/anasshouran/nqp-backend:${{ needs.build-backend-image.outputs.image_tag }}"
+          echo "Frontend: ghcr.io/anasshouran/afyatna-frontend:${{ needs.build-frontend-image.outputs.image_tag }}"
           echo "Deployment method: pull-based (VPS cron poller)"
           echo "VPS will deploy within 60 seconds of image availability"
           echo "SSH from GitHub Actions: BLOCKED (cloud provider firewall)"
