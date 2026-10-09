@@ -29,6 +29,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
+      - name: Install contracts dependencies
+        working-directory: contracts
+        run: npm ci
+
       - name: Install dependencies
         run: npm ci
 
