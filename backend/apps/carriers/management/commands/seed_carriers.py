@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from apps.accounts.models import Role
+from apps.accounts.models import Role, RoleAssignment
 from apps.carriers.models import Carrier, CarrierCompanyType, CarrierMember, Flight, HealthNotice
 from apps.masterdata.models import EntryPoint as Port
 from apps.travelers.models import Country
@@ -77,6 +77,15 @@ class Command(BaseCommand):
         if user.role_id != carrier_role.id:
             user.role = carrier_role
             user.save(update_fields=['role'])
+        # `User.can()` يقرأ `RoleAssignment` النشطة فقط ولا يعتمد
+        # `User.role` القديم، وممثّل الناقل يحتاج `flights:add`
+        # لإدارة رحلات شركته عبر البوابة.
+        RoleAssignment.objects.get_or_create(
+            user=user,
+            role=carrier_role,
+            scope_type=RoleAssignment.ScopeType.GLOBAL,
+            defaults={'assigned_by': user, 'is_active': True},
+        )
         CarrierMember.objects.get_or_create(
             user=user, defaults={'carrier': carrier_sd, 'is_primary': True, 'is_active': True},
         )

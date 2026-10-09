@@ -1,11 +1,18 @@
 import uuid
+from django.conf import settings
 from django.db import models
 
 from core.models import BaseModel
 
 
 class SeaPort(BaseModel):
-    """ميناء بحري / محطة حجر صحي بحرية."""
+    """ميناء بحري / محطة حجر صحي بحرية.
+
+    Canonical relationship to masterdata.EntryPoint via OneToOneField.
+    This replaces the legacy isolated SeaPort identity with the platform-wide
+    canonical port registry. All port-health scoping now resolves through
+    entry_point_id (EntryPoint PK) to align with PermissionScope resolution.
+    """
 
     code = models.CharField(max_length=20, unique=True, verbose_name='الكود')
     name_ar = models.CharField(max_length=100, verbose_name='الاسم بالعربية')
@@ -15,6 +22,16 @@ class SeaPort(BaseModel):
     authorities = models.TextField(blank=True, verbose_name='الجهات العاملة')
     description = models.TextField(blank=True, verbose_name='الوصف')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
+    entry_point = models.OneToOneField(
+        'masterdata.EntryPoint',
+        on_delete=models.PROTECT,
+        related_name='sea_port',
+        null=True,
+        blank=True,
+        verbose_name='منفذ الدخول الموحد',
+        help_text='Canonical EntryPoint (SEAPORT kind) this SeaPort extends. '
+                  'Scoping and permissions resolve via this relationship.',
+    )
 
     class Meta:
         ordering = ['code']
@@ -66,7 +83,39 @@ class Vessel(BaseModel):
     vessel_name = models.CharField(max_length=150, verbose_name='اسم السفينة')
     imo_number = models.CharField(max_length=20, unique=True, verbose_name='رقم IMO')
     flag_state = models.CharField(max_length=50, verbose_name='العلم')
-    shipping_company = models.CharField(max_length=150, blank=True, verbose_name='شركة الملاحة')
+    # -------------------------------------------------------------------------
+    # DEPRECATED (Phase 1A.1) — retained deliberately, do not delete yet.
+    # Free-text company identity superseded by the `company` FK below.
+    # Known consumers (must migrate before removal):
+    #   backend: seed_port_health (write), VesselSerializer (output),
+    #            VesselViewSet.search_fields (filter)
+    #   frontend: types/portHealth.ts, PortHealthPage (table + CSV export),
+    #            ShipInspectionForm (summary line)
+    # -------------------------------------------------------------------------
+    shipping_company = models.CharField(
+        max_length=150, blank=True,
+        verbose_name='شركة الملاحة (نص حر — DEPRECATED)',
+        help_text='DEPRECATED: legacy free-text company identity. Use `company` '
+                  '(ShippingCompany FK) for ownership; this column remains only '
+                  'until every consumer has migrated.',
+    )
+    # Canonical ownership link to the ShippingCompany (`carriers.Carrier`).
+    # Semantics (Phase 1A.1): the vessel's CURRENT PRIMARY operating company —
+    # i.e. the company that appears in the active `VesselCompanyRelationship`
+    # with `is_primary=True`. Historical/secondary owners, and non-operating
+    # roles (charterer, managing agent), live ONLY in VesselCompanyRelationship;
+    # this column must never be used to infer them.
+    company = models.ForeignKey(
+        'carriers.Carrier',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='vessels',
+        verbose_name='شركة الملاحة',
+        help_text='Canonical link to Carrier (ShippingCompany): the current primary '
+                  'operating company. Multi-role and historical ownership is held by '
+                  'apps.shipping.VesselCompanyRelationship, not here.',
+    )
     vessel_type = models.CharField(max_length=20, choices=VesselType.choices, default=VesselType.COMMERCIAL, verbose_name='النوع')
     gross_tonnage = models.FloatField(null=True, blank=True, verbose_name='الحمولة الإجمالية')
     last_port_of_call = models.CharField(max_length=100, blank=True, verbose_name='آخر ميناء مزار')
@@ -194,15 +243,58 @@ class HealthDeclaration(BaseModel):
     status = models.CharField(
         max_length=20, choices=DeclarationStatus.choices, default=DeclarationStatus.RECEIVED, verbose_name='الحالة'
     )
+    # --- Phase 1D-6B: server-owned review metadata -------------------------
+    # No historical backfill: rows predating this phase keep NULL because no
+    # reviewer is knowable after the fact, and inventing one would be a guess.
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        # NOTE: the contract suggested `reviewed_health_declarations`, but that
+        # reverse accessor is already taken by `carriers.HealthDeclaration`
+        # (aviation). Changing the carriers model is out of scope, so the
+        # maritime accessor is namespaced instead. No policy requirement is
+        # affected — the field stays nullable, SET_NULL and server-owned.
+        related_name='reviewed_maritime_declarations',
+        verbose_name='مراجع الإقرار',
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت المراجعة')
+    # `null=False, blank=True` follows the repository convention for a
+    # conditionally-required reason field (cf. carriers.HealthDeclaration.
+    # rejection_reason and shipping.PortClearanceDecision.reason). There is no
+    # `null=True` precedent for a reason field anywhere in the project.
+    rejection_reason = models.TextField(blank=True, verbose_name='سبب الرفض')
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
 
+    #: Legal transitions (Phase 1D-6B, frozen). Terminal states are empty.
+    #: `RECEIVED -> REVIEWED -> {APPROVED, REJECTED}`.
+    #: REJECTED is deliberately terminal: re-submission creates a NEW
+    #: declaration, so a rejection and its reason stay immutable.
+    ALLOWED_TRANSITIONS = {
+        DeclarationStatus.RECEIVED: {DeclarationStatus.REVIEWED},
+        DeclarationStatus.REVIEWED: {DeclarationStatus.APPROVED, DeclarationStatus.REJECTED},
+        DeclarationStatus.APPROVED: set(),
+        DeclarationStatus.REJECTED: set(),
+    }
+
     class Meta:
-        ordering = ['-declaration_date']
+        ordering = ['-declaration_date', '-created_at', '-id']
         verbose_name = 'إقرار صحي بحري'
         verbose_name_plural = 'الإقرارات الصحية البحرية'
+        constraints = [
+            # Defence in depth only; the transition service is authoritative.
+            # Mirrors `ck_clearance_refused_requires_reason` on
+            # shipping.PortClearanceDecision. String literal, as there too.
+            models.CheckConstraint(
+                check=~models.Q(status='REJECTED') | ~models.Q(rejection_reason=''),
+                name='ck_health_declaration_rejected_requires_reason',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.vessel.vessel_name} - {self.declaration_date}'
+
+    def can_transition_to(self, target):
+        return target in self.ALLOWED_TRANSITIONS.get(self.status, set())
 
 
 class ShipInspection(BaseModel):

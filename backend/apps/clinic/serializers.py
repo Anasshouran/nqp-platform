@@ -95,7 +95,7 @@ class ClinicReferralSerializer(serializers.ModelSerializer):
             'id', 'screening_id', 'traveler', 'traveler_name', 'passport_number',
             'nationality_name', 'date_of_birth',
             'port', 'port_name', 'clinic', 'clinic_name', 'source', 'queue_no',
-            'status', 'notes', 'created_at',
+            'status', 'notes', 'created_at', 'flight', 'health_event',
             'body_temperature', 'observed_symptoms', 'officer_notes',
         ]
         read_only_fields = ['id', 'status', 'created_at']

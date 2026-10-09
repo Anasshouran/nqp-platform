@@ -12,7 +12,11 @@ from core.permissions import ActionPermissionMixin, PermissionAction
 
 logger = logging.getLogger(__name__)
 
-from .clients.base_client import WHOClientError
+from .clients.base_client import (
+    WHOClientError,
+    WHOClientValidationError,
+    WHOExternalAccessDisabled,
+)
 from .clients.icd_client import ICD11Client
 from .models import DiseaseMaster, WHOSyncLog, WHOICDMapping, WHOIntegration
 from .serializers import (
@@ -21,6 +25,11 @@ from .serializers import (
     WHOICDMappingReviewSerializer,
     WHOIntegrationSerializer,
     WHOSyncLogSerializer,
+)
+from .services.connectivity import (
+    describe_connectivity,
+    record_connectivity_check,
+    verify_icd11_connectivity,
 )
 from .services.mapping_service import (
     MappingTransitionError,
@@ -49,36 +58,34 @@ class WHOIntegrationViewSet(ActionPermissionMixin, viewsets.ModelViewSet):
     serializer_class = WHOIntegrationSerializer
     permission_classes = [permissions.IsAuthenticated, PermissionAction]
     permission_resource = 'who_integration'
-    action_permission_map = ACTION_TO_PERMISSION
-    queryset = WHOIntegration.objects.all()
+    # `ordering` مطلوب: ترقيم الصفحات بلا ترتيب يعطي نتائج غير قابلة للتكرار
+    # بين الطلبات، فتفشل أو تُخطئ CursorPagination.
+    queryset = WHOIntegration.objects.order_by('name')
 
     @action(detail=False, methods=['get'], url_path='status')
     def status(self, request):
-        integration = WHOIntegration.objects.filter(is_active=True).first()
-        if not integration:
-            return Response({'status': 'success', 'message': '', 'data': {'connected': False, 'configured': False}})
-        return Response({
-            'status': 'success',
-            'message': '',
-            'data': {
-                'configured': True,
-                'connected': bool(integration.last_success_at),
-                'environment': integration.environment,
-                'last_sync_at': integration.last_sync_at,
-                'last_success_at': integration.last_success_at,
-                'last_error': integration.last_error,
-            },
-        })
+        """حالة الاتصال كما يثبتها الفحص المتحكَّم به — بلا أي طلب شبكة.
+
+        ``connected`` لم يعد ``bool(last_success_at)``: ذلك يخلط نجاح مزامنة قديمة
+        بحالة اتصال حالية. المصدر الآن فحص ``STATUS_CHECK`` المسجَّل فقط.
+        """
+        return Response({'status': 'success', 'message': '', 'data': describe_connectivity()})
 
     @action(detail=False, methods=['post'], url_path='test')
     def test(self, request):
-        integration = WHOIntegration.objects.filter(is_active=True).first()
-        if not integration:
-            return Response({'status': 'error', 'message': 'لا يوجد تكامل WHO فعّال.'}, status=400)
-        from apps.who.tasks import test_who_connection
+        """فحص واحد محكوم: OAuth ← مورد ICD ← تسجيل النتيجة.
 
-        result = test_who_connection()
-        return Response({'status': 'success', 'message': '' if result.get('connected') else 'فشل الاتصال.', 'data': result})
+        لا Celery ولا مزامنة ولا إرسال IHR. يُسجَّل في ``WHOSyncLog`` كـ
+        ``STATUS_CHECK`` حتى تبقى ``status`` متسقة مع ما رآه المستخدم.
+        """
+        result = verify_icd11_connectivity()
+        record_connectivity_check(result)
+        payload = result.as_payload()
+        return Response({
+            'status': 'success',
+            'message': '' if result.is_verified else result.message,
+            'data': payload,
+        })
 
     @action(detail=False, methods=['post'], url_path='sync')
     def sync(self, request):
@@ -231,7 +238,10 @@ class WHOICDSearchViewSet(viewsets.ViewSet):
                 client_secret=integration.client_secret,
             )
             results = client.search(query, language=request.query_params.get('language', 'en'))
+        except (WHOClientValidationError, WHOExternalAccessDisabled):
+            logger.warning('WHO ICD-11 search refused locally for q=%r', query[:100])
+            return Response({'status': 'error', 'message': 'إعدادات تكامل ICD-11 غير مهيّأة للبحث.'}, status=400)
         except (WHOClientError, httpx.HTTPError) as exc:
-            logger.warning('WHO ICD-11 search failed for q=%r', query[:100])
+            logger.warning('WHO ICD-11 search failed for q=%r: %s', query[:100], type(exc).__name__)
             return Response({'status': 'error', 'message': 'فشل الاتصال بخدمة ICD-11.'}, status=502)
         return Response({'status': 'success', 'message': '', 'data': results or []})

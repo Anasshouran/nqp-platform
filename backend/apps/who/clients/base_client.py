@@ -1,12 +1,30 @@
-"""عميل HTTP أساسي للتواصل مع منظمة الصحة العالمية."""
+"""طبقة النقل (transport) للتواصل مع منظمة الصحة العالمية.
 
-from typing import Any, Optional
+الفصل عن الإعدادات: الأسماء والقيم والتحقق منها في ``apps.who.config``؛
+هنا فقط كيفية إرسال الطلب.
+
+انضباط Phase 0:
+
+* لا يُطلب أي توكن عند الاستيراد ولا عند البناء — التوكن كسول عند أول استخدام.
+* لا تُطبع الأسرار ولا يُخزَّن التوكن في أي ``__repr__`` أو رسالة خطأ.
+* لا يُفترض أن مساراً داخلياً من ``/api/v1/...`` هو نقطة WHO خارجية؛ مسارات
+  IHR تأتي من الإعدادات صراحةً (WHO_IHR_EVENTS_PATH / WHO_IHR_STATUS_PATH)،
+  وتبقى فارغة حتى تتأكد جهة الاتصال من العقد الرسمي.
+"""
+
+from typing import Optional
 
 import httpx
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.utils import timezone
 
+from apps.who.config import (
+    SETTING_ENABLED,
+    SETTING_IHR_CLIENT_ID,
+    SETTING_IHR_CLIENT_SECRET,
+    SETTING_IHR_TOKEN_URL,
+    load_ihr_configuration,
+    text_setting,
+)
 from apps.who.models import WHOSyncLog, WHOIntegration
 
 
@@ -14,39 +32,50 @@ class WHOClientError(Exception):
     """خطأ في الاتصال بمنظمة الصحة العالمية."""
 
 
-def _setting(name: str, fallback: str = '') -> str:
-    """قراءة إعداد مركزي من Django settings مع الرجوع للافتراضي.
+class WHOExternalAccessDisabled(WHOClientError):
+    """التكامل مع WHO معطّل صراحةً (WHO_ENABLED=false) — لا تُرسل أي طلب."""
 
-    ملاحظة: نسخة مطابقة لـ apps.who.clients.icd_client._setting — التوحيد 후보
-    في مرحلة لاحقة (وحدة مشتركة) لتفادي التكرار.
-    """
-    try:
-        value = getattr(settings, name, fallback)
-    except ImproperlyConfigured:
-        return fallback
-    return value or fallback
+
+class WHOClientValidationError(WHOClientError):
+    """مدخلات أو إعدادات غير صالحة — refus قبل أي طلب خارجي."""
 
 
 class OAuth2TokenProvider:
-    """مدير رمز الوصول OAuth2 العمليات-الاعتماد (client credentials)."""
+    """مصدر رمز الوصول OAuth2 بتفويض client-credentials.
+
+    التوكن كسول (lazy): لا يُطلب عند البناء، ويُحفظ في الذاكرة فقط.
+    """
 
     def __init__(
         self,
         base_url: str,
         client_id: str,
         client_secret: str,
-        timeout: float = 10.0,
+        timeout: Optional[float] = None,
         token_url: str = '',
     ):
-        self.token_url = (token_url or f'{base_url.rstrip("/")}/oauth2/token').rstrip('/')
+        self.base_url = base_url
+        # لا اشتقاق لنقطة التوكن: تُمرَّر صراحةً أو تُضبط عبر WHO_IHR_TOKEN_URL.
+        # الاشتقاق التاريخي {base_url}/oauth2/token أُزيل بالكامل.
+        self.token_url = (token_url or '').rstrip('/')
         self.client_id = client_id
         self.client_secret = client_secret
-        self.timeout = timeout
+        self.timeout = float(timeout) if timeout else 15.0
         self._access_token: Optional[str] = None
 
     def get_token(self) -> str:
         if self._access_token:
             return self._access_token
+        if not self.token_url:
+            raise WHOClientError(
+                f'لا يمكن طلب توكن IHR: نقطة التوكن غير مضبوطة — '
+                f'اضبط {SETTING_IHR_TOKEN_URL} صراحةً (لا تُشتق من الأساس).'
+            )
+        if not self.client_id or not self.client_secret:
+            raise WHOClientError(
+                f'لا يمكن طلب توكن IHR: اضبط {SETTING_IHR_CLIENT_ID} و '
+                f'{SETTING_IHR_CLIENT_SECRET} في البيئة.'
+            )
         response = httpx.post(
             self.token_url,
             data={
@@ -63,6 +92,9 @@ class OAuth2TokenProvider:
             raise WHOClientError('لم يصدر رمز وصول من جهة الاصدار.')
         return self._access_token
 
+    def __repr__(self) -> str:  # pragma: no cover - حماية من التسرّب في السجلات
+        return f'<OAuth2TokenProvider token_url={self.token_url} client_id_set={bool(self.client_id)}>'
+
 
 class WHOClient:
     """عميل REST قصير العمر لمنظمة الصحة العالمية مع تسجيل السجلات.
@@ -74,26 +106,45 @@ class WHOClient:
     def __init__(
         self,
         integration: WHOIntegration,
-        timeout: float = 15.0,
+        timeout: Optional[float] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
         token_url: str = '',
     ):
         self.integration = integration
-        self.timeout = timeout
-        self.base_url = integration.base_url.rstrip('/')
-        self.client_id = client_id or _setting('WHO_IHR_CLIENT_ID') or integration.client_id
-        self.client_secret = (
-            client_secret or _setting('WHO_IHR_CLIENT_SECRET') or integration.client_secret
+        # سلسلة المصدر كاملة: صريح ← الإعدادات (WHO_IHR_*) ← WHOIntegration
+        # (fallback أخير للتوافق مع السجلات القائمة).
+        resolved_client_id = (
+            client_id or text_setting(SETTING_IHR_CLIENT_ID) or integration.client_id
         )
+        resolved_client_secret = (
+            client_secret or text_setting(SETTING_IHR_CLIENT_SECRET) or integration.client_secret
+        )
+        self.config = load_ihr_configuration(
+            base_url=integration.base_url,
+            client_id=resolved_client_id,
+            client_secret=resolved_client_secret,
+            token_url=token_url or None,
+            timeout=timeout,
+        )
+        self.timeout = self.config.timeout
+        self.base_url = self.config.base_url
+        self.client_id = self.config.client_id
+        self.client_secret = self.config.client_secret
         self._token_provider = None
         if integration.authentication_type == WHOIntegration.AuthType.OAUTH2:
             self._token_provider = OAuth2TokenProvider(
                 self.base_url,
                 self.client_id,
                 self.client_secret,
-                token_url=token_url or _setting('WHO_IHR_TOKEN_URL'),
+                timeout=self.timeout,
+                token_url=self.config.token_url or token_url,
             )
+
+    @property
+    def is_enabled(self) -> bool:
+        """هل التكامل مفعّل عبر WHO_ENABLED؟"""
+        return self.config.enabled
 
     @property
     def is_configured(self) -> bool:
@@ -105,11 +156,19 @@ class WHOClient:
             return bool(self.client_id)
         return bool(self.client_id and self.client_secret)
 
+    def _assert_enabled(self) -> None:
+        if not self.is_enabled:
+            raise WHOExternalAccessDisabled(
+                f'التكامل مع منظمة الصحة العالمية معطّل عبر {SETTING_ENABLED}=false — '
+                'لم يُرسل أي طلب.'
+            )
+
     def _headers(self) -> dict:
+        self._assert_enabled()
         if not self.is_configured:
             raise WHOClientError(
-                'بيانات اعتماد WHO IHR غير مُهيّأة — يجب ضبط WHO_IHR_CLIENT_ID '
-                'و WHO_IHR_CLIENT_SECRET في البيئة أو تخزينها في تكامل WHO.'
+                f'بيانات اعتماد WHO IHR غير مُهيّأة — يجب ضبط {SETTING_IHR_CLIENT_ID} '
+                f'و {SETTING_IHR_CLIENT_SECRET} في البيئة أو تخزينها في تكامل WHO.'
             )
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
         if self.integration.authentication_type == WHOIntegration.AuthType.API_KEY:
@@ -154,7 +213,7 @@ class WHOClient:
             )
             log.http_status = response.status_code
             try:
-                body: Any = response.json()
+                body = response.json()
             except ValueError:
                 body = {'raw': response.text[:500]}
             log.response_payload = body if isinstance(body, dict) else {'data': body}
@@ -183,12 +242,22 @@ class WHOClient:
     def post(self, operation: str, path: str, payload: dict, resource_type: str = '', local_ref: str = '') -> dict:
         return self.request(operation, 'POST', path, resource_type=resource_type, local_ref=local_ref, payload=payload)
 
+    def __repr__(self) -> str:  # pragma: no cover - حماية من التسرّب في السجلات
+        return f'<WHOClient base_url={self.base_url} client_id_set={bool(self.client_id)}>'
+
 
 def test_connection(integration: WHOIntegration) -> dict:
-    """اختبار اتصال سريع بنقطة نهاية الحالة لدى WHO."""
+    """اختبار اتصال سريع عبر نقطة الحالة **المضبوطة صراحةً** فقط.
+
+    لا يوجد مسار افتراضي: أي مسار سابق كان مساراً داخلياً للمنصة ولا يجوز
+    اعتباره نقطة WHO خارجية قبل تأكيد العقد الرسمي.
+    """
     client = WHOClient(integration)
+    status_path = client.config.status_path
+    if not client.config.has_status_endpoint:
+        return {'connected': False}
     try:
-        result = client.get(WHOSyncLog.Operation.STATUS_CHECK, '/api/v1/status', resource_type='system')
+        result = client.get(WHOSyncLog.Operation.STATUS_CHECK, status_path, resource_type='system')
         return {'connected': True, **result}
     except WHOClientError:
         return {'connected': False}

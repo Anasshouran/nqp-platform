@@ -2,6 +2,8 @@ import logging
 
 from rest_framework.permissions import BasePermission
 
+from core.utils.authorization import has_active_global_scope
+
 logger = logging.getLogger(__name__)
 
 
@@ -129,26 +131,145 @@ class PermissionAction(BasePermission):
 
 
 class ScopeFilter(BasePermission):
+    """يقيد الوصول على مستوى الكائن مقابل نطاقات المستخدم.
+
+    فشل آمن: أي حالة غير قابلة للتقييم (مورد بلا إعداد، أو نطاق بلا حقل
+    قابل للمقارنة، أو كائن بلا قيمة نطاق) **تمنع** الوصول بدل الموافقة.
+    يُكمل `PermissionAction` الذي يتحقق من الصلاحية على مستوى الطلب.
+
+    ملاحظة: تقييد *القوائم* لا يمكن تحقيقه هنا لأن `has_permission` لا يرى
+    الكائنات؛ لذلك تعتمد الـ viewsets على تقييد queryset في `get_queryset`.
+    """
+
     def has_permission(self, request, view):
         return True
 
+    def _get_nested_attr(self, obj, attr_path):
+        """الحصول على قيمة حقل علائقي متداخل (مثلاً 'port__entry_point_id').
+
+        يعالج المسارات بالتنسيق Django ORM مع `__`.
+        """
+        current = obj
+        parts = attr_path.split('__')
+        for i, part in enumerate(parts):
+            if current is None:
+                return None
+            is_last = (i == len(parts) - 1)
+            if is_last:
+                id_attr = f'{part}_id'
+                val = getattr(current, id_attr, None)
+                if val is not None:
+                    return val
+                return getattr(current, part, None)
+            val = getattr(current, part, None)
+            if val is None:
+                return None
+            current = val
+        return current
+
+    def _resolve_scope_values(self, obj, attr_path):
+        """القيم التي يمكن أن يأخذها `attr_path` على الكائن، كـ set.
+
+        يكمّل :meth:`_get_nested_attr` الذي يتوقف عند أول علاقة متعددة القيم
+        (``vessel__visits__port__entry_point_id`` مثلاً: ``vessel.visits`` هي
+        RelatedManager لا كائن واحد، فيعيد ``getattr`` قيمة لا معنى للمقارنة بها).
+
+        هنا ننفّذ المسار مع **توزيع** على العلاقات متعددة القيم، فتصبح كل
+        نقطة دخول ممكنة للكائن مجموعة قيم. ``set`` فارغة تعني أن النطاق غير
+        قابل للحل، ويتعامل معها المستدعي كـ DENY (فشل آمن) لا كـ "غير مقيّد".
+
+        المسارات نفسها لم تتغيّر — هذا يجعل *المسارات المُعلَنة فعلاً* قابلة
+        للحل فقط، ولا يخترع مسارات جديدة.
+        """
+        parts = attr_path.split('__')
+        current = [obj]
+        for i, part in enumerate(parts):
+            is_last = (i == len(parts) - 1)
+            nxt = []
+            for item in current:
+                if item is None:
+                    continue
+                val = getattr(item, part, None)
+                if val is None:
+                    continue
+                if is_last:
+                    id_val = getattr(item, f'{part}_id', None)
+                    nxt.append(id_val if id_val is not None else val)
+                elif hasattr(val, 'all') and not hasattr(val, 'pk'):
+                    # RelatedManager: علاقة متعددة القيم — وسّعها.
+                    nxt.extend(val.all())
+                else:
+                    nxt.append(val)
+            current = nxt
+            if not current:
+                return set()
+        return {v for v in current if v is not None}
+
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_superuser:
             return True
         resource = getattr(view, 'permission_resource', None)
         if not resource:
+            logger.warning(
+                'ScopeFilter: no permission_resource on %s - DENYING object access',
+                view.__class__.__name__,
+            )
+            return False
+        # نطاق GLOBAL = غير مقيّد (وهو ما تُرجعه `active_scopes` فارغاً عمداً).
+        if has_active_global_scope(user):
             return True
-        scopes = request.user.active_scopes(resource)
-        if not scopes:
-            return True
-        scope_field = getattr(view, 'scope_field', None)
-        if not scope_field:
-            return True
-        obj_scope_id = getattr(obj, scope_field, None)
-        if obj_scope_id is None:
-            return True
-        return any(
-            s['scope_id'] == obj_scope_id
-            for s in scopes
-            if s['scope_id'] is not None
-        )
+        scopes = user.active_scopes(resource)
+        scope_ids = {s['scope_id'] for s in scopes if s['scope_id'] is not None}
+
+        # A company-scoped actor is authorised by *ownership*, not geography.
+        # Without this branch a shipping-company member would be denied every
+        # object because its EntryPoint id is compared against a Carrier id —
+        # two unrelated id spaces.
+        company_field = getattr(view, 'company_field', None)
+        if company_field:
+            company_scope_ids = [
+                s['scope_id'] for s in scopes
+                if s['scope_type'] == 'COMPANY' and s['scope_id'] is not None
+            ]
+            if company_scope_ids:
+                obj_company_id = self._get_nested_attr(obj, company_field)
+                if obj_company_id is not None:
+                    return obj_company_id in company_scope_ids
+                # fall through to the geographic check below
+
+        # The canonical EntryPoint resolver is the ONLY thing that translates a
+        # scope into entry points. Comparing the object's entry point against the
+        # *raw* scope ids alone used to deny every actor whose scope was not
+        # literally `POINT`/`PORT` (a STATION or DEPARTMENT scope id never
+        # equals an EntryPoint id), so the organisation bridge was unreachable
+        # at object level.
+        #
+        # Raw scope ids are still accepted alongside it for views whose
+        # `scope_field` is keyed to the assignment's *own* id space (the
+        # `organization` viewsets filter by `sector`/`id`), which the canonical
+        # resolver deliberately does not speak to.
+        from core.utils.scoping import resolve_authorized_entry_points
+
+        canonical_ids = set(resolve_authorized_entry_points(user) or ())
+
+        if not scope_ids and not canonical_ids:
+            logger.warning(
+                'ScopeFilter: user %s has no scope for resource %s - DENYING object access',
+                user, resource,
+            )
+            return False
+        scope_field = getattr(view, 'scope_field', None) or 'port'
+        # نحلّ المسار عبر كل خطواته، مع التوزيع على العلاقات متعددة القيم
+        # (سفينة تصل إلى نقطة دخول عبر زياراتها). النتيجة الفارغة تعني نطاقاً
+        # غير قابل للحل، فترفض تماماً كما كان فرع `None` السابق يرفض.
+        obj_scope_values = self._resolve_scope_values(obj, scope_field)
+        if not obj_scope_values:
+            logger.warning(
+                'ScopeFilter: object %s has no resolvable %s value - DENYING object access',
+                obj, scope_field,
+            )
+            return False
+        return bool(obj_scope_values & (canonical_ids | set(scope_ids)))

@@ -1,12 +1,13 @@
 from django.contrib import admin
 
-from .models import DeveloperApp, ExternalEntity, IntegrationLog, WebhookEndpoint
+from .models import DeveloperApp, Organization, IntegrationLog, WebhookEndpoint
 
 
-@admin.register(ExternalEntity)
-class ExternalEntityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'is_active']
-    search_fields = ['name']
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ['code', 'name_en', 'org_type', 'status', 'is_active', 'created_at']
+    list_filter = ['org_type', 'status', 'is_active']
+    search_fields = ['code', 'name_en', 'name_ar']
 
 
 @admin.register(IntegrationLog)

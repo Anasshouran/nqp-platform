@@ -4,7 +4,7 @@
     DB_ENGINE=django.db.backends.postgresql .venv/bin/python manage.py seed_quarantine_fees
 """
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from apps.food_quarantine.models import QuarantineFee
 
@@ -123,29 +123,22 @@ FEES = [
     ('F86', 'CHEMICAL_TEST', 'تحليل AAS', 70000, None, ''),
 ]
 
-ORDER_MAP = {
-    'SHIP_INSPECTION': 1,
-    'HEALTH_SERVICES': 2,
-    'VACCINATION': 3,
-    'MEDICAL_FITNESS': 4,
-    'PEST_CONTROL': 5,
-    'CERTIFICATE': 6,
-    'VIOLATION': 7,
-    'FOOD_IMPORT': 8,
-    'FOOD_EXPORT': 9,
-    'UNLOADING': 10,
-    'MICRO_TEST': 11,
-    'CHEMICAL_TEST': 12,
-}
+VALID_CATEGORIES = {key for key, _ in QuarantineFee.Category.choices}
 
 
 class Command(BaseCommand):
     help = 'بذر تعرفة رسوم الكرنتينة لعام 2025 (86 بندًا)'
 
     def handle(self, *args, **options):
+        unknown = sorted({row[1] for row in FEES} - VALID_CATEGORIES)
+        if unknown:
+            raise CommandError(f'أقسام غير معرَّفة في النموذج: {", ".join(unknown)}')
+
         QuarantineFee.objects.filter(year=YEAR).delete()
         rows = []
+        per_category = {}
         for code, category, name_ar, sdg, usd, note in FEES:
+            per_category[category] = per_category.get(category, 0) + 1
             rows.append(QuarantineFee(
                 code=code,
                 category=category,
@@ -153,11 +146,11 @@ class Command(BaseCommand):
                 amount_sdg=sdg,
                 amount_usd=usd,
                 currency_note=note,
-                order=ORDER_MAP.get(category, 0),
+                order=per_category[category],
                 year=YEAR,
                 is_active=True,
             ))
         QuarantineFee.objects.bulk_create(rows)
         self.stdout.write(self.style.SUCCESS(
-            f'تم بذر تعرفة الكرنتينة {YEAR}: {len(rows)} بندًا عبر 12 قسمًا.'
+            f'تم بذر تعرفة الكرنتينة {YEAR}: {len(rows)} بندًا عبر {len(per_category)} قسمًا.'
         ))

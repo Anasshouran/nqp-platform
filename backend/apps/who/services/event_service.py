@@ -1,4 +1,12 @@
-"""خدمة بناء حمولة أحداث IHR وإرسالها إلى منظمة الصحة العالمية."""
+"""خدمة بناء حمولة أحداث IHR وفصلها عن الإرسال الخارجي.
+
+الفصل الصريح:
+  * ``build_event_payload()`` — بناء فقط، بلا شبكة وبلا حالة خارجية.
+  * ``submit_event_to_who()`` — الإرسال الخارجي، ويتطلب نقطة نهاية مؤكدة.
+
+Phase 0: مسار الإرسال يأتي من الإعدادات (WHO_IHR_EVENTS_PATH). إن كان فارغاً
+فلا يُرسل أي شيء إطلاقاً ولا يُخمَّن أي رابط بديل.
+"""
 
 from datetime import date, datetime
 from typing import Any
@@ -52,21 +60,36 @@ def build_event_payload(event: IHREvent) -> dict[str, Any]:
 
 
 def submit_event_to_who(event: IHREvent) -> str:
-    """إرسال حدث IHR للجهة المكوّنة لمنظمة الصحة، يُرجع المرجع الخارجي."""
-    from apps.who.clients.base_client import WHOClient
-    from apps.who.clients.base_client import WHOSyncLog
-    from apps.who.models import WHOIntegration
+    """إرسال حدث IHR عبر نقطة النهاية **المضبوطة صراحةً**، يُرجع المرجع الخارجي.
+
+    نقطة النهاية تُقرأ من ``WHO_IHR_EVENTS_PATH``. المنصة النشطة حالياً لا تملك
+    عقداً رسمياً مع WHO لمسار الإرسال، لذلك لا يوجد مسار افتراضي ولا رابط
+    مُخمَّن: بلا ضبط مُسبق ترفع الدالة خطأً واضحاً دون أي طلب شبكة.
+    """
+    from apps.who.clients.base_client import WHOClient, WHOClientError
+    from apps.who.config import load_ihr_configuration
+    from apps.who.models import WHOSyncLog, WHOIntegration
 
     integration = WHOIntegration.objects.filter(is_active=True).order_by('-last_success_at').first()
     if not integration:
         raise ValueError('لا يوجد تكامل WHO فعّال — لابد من تهيئته أولاً.')
 
+    config = load_ihr_configuration(
+        base_url=integration.base_url,
+        client_id=integration.client_id,
+        client_secret=integration.client_secret,
+    )
+    if not config.has_events_endpoint:
+        raise WHOClientError(
+            'نقطة إرسال حدث IHR غير مضبوطة:WHO IHR endpoint requires official '
+            'contract confirmation (WHO_IHR_EVENTS_PATH). لم يُرسل أي طلب.'
+        )
+
     client = WHOClient(integration)
     payload = build_event_payload(event)
-    operation = WHOSyncLog.Operation.EVENT_SUBMIT
     result = client.post(
-        operation,
-        '/api/v1/events',
+        WHOSyncLog.Operation.EVENT_SUBMIT,
+        config.events_path,
         payload,
         resource_type='ihr_event',
         local_ref=str(event.id),

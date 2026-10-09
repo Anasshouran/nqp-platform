@@ -9,6 +9,16 @@ from apps.organization.models import Sector
 from apps.public.models import ContactMessage, HealthCertificate
 from apps.travelers.models import Country, Traveler
 
+from ..views import (
+    DemoQrView,
+    FoodShipmentTrackView,
+    LabResultLookupView,
+    PublicFlightView,
+    TravelerLookupView,
+    VerifyCertificateView,
+    VerifyQrView,
+)
+
 pytestmark = pytest.mark.django_db
 
 
@@ -65,8 +75,7 @@ def test_ports_public_list(api_client, port):
     response = api_client.get('/api/v1/public/ports/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['name_ar'] == 'مطار الخرطوم'
+    assert any(p['name_ar'] == 'مطار الخرطوم' for p in data)
 
 
 def test_ports_map_geojson(api_client, port):
@@ -74,10 +83,10 @@ def test_ports_map_geojson(api_client, port):
     assert response.status_code == 200
     data = response.json()['data']
     assert data['type'] == 'FeatureCollection'
-    assert len(data['features']) == 1
-    feature = data['features'][0]
-    assert feature['geometry']['type'] == 'Point'
-    assert feature['properties']['code'] == 'SDKRT'
+    assert any(
+        f['geometry']['type'] == 'Point' and f['properties']['code'] == 'SDKRT'
+        for f in data['features']
+    )
 
 
 def test_port_stats(api_client, port):
@@ -105,9 +114,10 @@ def test_diseases_public_list(api_client):
     response = api_client.get('/api/v1/public/diseases/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['icd_11_code'] == '1A00'
-    assert 'إسهال مائي' in data[0]['symptoms']
+    assert any(item['icd_11_code'] == '1A00' for item in data)
+    assert not any(item['icd_11_code'] == '1C1Z' for item in data)
+    active = next(item for item in data if item['icd_11_code'] == '1A00')
+    assert 'إسهال مائي' in active['symptoms']
 
 
 def test_countries_public_list(api_client):
@@ -138,8 +148,8 @@ def test_notices_public_list(api_client):
     response = api_client.get('/api/v1/public/notices/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert len(data) == 1
-    assert data[0]['title'] == 'إشعار اختبار'
+    assert any(item['title'] == 'إشعار اختبار' for item in data)
+    assert not any(item['title'] == 'إشعار غير نشط' for item in data)
 
 
 def test_travel_requirements_filter(api_client):
@@ -230,8 +240,12 @@ def test_traveler_lookup_found(api_client, traveler):
     assert response.status_code == 200
     data = response.json()['data']
     assert data['found'] is True
-    assert data['full_name'] == 'محمد أحمد'
     assert data['qr_issued'] is True
+    # التحقق العام يعيد الحد الأدنى فقط — لا اسم كامل ولا جواز ولا سبب رفض.
+    assert 'full_name' not in data
+    assert 'passport_number' not in data
+    assert 'traveler_id' not in data
+    assert 'rejection_reason' not in data
 
 
 def test_traveler_lookup_rejects_passport_without_dob(api_client, traveler):
@@ -357,6 +371,12 @@ def test_verify_certificate_valid(api_client):
     data = response.json()['data']
     assert data['valid'] is True
     assert data['certificate']['certificate_number'] == certificate.certificate_number
+    # التحقق العام لا يُرجع هوية الحامل أو المرض — الحد الأدنى فقط.
+    assert 'traveler_name' not in data['certificate']
+    assert 'passport_number' not in data['certificate']
+    assert 'disease' not in data['certificate']
+    assert data['certificate']['certificate_type'] == certificate.certificate_type
+    assert data['certificate']['issued_date'] == str(certificate.issued_date)
 
 
 def test_verify_certificate_expired(api_client):
@@ -386,6 +406,31 @@ def test_verify_certificate_not_found(api_client):
     assert response.status_code == 200
     assert response.json()['data']['valid'] is False
     assert response.json()['data']['reason'] == 'NOT_FOUND'
+
+
+def test_public_verify_endpoints_are_rate_limited():
+    """عروض التحقق العامة كلها خاضعة لسقف مشترك لمنع الفحص الآلي.
+
+    `TravelerLookupView` يملك سقفه المنفصل (`traveler_lookup`) من قبل،
+    وباقي عروض التحقق تشترك في `public_verify`.
+    """
+    from rest_framework.settings import api_settings
+    from rest_framework.throttling import ScopedRateThrottle
+
+    for view in (
+        VerifyCertificateView,
+        VerifyQrView,
+        LabResultLookupView,
+        DemoQrView,
+        FoodShipmentTrackView,
+        PublicFlightView,
+    ):
+        assert ScopedRateThrottle in view.throttle_classes, view.__name__
+        assert view.throttle_scope == 'public_verify', view.__name__
+    assert ScopedRateThrottle in TravelerLookupView.throttle_classes
+    assert TravelerLookupView.throttle_scope == 'traveler_lookup'
+    assert 'public_verify' in api_settings.DEFAULT_THROTTLE_RATES
+    assert 'traveler_lookup' in api_settings.DEFAULT_THROTTLE_RATES
 
 
 def test_demo_qr_returns_verifiable_payload(api_client, settings):

@@ -205,7 +205,7 @@ class NationalFocalPointViewSet(ActionPermissionMixin, viewsets.ReadOnlyModelVie
         return Response({'status': 'success', 'message': 'عُيّنت نقطة الاتصال.', 'data': NationalFocalPointSerializer(obj).data})
 
 
-class SPARIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
+class SPARIndicatorViewSet(ActionPermissionMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = SPARIndicatorSerializer
     permission_classes = [permissions.IsAuthenticated, PermissionAction]
     permission_resource = 'ihr_spar'

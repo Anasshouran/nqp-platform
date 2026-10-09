@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from apps.masterdata.models import EntryPoint as Port
 from apps.travelers.models import Country, Traveler
 
-from ..models import Carrier, CarrierMember, Flight, HealthNotice, PassengerManifest, NoticeAcknowledgement
+from ..models import Carrier, CarrierMember, Flight, FlightHealthEvent, FlightStatusLog, HealthNotice, PassengerManifest, NoticeAcknowledgement
 
 pytestmark = pytest.mark.django_db
 
@@ -39,6 +39,10 @@ def carrier(world):
 @pytest.fixture
 def rep(carrier):
     user = User.objects.create_user(email='rep@nqp.gov.sd', password='StrongPass123!', full_name='منسق شركة')
+    # `User.can()` يعتمد RoleAssignment النشطة فقط، فمموّل الناقل يحتاج
+    # تعيينًا فعليًا لدور CARRIER ليصل إلى صلاحيات الرحلات.
+    from .conftest import assign_carrier_role
+    assign_carrier_role(user)
     CarrierMember.objects.create(user=user, carrier=carrier, is_primary=True, is_active=True)
     return user
 
@@ -132,9 +136,121 @@ def test_portal_flight_create_and_validation(auth_client, carrier, world):
     assert resp.status_code == 404
 
     # حماية الحذف بعد الوصول
-    resp = auth_client.patch(f"/api/v1/carriers/flights/{data['id']}/status/", {'status': 'ARRIVED'}, format='json')
-    assert resp.status_code == 200
+    flight = Flight.objects.get(id=data['id'])
+    flight.transition_to(Flight.FlightStatus.MANIFEST_UPLOADED)
+    flight.transition_to(Flight.FlightStatus.IN_TRANSIT)
+    flight.transition_to(Flight.FlightStatus.ARRIVED)
     resp = auth_client.delete(f"/api/v1/carriers/flights/{data['id']}/")
+    assert resp.status_code == 400
+
+
+def test_flight_create_with_home_origin_returns_400_not_500(auth_client, world, carrier):
+    """C1: `origin_country` المتساوية مع بلد المنفذ الوجهة تُرفض بـ 400 لا بانهيار.
+
+    كان `validate()` يستدعي `destination_port` غير المعرَّف، فيقع `NameError`
+    (HTTP 500) لكل رحلة ممتربة من بلد المنشأة عند وجود منفذ وجهة.
+    """
+    payload = {
+        'flight_number': 'SUD900',
+        'flight_type': 'AIR',
+        'origin_code': 'KRT',
+        'origin_country': world['sudan'].code,
+        'destination_port': world['port'].code,
+        'scheduled_departure': timezone.now().isoformat(),
+        'scheduled_arrival': (timezone.now() + timezone.timedelta(hours=2)).isoformat(),
+    }
+    resp = auth_client.post('/api/v1/carriers/flights/', payload, format='json')
+    assert resp.status_code == 400, resp.content
+    assert not Flight.objects.filter(flight_number='SUD900').exists()
+
+
+def test_flight_patch_with_home_origin_returns_400_not_500(auth_client, world, carrier):
+    """C1: المسار الجزئي على رحلة بلد منشأتها家乡ي يُرفض بـ 400 لا بانهيار.
+
+    كان استدعاء `validate()` على PATCH يقع في `NameError` أيضاً لأن
+    `destination_port` غير معرَّف على مستوى الدالة.
+    """
+    flight = Flight.objects.create(
+        flight_number='SUD902',
+        carrier=carrier,
+        flight_type=Flight.FlightType.AIR,
+        origin_code='KRT',
+        origin_country=world['sudan'],
+        destination_port=world['port'],
+        scheduled_arrival=timezone.now() + timezone.timedelta(hours=5),
+    )
+    resp = auth_client.patch(
+        f'/api/v1/carriers/flights/{flight.id}/', {'notes': 'تحديث'}, format='json'
+    )
+    assert resp.status_code == 400, resp.content
+    flight.refresh_from_db()
+    assert flight.notes == ''
+
+
+def test_flight_create_for_foreign_origin_is_unaffected(auth_client, world):
+    """دليل عدم الانحدار: الرحلة من بلد خارجي ما زالت تُقبل كما هي."""
+    resp = auth_client.post(
+        '/api/v1/carriers/flights/',
+        {
+            'flight_number': 'SUD903',
+            'flight_type': 'AIR',
+            'origin_code': 'DXB',
+            'origin_country': world['egypt'].code,
+            'destination_port': world['port'].code,
+            'scheduled_departure': timezone.now().isoformat(),
+            'scheduled_arrival': (timezone.now() + timezone.timedelta(hours=2)).isoformat(),
+        },
+        format='json',
+    )
+    assert resp.status_code == 201, resp.content
+
+
+def test_flight_status_manual_transitions_are_restricted(auth_client, world, carrier):
+    flight = Flight.objects.create(
+        flight_number='SUD-T1', carrier=carrier, flight_type='AIR', origin_code='CAI',
+        origin_country=world['egypt'], destination_port=world['port'],
+        scheduled_arrival=timezone.now() + timezone.timedelta(hours=2),
+    )
+    url = f'/api/v1/carriers/flights/{flight.id}/status/'
+
+    resp = auth_client.patch(url, {'status': 'ARRIVED'}, format='json')
+    assert resp.status_code == 400
+    flight.refresh_from_db()
+    assert flight.status == Flight.FlightStatus.SCHEDULED
+
+    resp = auth_client.patch(url, {'status': 'MANIFEST_UPLOADED'}, format='json')
+    assert resp.status_code == 400
+
+    resp = auth_client.patch(url, {'status': 'CANCELLED'}, format='json')
+    assert resp.status_code == 200
+    flight.refresh_from_db()
+    assert flight.status == Flight.FlightStatus.CANCELLED
+    assert FlightStatusLog.objects.filter(flight=flight, to_status=Flight.FlightStatus.CANCELLED).exists()
+
+    resp = auth_client.patch(url, {'status': 'IN_TRANSIT'}, format='json')
+    assert resp.status_code == 400
+
+
+def test_flight_valid_status_lifecycle_via_api(auth_client, world, carrier):
+    flight = Flight.objects.create(
+        flight_number='SUD-T2', carrier=carrier, flight_type='AIR', origin_code='CAI',
+        origin_country=world['egypt'], destination_port=world['port'],
+        scheduled_arrival=timezone.now() + timezone.timedelta(hours=2),
+    )
+    flight.transition_to(Flight.FlightStatus.MANIFEST_UPLOADED)
+    url = f'/api/v1/carriers/flights/{flight.id}/status/'
+
+    resp = auth_client.patch(url, {'status': 'IN_TRANSIT'}, format='json')
+    assert resp.status_code == 200, resp.content
+    flight.refresh_from_db()
+    assert flight.status == Flight.FlightStatus.IN_TRANSIT
+
+    resp = auth_client.patch(url, {'status': 'ARRIVED'}, format='json')
+    assert resp.status_code == 200, resp.content
+    flight.refresh_from_db()
+    assert flight.status == Flight.FlightStatus.ARRIVED
+
+    resp = auth_client.patch(url, {'status': 'CANCELLED'}, format='json')
     assert resp.status_code == 400
 
 
@@ -393,6 +509,46 @@ def test_flight_health_event_report_transition_escalate(auth_client, flight):
     }, format='json')
     assert escalate.status_code == 200, escalate.content
     assert escalate.json()['data']['emergency_event_id']
+
+
+def test_flight_health_event_referral_and_quarantine_state(auth_client, flight, world):
+    resp = auth_client.post('/api/v1/carriers/health-events/', {
+        'flight': flight.id,
+        'category': 'SYMPTOM_ALERT',
+        'severity': 'MEDIUM',
+        'description': 'حالة اشتباه حمى',
+    }, format='json')
+    assert resp.status_code == 201, resp.content
+    event_id = resp.json()['data']['id']
+
+    traveler = Traveler.objects.create(
+        passport_number='C999', date_of_birth='1995-01-01', nationality=world['sudan'],
+    )
+    bad = auth_client.post('/api/v1/carriers/health-events/', {
+        'flight': flight.id, 'category': 'SYMPTOM_ALERT', 'severity': 'LOW',
+        'quarantine_state': 'INVALID', 'description': 'x',
+    }, format='json')
+    assert bad.status_code == 400
+
+    create = auth_client.post(f'/api/v1/carriers/health-events/{event_id}/referral/', {
+        'traveler': traveler.id, 'notes': 'تحتاج تقييم',
+    }, format='json')
+    assert create.status_code == 201, create.content
+    from apps.clinic.models import ClinicReferral
+
+    referral = ClinicReferral.objects.get(id=create.json()['data']['id'])
+    assert referral.flight_id == flight.id
+    assert str(referral.health_event_id) == event_id
+    assert referral.port_id == flight.destination_port_id
+
+    event = FlightHealthEvent.objects.get(id=event_id)
+    assert event.quarantine_state == 'PENDING'
+
+    event.transition_to('CLOSED')
+    closed = auth_client.post(f'/api/v1/carriers/health-events/{event_id}/referral/', {
+        'traveler': traveler.id,
+    }, format='json')
+    assert closed.status_code == 400
 
 
 def test_integration_rate_limit_and_audit(world, carrier):

@@ -36,10 +36,50 @@ def contains_any(text: str, keywords: list[str]) -> bool:
     return any(normalize(kw) in t for kw in keywords)
 
 
+#: القيم التي تعني «اكتشف اللغة بنفسك» لا لغة صريحة.
+AUTO_LANGUAGE_VALUES = {'', 'auto', 'und', 'unknown', 'none', 'null'}
+
+
+def _script_ratios(text: str) -> tuple[float, float]:
+    """نِسَب الحروف العربية واللاتينية إلى إجمالي الحروف."""
+    arabic = sum(1 for ch in text if '\u0600' <= ch <= '\u06FF')
+    latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
+    total = arabic + latin
+    if total == 0:
+        return 0.0, 0.0
+    return arabic / total, latin / total
+
+
 def detect_language(message: str) -> str:
-    arabic = sum(1 for ch in message if '\u0600' <= ch <= '\u06FF')
-    if arabic > 0 and arabic >= len([c for c in message if c.isalpha()]) / 2:
+    """تحدّد لغة الرسالة: `ar` أو `en`.
+
+    المرصود سابقاً: كان الشرط `arabic >= letters/2` يحسب نصفَ **عدد**
+    الحروف لا النسبة، فتُرجع الرسائل الإنجليزية القصيرة («hi»، «fever»)
+    عربيةً خطأً لأن المقام صغير.
+
+    الآن: نِسَب صريحة من نوعَي الحروف (عربي مقابل لاتيني)، والأرقام
+    والرموز لا تُحتسب في المقام.
+    """
+    text = (message or '').strip()
+    if not text:
         return 'ar'
+
+    arabic_ratio, latin_ratio = _script_ratios(text)
+
+    # كلمات عربية حبيسة بين كلمات لاتينية («أريد Laboratory result») تبقى
+    # عربية: المستخدم يكتب مصطلحاً إنجليزياً داخل جملة عربية، لا أنه
+    # يسأل بالإنجليزية. نكتفي بـ 4 حروف عربية على الأقل كي لا نبتلع
+    # رسالة لاتينية فيها رمز أو كلمة عربية عابرة.
+    if arabic_ratio > 0 and sum(1 for ch in text if '\u0600' <= ch <= '\u06FF') >= 4:
+        return 'ar'
+
+    # أفضلية أحد النوعين تكفي — لا عتبة ولا احتياط.
+    if latin_ratio > arabic_ratio:
+        return 'en'
+    if arabic_ratio > 0:
+        return 'ar'
+
+    # أرقام ورموز فقط: الافتراضي `en`.
     return 'en'
 
 
@@ -164,6 +204,115 @@ RISK_LABELS_EN = {
     'RED': 'High',
 }
 
+#: أسماء الخدمات بالإنجليزية.
+#:
+#: `Service.name_en` فارغ في قاعدة البيانات الحالية (52 خدمة من 52)، فلا
+#: ننتظر ترجمتها لنُظهر ردّاً إنجليزياً صحيحاً. هذه خريطة مترجمة مُداوَنة
+#: في الشيفرة، وكل ما ليس فيها يعود إلى `name_en` ثم إلى الاسم العربي.
+SERVICE_LABELS_EN = {
+    'public-assistant': 'Smart Assistant',
+    'public-lookup': 'Track request',
+    'public-notifications': 'Health notices',
+    'public-travel-requirements': 'Travel requirements',
+    'public-verify-certificate': 'Verify certificate',
+    'public-verify-qr': 'Verify QR code',
+    'traveler-registration': 'Pre-arrival health registration',
+    'traveler-declaration': 'Health declaration',
+    'traveler-documents': 'Upload documents',
+    'traveler-vaccines': 'Check vaccinations',
+    'traveler-qr': 'QR Health Pass',
+    'traveler-tracking': 'Track request',
+    'traveler-trip-data': 'Trip data',
+    'traveler-amend': 'Amend request',
+    'food-import': 'Import (incoming shipment)',
+    'food-export': 'Export (export certificate)',
+    'food-inspection': 'Inspection',
+    'food-sampling': 'Sampling',
+    'food-certificates': 'Certificates',
+    'food-fees': 'Fees',
+    'food-release': 'Release decision',
+    'food-tracking': 'Shipment tracking',
+    'food-laboratory': 'Laboratory',
+    'poe-land': 'Land border health',
+    'poe-port': 'Port health',
+    'poe-airport': 'Airport health',
+    'surveillance-alerts': 'Health alerts',
+    'surveillance-diseases': 'Diseases under surveillance',
+    'surveillance-events': 'Health events',
+    'surveillance-reports': 'Public reports',
+    'lab-results': 'Test results',
+    'lab-reports': 'Authorised lab reports',
+    'lab-analysis-status': 'Analysis status',
+    'lab-sample-lookup': 'Sample lookup',
+    'carrier-flights': 'Flights',
+    'carrier-manifest': 'Passenger manifest',
+    'carrier-crew': 'Crew manifest',
+    'carrier-portal': 'Carrier portal',
+    'gov-verify': 'Verify certificates',
+    'gov-shipments': 'Query shipments',
+    'gov-release': 'Query release decisions',
+    'gov-reports': 'Reports',
+    'red-sea-portal': 'Red Sea sector portal',
+    'vector-alerts': 'Vector alerts',
+    'vector-general': 'General information',
+    'vector-guidelines': 'Guidelines',
+    'vector-info': 'Vector control information',
+}
+
+
+#: تصنيفات الإشعارات الصحية بالإنجليزية. `HealthNotice` لا تملك حقلاً
+#: إنجليزياً (عنوانها عربي فقط)، فلا نخترع ترجمة داخل الشيفرة: نعرض
+#: التصنيف ونُحيل المستخدم إلى صفحة الإشعارات للنص الرسمي الكامل.
+NOTICE_CATEGORY_LABELS_EN = {
+    'FLIGHT_SUSPENSION': 'Flight suspension notice',
+    'ENTRY_REQUIREMENTS': 'Entry requirements notice',
+    'EPIDEMIC_ALERT': 'Epidemic alert',
+    'GENERAL': 'General health notice',
+}
+
+#: يظهر مع كل مصدر عربي في طلب إنجليزي، ليعرف المستخدم سبب العربية.
+ARABIC_ONLY_NOTE_EN = (
+    'The official text of this notice is published in Arabic; '
+    'open the notices page to read the full statement.'
+)
+
+
+def _notice_title(notice, en: bool) -> str:
+    """عنوان الإشعار بلغة الطلب.
+
+    يفضّل `title_en` إن أُضيف لاحقاً، ثم التصنيف بالإنجليزية، ثم العربية.
+    """
+    if not en:
+        return notice.title
+    translated = (getattr(notice, 'title_en', '') or '').strip()
+    if translated:
+        return translated
+    return NOTICE_CATEGORY_LABELS_EN.get(notice.category, 'Health notice')
+
+
+def _faq_answer(item, en: bool) -> str:
+    """جواب سؤال شائع بلغة الطلب، بلا اختلاق ترجمة."""
+    if not en:
+        return item.answer
+    translated = (getattr(item, 'answer_en', '') or '').strip()
+    if translated:
+        return translated
+    return (
+        'The official answer to this question is published in Arabic. '
+        'Please open the FAQ page to read it.'
+    )
+
+
+def _service_label(service, en: bool) -> str:
+    """اسم الخدمة بلغة الطلب، مع fallback إلى `name_en` ثم العربية."""
+    if en:
+        return (
+            SERVICE_LABELS_EN.get(service.code)
+            or (service.name_en or '').strip()
+            or service.name_ar
+        )
+    return service.name_ar
+
 SOURCE_TRAVEL = 'TRAVEL_REQUIREMENT'
 SOURCE_NOTICE = 'HEALTH_NOTICE'
 SOURCE_FAQ = 'FAQ'
@@ -210,13 +359,13 @@ def _updated(obj) -> date | None:
     return None
 
 
-def _service_action(code: str, label: str | None = None) -> dict | None:
+def _service_action(code: str, label: str | None = None, en: bool = False) -> dict | None:
     """يبني بيانات زر الإجراء من خدمة في الكتالوج إن وُجدت."""
     svc = Service.objects.filter(code=code, is_active=True).first()
     if not svc or not svc.route:
         return None
     return {
-        'label': label or svc.name_ar,
+        'label': label or _service_label(svc, en),
         'route': svc.route,
         'requires_auth': svc.requires_auth,
         'identity_provider': svc.identity_provider,
@@ -247,7 +396,43 @@ def _ok(answer: str, sources, confidence, answer_type, language, action=None):
         'sources': sources,
         'confidence': confidence,
         'language': language,
+        'disclaimer': None,
+        'conversation_id': None,
     }
+
+
+# --------------------------------------------------------------------------- #
+# إخلاء المسؤولية الطبية + الطوارئ
+# --------------------------------------------------------------------------- #
+
+#: النوايا التي قد تُقرأ كإرشاد طبي، فلا بد أن تحمل التحذير.
+MEDICAL_INTENTS = {Intent.DISEASE}
+
+DISCLAIMER_AR = (
+    'تنبيه: المساعد يقدّم معلومات عامة وإرشادية فقط ولا يُغني عن '
+    'استشارة الطبيب. في حالات الطوارئ اتصل بالرقم 999.'
+)
+DISCLAIMER_EN = (
+    'Notice: this assistant provides general information only and does not '
+    'replace professional medical advice. In an emergency call 999.'
+)
+
+
+def _disclaimer_for(intent: str, language: str) -> str | None:
+    """نصّ التحذير المناسب للنية، أو `None` إن لم تكن إرشادية.
+
+    نُعيده كحقل مستقل في الاستجابة بدل لصقِه في نصّ الإجابة: الحقل
+    يتيح للواجهة عرضه ثابتاً في أسفل المحادثة (كما يطلب التوثيق: «في
+    بداية كل محادثة») فلا يتسرّب في نسخ الإجابة ولا يُنسخ معاها.
+    """
+    if intent not in MEDICAL_INTENTS:
+        return None
+    return DISCLAIMER_EN if language == 'en' else DISCLAIMER_AR
+
+
+def greeting_disclaimer(language: str = 'ar') -> str:
+    """التحذير الافتتاحي الثابت الذي يعرض في بداية المحادثة."""
+    return DISCLAIMER_EN if language == 'en' else DISCLAIMER_AR
 
 
 def _greeting(en: bool) -> str:
@@ -320,7 +505,9 @@ def _build_answer(intent: str, message: str, language: str, context):
         lines = []
         for c in Country.objects.order_by('name_ar')[:12]:
             rlabel = (RISK_LABELS_EN if en else RISK_LABELS).get(c.risk_level, c.risk_level)
-            lines.append(f'- {c.name_ar} ({rlabel})' if not en else f'- {c.name} ({rlabel})')
+            # `Country.name` هو الاسم اللاتيني و`name_ar` العربي.
+            label = c.name if en else c.name_ar
+            lines.append(f'- {label} ({rlabel})')
         sources = []
         for r in reqs[:5]:
             sources.append({'type': SOURCE_NOTICE, 'id': str(r.id), 'title': r.title,
@@ -343,14 +530,19 @@ def _build_answer(intent: str, message: str, language: str, context):
                 f'الدولة: {country.name_ar} (مستوى الخطورة: {rlabel}). لا توجد متطلبات دخول إضافية منشورة حالياً.',
                 [], 'MEDIUM', AnswerType.INFO, language,
             )
-        req_lines = '\n'.join(f'• {r.title}' for r in reqs)
+        req_lines = '\n'.join(f'• {_notice_title(r, en)}' for r in reqs)
         sources = [{'type': SOURCE_NOTICE, 'id': str(r.id), 'title': r.title,
                     'source_url': '/notices', 'source_updated_at': str(_updated(r)) if _updated(r) else None}
                    for r in reqs]
-        return _ok(
-            f'Country: {country.name} (risk level: {rlabel})\nPublished entry requirements:\n{req_lines}'
+        country_body = (
+            f'Country: {country.name} (risk level: {rlabel})\n'
+            f'Published entry requirements:\n{req_lines}\n{ARABIC_ONLY_NOTE_EN}'
             if en else
-            f'الدولة: {country.name_ar} (مستوى الخطورة: {rlabel})\nالمتطلبات المنشورة للدخول:\n{req_lines}',
+            f'الدولة: {country.name_ar} (مستوى الخطورة: {rlabel})\n'
+            f'المتطلبات المنشورة للدخول:\n{req_lines}'
+        )
+        return _ok(
+            country_body,
             sources, 'MEDIUM', AnswerType.INFO, language,
         )
 
@@ -363,7 +555,7 @@ def _build_answer(intent: str, message: str, language: str, context):
         )
 
     if intent == Intent.DOCUMENTS:
-        action = _service_action('traveler-documents', 'رفع الوثائق')
+        action = _service_action('traveler-documents', 'Upload documents' if en else 'رفع الوثائق', en=en)
         return _ok(
             ('The essential documents for entry are: a valid passport, and a valid yellow-fever vaccination '
              'certificate for travellers arriving from endemic countries (subject to the country of departure).') if en else
@@ -372,7 +564,7 @@ def _build_answer(intent: str, message: str, language: str, context):
         )
 
     if intent == Intent.QR:
-        action = _service_action('public-verify-qr', 'التحقق من رمز QR')
+        action = _service_action('public-verify-qr', 'Verify QR code' if en else 'التحقق من رمز QR', en=en)
         return _ok(
             ('You can verify a QR code or check your request status through the smart tools: '
              '"Lookup request" or "Verify QR code".') if en else
@@ -381,7 +573,7 @@ def _build_answer(intent: str, message: str, language: str, context):
         )
 
     if intent == Intent.CERTIFICATE:
-        action = _service_action('public-verify-certificate', 'التحقق من الشهادة')
+        action = _service_action('public-verify-certificate', 'Verify certificate' if en else 'التحقق من الشهادة', en=en)
         return _ok(
             ('You can verify the authenticity and validity of a health certificate by its number using the '
              '"Certificate verification" tool.') if en else
@@ -405,7 +597,7 @@ def _build_answer(intent: str, message: str, language: str, context):
         )
 
     if intent == Intent.REGISTRATION:
-        action = _service_action('traveler-registration', 'بدء التسجيل' if not en else 'Start registration')
+        action = _service_action('traveler-registration', 'Start registration' if en else 'بدء التسجيل', en=en)
         note = ('Registration requires you to log in.' if en else
                 'يتطلب التسجيل تسجيل الدخول.')
         return _ok(
@@ -422,12 +614,15 @@ def _build_answer(intent: str, message: str, language: str, context):
                 'لا توجد إشعارات صحية منشورة حالياً.',
                 [], 'LOW', AnswerType.NOT_FOUND, language,
             )
-        lines = '\n'.join(f'• {n.title}' for n in notices)
+        lines = '\n'.join(f'• {_notice_title(n, en)}' for n in notices)
         sources = [{'type': SOURCE_NOTICE, 'id': str(n.id), 'title': n.title,
                     'source_url': '/notices', 'source_updated_at': str(_updated(n)) if _updated(n) else None}
                    for n in notices]
+        body = 'Latest health notices:'
+        if en:
+            body += f'\n{ARABIC_ONLY_NOTE_EN}'
         return _ok(
-            f'Latest health notices:\n{lines}' if en else
+            f'{body}\n{lines}' if en else
             f'أحدث الإشعارات الصحية:\n{lines}',
             sources, 'MEDIUM', AnswerType.ALERT, language,
         )
@@ -438,7 +633,7 @@ def _build_answer(intent: str, message: str, language: str, context):
         if match:
             sources = [{'type': SOURCE_FAQ, 'id': str(match.id), 'title': match.question,
                         'source_url': '/faq', 'source_updated_at': str(_updated(match)) if _updated(match) else None}]
-            return _ok(match.answer, sources, 'HIGH', AnswerType.SOURCE, language)
+            return _ok(_faq_answer(match, en), sources, 'HIGH', AnswerType.SOURCE, language)
         return _ok(
             'Please contact us for more specific information.' if en else
             'يرجى التواصل معنا للحصول على معلومات أكثر تحديداً.',
@@ -447,8 +642,8 @@ def _build_answer(intent: str, message: str, language: str, context):
 
     if intent == Intent.SERVICES:
         services = _active_services()[:8]
-        lines = '\n'.join(f'• {s.name_ar}{(" (" + s.route + ")") if s.route else ""}' for s in services)
-        sources = [{'type': SOURCE_SERVICE, 'id': s.code, 'title': s.name_ar, 'source_url': s.route or '/services'}
+        lines = '\n'.join(f'• {_service_label(s, en)}' + (f' ({s.route})' if s.route else '') for s in services)
+        sources = [{'type': SOURCE_SERVICE, 'id': s.code, 'title': _service_label(s, en), 'source_url': s.route or '/services'}
                    for s in services[:5]]
         return _ok(
             f'The NQP electronic services are available from the /services catalog:\n{lines}' if en else
@@ -465,12 +660,57 @@ def _build_answer(intent: str, message: str, language: str, context):
     )
 
 
-def answer_question(message: str, language: str | None = None, context: dict | None = None) -> dict:
-    """نقطة الدخول الرئيسية: ترجع إجابة منظمة بالمصدر/الإجراء/النوع/درجة الثقة واللغة."""
-    lang = language or detect_language(message)
+def answer_question(
+    message: str,
+    language: str | None = None,
+    context: dict | None = None,
+    log: bool = True,
+) -> dict:
+    """نقطة الدخول الرئيسية: ترجع إجابة منظمة بالمصدر/الإجراء/النوع/درجة الثقة واللغة.
+
+    `log=False` يعطّل تسجيل المحادثة (للاختبارات ولكل استدعاء داخلي).
+
+    `language`: قيمة صريحة (`ar`/`en`) تُحترم؛ وأي قيمة أخرى — بما فيها
+    `None` و`auto` والسوابق — تُعامل كـ«اكتشفها بنفسك». قبل الإصلاح كان
+    الحقل في المسار يحمل `default='ar'`، فكل طلب بلا `language` صريح كان
+    يُجبَأً عربياً حتى لو كُتب بالإنجليزية.
+    """
+    requested = (language or '').strip().lower()
+    if requested in {'ar', 'en'}:
+        lang = requested
+    else:
+        lang = detect_language(message)
     intent = classify(message, message)
     result = _build_answer(intent, message, lang, context or {})
+    result['disclaimer'] = _disclaimer_for(intent, lang)
+    result['engine'] = 'rules'
+
+    if log:
+        result['conversation_id'] = _log_conversation(message, intent, result)
     return result
+
+
+def _log_conversation(message: str, intent: str, result: dict) -> str | None:
+    """يسجّل السؤال مجهولاً ويعيد معرّف السجل للتقييم لاحقاً.
+
+    يُبتلع أي فشل في الكتابة: فقد السجل لا يجوز أن يُسقط إجابةً عامة.
+    """
+    from .models import AssistantConversation
+
+    try:
+        row = AssistantConversation.objects.create(
+            intent=intent if intent in AssistantConversation.Intent.values else 'UNKNOWN',
+            answer_type=result.get('answer_type') or 'INFO',
+            confidence=result.get('confidence') or 'LOW',
+            language=result.get('language') or 'ar',
+            source_count=len(result.get('sources') or []),
+            message_length=len(message or ''),
+            has_disclaimer=bool(result.get('disclaimer')),
+            engine=result.get('engine') or 'rules',
+        )
+    except Exception:  # pragma: no cover - مسار ثانوي
+        return None
+    return str(row.pk)
 
 
 # --------------------------------------------------------------------------- #

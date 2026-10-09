@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -9,6 +11,11 @@ from apps.airport_health.models import (
     CrewHealthRecord,
     ScreeningPoint,
 )
+from apps.airport_health.tests.conftest import (
+    assign_airport_inspector,
+    assign_carrier_rep,
+)
+from apps.accounts.models import RoleAssignment
 from apps.carriers.models import Carrier, Flight
 from apps.masterdata.models import EntryPoint as Port
 from apps.travelers.models import Country, Traveler
@@ -16,6 +23,18 @@ from apps.travelers.models import Country, Traveler
 pytestmark = pytest.mark.django_db
 
 User = get_user_model()
+
+PASSWORD = 'StrongPass123!'
+
+AIRPORT_URLS = [
+    '/api/v1/airport/ports/',
+    '/api/v1/airport/terminals/',
+    '/api/v1/airport/screening-points/',
+    '/api/v1/airport/screenings/',
+    '/api/v1/airport/aircraft-inspections/',
+    '/api/v1/airport/crew-records/',
+    '/api/v1/airport/dashboard/',
+]
 
 
 @pytest.fixture(autouse=True)
@@ -31,11 +50,12 @@ def api_client():
 @pytest.fixture
 def officer(api_client):
     user = User.objects.create_user(
-        email='airport@nqp.gov.sd', password='StrongPass123!', full_name='مفتش المطار'
+        email='airport@nqp.gov.sd', password=PASSWORD, full_name='مفتش المطار'
     )
+    assign_airport_inspector(user)
     login = api_client.post(
         '/api/v1/auth/login/',
-        {'email': user.email, 'password': 'StrongPass123!'},
+        {'email': user.email, 'password': PASSWORD},
         format='json',
     )
     token = login.data['data']['access_token']
@@ -251,4 +271,218 @@ def _ep_state():
         code='ST_T', defaults={'name_ar': 'ولاية الاختبار', 'sector': sector}
     )
     return state
+
+
+# ---------------------------------------------------------------------------
+# C5: بيانات صحة المطارات (فحوصات المسافرين + صحة الطاقم) كانت خلف
+# `IsAuthenticated` فقط، فقرأها أي حساب مصادق — بما فيه ممثل شركة نقل.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def other_port(db):
+    return Port.objects.create(
+        state=_ep_state(),
+        code='SDPST',
+        name_ar='مطار بورتسودان',
+        name_en='Port Sudan Airport',
+        kind=Port.Kind.AIRPORT,
+    )
+
+
+@pytest.fixture
+def other_point(other_port):
+    terminal = AirportTerminal.objects.create(
+        port=other_port,
+        terminal_code='T2',
+        name_ar='صالة المغادرة',
+        name_en='Departure Hall',
+    )
+    return ScreeningPoint.objects.create(
+        terminal=terminal,
+        point_code='P-DEP-1',
+        point_type=ScreeningPoint.PointType.DEPARTURE,
+    )
+
+
+@pytest.fixture
+def other_traveler(db):
+    return Traveler.objects.create(
+        first_name='سارة',
+        last_name='علي',
+        passport_number='P-AIR-2',
+        date_of_birth='1988-03-10',
+        nationality=Country.objects.get(code='SD'),
+        registration_status='COMPLETED',
+    )
+
+
+@pytest.fixture
+def port_scoped_officer(login_client, port):
+    def assign(user):
+        assign_airport_inspector(
+            user, scope_type=RoleAssignment.ScopeType.PORT, scope_id=port.id
+        )
+
+    return login_client('port-scoped@nqp.gov.sd', assign=assign)
+
+
+@pytest.mark.parametrize('url', AIRPORT_URLS)
+def test_carrier_rep_cannot_read_airport_health(login_client, url):
+    """ممثل شركة النقل لا يملك `airport_health:*` — تُرفض كل نقاط النهاية."""
+    client, _user = login_client('carrier-rep@nqp.gov.sd', assign=assign_carrier_rep)
+    assert client.get(url).status_code == 403, url
+
+
+@pytest.mark.parametrize('url', AIRPORT_URLS)
+def test_authenticated_user_without_roles_cannot_read_airport_health(login_client, url):
+    """حساب مصادق بلا أي دور ليس بديلاً عن الصلاحية الدقيقة."""
+    client, _user = login_client('plain-user@nqp.gov.sd')
+    assert client.get(url).status_code == 403, url
+
+
+@pytest.mark.parametrize('url', AIRPORT_URLS)
+def test_anonymous_cannot_read_airport_health(api_client, url):
+    assert api_client.get(url).status_code in (401, 403), url
+
+
+def test_carrier_rep_cannot_create_screening(login_client, traveler, point):
+    client, _user = login_client('carrier-write@nqp.gov.sd', assign=assign_carrier_rep)
+    response = client.post(
+        '/api/v1/airport/screenings/',
+        {'traveler': traveler.passport_number, 'screening_point': point.point_code,
+         'screening_type': 'ARRIVAL'},
+        format='json',
+    )
+    assert response.status_code == 403
+    assert not AirportScreening.objects.exists()
+
+
+def test_carrier_rep_cannot_read_crew_health_record(login_client, officer, flight):
+    record = CrewHealthRecord.objects.create(
+        crew=officer, flight=flight, health_status=CrewHealthRecord.HealthStatus.UNFIT,
+        temperature=39.1,
+    )
+    client, _user = login_client('carrier-crew@nqp.gov.sd', assign=assign_carrier_rep)
+    assert client.get('/api/v1/airport/crew-records/').status_code == 403
+    assert client.get(f'/api/v1/airport/crew-records/{record.id}/').status_code == 403
+
+
+def test_port_scoped_officer_sees_only_own_port(
+    port_scoped_officer, officer, traveler, point, flight, other_traveler, other_point
+):
+    client, _user = port_scoped_officer
+    own = AirportScreening.objects.create(
+        traveler=traveler,
+        screening_point=point,
+        flight=flight,
+        screening_type=AirportScreening.ScreeningType.ARRIVAL,
+        risk_level=AirportScreening.RiskLevel.RED,
+        screened_by=officer,
+    )
+    foreign = AirportScreening.objects.create(
+        traveler=other_traveler,
+        screening_point=other_point,
+        screening_type=AirportScreening.ScreeningType.DEPARTURE,
+        risk_level=AirportScreening.RiskLevel.RED,
+        screened_by=officer,
+    )
+    response = client.get('/api/v1/airport/screenings/')
+    assert response.status_code == 200
+    assert {row['id'] for row in response.json()['data']['results']} == {str(own.id)}
+    assert client.get(f'/api/v1/airport/screenings/{foreign.id}/').status_code == 404
+
+
+def test_port_scoped_officer_list_is_scoped_per_view(
+    port_scoped_officer, officer, terminal, point, flight
+):
+    client, _user = port_scoped_officer
+    assert client.get('/api/v1/airport/terminals/').json()['data']['count'] == 1
+    assert client.get('/api/v1/airport/screening-points/').json()['data']['count'] == 1
+    assert client.get('/api/v1/airport/screenings/').json()['data']['count'] == 0
+    assert client.get('/api/v1/airport/aircraft-inspections/').json()['data']['count'] == 0
+    assert client.get('/api/v1/airport/crew-records/').json()['data']['count'] == 0
+    assert client.get('/api/v1/airport/ports/').json()['data']['count'] == 1
+
+
+def test_port_scoped_officer_cannot_write_into_other_port(
+    port_scoped_officer, other_traveler, other_point
+):
+    client, user = port_scoped_officer
+    response = client.post(
+        '/api/v1/airport/screenings/',
+        {'traveler': other_traveler.passport_number,
+         'screening_point': other_point.point_code,
+         'screening_type': 'ARRIVAL'},
+        format='json',
+    )
+    assert response.status_code == 403
+    assert not AirportScreening.objects.filter(screened_by=user).exists()
+
+
+def test_port_scoped_officer_can_write_into_own_port(
+    port_scoped_officer, traveler, point
+):
+    client, user = port_scoped_officer
+    response = client.post(
+        '/api/v1/airport/screenings/',
+        {'traveler': traveler.passport_number,
+         'screening_point': point.point_code,
+         'screening_type': 'ARRIVAL',
+         'body_temperature': 37.0},
+        format='json',
+    )
+    assert response.status_code == 201, response.content
+    assert AirportScreening.objects.filter(screened_by=user).count() == 1
+
+
+def test_officer_with_station_scope_sees_nothing(
+    login_client, officer, traveler, point, flight
+):
+    """فشل آمن: نطاق لا يُترجم إلى منافذ (STATION) ⇒ لا صفوف.
+
+    دور `AIRPORT_INSPECTOR` المبذور بنطاق `STATION`؛ ما لم يُربط Stations
+    بمنافذها فلاtslو مرئي — ويُفضَّل ذلك على كشف كل المطارات.
+    """
+    AirportScreening.objects.create(
+        traveler=traveler, screening_point=point, flight=flight,
+        screening_type=AirportScreening.ScreeningType.ARRIVAL, screened_by=officer,
+    )
+
+    def assign(user):
+        assign_airport_inspector(
+            user, scope_type=RoleAssignment.ScopeType.STATION, scope_id=uuid.uuid4()
+        )
+
+    client, _user = login_client('station-scope@nqp.gov.sd', assign=assign)
+    assert client.get('/api/v1/airport/screenings/').json()['data']['count'] == 0
+    assert client.get('/api/v1/airport/crew-records/').json()['data']['count'] == 0
+
+
+def test_scoped_dashboard_excludes_other_ports(
+    port_scoped_officer, officer, traveler, point, flight, other_traveler, other_point
+):
+    from django.utils import timezone as tz
+
+    foreign_flight = Flight.objects.create(
+        flight_number='SD-909',
+        carrier=flight.carrier,
+        flight_type=Flight.FlightType.AIR,
+        origin_country=Country.objects.get(code='SD'),
+        origin_code='DXB',
+        destination_port=other_point.terminal.port,
+        scheduled_arrival=tz.now(),
+        status=Flight.FlightStatus.ARRIVED,
+    )
+    AirportScreening.objects.create(
+        traveler=other_traveler, screening_point=other_point, flight=foreign_flight,
+        screening_type=AirportScreening.ScreeningType.ARRIVAL,
+        risk_level=AirportScreening.RiskLevel.RED, screened_by=officer,
+    )
+    client, _user = port_scoped_officer
+    data = client.get('/api/v1/airport/dashboard/').json()['data']
+    assert data['kpis']['flights_today'] == 0
+    assert data['kpis']['screened_today'] == 0
+    assert data['kpis']['suspected_cases'] == 0
+    assert data['upcoming_flights'] == []
 

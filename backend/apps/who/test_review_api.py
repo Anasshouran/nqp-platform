@@ -461,6 +461,7 @@ def test_icd_search_with_empty_db_credentials_uses_settings_credentials(auth, in
 
 
 @override_settings(
+    WHO_ENABLED=True,
     WHO_ICD_CLIENT_ID='settings-client-id',
     WHO_ICD_CLIENT_SECRET='settings-secret-placeholder',
 )
@@ -486,7 +487,7 @@ def test_icd_search_end_to_end_credentials_source_is_settings(auth, integration,
     assert 'settings-secret-placeholder' not in str(resp.data)
 
 
-@override_settings(WHO_ICD_CLIENT_ID='', WHO_ICD_CLIENT_SECRET='')
+@override_settings(WHO_ENABLED=True, WHO_ICD_CLIENT_ID='', WHO_ICD_CLIENT_SECRET='')
 def test_icd_search_returns_502_when_no_credentials_anywhere(auth, integration):
     """لا credentials في DB ولا في settings: خطأ واضح 502 بلا طلب ناقص إلى WHO."""
     client, _ = auth()

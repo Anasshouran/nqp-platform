@@ -2,9 +2,10 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
+from apps.accounts.models import Role, RoleAssignment, Permission as AccountPermission
 from apps.masterdata.models import EntryPoint as Port
-
 from ..models import CrisisTeamMember, EmergencyAlert, EmergencyEvent, KillSwitch, ResponsePlan
+from django.contrib.contenttypes.models import ContentType
 
 pytestmark = pytest.mark.django_db
 
@@ -17,18 +18,28 @@ def api_client():
 
 
 @pytest.fixture
-def auth_client(api_client, db):
+def eoc_user(db):
+    """EOC user with surveillance:view permission."""
     user = User.objects.create_user(
         email='eoc@nqp.gov.sd', password='StrongPass123!', full_name='موظف غرفة الطوارئ'
     )
-    login = api_client.post(
+    # Assign surveillance:view permission via role
+    _assign_permission_to_user(user, 'surveillance:view')
+    return user
+
+
+@pytest.fixture
+def auth_client(eoc_user, api_client):
+    client = APIClient()
+    login = client.post(
         '/api/v1/auth/login/',
-        {'email': user.email, 'password': 'StrongPass123!'},
+        {'email': eoc_user.email, 'password': 'StrongPass123!'},
         format='json',
     )
     token = login.data['data']['access_token']
-    api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
-    return api_client
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+    client.user = eoc_user  # Store user on client for test access
+    return client
 
 
 @pytest.fixture
@@ -44,12 +55,37 @@ def port(db):
     )
 
 
+def _assign_permission_to_user(user, code):
+    """Assign a permission code to user via a role assignment."""
+    # Get or create the permission
+    perm, _ = AccountPermission.objects.get_or_create(code=code)
+    
+    # Get or create a role for this user
+    role, _ = Role.objects.get_or_create(
+        code=f'TEST_ROLE_{user.id.hex[:8].upper()}',
+        name='Test Role',
+        name_ar='دور اختباري',
+    )
+    # Add permission to role
+    if perm not in role.permissions.all():
+        role.permissions.add(perm)
+    
+    # Assign role to user (GLOBAL scope)
+    assignment, created = RoleAssignment.objects.get_or_create(
+        user=user, role=role, scope_type='GLOBAL',
+        defaults={'assigned_by': user}
+    )
+    return role
+
+
 def test_alert_created_and_closed(auth_client, port, db):
     alert = EmergencyAlert.objects.create(
         port=port,
         alert_type=EmergencyAlert.AlertType.RED_ALERT,
         description='إغلاق منفذ مؤقت',
     )
+    # Grant edit permission for close action via role
+    _assign_permission_to_user(auth_client.user, 'surveillance:edit')
     response = auth_client.post(f'/api/v1/emergency/alerts/{alert.id}/close/')
     assert response.status_code == 200
     alert.refresh_from_db()
@@ -58,6 +94,9 @@ def test_alert_created_and_closed(auth_client, port, db):
 
 
 def test_kill_switch_activate_deactivate(auth_client, port):
+    # Grant surveillance.edit permission for KillSwitch activate/deactivate
+    _assign_permission_to_user(auth_client.user, 'surveillance:edit')
+
     activate = auth_client.post(
         '/api/v1/emergency/kill-switch/activate/',
         {'port': port.id, 'reason': 'تفشي وباء'},
@@ -95,9 +134,12 @@ def team_user(db):
 
 
 def test_event_workflow(auth_client, port, team_user, db):
+    # Grant add permission for event creation via role
+    _assign_permission_to_user(auth_client.user, 'surveillance:add')
+
     plan = ResponsePlan.objects.create(
         name='خطة احتواء تفشي',
-        steps=[{'step': 1, 'action': 'عزل الحالات'}],
+        steps=[{'step': 1, 'action': 'عزل cases'}],
     )
 
     create = auth_client.post(
@@ -167,4 +209,3 @@ def _ep_state():
         code='ST_T', defaults={'name_ar': 'ولاية الاختبار', 'sector': sector}
     )
     return state
-

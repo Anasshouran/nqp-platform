@@ -59,7 +59,31 @@ from .services import (
 )
 
 
-class AlertViewSet(viewsets.ModelViewSet):
+class SurveillanceAccessMixin:
+    permission_resource = 'surveillance'
+    permission_classes = [PermissionAction]
+
+    def get_permissions(self):
+        action = self.action
+        if action in SURVEILLANCE_EDIT_ACTIONS:
+            self.permission_action = 'edit'
+        else:
+            self.permission_action = ACTION_TO_PERMISSION.get(action, 'view')
+        return super().get_permissions()
+
+
+class SurveillanceScopeMixin:
+    port_field = 'port'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        q = _surveillance_scope_q(self.request.user, self.port_field)
+        return qs.filter(q) if q is not None else qs
+
+
+class AlertViewSet(
+    SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet
+):
     queryset = EmergencyAlert.objects.select_related('traveler', 'port').all()
     serializer_class = EmergencyAlertSerializer
     http_method_names = ['get', 'patch', 'post']
@@ -67,6 +91,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     search_fields = ['description', 'traveler__first_name', 'traveler__last_name']
     ordering_fields = ['triggered_at']
     filter_fields = ['status', 'alert_type', 'port']
+    port_field = 'port'
 
     @action(detail=True, methods=['post'], url_path='close')
     def close(self, request, pk=None):
@@ -77,16 +102,53 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Response(success_response(EmergencyAlertSerializer(alert).data))
 
 
-class KillSwitchViewSet(viewsets.ModelViewSet):
+class KillSwitchViewSet(
+    SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet
+):
     queryset = KillSwitch.objects.all()
     serializer_class = KillSwitchSerializer
     http_method_names = ['get', 'post', 'patch']
+    permission_resource = 'surveillance'
+    scope_type = 'surveillance'
+    port_field = 'port'
+    action_permission_map = {
+        'activate': 'edit',
+        'deactivate': 'edit',
+    }
+
+    def get_permissions(self):
+        action = self.action
+        if action in self.action_permission_map:
+            self.permission_action = self.action_permission_map[action]
+        elif action in SURVEILLANCE_EDIT_ACTIONS:
+            self.permission_action = 'edit'
+        else:
+            self.permission_action = ACTION_TO_PERMISSION.get(action, 'view')
+        return super().get_permissions()
 
     @action(detail=False, methods=['post'], url_path='activate')
     def activate(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        active = KillSwitch.objects.filter(port=serializer.validated_data['port'], deactivated_at__isnull=True).exists()
+        port_id = serializer.validated_data['port']
+        # Scope check: user can only operate on KillSwitch at their assigned port(s)
+        # Allow if user has surveillance.edit permission and the port is within their scope
+        qs = self.get_queryset().filter(port_id=port_id)
+        if not qs.exists() and not self.request.user.is_superuser:
+            # Check if user has scope that includes this port
+            port_ids = resolve_user_port_ids(self.request.user)
+            if port_ids is None:
+                # User has global scope - allow
+                pass
+            elif port_id not in port_ids:
+                return Response(
+                    {'status': 'error', 'message': 'لا يمكنك تفعيل مفتاح لمنفذ غير مخوَّل'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            # User has specific scope but port is not in their list - deny
+            else:
+                pass  # Port is in user's scope
+        active = KillSwitch.objects.filter(port=port_id, deactivated_at__isnull=True).exists()
         if active:
             return Response({'status': 'error', 'message': 'المفتاح مفعل بالفعل'}, status=status.HTTP_400_BAD_REQUEST)
         switch = serializer.save(activated_by=request.user)
@@ -95,6 +157,13 @@ class KillSwitchViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='deactivate')
     def deactivate(self, request):
         port_id = request.data.get('port')
+        # Scope: only allow deactivating KillSwitch at user's assigned port(s)
+        qs = self.get_queryset().filter(port_id=port_id)
+        if not qs.exists():
+            return Response(
+                {'status': 'error', 'message': 'لا يمكنك إلغاء مفتاح لمنفذ غير مخوَّل'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         switch = KillSwitch.objects.filter(port_id=port_id, deactivated_at__isnull=True).order_by('-activated_at').first()
         if not switch:
             return Response({'status': 'error', 'message': 'لا يوجد مفتاح نشط'}, status=status.HTTP_400_BAD_REQUEST)
@@ -105,9 +174,10 @@ class KillSwitchViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='status')
     def status(self, request):
         port_id = request.query_params.get('port')
-        qs = KillSwitch.objects.filter(deactivated_at__isnull=True)
+        qs = self.get_queryset()
         if port_id:
             qs = qs.filter(port_id=port_id)
+        qs = qs.filter(deactivated_at__isnull=True)
         active = qs.order_by('-activated_at').first()
         return Response(success_response({
             'active': active is not None,
@@ -124,7 +194,9 @@ class ResponsePlanViewSet(viewsets.ModelViewSet):
     filter_fields = ['is_active']
 
 
-class EmergencyEventViewSet(viewsets.ModelViewSet):
+class EmergencyEventViewSet(
+    SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet
+):
     queryset = EmergencyEvent.objects.select_related('location_port', 'response_plan', 'reported_by').all()
     serializer_class = EmergencyEventSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -132,6 +204,7 @@ class EmergencyEventViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'event_number']
     ordering_fields = ['reported_at']
     filter_fields = ['status', 'severity', 'source_type']
+    port_field = 'location_port'
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -249,28 +322,6 @@ def _surveillance_scope_q(user, port_field='port'):
     if not restricted:
         return None
     return q or Q(pk=None)
-
-
-class SurveillanceAccessMixin:
-    permission_resource = 'surveillance'
-    permission_classes = [PermissionAction]
-
-    def get_permissions(self):
-        action = self.action
-        if action in SURVEILLANCE_EDIT_ACTIONS:
-            self.permission_action = 'edit'
-        else:
-            self.permission_action = ACTION_TO_PERMISSION.get(action, 'view')
-        return super().get_permissions()
-
-
-class SurveillanceScopeMixin:
-    port_field = 'port'
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        q = _surveillance_scope_q(self.request.user, self.port_field)
-        return qs.filter(q) if q is not None else qs
 
 
 class ReportableDiseaseViewSet(SurveillanceAccessMixin, viewsets.ReadOnlyModelViewSet):
@@ -410,9 +461,11 @@ class SurveillanceAlertViewSet(SurveillanceAccessMixin, SurveillanceScopeMixin, 
         return Response(success_response({'created': len(created)}))
 
 
-class ContactTraceViewSet(SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet):
+class ContactTraceViewSet(
+    SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet
+):
     queryset = ContactTrace.objects.select_related('index_case', 'port', 'sector').all()
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ['get', 'post', 'patch']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['contact_number', 'person_name', 'phone', 'index_case__case_number']
     ordering_fields = ['created_at', 'follow_up_start']
@@ -450,7 +503,9 @@ class ContactTraceViewSet(SurveillanceAccessMixin, SurveillanceScopeMixin, views
         )
 
 
-class InvestigationViewSet(SurveillanceAccessMixin, viewsets.ModelViewSet):
+class InvestigationViewSet(
+    SurveillanceAccessMixin, SurveillanceScopeMixin, viewsets.ModelViewSet
+):
     queryset = Investigation.objects.select_related('case', 'event', 'lead_investigator').all()
     http_method_names = ['get', 'post', 'patch']
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]

@@ -64,7 +64,6 @@ def test_profile_patch_updates_fields(api_client, user):
             'full_name': 'مفتش محدّث',
             'profile': {
                 'job_title': 'مفتش حجر صحي',
-                'employee_number': 'NQP-000999',
                 'language': 'EN',
                 'theme': 'DARK',
                 'notify_sms': True,
@@ -76,10 +75,52 @@ def test_profile_patch_updates_fields(api_client, user):
     data = response.data['data']
     assert data['user']['full_name'] == 'مفتش محدّث'
     assert data['profile']['job_title'] == 'مفتش حجر صحي'
-    assert data['profile']['employee_number'] == 'NQP-000999'
     assert data['profile']['language'] == 'EN'
     assert data['profile']['theme'] == 'DARK'
     assert data['profile']['notify_sms'] is True
+
+
+def test_profile_patch_cannot_set_admin_managed_fields(api_client, user):
+    """التحديث الذاتي لا يعدّل الحقول التي تديرها الإدارة (تعيين كلي للخصائص)."""
+    _auth_client(api_client, user)
+    response = api_client.patch(
+        '/api/v1/auth/profile/',
+        {
+            'profile': {
+                'employee_number': 'NQP-999999',
+                'signature_status': 'VERIFIED',
+                'certificate': 'forged-cert',
+                'employment_status': 'TERMINATED',
+            },
+        },
+        format='json',
+    )
+    # الحقول غير المصرّح بها تُتجاهل بصمت (Serializer يقرؤها read-only)
+    assert response.status_code == 200
+    profile = user.profile
+    assert profile.employee_number != 'NQP-999999'
+    assert profile.signature_status != 'VERIFIED'
+    assert profile.certificate != 'forged-cert'
+    assert profile.employment_status != 'TERMINATED'
+
+
+def test_profile_patch_cannot_reassign_profile_owner(api_client, user):
+    """لا يمكن نقل الملف الوظيفي إلى مستخدم آخر عبر الحقل `user`."""
+    from django.contrib.auth import get_user_model
+
+    _auth_client(api_client, user)
+    other = get_user_model().objects.create_user(
+        email='other-target@nqp.gov.sd', password='StrongPass123!', full_name='هدف',
+    )
+    response = api_client.patch(
+        '/api/v1/auth/profile/',
+        {'profile': {'user': str(other.pk), 'created_at': '2000-01-01T00:00:00Z'}},
+        format='json',
+    )
+    assert response.status_code == 200
+    profile = user.profile
+    assert profile.user_id == user.pk
+    assert profile.created_at.year != 2000
 
 
 def test_profile_patch_persists_across_requests(api_client, user):

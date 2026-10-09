@@ -3,9 +3,10 @@ import base64
 from datetime import date, timedelta
 
 import qrcode
+from django.conf import settings
 from django.db.models import Count, F, Q
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
@@ -17,6 +18,7 @@ from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
 from core.permissions import ActionPermissionMixin, PermissionAction
 from core.utils.response import success_response
+from core.utils.scoping import SectorScopedMixin, resolve_user_port_ids
 
 from .models import (
     CertificateVerification,
@@ -46,23 +48,49 @@ from .services import (
     assess_traveler,
     find_traveler,
     issue_certificate,
+    replace_certificate,
+    reissue_certificate,
     record_vaccination,
     revoke_certificate,
     traveler_summary,
 )
 
 
+# خريطة CRUD الأساسية؛ كل viewset يوسّعها بإجراءاته المخصصة.
+BASE_ACTION_PERMISSIONS = {
+    'create': 'add',
+    'update': 'edit',
+    'partial_update': 'edit',
+    'destroy': 'delete',
+    'list': 'view',
+    'retrieve': 'view',
+}
+
+# إجراءات قراءة بحتة: البحث عن مسافر وتقييم احتياجه لا يكتبان شيئاً.
+READ_ACTION_PERMISSIONS = {
+    'search_traveler': 'view',
+    'assess': 'view',
+}
+
+# إصدار الشهادة وإلغاؤها وقراءة رمز التحقق كلها سلطة «مُصدِر شهادة» واحدة:
+# `vaccination:issue`. كان الإصدار محمياً بـ `add` فقط، بينما الإلغاء
+# وقراءة الرمز وتسوية المخزون كانت تسقط كلّها إلى `view`.
+# لا `update`/`partial_update`/`destroy`: الشهادة تُصنع مرةً وتُلغى عبر
+# `revoke` فقط، فلا مسارات تعديل/حذف في الخريطة ولا في الراوتر.
+CERTIFICATE_ACTION_PERMISSIONS = {
+    **BASE_ACTION_PERMISSIONS,
+    'create': 'issue',
+    'qr': 'issue',
+    'revoke': 'issue',
+    'replace': 'issue',
+    'reissue': 'issue',
+}
+
+
 class VaccinationPermissionMixin(ActionPermissionMixin):
     permission_classes = [PermissionAction]
     permission_resource = 'vaccination'
-    action_permission_map = {
-        'create': 'add',
-        'update': 'edit',
-        'partial_update': 'edit',
-        'destroy': 'delete',
-        'list': 'view',
-        'retrieve': 'view',
-    }
+    action_permission_map = BASE_ACTION_PERMISSIONS
 
 
 class VaccineViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
@@ -80,6 +108,7 @@ class VaccineViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
 class VaccineBatchViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
     """إدارة تشغيلات اللقاح (LOT)."""
 
+    action_permission_map = {**BASE_ACTION_PERMISSIONS, 'adjust': 'edit'}
     queryset = VaccineBatch.objects.select_related('vaccine').all()
     serializer_class = VaccineBatchSerializer
     filter_backends = [OrderingFilter, ExactFilterBackend, SearchFilter]
@@ -118,20 +147,42 @@ class VaccineBatchViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
         return Response(success_response({'available_quantity': new_value, 'batch': self.get_serializer(batch).data}))
 
 
-class VaccinationSiteViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
+class VaccinationSiteViewSet(VaccinationPermissionMixin, SectorScopedMixin, viewsets.ModelViewSet):
     """إدارة عيادات ونقاط التطعيم."""
 
-    queryset = VaccinationSite.objects.select_related('entry_point').filter(is_active=True)
+    # العيادة مرتبطة بمنفذ دخول مباشرة، فمدير نقطة التطعيم يرى عيادات منفذه
+    # فقط لا عيادات البلاد (role `VACCINATION_OFFICER` نطاقه PORT).
+    port_field = 'entry_point'
+    queryset = VaccinationSite.objects.select_related('entry_point').all()
     serializer_class = VaccinationSiteSerializer
     filter_backends = [OrderingFilter, ExactFilterBackend, SearchFilter]
     filter_fields = ['kind']
     search_fields = ['name_ar', 'name_en', 'location']
     ordering = ['name_ar']
 
+    def get_queryset(self):
+        """النشطة افتراضياً في القائمة، والمعطّلة عند `?include_inactive=true`.
 
-class VaccinationRecordViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
+        التصفية كانت داخل `queryset` فتصبح العيادة المعطّلة غير مرئية تماماً:
+        لا تُقرأ ولا تُعدَّل ولا تُحذف ولا تُعاد تنشيطها أبداً — يتيم دائم.
+        الترشيح يقتصر على `list` وحدها حتى يبقى العنصر قابلاً للوصول بمعرّفه.
+        """
+        qs = super().get_queryset()
+        if self.action != 'list':
+            return qs
+        if self.request.query_params.get('include_inactive') != 'true':
+            qs = qs.filter(is_active=True)
+        return qs
+
+
+class VaccinationRecordViewSet(VaccinationPermissionMixin, SectorScopedMixin, viewsets.ModelViewSet):
     """سجلات الجرعات: تسجيل، بحث، تقييم المسافر."""
 
+    # الجرعة تنتمي لمنفذ عبر عيادتها؛ مسجّل لكل منفذ كان يرى كل جرعات
+    # البلاد. `site` اختياري في النموذج، فسجل بلا عيادة لا يُنسب إلى أي
+    # منفذ ولا يظهر لأحد بنطاق منفذ (فشل آمن) — يُرى للمدير العام فقط.
+    port_field = 'site__entry_point'
+    action_permission_map = {**BASE_ACTION_PERMISSIONS, **READ_ACTION_PERMISSIONS}
     queryset = VaccinationRecord.objects.select_related(
         'traveler', 'vaccine', 'batch', 'site', 'vaccinator', 'recorded_by'
     ).all()
@@ -158,6 +209,14 @@ class VaccinationRecordViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet
         vaccine = Vaccine.objects.filter(pk=data.get('vaccine')).first()
         if not vaccine:
             return Response({'status': 'error', 'message': 'اللقاح غير صالح'}, status=400)
+
+        site = VaccinationSite.objects.filter(pk=data.get('site')).first() if data.get('site') else None
+        # الكتابة تحتاج القطع نفسها التي تقرأ: بلا هذا كان مسجّل ميناء يكتب
+        # جرعة في عيادة ميناء آخر بتقليص مخزون ذلك الميناء وفساد إحصاءاته.
+        port_ids = resolve_user_port_ids(request.user)
+        if site and port_ids is not None and site.entry_point_id not in port_ids:
+            return Response({'status': 'error', 'message': 'العيادة خارج نطاق منفذك'}, status=400)
+
         payload = {
             'traveler': traveler,
             'vaccine': vaccine,
@@ -165,7 +224,7 @@ class VaccinationRecordViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet
             'dose_type': data.get('dose_type') or VaccinationRecord.DoseType.FIRST,
             'dose_number': int(data.get('dose_number', 1)),
             'administered_at': data.get('administered_at') or date.today(),
-            'site': VaccinationSite.objects.filter(pk=data.get('site')).first() if data.get('site') else None,
+            'site': site,
             'vaccinator': None,
             'notes': data.get('notes', ''),
         }
@@ -193,12 +252,13 @@ class VaccinationRecordViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet
         traveler = qs.first()
         if not traveler:
             return Response(success_response({'traveler': None, 'message': 'لم يتم العثور على مسافر'}))
+        destination = request.query_params.get('destination')
         return Response(
             success_response(
                 {
                     'traveler': TravelerBriefSerializer(traveler).data,
                     'summary': traveler_summary(traveler),
-                    'assessment': assess_traveler(traveler),
+                    'assessment': assess_traveler(traveler, destination=destination),
                 }
             )
         )
@@ -210,22 +270,39 @@ class VaccinationRecordViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet
         traveler = Traveler.objects.filter(pk=traveler_id).first() if traveler_id else Traveler.objects.filter(passport_number=passport).first()
         if not traveler:
             return Response({'status': 'error', 'message': 'المسافر غير موجود'}, status=404)
+        summary = traveler_summary(traveler)
         return Response(
             success_response(
                 VaccinationAssessmentSerializer(
                     {
-                        'assessment': assess_traveler(traveler),
-                        'records': traveler_summary(traveler)['records'],
-                        'certificates': traveler_summary(traveler)['certificates'],
+                        'assessment': assess_traveler(traveler, destination=request.data.get('destination')),
+                        'records': summary['records'],
+                        'certificates': summary['certificates'],
                     }
                 ).data
             )
         )
 
 
-class VaccinationCertificateViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
-    """إصدار وإدارة شهادات التطعيم الدولية."""
+class VaccinationCertificateViewSet(
+    VaccinationPermissionMixin,
+    SectorScopedMixin,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """إصدار شهادات التلعيم الدولية، وقراءتها، وإلغائها.
 
+    مقصود غياب `UpdateModelMixin`/`DestroyModelMixin`: الشهادة وثيقة قانونية
+    لا تُعدَّل ولا تُحذف بـ PUT/PATCH/DELETE، فمسارَا التغيير الوحيدان هما
+    الإصدار (`create` → `issue_certificate`) والإلغاء (`revoke`). الراوتر لا
+    يسجّل مسارات PUT/PATCH/DELETE أصلاً لأن الـ viewset لا يعرّفها.
+    """
+
+    # الشهادة لا تحمل منفذاً مباشرة؛ ترثه من جرعتها عبر عيادتها.
+    port_field = 'record__site__entry_point'
+    action_permission_map = CERTIFICATE_ACTION_PERMISSIONS
     queryset = VaccinationCertificate.objects.select_related(
         'traveler', 'vaccine', 'record', 'issued_by'
     ).all()
@@ -237,7 +314,14 @@ class VaccinationCertificateViewSet(VaccinationPermissionMixin, viewsets.ModelVi
     ordering = ['-issued_at']
 
     def create(self, request, *args, **kwargs):
-        record = VaccinationRecord.objects.select_related('traveler', 'vaccine').filter(pk=request.data.get('record')).first()
+        # الجرعة يجب أن تكون ضمن نطاق منفذ الموظف، وإلا استطاع مُصدِّر شهادة
+        # في ميناء واحد إصدار شهادة لجرعة سجّلها ميناء آخر (والعكس: رؤية
+        # اسم مسافر لا ينتمي لمنفذه عبر استجابة 404/201 مقلوب).
+        port_ids = resolve_user_port_ids(request.user)
+        records = VaccinationRecord.objects.filter(pk=request.data.get('record'))
+        if port_ids is not None:
+            records = records.filter(site__entry_point__in=port_ids)
+        record = records.select_related('traveler', 'vaccine').first()
         if not record:
             return Response({'status': 'error', 'message': 'سجل الجرعة غير موجود'}, status=404)
         validity_days = request.data.get('validity_days')
@@ -249,20 +333,51 @@ class VaccinationCertificateViewSet(VaccinationPermissionMixin, viewsets.ModelVi
 
     @action(detail=True, methods=['get'], url_path='qr')
     def qr(self, request, pk=None):
+        """صورة QR ترمز إلى رابط التحقق الموقَّع — قابلة للمسح فعلياً."""
         cert = self.get_object()
-        token = cert.qr_token
-        img = qrcode.make(f'{token}:{cert.certificate_number}')
+        base = getattr(settings, 'PUBLIC_SITE_URL', '') or request.build_absolute_uri('/').rstrip('/')
+        url = cert.verification_url(base=base)
+        img = qrcode.make(url)
         buf = io.BytesIO()
         img.save(buf, format='PNG')
-        return Response(success_response(data={'qr_png': base64.b64encode(buf.getvalue()).decode()}))
+        return Response(
+            success_response(
+                data={
+                    'qr_png': base64.b64encode(buf.getvalue()).decode(),
+                    'verification_url': url,
+                    'signature': cert.verification_signature,
+                }
+            )
+        )
 
     @action(detail=True, methods=['post'], url_path='revoke')
     def revoke(self, request, pk=None):
         cert = self.get_object()
-        ok, message = revoke_certificate(cert)
+        ok, message = revoke_certificate(cert, request.user)
         if not ok:
             return Response({'status': 'error', 'message': message}, status=400)
         return Response(success_response(self.get_serializer(cert).data))
+
+    @action(detail=True, methods=['post'], url_path='replace')
+    def replace(self, request, pk=None):
+        certificate = self.get_object()
+        replacement_reason = request.data.get('replacement_reason', '')
+        try:
+            new_cert = replace_certificate(certificate.pk, replacement_reason, request.user)
+        except ValueError as exc:
+            # رفض أهلية العمل (شهادة ليست فعّالة) = 400 لا 500.
+            return Response({'status': 'error', 'message': str(exc)}, status=400)
+        return Response(success_response(self.get_serializer(new_cert).data))
+
+    @action(detail=True, methods=['post'], url_path='reissue')
+    def reissue(self, request, pk=None):
+        certificate = self.get_object()
+        try:
+            new_cert = reissue_certificate(certificate.pk, request.user)
+        except ValueError as exc:
+            # رفض أهلية العمل (شهادة فعّالة) = 400 لا 500.
+            return Response({'status': 'error', 'message': str(exc)}, status=400)
+        return Response(success_response(self.get_serializer(new_cert).data))
 
 
 class VaccinationRuleViewSet(VaccinationPermissionMixin, viewsets.ModelViewSet):
@@ -287,9 +402,14 @@ class VaccineInventoryViewSet(VaccinationPermissionMixin, viewsets.ReadOnlyModel
     ordering = ['-created_at']
 
 
-class CertificateVerificationViewSet(VaccinationPermissionMixin, viewsets.ReadOnlyModelViewSet):
+class CertificateVerificationViewSet(VaccinationPermissionMixin, SectorScopedMixin, viewsets.ReadOnlyModelViewSet):
     """سجل عمليات التحقق من الشهادات."""
 
+    # سجل التحقق كشفٌ تشغيلي لا يُقرأ بـ `view`؛ اشتراط `verify` يجعل
+    # الصلاحية المزروعة في seed_rbac فعّالة بدل أن تكون رمزاً ميّتاً.
+    action_permission_map = {'list': 'verify', 'retrieve': 'verify'}
+    # فحص شهادة ميناء آخر ليس «سجل تحقق» يخصّ ميناء الموظف.
+    port_field = 'certificate__record__site__entry_point'
     queryset = CertificateVerification.objects.select_related('certificate', 'verified_by').all()
     serializer_class = CertificateVerificationSerializer
     filter_backends = [OrderingFilter, ExactFilterBackend, SearchFilter]
@@ -297,16 +417,21 @@ class CertificateVerificationViewSet(VaccinationPermissionMixin, viewsets.ReadOn
     ordering = ['-created_at']
 
 
-class VaccinationDashboardViewSet(VaccinationPermissionMixin, viewsets.ReadOnlyModelViewSet):
+class VaccinationDashboardViewSet(VaccinationPermissionMixin, SectorScopedMixin, viewsets.ReadOnlyModelViewSet):
     """إحصاءات لوحة التطعيم الدولي."""
 
-    queryset = VaccinationRecord.objects.none()
+    # اللوحة كانت تُحسب من `VaccinationRecord.objects.filter(...)` مباشرةً،
+    # فمدير نقطة تطعيم يرى «جرعات اليوم» وأرقاماً وطنية تخصّ منافذ أخرى.
+    # الآن يبني الـ mixin queryset مقصوصاً على نطاق المنفذ، و`list` يشتقّ
+    # كل تجميعاته منه.
+    port_field = 'site__entry_point'
+    queryset = VaccinationRecord.objects.filter(status=VaccinationRecord.Status.GIVEN)
     serializer_class = VaccinationDashboardSerializer
 
     def list(self, request):
         today = timezone.localdate()
         week_start = today - timedelta(days=today.weekday())
-        records = VaccinationRecord.objects.filter(status=VaccinationRecord.Status.GIVEN)
+        records = self.get_queryset()
 
         by_vaccine = list(
             records.filter(administered_at__gte=week_start)
@@ -348,13 +473,19 @@ class VaccinationDashboardViewSet(VaccinationPermissionMixin, viewsets.ReadOnlyM
             for r in recent
         ]
 
+        # الشهادات تُقصّ على نطاق المنفذ مثل الجرعات؛ أما `batches_count`
+        # و`expiring_soon_batches` فوطنيان عمداً: التشغيلة (LOT) مخزون
+        # مشترك بين المنافذ ولا تُشترى أو تُسوّى منفذاً بمنفذ.
+        certs = VaccinationCertificate.objects.active()
+        port_ids = resolve_user_port_ids(request.user)
+        if port_ids is not None:
+            certs = certs.filter(record__site__entry_point__in=port_ids)
+
         data = {
             'doses_today': records.filter(administered_at=today).count(),
             'doses_this_week': records.filter(administered_at__gte=week_start).count(),
             'total_records': records.count(),
-            'active_certificates': VaccinationCertificate.objects.filter(
-                status=VaccinationCertificate.Status.ACTIVE
-            ).count(),
+            'active_certificates': certs.count(),
             'batches_count': VaccineBatch.objects.filter(available_quantity__gt=0).count(),
             'expiring_soon_batches': expiring_soon,
             'by_vaccine': by_vaccine,
@@ -368,6 +499,10 @@ class PublicVaccinationVerifyView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    # أرقام الشهادات تسلسلية (`AFY-VAC-000001`) فتخمينُها سهل؛ تقييد
+    # `anon` العام (100/دقيقة) يتيح تفحّص 40 ألف شهادة في ساعة.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'traveler_lookup'
 
     def get(self, request, code):
         cert = (
@@ -380,31 +515,51 @@ class PublicVaccinationVerifyView(APIView):
                 {'status': 'error', 'message': 'رقم الشهادة غير موجود'},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        today = date.today()
-        effective_status = cert.status
-        if effective_status == VaccinationCertificate.Status.ACTIVE and cert.valid_until < today:
-            effective_status = VaccinationCertificate.Status.EXPIRED
+        effective_status = cert.effective_status
+
+        # NG-04 (P1.5): التوقيع **إلزامي** — فشل-إغلاق. QR بلا توقيع أو بتوقيع
+        # غير صالح لا يُقبل أبداً كاعتماد شهادة صالحة. لا إدخال «يدوي» بلا
+        # توقيع في مسار التحقق من QR للشهادة.
+        signature = request.query_params.get('sig')
+        signature_ok = cert.signature_matches(signature) if signature else False
 
         ip = request.META.get('REMOTE_ADDR', '')[:45]
+        authenticated = request.user if getattr(request, 'user', None) and request.user.is_authenticated else None
+        if not signature_ok:
+            CertificateVerification.objects.create(
+                certificate=cert,
+                verified_by=authenticated,
+                success=False,
+                ip_address=ip or None,
+                note='توقيع رمز QR لا يطابق الشهادة — اشتباه عبث',
+            )
+            return Response(
+                {
+                    'status': 'error',
+                    'message': 'توقيع رمز QR لا يطابق الشهادة — قد تكون الشهادة معدَّلة',
+                    'data': {'certificate_number': cert.certificate_number, 'signature_valid': False},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         CertificateVerification.objects.create(
             certificate=cert,
-            verified_by=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
-            success=effective_status == VaccinationCertificate.Status.ACTIVE,
+            verified_by=authenticated,
+            success=cert.is_valid,
             ip_address=ip or None,
             note=f'تحقق عام بالكود {code}',
         )
 
         payload = {
             'certificate_number': cert.certificate_number,
-            'traveler_name': cert.traveler.full_name if cert.traveler else '',
-            'passport_number': cert.traveler.passport_number if cert.traveler else '',
             'vaccine_name_ar': cert.vaccine.name_ar if cert.vaccine else '',
             'vaccine_code': cert.vaccine.code if cert.vaccine else '',
             'issued_at': cert.issued_at.isoformat(),
             'valid_until': cert.valid_until.isoformat(),
             'status': effective_status,
+            'signature_valid': True,
         }
-        verified = effective_status == VaccinationCertificate.Status.ACTIVE
+        verified = cert.is_valid
         message = 'الشهادة سارية' if verified else 'الشهادة غير سارية'
         return Response(success_response({**payload, 'verified': verified}, message=message))
 
@@ -422,10 +577,10 @@ class PublicVaccinationLookupView(APIView):
         traveler = Traveler.objects.filter(passport_number=passport).first()
         if not traveler:
             return Response(success_response({'traveler': None, 'message': 'لا يوجد مسافر بهذا الرقم'}))
+        passport_partial = (traveler.passport_number[:4] + '*****') if traveler.passport_number else ''
+
         labels = []
-        for c in VaccinationCertificate.objects.filter(
-            traveler=traveler, status=VaccinationCertificate.Status.ACTIVE
-        ).select_related('vaccine'):
+        for c in VaccinationCertificate.objects.filter(traveler=traveler).active().select_related('vaccine'):
             labels.append(
                 {
                     'vaccine_name_ar': c.vaccine.name_ar if c.vaccine else '',
@@ -439,6 +594,7 @@ class PublicVaccinationLookupView(APIView):
                 {
                     'traveler': {
                         'full_name': traveler.full_name,
+                        'passport_partial': passport_partial,
                     },
                     'certificates': labels,
                 }

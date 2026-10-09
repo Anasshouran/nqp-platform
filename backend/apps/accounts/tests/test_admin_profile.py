@@ -79,7 +79,12 @@ def test_user_profile_not_found(staff_client):
 
 def test_user_profile_includes_roles_and_organization(staff_client, db):
     role = Role.objects.create(code='CHEM_ANALYST', name='Chem Analyst', name_ar='محلل كيمياء')
-    sector = Sector.objects.create(code='RED_SEA', name_ar='قطاع البحر الأحمر', order=1)
+    # `get_or_create`: the port_health session fixture commits a RED_SEA sector
+    # outside the test transaction, so with `--reuse-db` `create()` would collide.
+    sector, _ = Sector.objects.get_or_create(
+        code='RED_SEA',
+        defaults={'name_ar': 'قطاع البحر الأحمر', 'order': 1},
+    )
     department = Department.objects.create(code='QUALITY', name_ar='إدارة الجودة', sector=sector, order=1)
     position = OrgPosition.objects.create(code='ANALYST', name_ar='محلل كيمياء', level=1, order=1)
     target = User.objects.create_user(

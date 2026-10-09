@@ -2,7 +2,8 @@
 
 تثبت:
   • ترتيب مصدر الاعتمادادات: صريح ← settings (WHO_IHR_*) ← WHOIntegration
-  • فصل IHR عن ICD-11: نقطة توكن IHR مشتقة من integration.base_url (أو WHO_IHR_TOKEN_URL)
+  • فصل IHR عن ICD-11: نقطة توكن IHR تُضبط صراحةً فقط (WHO_IHR_TOKEN_URL أو
+    وسيط صريح) ولا تُشتق أبداً من integration.base_url
   • عقد OAuth2 الخاص بـIHR: client_credentials بلا scope، والاعتمادادات في body لا في header
   • رفض الإرسال عند غياب كل المصادر (لا طلب ناقص، ولا تسريب سر، وسجل تدقيق FAILED)
   • بقاء WHOSyncLog مرتبطاً بـWHOIntegration (FK) في كل المسارات
@@ -14,11 +15,16 @@ import pytest
 from django.test import override_settings
 
 from apps.who.clients import base_client
-from apps.who.clients.base_client import WHOClient, WHOClientError
+from apps.who.clients.base_client import (
+    WHOClient,
+    WHOClientError,
+    WHOExternalAccessDisabled,
+)
 from apps.who.models import WHOSyncLog, WHOIntegration
 
 BASE_URL = 'https://sandbox.who.example.org'
-TOKEN_URL = f'{BASE_URL}/oauth2/token'
+# نقطة توكن IHR تُمرَّر صراحةً فقط — لا اشتقاق من BASE_URL.
+EXPLICIT_TOKEN_URL = 'https://sandbox.who.example.org/ihr/oauth2/token'
 EVENT_PATH = '/api/v1/events'
 
 DB_CLIENT_ID = 'db-client-id'
@@ -26,6 +32,7 @@ DB_SECRET = 'db-secret-placeholder'
 ENV_CLIENT_ID = 'env-client-id'
 ENV_SECRET = 'env-secret-placeholder'
 ENV_TOKEN_URL = 'https://env-token.example.org/oauth2/token'
+STATUS_PATH = '/ihr/status'
 
 
 def _integration(auth_type='OAUTH2', client_id=DB_CLIENT_ID, secret=DB_SECRET, name='WHO IHR'):
@@ -44,9 +51,11 @@ def _integration(auth_type='OAUTH2', client_id=DB_CLIENT_ID, secret=DB_SECRET, n
 
 def _env_settings(**overrides):
     values = {
+        'WHO_ENABLED': True,
         'WHO_IHR_CLIENT_ID': ENV_CLIENT_ID,
         'WHO_IHR_CLIENT_SECRET': ENV_SECRET,
         'WHO_IHR_TOKEN_URL': ENV_TOKEN_URL,
+        'WHO_IHR_STATUS_PATH': STATUS_PATH,
     }
     values.update(overrides)
     return override_settings(**values)
@@ -129,12 +138,25 @@ def test_empty_db_credentials_fall_back_to_settings():
 
 
 def test_db_credentials_used_as_last_resort_without_env():
-    with _env_settings(WHO_IHR_CLIENT_ID='', WHO_IHR_CLIENT_SECRET='', WHO_IHR_TOKEN_URL=''):
+    with _env_settings(WHO_IHR_CLIENT_ID='', WHO_IHR_CLIENT_SECRET=''):
         client = WHOClient(_integration())
     assert client.client_id == DB_CLIENT_ID
     assert client.client_secret == DB_SECRET
-    assert client._token_provider.token_url == TOKEN_URL
+    assert client._token_provider.token_url == ENV_TOKEN_URL
     assert client.is_configured is True
+
+
+def test_ihr_token_url_is_never_derived_from_base_url():
+    """لا اشتقاق لنقطة التوكن: WHO_IHR_TOKEN_URL فارغة = لا نقطة توكن إطلاقاً."""
+    with _env_settings(WHO_IHR_TOKEN_URL=''):
+        client = WHOClient(_integration())
+    assert client._token_provider.token_url == ''
+    assert f'{BASE_URL}/oauth2/token' != client._token_provider.token_url
+    with mock.patch('httpx.post') as post:
+        with pytest.raises(WHOClientError) as exc:
+            client._token_provider.get_token()
+    assert 'WHO_IHR_TOKEN_URL' in str(exc.value)
+    post.assert_not_called()
 
 
 def test_partial_db_credentials_fall_back_to_settings():
@@ -200,11 +222,11 @@ def test_none_auth_type_sends_no_authorization_header():
 # ===== E. طلب التوكن (مموّه) =====
 
 def test_token_request_keeps_ihr_oauth_contract():
-    with _env_settings(WHO_IHR_TOKEN_URL=''):
-        client = WHOClient(_integration())
+    with _env_settings():
+        client = WHOClient(_integration(), token_url=EXPLICIT_TOKEN_URL)
     with mock.patch('httpx.post', return_value=_token_response()) as post:
         assert client._token_provider.get_token() == 'ihr-access-token'
-    assert post.call_args.args[0] == TOKEN_URL
+    assert post.call_args.args[0] == EXPLICIT_TOKEN_URL
     kwargs = post.call_args.kwargs
     assert kwargs['data'] == {
         'grant_type': 'client_credentials',
@@ -213,6 +235,18 @@ def test_token_request_keeps_ihr_oauth_contract():
     }
     assert 'auth' not in kwargs
     assert 'scope' not in kwargs['data']
+
+
+def test_token_request_refused_without_explicit_token_url():
+    """بلا WHO_IHR_TOKEN_URL لا يوجد طلب OAuth ولا أي محاولة شبكية."""
+    with _env_settings(WHO_IHR_TOKEN_URL=''):
+        client = WHOClient(_integration())
+    with mock.patch('httpx.post') as post, mock.patch('httpx.request') as request:
+        with pytest.raises(WHOClientError) as exc:
+            client._token_provider.get_token()
+    assert 'WHO_IHR_TOKEN_URL' in str(exc.value)
+    post.assert_not_called()
+    request.assert_not_called()
 
 
 def test_token_request_uses_settings_token_url_when_provided():
@@ -224,7 +258,7 @@ def test_token_request_uses_settings_token_url_when_provided():
 
 
 def test_token_request_uses_db_credentials_when_env_absent():
-    with _env_settings(WHO_IHR_CLIENT_ID='', WHO_IHR_CLIENT_SECRET='', WHO_IHR_TOKEN_URL=''):
+    with _env_settings(WHO_IHR_CLIENT_ID='', WHO_IHR_CLIENT_SECRET=''):
         client = WHOClient(_integration())
     with mock.patch('httpx.post', return_value=_token_response()) as post:
         client._token_provider.get_token()
@@ -327,7 +361,53 @@ def test_test_connection_reports_failure_without_credentials(integration):
 def test_test_connection_success_path(integration):
     with _env_settings():
         with mock.patch('httpx.post', return_value=_token_response()), \
-                mock.patch('httpx.request', return_value=_api_response(body={'status': 'ok'})):
+                mock.patch('httpx.request', return_value=_api_response(body={'status': 'ok'})) as request:
             result = base_client.test_connection(integration)
     assert result['connected'] is True
     assert result['status_code'] == 200
+    assert request.call_args.args == ('GET', f'{BASE_URL}{STATUS_PATH}')
+
+
+# ===== G. عقد نقاط النهاية الصريحة والتعطيل =====
+
+@pytest.mark.django_db
+def test_test_connection_never_guesses_an_endpoint(integration):
+    """بلا WHO_IHR_STATUS_PATH لا يُرسل أي طلب ولا يُخمَّن أي مسار بديل."""
+    with _env_settings(WHO_IHR_STATUS_PATH=''):
+        with mock.patch('httpx.post') as post, mock.patch('httpx.request') as request:
+            result = base_client.test_connection(integration)
+    assert result == {'connected': False}
+    post.assert_not_called()
+    request.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_test_connection_rejects_full_url_as_path(integration):
+    """مسار IHR يجب أن يكون نسبياً؛ رابط كامل في المتغير = خطأ إعداد لا يُرسل."""
+    with _env_settings(WHO_IHR_STATUS_PATH='https://who.example.org/status'):
+        with mock.patch('httpx.post') as post, mock.patch('httpx.request') as request:
+            result = base_client.test_connection(integration)
+    assert result == {'connected': False}
+    post.assert_not_called()
+    request.assert_not_called()
+
+
+def test_disabled_integration_never_builds_authorization_header():
+    integration = _integration()
+    with override_settings(WHO_ENABLED=False):
+        client = WHOClient(integration)
+        assert client.is_enabled is False
+        with mock.patch('httpx.post') as post, pytest.raises(WHOExternalAccessDisabled) as exc:
+            client._headers()
+    assert 'WHO_ENABLED' in str(exc.value)
+    post.assert_not_called()
+
+
+def test_client_repr_does_not_leak_credentials(caplog):
+    with _env_settings():
+        client = WHOClient(_integration())
+        provider_repr = repr(client._token_provider)
+    assert ENV_SECRET not in repr(client)
+    assert DB_SECRET not in repr(client)
+    assert ENV_SECRET not in provider_repr
+    assert ENV_SECRET not in caplog.text
