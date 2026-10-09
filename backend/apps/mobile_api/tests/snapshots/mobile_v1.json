@@ -1,0 +1,911 @@
+{
+  "components": {
+    "MobileAuthLoginResponse": {
+      "description": "M2: يُملأ من SUDAPASS OIDC (D-P0-1) + JWT انتقالي — رموز أمان حساسة.",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer"
+        },
+        "refresh_token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_token",
+        "expires_in",
+        "refresh_token"
+      ],
+      "type": "object"
+    },
+    "MobileAuthRefreshResponse": {
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "access_token",
+        "expires_in"
+      ],
+      "type": "object"
+    },
+    "MobileCertificate": {
+      "properties": {
+        "certificate_number": {
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "vaccine_name": {
+          "type": "string"
+        },
+        "valid_until": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "certificate_number",
+        "id",
+        "issued_at",
+        "status",
+        "vaccine_name",
+        "valid_until"
+      ],
+      "type": "object"
+    },
+    "MobileCertificateList": {
+      "properties": {
+        "data": {
+          "items": {
+            "$ref": "#/components/schemas/MobileCertificate"
+          },
+          "nullable": true,
+          "type": "array"
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MobileDeclaration": {
+      "description": "إسقاط إقرار المسافر الصحي — الحد الأدنى المعتمد، بلا حقول مخاطرة.\n\nrisk_score/risk_level/… بيانات داخلية ممنوعة من الجوال (§8.3/§10).",
+      "properties": {
+        "declared": {
+          "type": "boolean"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "default": "",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "nullable": true,
+          "type": "string"
+        },
+        "symptoms": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "declared",
+        "id",
+        "submitted_at"
+      ],
+      "type": "object"
+    },
+    "MobileDeclarationList": {
+      "properties": {
+        "data": {
+          "items": {
+            "$ref": "#/components/schemas/MobileDeclaration"
+          },
+          "nullable": true,
+          "type": "array"
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MobileErrorEnvelope": {
+      "properties": {
+        "data": {
+          "nullable": true
+        },
+        "message": {
+          "$ref": "#/components/schemas/MobileErrorMessage"
+        },
+        "status": {
+          "default": "error",
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "type": "object"
+    },
+    "MobileErrorMessage": {
+      "properties": {
+        "ar": {
+          "description": "رسالة المستخدم بالعربية (لغة أساسية)",
+          "type": "string"
+        },
+        "code": {
+          "description": "رمز الخطأ المعتمد",
+          "type": "string"
+        },
+        "en": {
+          "description": "English message (secondary)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ar",
+        "code",
+        "en"
+      ],
+      "type": "object"
+    },
+    "MobileNotification": {
+      "description": "إشعار مملوك للمستخدم — بلا نص داخلي/خطأ/مستلم (§8.6).",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "is_read": {
+          "type": "boolean"
+        },
+        "read_at": {
+          "format": "date-time",
+          "nullable": true,
+          "type": "string"
+        },
+        "sent_at": {
+          "format": "date-time",
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "created_at",
+        "id",
+        "is_read",
+        "read_at",
+        "sent_at",
+        "status",
+        "subject"
+      ],
+      "type": "object"
+    },
+    "MobileNotificationList": {
+      "properties": {
+        "data": {
+          "items": {
+            "$ref": "#/components/schemas/MobileNotification"
+          },
+          "nullable": true,
+          "type": "array"
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MobileProfile": {
+      "properties": {
+        "email": {
+          "format": "email",
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "national_id": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "user_type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "full_name",
+        "id",
+        "national_id",
+        "phone",
+        "user_type"
+      ],
+      "type": "object"
+    },
+    "MobileProfileEnvelope": {
+      "properties": {
+        "data": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/MobileProfile"
+            }
+          ],
+          "nullable": true
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MobileRequirement": {
+      "description": "متطلب سفر/صحة للجوال — ينعكس حرفياً من HealthNotice بدون اختلاق.\n\n``title_en`` يُترك فارغاً حين لا يتوفر مصدر إنجليزي (لا تُبتكر ترجمة).",
+      "properties": {
+        "category": {
+          "default": "",
+          "type": "string"
+        },
+        "code": {
+          "description": "معرّف المصدر (HealthNotice)",
+          "type": "string"
+        },
+        "description_ar": {
+          "default": "",
+          "type": "string"
+        },
+        "effective_from": {
+          "format": "date",
+          "nullable": true,
+          "type": "string"
+        },
+        "effective_until": {
+          "format": "date",
+          "nullable": true,
+          "type": "string"
+        },
+        "priority": {
+          "default": "",
+          "type": "string"
+        },
+        "published_at": {
+          "format": "date-time",
+          "nullable": true,
+          "type": "string"
+        },
+        "title_ar": {
+          "type": "string"
+        },
+        "title_en": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "title_ar"
+      ],
+      "type": "object"
+    },
+    "MobileRequirementList": {
+      "properties": {
+        "data": {
+          "items": {
+            "$ref": "#/components/schemas/MobileRequirement"
+          },
+          "nullable": true,
+          "type": "array"
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "MobileSyncStatus": {
+      "properties": {
+        "contract_version": {
+          "type": "string"
+        },
+        "last_synced_at": {
+          "format": "date-time",
+          "nullable": true,
+          "type": "string"
+        },
+        "pending_count": {
+          "type": "integer"
+        },
+        "server_time": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "server_version": {
+          "type": "string"
+        },
+        "unread_notifications": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "last_synced_at",
+        "pending_count",
+        "server_time"
+      ],
+      "type": "object"
+    },
+    "MobileTrip": {
+      "properties": {
+        "departure_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "return_date": {
+          "format": "date",
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "transport_mode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "departure_date",
+        "destination",
+        "id",
+        "return_date",
+        "status",
+        "transport_mode"
+      ],
+      "type": "object"
+    },
+    "MobileTripList": {
+      "properties": {
+        "data": {
+          "items": {
+            "$ref": "#/components/schemas/MobileTrip"
+          },
+          "nullable": true,
+          "type": "array"
+        },
+        "message": {
+          "nullable": true,
+          "type": "string"
+        },
+        "status": {
+          "default": "success",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "paths": {
+    "/api/v1/mobile/auth/login/": {
+      "post": {
+        "description": "دخول المسافر — SUDAPASS (D-P0-1) مؤجَّل: SUDAPASS_IMPLEMENTATION = BLOCKED (Q8).",
+        "operationId": "v1_mobile_auth_login_create",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileAuthLoginResponse"
+                }
+              }
+            },
+            "description": "تسجيل دخول المسافر"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Implemented — مؤجَّل بربط مسوّغ موثق (SUDAPASS/Q8 أو نقص نموذج نطاق)."
+          }
+        },
+        "security": [
+          {}
+        ],
+        "tags": [
+          "mobile",
+          "mobile-auth"
+        ]
+      }
+    },
+    "/api/v1/mobile/auth/refresh/": {
+      "post": {
+        "description": "تجديد رمز الوصول — مؤجَّل مع مسار SUDAPASS (Q8).",
+        "operationId": "v1_mobile_auth_refresh_create",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileAuthRefreshResponse"
+                }
+              }
+            },
+            "description": "تجديد رمز الوصول"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Implemented — مؤجَّل بربط مسوّغ موثق (SUDAPASS/Q8 أو نقص نموذج نطاق)."
+          }
+        },
+        "security": [
+          {}
+        ],
+        "tags": [
+          "mobile",
+          "mobile-auth"
+        ]
+      }
+    },
+    "/api/v1/mobile/certificates/": {
+      "get": {
+        "description": "شهادات المسافر الخاصة فقط (SENSITIVE_HEALTH) — بلا أدوات تحقق هنا.",
+        "operationId": "v1_mobile_certificates_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileCertificateList"
+                }
+              }
+            },
+            "description": "شهادات التطعيم"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-certificates"
+        ]
+      }
+    },
+    "/api/v1/mobile/certificates/{id}/": {
+      "get": {
+        "description": "تفاصيل شهادة مملوكة فقط؛ غير المملوكة → 404 (لا تأكيد وجود).",
+        "operationId": "v1_mobile_certificates_retrieve_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileCertificate"
+                }
+              }
+            },
+            "description": "شهادة واحدة"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "غير مملوكة/غير موجودة (إخفاء)"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-certificates"
+        ]
+      }
+    },
+    "/api/v1/mobile/declarations/": {
+      "get": {
+        "description": "إسقاط أدنى لإقرار المسافر الصحي — يستبعد risk_score/risk_level والبيانات الداخلية (§8.3).",
+        "operationId": "v1_mobile_declarations_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileDeclarationList"
+                }
+              }
+            },
+            "description": "سجل الإقرار الأدنى"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-declarations"
+        ]
+      },
+      "post": {
+        "description": "فجوة معتمدة: تدفق تقديم إقرار الجوال غير معتمد بعد (مزامنة M2-C) — 501.",
+        "operationId": "v1_mobile_declarations_create",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileDeclaration"
+                }
+              }
+            },
+            "description": "قُبل للطابور"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Implemented — مؤجَّل بربط مسوّغ موثق (SUDAPASS/Q8 أو نقص نموذج نطاق)."
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-declarations"
+        ]
+      }
+    },
+    "/api/v1/mobile/notifications/": {
+      "get": {
+        "description": "إشعارات مملوكة للمستخدم فقط — لا إشعارات مؤسسية ولا مستلم/نص داخلي.",
+        "operationId": "v1_mobile_notifications_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileNotificationList"
+                }
+              }
+            },
+            "description": "إشعارات المستخدم"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-notifications"
+        ]
+      }
+    },
+    "/api/v1/mobile/notifications/{id}/read/": {
+      "patch": {
+        "description": "تحديد قراءة — الطابع الزمني خادم موثوق (+read_at).",
+        "operationId": "v1_mobile_notifications_read_partial_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileNotification"
+                }
+              }
+            },
+            "description": "إشعار محدَّث (read)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "غير مملوك/غير موجود"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-notifications"
+        ]
+      }
+    },
+    "/api/v1/mobile/profile/": {
+      "get": {
+        "description": "الملف الشخصي — الملكية من المبدأ المُصادَق عليه فقط.",
+        "operationId": "v1_mobile_profile_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileProfileEnvelope"
+                }
+              }
+            },
+            "description": "الملف الشخصي للمسافر"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-profile"
+        ]
+      }
+    },
+    "/api/v1/mobile/requirements/": {
+      "get": {
+        "description": "إسقاط HealthNotice فقط؛ لا تُبتكر متطلبات ولا ترجمات.",
+        "operationId": "v1_mobile_requirements_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileRequirementList"
+                }
+              }
+            },
+            "description": "متطلبات السفر المطبَّقة"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-requirements"
+        ]
+      }
+    },
+    "/api/v1/mobile/sync/status/": {
+      "get": {
+        "description": "حالة/وقت/إصدار عقد الخادم — الخادم مرجعي (phase-09).",
+        "operationId": "v1_mobile_sync_status_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileSyncStatus"
+                }
+              }
+            },
+            "description": "حالة المزامنة"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-sync"
+        ]
+      }
+    },
+    "/api/v1/mobile/trips/": {
+      "get": {
+        "description": "فجوة نطاق موثقة: الرحلات مجزأة (carriers/port_health/borders_health) ولا يوجد نموذج موحّد مملوك للمسافر بعد (D-P1-1). يبقى 501 حتى تتكامل الواجهة.",
+        "operationId": "v1_mobile_trips_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileTripList"
+                }
+              }
+            },
+            "description": "رحلات المسافر"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Implemented — مؤجَّل بربط مسوّغ موثق (SUDAPASS/Q8 أو نقص نموذج نطاق)."
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-trips"
+        ]
+      }
+    },
+    "/api/v1/mobile/trips/{id}/": {
+      "get": {
+        "description": "فجوة نطاق موثقة مثل القائمة (D-P1-1).",
+        "operationId": "v1_mobile_trips_retrieve_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileTrip"
+                }
+              }
+            },
+            "description": "تفاصيل الرحلة"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Implemented — مؤجَّل بربط مسوّغ موثق (SUDAPASS/Q8 أو نقص نموذج نطاق)."
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "mobile",
+          "mobile-trips"
+        ]
+      }
+    }
+  }
+}
