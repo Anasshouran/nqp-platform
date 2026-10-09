@@ -18,8 +18,8 @@ export const SECURITY_CONTROLS: readonly SecurityControl[] = [
   {
     id: 'token-storage',
     titleAr: 'تخزين الرموز في التخزين الآمن للمنصة',
-    status: 'SCAFFOLDED',
-    evidence: 'src/security/secureStorage.ts (واجهة + محول expo-secure-store)؛ لا اختبار جهاز بعد',
+    status: 'IMPLEMENTED',
+    evidence: 'src/security/secureStorage.ts (محول حقيقي لـ expo-secure-store — Keychain/Keystore)؛ لا اختبار جهاز بعد',
   },
   {
     id: 'encrypted-sensitive-store',
@@ -48,8 +48,8 @@ export const SECURITY_CONTROLS: readonly SecurityControl[] = [
   {
     id: 'qr-signature-verification',
     titleAr: 'التحقق من توقيع QR (فشل-إغلاق)',
-    status: 'BLOCKED',
-    evidence: 'NG-04 مفتوح: الخادم يقبل بلا توقيع (vaccination/views.py:523) — D-P0-3 في M2',
+    status: 'IMPLEMENTED',
+    evidence: 'خادمي فشل-إغلاق (HMAC): apps/vaccination/models.py · apps/vaccination/views.py · apps/public/views.py · core/utils/qr_payload.py؛ واجهة العميل src/security/qr.ts (لا تحقق محلي) — M3-0 CONFIRMED',
   },
   {
     id: 'log-scrubbing',

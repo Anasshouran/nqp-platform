@@ -99,13 +99,18 @@ describe('telemetry never emits raw sensitive payloads', () => {
 });
 
 describe('security control status registry is honest', () => {
-  it('never labels scaffolding as implemented', () => {
+  it('reports the M3-0 CONFIRMED states without overclaiming', () => {
     expect(controlStatus('log-scrubbing')).toBe('IMPLEMENTED');
-    expect(controlStatus('qr-signature-verification')).toBe('BLOCKED');
+    expect(controlStatus('token-storage')).toBe('IMPLEMENTED');
+    expect(controlStatus('qr-signature-verification')).toBe('IMPLEMENTED');
     expect(controlStatus('certificate-pinning')).toBe('SCAFFOLDED');
     expect(controlStatus('device-risk-signals')).toBe('NOT STARTED');
     const implemented = SECURITY_CONTROLS.filter((c) => c.status === 'IMPLEMENTED');
-    expect(implemented.map((c) => c.id)).toEqual(['log-scrubbing']);
+    expect(implemented.map((c) => c.id)).toEqual([
+      'token-storage',
+      'qr-signature-verification',
+      'log-scrubbing',
+    ]);
   });
 });
 
