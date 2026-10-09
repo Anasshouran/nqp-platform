@@ -1,0 +1,11 @@
+{
+  "cli": { "version": ">= 3.0.0" },
+  "build": {
+    "development": { "distribution": "internal", "env": { "EXPO_PUBLIC_API_URL": "http://localhost:8000/api/v1" } },
+    "staging": {
+      "env": { "EXPO_PUBLIC_API_URL": "__SET_VIA_CLI_OR_DASHBOARD__" },
+      "distribution": "internal"
+    },
+    "production": { "env": {} }
+  }
+}
