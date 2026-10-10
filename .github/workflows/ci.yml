@@ -18,7 +18,7 @@ jobs:
         working-directory: backend
     services:
       postgres:
-        image: postgres:16
+        image: ghcr.io/anasshouran/postgres:16-alpine
         env:
           POSTGRES_DB: nqp_db
           POSTGRES_USER: postgres
@@ -30,7 +30,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
       redis:
-        image: redis:7
+        image: ghcr.io/anasshouran/redis:7-alpine
         ports: ['6379:6379']
         options: >-
           --health-cmd "redis-cli ping"
