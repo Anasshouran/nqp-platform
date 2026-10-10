@@ -16,16 +16,11 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { getCirculars } from '../../api/endpoints/public';
 import type { Circular } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton, ErrorState } from '../../components/common';
+import { CategoryChip } from '../../components/common/CategoryChip';
+import { CIRCULAR_CATEGORY_LABELS, CIRCULAR_CATEGORY_STYLES } from '../../components/common/categoryMaps';
 import { useApi } from '../../hooks/useApi';
 
 const PAGE_SIZE = 6;
-
-const categoryLabels: Record<string, string> = {
-  OFFICIAL: 'رسمي',
-  HEALTH: 'صحي',
-  ADMIN: 'إداري',
-  GENERAL: 'عام',
-};
 
 const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   URGENT: 'error',
@@ -83,7 +78,7 @@ const CircularsPage = () => {
                 <CardContent sx={{ p: 3 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                     <Stack direction="row" spacing={1}>
-                      <Chip label={categoryLabels[circular.category] || circular.category} size="small" color="primary" variant="outlined" />
+                      <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
                       <Chip
                         label={priorityLabels[circular.priority] || circular.priority}
                         size="small"

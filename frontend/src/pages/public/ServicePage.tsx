@@ -17,6 +17,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { getService, type Service } from '../../api/endpoints/services';
 import { PageHeader, ListSkeleton } from '../../components/common';
 import { iconFor } from '../../utils/iconMap';
+import { safeExternalUrl } from '../../utils/safeUrl';
 import ServiceAuthGate from '../../components/services/ServiceAuthGate';
 
 const audienceLabels: Record<string, string> = {
@@ -33,7 +34,8 @@ const identityLabels: Record<string, string> = {
 };
 
 const destinationFor = (service: Service, currentPath: string): { href: string; external?: boolean } => {
-  if (service.external_url) return { href: service.external_url, external: true };
+  const external = safeExternalUrl(service.external_url);
+  if (external) return { href: external, external: true };
 
   const contentDestinations: Record<string, string> = {
     'vector-info': '/services/vector-control',

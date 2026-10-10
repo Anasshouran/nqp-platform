@@ -130,14 +130,16 @@ const NotificationPanel = ({
           </Typography>
         </Stack>
         <Tooltip title="تحديد الكل كمقروء">
-          <IconButton aria-label="تأكيد"
-            size="small"
-            onClick={handleMarkAll}
-            disabled={!items || items.length === 0}
-            sx={{ color: 'primary.main' }}
-          >
-            <DoneAllIcon fontSize="small" />
-          </IconButton>
+          <Box component="span" sx={{ display: 'inline-flex' }}>
+            <IconButton aria-label="تأكيد"
+              size="small"
+              onClick={handleMarkAll}
+              disabled={!items || items.length === 0}
+              sx={{ color: 'primary.main' }}
+            >
+              <DoneAllIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Tooltip>
       </Stack>
       <Divider />

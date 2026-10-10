@@ -16,9 +16,19 @@ apiClient.interceptors.request.use((config) => {
 let isRefreshing = false;
 let pendingQueue: Array<(token: string) => void> = [];
 
+// يمسح ذاكرة Service Worker حتى لا تبقى بيانات جلسة سابقة على الجهاز.
+export const purgeServiceWorkerCaches = () => {
+  navigator.serviceWorker?.controller?.postMessage({ type: 'PURGE_CACHES' });
+  if ('caches' in window) {
+    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+  }
+};
+
 const redirectToLogin = () => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("auth_user");
+  purgeServiceWorkerCaches();
   const path = window.location.pathname;
   const loginPath = path.startsWith('/traveler')
     ? '/traveler/login'

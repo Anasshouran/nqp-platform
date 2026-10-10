@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
@@ -14,13 +13,7 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import { getNewsById, getNews } from '../../api/endpoints/public';
 import type { NewsArticle } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton } from '../../components/common';
-
-const categoryLabels: Record<string, string> = {
-  GENERAL: 'عام',
-  HEALTH: 'صحي',
-  TRAVEL: 'سفر',
-  OFFICIAL: 'رسمي',
-};
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
@@ -77,7 +70,7 @@ const NewsDetailPage = () => {
               )}
               <Box sx={{ p: { xs: 3, md: 4 } }}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                  <Chip label={categoryLabels[article.category] || article.category} size="small" color="primary" />
+                  <NewsCategoryChip category={article.category} />
                   <Typography variant="caption" color="text.secondary">
                     {formatDate(article.published_at)}
                   </Typography>
@@ -120,7 +113,7 @@ const NewsDetailPage = () => {
                     <CardMedia component="img" height={140} image={n.image} alt={n.title} sx={{ objectFit: 'cover', width: '100%', aspectRatio: '16 / 9' }} />
                   )}
                   <Box sx={{ p: 2 }}>
-                    <Chip label={categoryLabels[n.category] || n.category} size="small" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                    <NewsCategoryChip category={n.category} sx={{ mb: 1 }} />
                     <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.4 }}>
                       {n.title}
                     </Typography>

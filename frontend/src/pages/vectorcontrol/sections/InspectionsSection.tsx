@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -79,7 +80,7 @@ const NewInspectionForm = ({ onSaved }: { onSaved: () => void }) => {
       }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ التفتيش — تأكد من نقطة الدخول');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ التفتيش — تأكد من نقطة الدخول');
     } finally {
       setSaving(false);
     }
@@ -132,7 +133,7 @@ const InspectionsSection = () => {
   const t = useServerTable<VectorInspection>({ fetchData: getInspections });
   const [formOpen, setFormOpen] = useState(false);
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   const foundCount = (r: VectorInspection) => FOUND_LABELS.filter(({ key }) => (r as unknown as Record<string, boolean>)[key]).length;
 

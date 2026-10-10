@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -19,12 +20,39 @@ import { useApi } from '../../hooks/useApi';
 
 const PAGE_SIZE = 6;
 
-const ihrLabels: Record<string, string> = {
-  PHEIC: 'طوارئ صحية عامة',
-  TARGETED_ERADICATION: 'استئصال مستهدف',
-  SURVEILLANCE_ONLY: 'ترصد فقط',
-  NOT_IHR: 'غير مدرج',
+/* IHR classification doubles as a severity signal, so each level gets its own
+   semantic colour: red = public-health emergency, amber = targeted eradication,
+   blue = surveillance only, grey = not under IHR. */
+const IHR_META: Record<string, { label: string; color: 'error' | 'warning' | 'info' | 'default'; tone: string }> = {
+  PHEIC: { label: 'طوارئ صحية عامة', color: 'error', tone: '#c63a3a' },
+  TARGETED_ERADICATION: { label: 'استئصال مستهدف', color: 'warning', tone: '#a86400' },
+  SURVEILLANCE_ONLY: { label: 'ترصد فقط', color: 'info', tone: '#2f6dd0' },
+  NOT_IHR: { label: 'غير مدرج', color: 'default', tone: '#3f584f' },
 };
+
+const ihrMeta = (category?: string | null) => (category ? IHR_META[category] : undefined);
+
+const DetailChips = ({
+  label,
+  items,
+  color = 'primary',
+}: {
+  label: string;
+  items: string[];
+  color?: 'primary' | 'default';
+}) => (
+  <>
+    <Divider sx={{ my: 1 }} />
+    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+      {label}
+    </Typography>
+    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 1 }}>
+      {items.map((item) => (
+        <Chip key={item} label={item} size="small" color={color} variant="outlined" />
+      ))}
+    </Box>
+  </>
+);
 
 const DiseasePage = () => {
   const { data, loading, error, retry } = useApi<PublicDisease[]>(() =>
@@ -54,38 +82,61 @@ const DiseasePage = () => {
       ) : (
         <>
           <Grid container spacing={3}>
-            {shown.map((disease) => (
+            {shown.map((disease) => {
+              const ihr = ihrMeta(disease.ihr_category);
+              return (
             <Grid item xs={12} md={6} lg={4} key={disease.id}>
               <Card
                 className="fade-up"
-                sx={{ height: '100%', border: '1px solid', borderColor: 'divider', '&:hover': { boxShadow: 4 } }}
+                sx={{
+                  height: '100%',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  ...(ihr
+                    ? {
+                        borderTop: `4px solid ${ihr.tone}`,
+                        '&:hover': { boxShadow: 4, transform: 'translateY(-4px)' },
+                      }
+                    : { '&:hover': { boxShadow: 4 } }),
+                  transition: 'box-shadow 250ms ease, transform 250ms ease',
+                }}
               >
                 <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                       {disease.name_ar}
                     </Typography>
-                    <Chip label={disease.icd_11_code} size="small" variant="outlined" />
+                    <Chip
+                      label={disease.icd_11_code}
+                      size="small"
+                      sx={{
+                        bgcolor: 'grey.100',
+                        color: 'grey.700',
+                        fontWeight: 700,
+                        letterSpacing: 0.6,
+                        flexShrink: 0,
+                      }}
+                    />
                   </Stack>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                    {disease.name_en}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 2 }}>
-                    {disease.description}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}><En>{disease.name_en}</En></Typography>
+                  {disease.description?.trim() && (
+                    <Typography variant="body2" sx={{ mb: 2 }}>
+                      {disease.description}
+                    </Typography>
+                  )}
 
                   {disease.symptoms && disease.symptoms.length > 0 && (
-                    <>
-                      <Divider sx={{ my: 1 }} />
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                        الأعراض الرئيسية
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 1 }}>
-                        {disease.symptoms.map((symptom) => (
-                          <Chip key={symptom} label={symptom} size="small" color="primary" variant="outlined" />
-                        ))}
-                      </Box>
-                    </>
+                    <DetailChips label="الأعراض الرئيسية" items={disease.symptoms} />
+                  )}
+
+                  {disease.transmission_methods && disease.transmission_methods.length > 0 && (
+                    <DetailChips
+                      label="طرق الانتقال"
+                      items={disease.transmission_methods}
+                      color="default"
+                    />
                   )}
 
                   <Box sx={{ mt: 'auto', pt: 2 }}>
@@ -101,15 +152,17 @@ const DiseasePage = () => {
                     {disease.ihr_category && (
                       <Chip
                         size="small"
-                        color={disease.ihr_category === 'PHEIC' ? 'error' : 'default'}
-                        label={ihrLabels[disease.ihr_category] || disease.ihr_category}
+                        color={ihr?.color ?? 'default'}
+                        label={ihr?.label ?? disease.ihr_category}
+                        sx={{ ...(ihr?.color === 'default' ? { bgcolor: 'grey.100', color: 'grey.700' } : {}) }}
                       />
                     )}
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
-          ))}
+              );
+            })}
           </Grid>
           {visible < diseases.length && (
             <Box sx={{ mt: 5, textAlign: 'center' }}>

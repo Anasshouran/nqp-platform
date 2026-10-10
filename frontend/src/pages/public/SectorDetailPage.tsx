@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -39,18 +40,7 @@ import type { Sector, PublicPort, HealthNotice, NewsArticle } from '../../api/en
 import { getServiceCategories } from '../../api/endpoints/services';
 import type { Service, ServiceCategory } from '../../api/endpoints/services';
 import { PageHeader, EmptyState, ListSkeleton, SectionTitle } from '../../components/common';
-
-const portTypeLabels: Record<string, string> = {
-  AIRPORT: 'منفذ جوي',
-  SEAPORT: 'منفذ بحري',
-  LAND_PORT: 'منفذ بري',
-};
-
-const portTypeIcons: Record<string, React.ReactNode> = {
-  AIRPORT: <FlightIcon />,
-  SEAPORT: <DirectionsBoatIcon />,
-  LAND_PORT: <DirectionsBusIcon />,
-};
+import { portTypeMeta } from '../../config/portTypes';
 
 const regionLabels: Record<string, string> = {
   KHARTOUM: 'الخرطوم',
@@ -146,7 +136,7 @@ const SectorDetailPage = () => {
       label: 'فحص صحي',
       icon: <HealthAndSafetyIcon />,
     },
-    { value: '24/7', label: 'مراقبة مستمرة', icon: <CampaignIcon />, accent: '#c8a13a' },
+    { value: '24/7', label: 'مراقبة مستمرة', icon: <CampaignIcon />, accent: '#8c6d1f' },
   ];
 
   const flattenPath = (service: Service): string =>
@@ -244,7 +234,7 @@ const SectorDetailPage = () => {
                   </Typography>
                   <Stack spacing={1.5}>
                     <InfoRow label="الاسم بالعربية" value={sector.name_ar} />
-                    <InfoRow label="الاسم بالإنجليزية" value={sector.name_en} dir="ltr" />
+                    <InfoRow label="الاسم بالإنجليزية" value=<En>{sector.name_en}</En> dir="ltr" />
                     <InfoRow label="الإقليم" value={regionLabels[sector.region] || sector.region} />
                     <InfoRow label="عدد المنافذ" value={String(sector.ports_count)} />
                   </Stack>
@@ -289,12 +279,17 @@ const SectorDetailPage = () => {
                               display: 'grid',
                               placeItems: 'center',
                               color: '#fff',
-                              bgcolor: 'primary.main',
+                              bgcolor: portTypeMeta(port.type).fill,
                             }}
                           >
-                            {portTypeIcons[port.type] || <LocationOnIcon />}
+                            {portTypeMeta(port.type).icon}
                           </Box>
-                          <Chip label={portTypeLabels[port.type] || port.type} size="small" variant="outlined" />
+                          <Chip
+                            label={portTypeMeta(port.type).label}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 700, ...portTypeMeta(port.type).chipSx }}
+                          />
                         </Stack>
                         <Typography variant="h6" sx={{ fontWeight: 700, mt: 2 }}>
                           {port.name_ar}
@@ -495,7 +490,7 @@ const SectorDetailPage = () => {
   );
 };
 
-const InfoRow = ({ label, value, dir }: { label: string; value: string; dir?: 'ltr' | 'rtl' }) => (
+const InfoRow = ({ label, value, dir }: { label: string; value: React.ReactNode; dir?: 'ltr' | 'rtl' }) => (
   <Stack direction="row" justifyContent="space-between" alignItems="center">
     <Typography variant="body2" color="text.secondary">{label}</Typography>
     <Typography variant="body2" sx={{ fontWeight: 700 }} dir={dir}>{value}</Typography>

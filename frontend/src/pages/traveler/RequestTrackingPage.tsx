@@ -33,6 +33,7 @@ import { getTravelerStatus, getTravelerQr, refreshTravelerQr, getTravelerTimelin
 import type { TravelerLookupResult } from '../../api/endpoints/public';
 import type { TravelerQrResult, TravelerStatusResult, TravelerStatusLog } from '../../api/endpoints/travelers';
 import { getTravelerSession, setTravelerSession } from '../../utils/travelerSession';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 const registrationLabels: Record<string, string> = {
   PENDING_DOCUMENTS: 'بانتظار المستندات',
@@ -188,8 +189,8 @@ const RequestTrackingPage = () => {
     win.document.write(
       `<html dir="rtl"><body style="font-family:sans-serif;text-align:center;padding:40px">` +
         `<h2>منصة الحجر الصحي القومي</h2>` +
-        `<p>${lookup?.full_name || ''} · ${lookup?.passport_number || ''}</p>` +
-        `<img src="${qr.qr_code}" width="320" height="320" style="margin:20px 0" />` +
+        `<p>${escapeHtml(lookup?.full_name || '')} · ${escapeHtml(lookup?.passport_number || '')}</p>` +
+        `<img src="${escapeHtml(qr.qr_code)}" width="320" height="320" style="margin:20px 0" />` +
         `<p>اعرض هذا الرمز لموظف الحجر الصحي عند الوصول.</p>` +
         `</body></html>`
     );
@@ -288,7 +289,14 @@ const RequestTrackingPage = () => {
                 </Stack>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <Box sx={{ flex: 1, height: 12, borderRadius: 6, bgcolor: 'divider', overflow: 'hidden' }}>
+                  <Box
+                    role="progressbar"
+                    aria-label="نسبة اكتمال الطلب"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(progress)}
+                    sx={{ flex: 1, height: 12, borderRadius: 6, bgcolor: 'divider', overflow: 'hidden' }}
+                  >
                     <Box sx={{ height: '100%', width: `${progress}%`, bgcolor: 'primary.main', borderRadius: 6 }} />
                   </Box>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>

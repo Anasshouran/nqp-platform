@@ -52,7 +52,7 @@ export const DecisionSupport = () => (
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'grid', placeItems: 'center', color: '#2f6dd0', bgcolor: 'rgba(47,109,208,0.1)' }}>
+                <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'grid', placeItems: 'center', color: 'info.main', bgcolor: 'rgba(47,109,208,0.1)' }}>
                   <LightbulbIcon sx={{ fontSize: 18 }} />
                 </Box>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{d.topic}</Typography>
@@ -82,8 +82,8 @@ export const TradeSummary = () => (
         <Grid item xs={12} sm={6}>
           <Box sx={{ p: 2, borderRadius: 3, border: '1px solid rgba(47,109,208,0.15)', bgcolor: 'rgba(47,109,208,0.04)', height: '100%' }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <SettingsInputComponentIcon sx={{ color: '#2f6dd0', transform: 'rotate(180deg)' }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2f6dd0' }}>الوارد (استيراد)</Typography>
+              <SettingsInputComponentIcon sx={{ color: 'info.main', transform: 'rotate(180deg)' }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'info.main' }}>الوارد (استيراد)</Typography>
             </Stack>
             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>144</Typography>
             <Typography variant="caption" color="text.secondary">شحنة · بزيادة 9% عن الأسبوع السابق</Typography>
@@ -93,8 +93,8 @@ export const TradeSummary = () => (
         <Grid item xs={12} sm={6}>
           <Box sx={{ p: 2, borderRadius: 3, border: '1px solid rgba(29,122,84,0.15)', bgcolor: 'rgba(29,122,84,0.04)', height: '100%' }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <SettingsInputComponentIcon sx={{ color: '#1d7a54' }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1d7a54' }}>الصادر (تصدير)</Typography>
+              <SettingsInputComponentIcon sx={{ color: 'success.main' }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main' }}>الصادر (تصدير)</Typography>
             </Stack>
             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>61</Typography>
             <Typography variant="caption" color="text.secondary">شحنة · بزيادة 6% عن الأسبوع السابق</Typography>

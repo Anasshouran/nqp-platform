@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -171,7 +172,7 @@ const RedSeaCommandPage = () => {
             <ExportButton
               filename="red-sea-sector-dashboard"
               headers={['المنفذ', 'النوع', 'فحوصات', 'مشتبهة', 'الجاهزية%', 'الحالة']}
-              rows={report.stations.map((s) => [s.name, stationTypeLabel[s.type], s.screens, s.suspected, s.readiness, statusMeta[s.status].label])}
+              rows={report.stations.map((s) => [s.name, labelOf(stationTypeLabel as Record<string, string>, s.type), s.screens, s.suspected, s.readiness, labelOf(statusMeta, s.status)])}
               disabled={loading}
             />
           </Stack>
@@ -262,7 +263,7 @@ const RedSeaCommandPage = () => {
                           <Box sx={{ width: 34, height: 34, borderRadius: 2, display: 'grid', placeItems: 'center', color: s.status === 'OFFLINE' ? 'text.disabled' : 'primary.main', bgcolor: 'primary.light' }}>
                             {s.type === 'SEAPORT' ? <AnchorIcon fontSize="small" /> : s.type === 'AIRPORT' ? <AirplaneTicketIcon fontSize="small" /> : <LocalShippingIcon fontSize="small" />}
                           </Box>
-                          <Chip label={stationTypeLabel[s.type]} size="small" variant="outlined" />
+                          <Chip label={labelOf(stationTypeLabel as Record<string, string>, s.type)} size="small" variant="outlined" />
                         </Stack>
                         <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3, minHeight: 38 }}>
                           {s.name}
@@ -308,7 +309,7 @@ const RedSeaCommandPage = () => {
                           من {ship.origin} · {ship.cargo} · طاقم {ship.crew} {ship.passengers ? `+ ${ship.passengers} راكب` : ''}
                         </Typography>
                       </Box>
-                      <StatusChip label={shipStatusMeta[ship.status].label} tone={shipStatusMeta[ship.status].tone} />
+                      <StatusChip label={labelOf(shipStatusMeta, ship.status)} tone={toneOf(shipStatusMeta, ship.status)} />
                       <Chip label={ship.free_pratique ? 'تصريح حر' : 'بلا تصريح'} size="small" color={ship.free_pratique ? 'success' : 'default'} variant={ship.free_pratique ? 'filled' : 'outlined'} />
                     </Stack>
                   ))}
@@ -337,7 +338,7 @@ const RedSeaCommandPage = () => {
                             {f.pax} راكب · {f.screened} مفحوص
                           </Typography>
                         </Box>
-                        <StatusChip label={flightStatusMeta[f.status].label} tone={flightStatusMeta[f.status].tone} />
+                        <StatusChip label={labelOf(flightStatusMeta, f.status)} tone={toneOf(flightStatusMeta, f.status)} />
                       </Stack>
                     ))}
               </Stack>

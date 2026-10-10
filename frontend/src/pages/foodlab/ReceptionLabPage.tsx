@@ -65,6 +65,7 @@ import {
   FormSelect,
   FormTextField,
   AppButton,
+  ConfirmDialog,
 } from '../../components/uikit';
 import KpiCard from '../../components/dashboard/KpiCard';
 import DashboardHero from '../../components/dashboard/DashboardHero';
@@ -75,6 +76,7 @@ import {
   conditionalAcceptSample,
   createLabSample,
   createReferenceSample,
+  deleteReferenceSample,
   discardReferenceSample,
   getCustodyEvents,
   getFoodProducts,
@@ -1364,7 +1366,26 @@ const ReferencesSection = ({
   refForm: RefFormState;
   setRefForm: React.Dispatch<React.SetStateAction<RefFormState>>;
   submitRef: () => void;
-}) => (
+}) => {
+  const [deleteTarget, setDeleteTarget] = useState<ReferenceSample | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const confirmDeleteReference = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      await deleteReferenceSample(deleteTarget.id);
+      notifySuccess('تم الحذف');
+      setDeleteTarget(null);
+      onRefresh();
+    } catch {
+      notifyError('تعذر الحذف');
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  return (
   <Box>
     <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
       <AppButton startIcon={<AddIcon />} onClick={onOpenRegister}>تسجيل عينة مرجعية</AppButton>
@@ -1405,9 +1426,7 @@ const ReferencesSection = ({
               }}>
                 إعدام
               </AppButton>
-              <IconButton aria-label="حذف" size="small" color="error" onClick={async () => {
-                try { await import('../../api/endpoints/foodlab').then((m) => m.deleteReferenceSample(r.id)); notifySuccess('تم الحذف'); onRefresh(); } catch { notifyError('تعذر الحذف'); }
-              }}>
+              <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(r)}>
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -1446,8 +1465,22 @@ const ReferencesSection = ({
       </Grid>
       <FormTextField label="ملاحظات" value={refForm.remarks} onChange={(e) => setRefForm((f) => ({ ...f, remarks: e.target.value }))} multiline minRows={2} />
     </FormDialog>
+
+    <ConfirmDialog
+      open={Boolean(deleteTarget)}
+      title="حذف عينة مرجعية"
+      message={`هل تريد حذف العينة المرجعية «${deleteTarget?.product_name || ''}» (${deleteTarget?.ref_number || '—'})؟ لا يمكن التراجع عن هذا الإجراء.`}
+      confirmLabel="حذف"
+      tone="error"
+      loading={deleteBusy}
+      onClose={() => {
+        if (!deleteBusy) setDeleteTarget(null);
+      }}
+      onConfirm={confirmDeleteReference}
+    />
   </Box>
-);
+  );
+};
 
 /* ================== سلسلة الحيازة (قراءة فقط) ================== */
 

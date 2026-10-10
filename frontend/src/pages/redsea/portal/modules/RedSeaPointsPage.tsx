@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../../../utils/labels';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -188,7 +189,7 @@ const RedSeaPointsPage = () => {
                           </Box>
                           الحالة
                         </Typography>
-                        <StatusChip label={statusMeta[s.status].label} tone={statusMeta[s.status].tone} />
+                        <StatusChip label={labelOf(statusMeta, s.status)} tone={toneOf(statusMeta, s.status)} />
                       </Stack>
                     </Stack>
                   </CardContent>

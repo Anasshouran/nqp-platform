@@ -30,7 +30,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useAuth } from '../../hooks/useAuth';
 import { PageHeader } from '../../components/common';
 import { lookupLabResult, type LabResultLookupResult } from '../../api/endpoints/public';
-import { generateQR } from '../../utils/qr-generator';
+import { QrImage } from '../../utils/qr-generator';
 import { formatDate } from '../../utils/formatters';
 
 const outcomeColor = (outcome?: string) => {
@@ -42,7 +42,7 @@ const outcomeColor = (outcome?: string) => {
 const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const qrImage = qrPayload ? generateQR(qrPayload) : '';
+  const hasQr = qrPayload.length > 0;
 
   const copyPayload = async () => {
     try {
@@ -70,8 +70,8 @@ const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
           placeItems: 'center',
         }}
       >
-        {qrImage ? (
-          <img src={qrImage} alt="رمز QR للنتيجة المعتمدة" style={{ width: 148, height: 148 }} />
+        {hasQr ? (
+          <QrImage value={qrPayload} size={148} />
         ) : (
           <QrCode2Icon sx={{ fontSize: 64, color: 'text.disabled' }} />
         )}
@@ -95,7 +95,7 @@ const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
           >
             عرض البيانات المضمّنة
           </Button>
-          <IconButton size="small" onClick={copyPayload} title="نسخ البيانات">
+          <IconButton size="medium" onClick={copyPayload} title="نسخ البيانات" aria-label="نسخ البيانات" sx={{ minWidth: 44, minHeight: 44 }}>
             {copied ? <CheckIcon color="success" /> : <ContentCopyIcon />}
           </IconButton>
         </Stack>
@@ -147,6 +147,9 @@ const LabResultsLookupPage = () => {
       setLoading(false);
     }
   };
+
+  const hasMeasurementColumns =
+    !!result?.tests?.some((t) => t.result_value != null || t.reference_range != null);
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -261,8 +264,12 @@ const LabResultsLookupPage = () => {
                     <TableRow>
                       <TableCell>الفحص</TableCell>
                       <TableCell>النتيجة</TableCell>
-                      <TableCell>القيمة</TableCell>
-                      <TableCell>الوحددة/المرجع</TableCell>
+                      {hasMeasurementColumns && (
+                        <>
+                          <TableCell>القيمة</TableCell>
+                          <TableCell>الوحددة/المرجع</TableCell>
+                        </>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -284,11 +291,15 @@ const LabResultsLookupPage = () => {
                             variant="filled"
                           />
                         </TableCell>
-                        <TableCell>
-                          {test.result_value ?? ''}
-                          {test.unit ? ` ${test.unit}` : ''}
-                        </TableCell>
-                        <TableCell sx={{ color: 'text.secondary' }}>{test.reference_range}</TableCell>
+                        {hasMeasurementColumns && (
+                          <>
+                            <TableCell>
+                              {test.result_value ?? ''}
+                              {test.unit ? ` ${test.unit}` : ''}
+                            </TableCell>
+                            <TableCell sx={{ color: 'text.secondary' }}>{test.reference_range}</TableCell>
+                          </>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>

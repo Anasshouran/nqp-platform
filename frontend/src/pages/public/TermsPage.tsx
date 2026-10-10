@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { PageHeader } from '../../components/common';
 import { getCmsPage } from '../../api/endpoints/public';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 const FALLBACK = [
   { title: 'بيعة الخدمة', body: 'تقدم المنصة خدمات الحجر الصحي والتسجيل المسبق والتحقق من الشهادات بناءً على اللوائح الصحية الدولية (IHR) والتشريعات الوطنية السودانية.' },
@@ -22,6 +23,8 @@ const TermsPage = () => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasCms, setHasCms] = useState(false);
+  // محتوى CMS يُصيَّر كـHTML: ننظّفه أولاً حتى لا يصبح محرّر خبيث XSS مخزّن.
+  const safeContent = useMemo(() => sanitizeHtml(content), [content]);
 
   useEffect(() => {
     let mounted = true;
@@ -64,7 +67,7 @@ const TermsPage = () => {
             '& p': { mb: 2, lineHeight: 1.9 },
             '& h2, & h3': { fontWeight: 700, mb: 1, mt: 3 },
           }}
-          dangerouslySetInnerHTML={{ __html: content ?? '' }}
+          dangerouslySetInnerHTML={{ __html: safeContent }}
         />
       ) : (
         <Stack spacing={3} sx={{ maxWidth: 760, mx: 'auto' }}>
@@ -80,14 +83,14 @@ const TermsPage = () => {
                     placeItems: 'center',
                     bgcolor: 'primary.lighter',
                     color: 'primary.main',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     fontSize: 14,
                     flexShrink: 0,
                   }}
                 >
                   {index + 1}
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {section.title}
                 </Typography>
               </Box>

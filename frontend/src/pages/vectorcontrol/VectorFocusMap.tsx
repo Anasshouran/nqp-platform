@@ -13,10 +13,10 @@ import { vectorSeverity, vectorFocusStatus } from '../../utils/status';
 import { StatusChip } from '../../components/ui';
 
 const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: '#d32f2f',
-  HIGH: '#f57c00',
-  MEDIUM: '#fbc02d',
-  LOW: '#2e7d32',
+  CRITICAL: '#c63a3a',
+  HIGH: '#a86400',
+  MEDIUM: '#2f6dd0',
+  LOW: '#1d7a54',
 };
 
 const DEFAULT_COLOR = '#0288d1';

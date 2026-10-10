@@ -5,12 +5,11 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import ShieldIcon from '@mui/icons-material/Shield';
+import { FormTextField, FormSelect } from '../uikit';
 import { createRole, updateRole } from '../../api/endpoints/roles';
 import { notifySuccess } from '../../utils/toast';
 import PermissionPicker from './PermissionPicker';
@@ -88,7 +87,7 @@ const RoleFormDialog = ({ open, role, onClose, onSaved }: RoleFormDialogProps) =
         sx={{
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
-          background: 'linear-gradient(120deg, #0a6b58, #0e8a72, #12a585)',
+          background: 'linear-gradient(120deg, #075e4d, #0a6b58, #0c7f6a)',
           px: 3,
           py: 2,
           display: 'flex',
@@ -126,51 +125,46 @@ const RoleFormDialog = ({ open, role, onClose, onSaved }: RoleFormDialogProps) =
           </Alert>
         )}
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          <TextField
+          <FormTextField
             label="كود الدور"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            fullWidth
             disabled={!!role}
-            helperText="مثال: PORT_OFFICER"
+            hint="مثال: PORT_OFFICER"
           />
-          <TextField
+          <FormTextField
             label="الاسم بالإنجليزية"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            fullWidth
           />
-          <TextField
+          <FormTextField
             label="الاسم بالعربية"
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
-            fullWidth
           />
-          <TextField
+          <FormTextField
             label="الوصف"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            fullWidth
             multiline
             minRows={1}
             maxRows={3}
           />
-          <TextField
-            select
+          <FormSelect
             label="النطاق الافتراضي"
             value={scope}
-            onChange={(e) => setScope(e.target.value)}
-            fullWidth
-            helperText="نطاق الوصول الافتراضي عند تعيين هذا الدور لمستخدم"
-          >
-            <MenuItem value="GLOBAL">عام (كل النظام)</MenuItem>
-            <MenuItem value="SECTOR">قطاع</MenuItem>
-            <MenuItem value="DEPARTMENT">إدارة</MenuItem>
-            <MenuItem value="STATION">محطة</MenuItem>
-            <MenuItem value="PORT">ميناء</MenuItem>
-            <MenuItem value="POINT">نقطة حدودية</MenuItem>
-            <MenuItem value="REGION">منطقة</MenuItem>
-          </TextField>
+            onChange={setScope}
+            options={[
+              { value: 'GLOBAL', label: 'عام (كل النظام)' },
+              { value: 'SECTOR', label: 'قطاع' },
+              { value: 'DEPARTMENT', label: 'إدارة' },
+              { value: 'STATION', label: 'محطة' },
+              { value: 'PORT', label: 'ميناء' },
+              { value: 'POINT', label: 'نقطة حدودية' },
+              { value: 'REGION', label: 'منطقة' },
+            ]}
+            hint="نطاق الوصول الافتراضي عند تعيين هذا الدور لمستخدم"
+          />
         </Box>
 
         <Divider sx={{ my: 3 }} />

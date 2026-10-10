@@ -28,6 +28,7 @@ import { getRoles } from '../../api/endpoints/users';
 import { getSectors, getDepartments, getStations, getAssignments, createAssignment, deleteAssignment } from '../../api/endpoints/organization';
 import { getMasterEntryPoints } from '../../api/endpoints/masterdata';
 import { SCOPE_TYPES } from '../../types/user';
+import { ConfirmDialog } from '../../components/ui';
 import { scopeType } from '../../utils/status';
 import { notifySuccess } from '../../utils/toast';
 import type { RoleAssignment, RoleAssignmentInput, Role, ScopeType, User } from '../../types/user';
@@ -68,6 +69,27 @@ const UserAssignmentsDialog = ({ open, user, onClose, onSaved }: Props) => {
   const [showOrgForm, setShowOrgForm] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ kind: 'role' | 'org'; id: string; label: string } | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      if (deleteTarget.kind === 'role') {
+        await deleteRoleAssignment(deleteTarget.id);
+      } else {
+        await deleteAssignment(deleteTarget.id);
+      }
+      setDeleteTarget(null);
+      await loadAssignments();
+      onSaved();
+    } catch {
+      setError('تعذر الحذف');
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
   const [error, setError] = useState<string | null>(null);
 
   const safeUser = user as User | null;
@@ -175,7 +197,7 @@ const UserAssignmentsDialog = ({ open, user, onClose, onSaved }: Props) => {
         sx={{
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
-          background: 'linear-gradient(120deg, #0a6b58, #0e8a72, #12a585)',
+          background: 'linear-gradient(120deg, #075e4d, #0a6b58, #0c7f6a)',
           px: 3,
           py: 2,
           display: 'flex',
@@ -226,7 +248,7 @@ const UserAssignmentsDialog = ({ open, user, onClose, onSaved }: Props) => {
                   {!ra.is_active && <Chip label="غير نشط" size="small" color="default" />}
                   <Box sx={{ flex: 1 }} />
                   <Tooltip title="حذف">
-                    <IconButton size="small" color="error" onClick={() => deleteRoleAssignment(ra.id).then(() => { loadAssignments(); onSaved(); }).catch(() => setError('تعذر الحذف'))}>
+                    <IconButton size="small" color="error" aria-label="حذف التعيين" onClick={() => setDeleteTarget({ kind: 'role', id: ra.id, label: ra.role_name })}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -298,7 +320,7 @@ const UserAssignmentsDialog = ({ open, user, onClose, onSaved }: Props) => {
                   {!oa.is_active && <Chip label="غير نشط" size="small" />}
                   <Box sx={{ flex: 1 }} />
                   <Tooltip title="حذف">
-                    <IconButton size="small" color="error" onClick={() => deleteAssignment(oa.id).then(() => { loadAssignments(); onSaved(); }).catch(() => setError('تعذر الحذف'))}>
+                    <IconButton size="small" color="error" aria-label="حذف التعيين" onClick={() => setDeleteTarget({ kind: 'org', id: oa.id, label: oa.position_name || oa.sector_name || oa.department_name || oa.station_name || oa.entry_point_name || 'التعيين الهيكلي' })}>
                       <DeleteOutlineIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -365,6 +387,19 @@ const UserAssignmentsDialog = ({ open, user, onClose, onSaved }: Props) => {
       <DialogActions>
         <Button onClick={onClose}>إغلاق</Button>
       </DialogActions>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={deleteTarget?.kind === 'role' ? 'إزالة تعيين دور' : 'إزالة تعيين هيكلي'}
+        message={`هل تريد إزالة «${deleteTarget?.label || ''}» من هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmLabel="إزالة"
+        tone="error"
+        loading={deleteBusy}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+      />
     </Dialog>
   );
 };

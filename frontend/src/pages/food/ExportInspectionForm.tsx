@@ -10,9 +10,10 @@ import PrintIcon from '@mui/icons-material/Print';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { foodFinalDecision, messageType, samplingReason, shipmentStatus } from '../../utils/status';
 import type { ExportInspectionForm as ExportFormData } from '../../types/food';
+import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 
 const field = (label: string, value: string | number | null | undefined, placeholder = '—'): string =>
-  `<p><b>${label}:</b> ${value ?? placeholder}</p>`;
+  `<p><b>${escapeHtml(label)}:</b> ${escapeHtmlOr(value, placeholder)}</p>`;
 
 const benchLabel: Record<string, string> = {
   MICROBIOLOGY: 'الأحياء الدقيقة',
@@ -45,14 +46,14 @@ const buildPrintHtml = (form: ExportFormData): string => {
   const rows = form.items
     .map(
       (it) =>
-        `<tr><td>${it.product_name || '—'}</td><td>${it.brand || '—'}</td><td>${it.origin || '—'}</td><td>${it.weight_kg ?? '—'}</td><td>${it.package_count ?? '—'}</td><td>${it.package_type || '—'}</td></tr>`,
+        `<tr><td>${escapeHtmlOr(it.product_name)}</td><td>${escapeHtmlOr(it.brand)}</td><td>${escapeHtmlOr(it.origin)}</td><td>${escapeHtmlOr(it.weight_kg)}</td><td>${escapeHtmlOr(it.package_count)}</td><td>${escapeHtmlOr(it.package_type)}</td></tr>`,
     )
     .join('');
   const samples = form.samples.length
     ? form.samples
         .map(
           (x) =>
-            `<tr><td>${x.sample_number}</td><td>${x.sample_type || '—'}</td><td>${label(samplingReason, x.sampling_reason)}</td><td>${benchLabel[x.bench] || x.bench || '—'}</td><td>${sampleStatusLabel[x.status] || x.status}</td></tr>`,
+            `<tr><td>${escapeHtml(x.sample_number)}</td><td>${escapeHtmlOr(x.sample_type)}</td><td>${escapeHtml(label(samplingReason, x.sampling_reason))}</td><td>${escapeHtmlOr(benchLabel[x.bench] || x.bench)}</td><td>${escapeHtml(sampleStatusLabel[x.status] || x.status)}</td></tr>`,
         )
         .join('')
     : '<tr><td colspan="5" style="text-align:center;color:#777">لا توجد عينات</td></tr>';
@@ -61,7 +62,7 @@ const buildPrintHtml = (form: ExportFormData): string => {
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<title>استمارة كشف الموارد الغذائية الصادرة ${s.manifest_number}</title>
+<title>استمارة كشف الموارد الغذائية الصادرة ${escapeHtml(s.manifest_number)}</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; color: #111; margin: 0; padding: 24px; }
@@ -142,7 +143,7 @@ const buildPrintHtml = (form: ExportFormData): string => {
       ${field('وزن تالف (كغ)', form.inspection.damaged_weight_kg)}
       ${field('وزن سليم (كغ)', form.inspection.sound_weight_kg)}
     </div>
-    ${form.inspection.notes ? `<p><b>ملاحظات:</b> ${form.inspection.notes}</p>` : ''}`
+    ${form.inspection.notes ? `<p><b>ملاحظات:</b> ${escapeHtml(form.inspection.notes)}</p>` : ''}`
         : `<div class="grid2"><p style="color:#888">لم يُسجَّل كشف تفتيش بعد لهذه الشحنة.</p></div>`
     }
   </section>
@@ -160,10 +161,10 @@ const buildPrintHtml = (form: ExportFormData): string => {
     <div class="grid2 decision">
       ${
         form.decision
-          ? `<p><b>القرار النهائي:</b> ${label(foodFinalDecision, form.decision.final_decision)}</p>
-             <p><b>الاعتماد النهائي:</b> ${form.decision.decided_by_name || '—'}</p>
-             <p><b>تاريخ القرار:</b> ${formatDateTime(form.decision.decided_at)}</p>
-             ${form.decision.decision_reason ? `<p><b>السبب:</b> ${form.decision.decision_reason}</p>` : ''}`
+          ? `<p><b>القرار النهائي:</b> ${escapeHtml(label(foodFinalDecision, form.decision.final_decision))}</p>
+             <p><b>الاعتماد النهائي:</b> ${escapeHtmlOr(form.decision.decided_by_name)}</p>
+             <p><b>تاريخ القرار:</b> ${escapeHtml(formatDateTime(form.decision.decided_at))}</p>
+             ${form.decision.decision_reason ? `<p><b>السبب:</b> ${escapeHtml(form.decision.decision_reason)}</p>` : ''}`
           : `<p style="color:#888">لا يوجد قرار نهائي بعد.</p>`
       }
     </div>

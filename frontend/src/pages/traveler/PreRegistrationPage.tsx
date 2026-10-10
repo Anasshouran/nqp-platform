@@ -6,6 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
@@ -437,7 +438,7 @@ const PreRegistrationPage = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.nationality && <Typography variant="caption" color="error">{errors.nationality}</Typography>}
+                {errors.nationality && <FormHelperText error>{errors.nationality}</FormHelperText>}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -447,7 +448,7 @@ const PreRegistrationPage = () => {
                   <FormControlLabel value="ذكر" control={<Radio />} label="ذكر" />
                   <FormControlLabel value="أنثى" control={<Radio />} label="أنثى" />
                 </RadioGroup>
-                {errors.gender && <Typography variant="caption" color="error">{errors.gender}</Typography>}
+                {errors.gender && <FormHelperText error>{errors.gender}</FormHelperText>}
               </FormControl>
             </Grid>
           </Grid>
@@ -469,7 +470,7 @@ const PreRegistrationPage = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.origin_country && <Typography variant="caption" color="error">{errors.origin_country}</Typography>}
+                {errors.origin_country && <FormHelperText error>{errors.origin_country}</FormHelperText>}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -482,7 +483,7 @@ const PreRegistrationPage = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.port_of_entry && <Typography variant="caption" color="error">{errors.port_of_entry}</Typography>}
+                {errors.port_of_entry && <FormHelperText error>{errors.port_of_entry}</FormHelperText>}
               </FormControl>
             </Grid>
             <Grid item xs={12}>
@@ -497,6 +498,9 @@ const PreRegistrationPage = () => {
                   <FormControlLabel value="SEA" control={<Radio />} label="سفينة" />
                   <FormControlLabel value="LAND" control={<Radio />} label="بر" />
                 </RadioGroup>
+                {errors.transport_mode && (
+                  <FormHelperText error>{errors.transport_mode}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
             {data.transport_mode !== 'LAND' && (
@@ -586,7 +590,7 @@ const PreRegistrationPage = () => {
                     <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
                   ))}
                 </RadioGroup>
-                {errors.purpose && <Typography variant="caption" color="error">{errors.purpose}</Typography>}
+                {errors.purpose && <FormHelperText error>{errors.purpose}</FormHelperText>}
               </FormControl>
             </Grid>
             {data.purpose === 'آخر' && (
@@ -745,7 +749,7 @@ const PreRegistrationPage = () => {
             }
             label="أقر بصحة البيانات المقدمة"
           />
-          {errors.consent && <Typography variant="caption" color="error">{errors.consent}</Typography>}
+          {errors.consent && <FormHelperText error>{errors.consent}</FormHelperText>}
           {submitError && <Alert severity="error">{submitError}</Alert>}
           <Button
             variant="contained"

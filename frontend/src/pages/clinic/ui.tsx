@@ -312,7 +312,7 @@ export const QueueRail = ({
                 placeItems: 'center',
                 bgcolor: current ? tone : 'rgba(16,40,34,0.08)',
                 color: current ? '#fff' : 'text.secondary',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: 12,
               }}
             >
@@ -420,7 +420,7 @@ export const NotificationPanel = ({
                   placeItems: 'center',
                   bgcolor: it.tone,
                   color: '#fff',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 12.5,
                 }}
               >

@@ -121,7 +121,7 @@ const SmartServicesPage = () => {
               <Typography sx={{ fontSize: 22, lineHeight: 1 }} aria-hidden>
                 {group.icon}
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
                 {group.label}
               </Typography>
               <Chip label={group.services.length} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
@@ -165,7 +165,7 @@ const SmartServicesPage = () => {
                       {service.emoji}
                     </Box>
                     <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 800 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
                         {service.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8125rem' }}>

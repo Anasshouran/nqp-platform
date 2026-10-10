@@ -217,7 +217,7 @@ const TravelRequirementsPage = () => {
         </Stack>
       ) : requirements ? (
         <Stack spacing={3}>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
             المتطلبات الصحية لـ {countries.find((c) => c.code === to)?.name_ar || to}
           </Typography>
 
@@ -233,13 +233,13 @@ const TravelRequirementsPage = () => {
                         borderRadius: 2,
                         display: 'grid',
                         placeItems: 'center',
-                        color: '#1d7a54',
+                        color: 'success.main',
                         bgcolor: '#e3f4ec',
                       }}
                     >
                       <LocalHospitalIcon fontSize="large" />
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                       التطعيمات المطلوبة
                     </Typography>
                   </Stack>
@@ -276,13 +276,13 @@ const TravelRequirementsPage = () => {
                         borderRadius: 2,
                         display: 'grid',
                         placeItems: 'center',
-                        color: '#2f6dd0',
+                        color: 'info.main',
                         bgcolor: '#e8f0fc',
                       }}
                     >
                       <ScienceIcon fontSize="large" />
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                       الفحوصات المطلوبة
                     </Typography>
                   </Stack>
@@ -325,7 +325,7 @@ const TravelRequirementsPage = () => {
                     >
                       <VerifiedIcon fontSize="large" />
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                       الشهادات الصحية
                     </Typography>
                   </Stack>
@@ -362,13 +362,13 @@ const TravelRequirementsPage = () => {
                         borderRadius: 2,
                         display: 'grid',
                         placeItems: 'center',
-                        color: '#c63a3a',
+                        color: 'error.main',
                         bgcolor: '#fdeaea',
                       }}
                     >
                       <WarningAmberIcon fontSize="large" />
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                       التنبيهات الصحية
                     </Typography>
                   </Stack>

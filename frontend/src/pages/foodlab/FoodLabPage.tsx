@@ -6,7 +6,6 @@ import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -240,11 +239,15 @@ const FoodLabPage = () => {
     getReferenceSamples().then((r) => setReferences(r.data.data)).catch(() => undefined);
   }, []);
 
+  // `useServerTable` يعيد كائناً جديداً كل تصيير، لذا لا يدخل في
+  // مصفوفة الاعتماديات — نلتقط الدالة نفسها لأنها مستقرة (useCallback).
+  const refreshSamples = samples.refresh;
+  const refreshCertificates = certificates.refresh;
   const refreshAll = useCallback(() => {
     refreshDash();
-    samples.refresh();
-    certificates.refresh();
-  }, [refreshDash, samples, certificates]);
+    refreshSamples();
+    refreshCertificates();
+  }, [refreshDash, refreshSamples, refreshCertificates]);
 
   useEffect(() => {
     refreshDash();
@@ -625,6 +628,23 @@ const SourcesTab = ({
 }) => {
   const openNew = () => setDialog({ open: true, editing: null, code: '', nameAr: '', order: sources.length + 1 });
   const openEdit = (s: SampleSource) => setDialog({ open: true, editing: s, code: s.code, nameAr: s.name_ar, order: s.order });
+  const [deleteTarget, setDeleteTarget] = useState<SampleSource | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const confirmDeleteSource = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      await deleteSampleSource(deleteTarget.id);
+      notifySuccess('تم الحذف');
+      setDeleteTarget(null);
+      onRefresh();
+    } catch {
+      notifyError('تعذر الحذف');
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
 
   const save = async () => {
     if (!dialog.nameAr.trim()) return notifyError('اكتب اسم المصدر');
@@ -658,10 +678,10 @@ const SourcesTab = ({
                   <Typography variant="caption" color="text.secondary">{s.code}</Typography>
                 </Box>
                 <Tooltip title="تعديل">
-                  <IconButton aria-label="حذف" size="small" onClick={() => openEdit(s)}><EditPencil /></IconButton>
+                  <IconButton aria-label="تعديل" size="small" onClick={() => openEdit(s)}><EditPencil /></IconButton>
                 </Tooltip>
                 <Tooltip title="حذف">
-                  <IconButton aria-label="حذف" size="small" color="error" onClick={async () => { try { await deleteSampleSource(s.id); notifySuccess('تم الحذف'); onRefresh(); } catch { notifyError('تعذر الحذف'); } }}><DeleteIcon fontSize="small" /></IconButton>
+                  <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(s)}><DeleteIcon fontSize="small" /></IconButton>
                 </Tooltip>
               </Stack>
             </Box>
@@ -674,6 +694,19 @@ const SourcesTab = ({
         <FormTextField label="الكود" value={dialog.code} onChange={(e) => setDialog((d) => ({ ...d, code: e.target.value }))} />
         <FormTextField label="الترتيب" type="number" value={dialog.order} onChange={(e) => setDialog((d) => ({ ...d, order: Number(e.target.value) }))} />
       </FormDialog>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="حذف مصدر العينة"
+        message={`هل تريد حذف المصدر «${deleteTarget?.name_ar || ''}»؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmLabel="حذف"
+        tone="error"
+        loading={deleteBusy}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDeleteSource}
+      />
     </Box>
   );
 };
@@ -692,6 +725,23 @@ const ReferencesTab = ({
   setDialog: React.Dispatch<React.SetStateAction<RefDialogState>>;
 }) => {
   const openNew = () => setDialog({ open: true, source: sources[0]?.id ?? '', product: '', origin: '', storage: '', seal: '', coding: '' });
+  const [deleteTarget, setDeleteTarget] = useState<ReferenceSample | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const confirmDeleteReference = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      await deleteReferenceSample(deleteTarget.id);
+      notifySuccess('تم الحذف');
+      setDeleteTarget(null);
+      onRefresh();
+    } catch {
+      notifyError('تعذر الحذف');
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
 
   const save = async () => {
     if (!dialog.product.trim()) return notifyError('اكتب اسم المادة');
@@ -740,7 +790,7 @@ const ReferencesTab = ({
                 <AppButton size="small" variant="danger" disabled={r.status === 'DISCARDED'} onClick={async () => { try { await discardReferenceSample(r.id, 'إعدام'); notifySuccess('تم الإعدام'); onRefresh(); } catch { notifyError('تعذر التنفيذ'); } }}>
                   إعدام
                 </AppButton>
-                <IconButton aria-label="حذف" size="small" color="error" onClick={async () => { try { await deleteReferenceSample(r.id); notifySuccess('تم الحذف'); onRefresh(); } catch { notifyError('تعذر الحذف'); } }}>
+                <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(r)}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Stack>
@@ -757,6 +807,19 @@ const ReferencesTab = ({
         <FormTextField label="رقم الختم" value={dialog.seal} onChange={(e) => setDialog((d) => ({ ...d, seal: e.target.value }))} />
         <FormTextField label="الترميز" value={dialog.coding} onChange={(e) => setDialog((d) => ({ ...d, coding: e.target.value }))} />
       </FormDialog>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="حذف عينة مرجعية"
+        message={`هل تريد حذف العينة المرجعية «${deleteTarget?.product_name || ''}» (${deleteTarget?.ref_number || '—'})؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmLabel="حذف"
+        tone="error"
+        loading={deleteBusy}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDeleteReference}
+      />
     </Box>
   );
 };

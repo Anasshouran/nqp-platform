@@ -13,12 +13,11 @@ import apiClient from '../../api/client';
 import { useAuth } from '../../hooks/useAuth';
 import baseTheme from '../../styles/theme';
 import { ROLE_LAYOUT_CONFIG, rewriteSectorNav, type RoleNavItem } from '../../config/roleLayouts';
-import { Navigate } from 'react-router-dom';
-import { roleHomePathFor } from '../../utils/roleHome';
 import { getUserSectorCode } from '../../utils/scopes';
 import { sectorDashboardRoute } from '../../config/cmsSectors';
 import LayoutChrome from './LayoutChrome';
 import RoleNavMenu from './RoleNavMenu';
+import WorkspaceUnavailable from './WorkspaceUnavailable';
 
 const drawerExpandedWidth = 264;
 const drawerMiniWidth = 78;
@@ -47,6 +46,25 @@ const useMicroAlertsBadge = (enabled: boolean) => {
 const hasMicroBadge = (items: RoleNavItem[]): boolean =>
   items.some((i) => i.badge === 'micro' || (i.children ? hasMicroBadge(i.children) : false));
 
+const CSS_COLOR_RE = /^(#|rgb\(|rgba\(|hsl\(|hsla\(|color\()/i;
+
+/**
+ * إعدادات الأدوار تكتب اللون أحياناً كمسار توكن ('primary.main') بدل قيمة لونية.
+ * تمرير مسار التوكن إلى createTheme يجعل palette.primary.main نصاً غير صالح، فتفشل
+ * دوال MUI مثل alpha() وتُسقط الصفحة إلى ErrorBoundary — لذا نحل المسار هنا.
+ */
+const resolveThemeColor = (value: string): string => {
+  if (CSS_COLOR_RE.test(value)) return value;
+  const resolved = value
+    .split('.')
+    .reduce<unknown>(
+      (node, key) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[key] : undefined),
+      baseTheme.palette as unknown,
+    );
+  if (typeof resolved === 'string' && CSS_COLOR_RE.test(resolved)) return resolved;
+  return baseTheme.palette.primary.main;
+};
+
 const GenericRoleLayout = ({ role }: { role: string }) => {
   const config = ROLE_LAYOUT_CONFIG[role];
   const navigate = useNavigate();
@@ -63,20 +81,27 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
   }, [user]);
   const navItems = config && sectorBase ? rewriteSectorNav(config.nav, sectorBase) : config?.nav;
 
-  if (!config) return <Navigate to={roleHomePathFor(user)} replace />;
+  const accent = resolveThemeColor(config?.color ?? 'primary.main');
+  const theme = useMemo(
+    () =>
+      createTheme(baseTheme, {
+        palette: {
+          primary: {
+            main: accent,
+            dark: accent,
+            darker: accent,
+            light: `${accent}33`,
+            lighter: `${accent}14`,
+            contrastText: '#ffffff',
+          },
+        },
+      }),
+    [accent],
+  );
 
-  const theme = createTheme(baseTheme, {
-    palette: {
-      primary: {
-        main: config.color,
-        dark: config.color,
-        darker: config.color,
-        light: `${config.color}33`,
-        lighter: `${config.color}14`,
-        contrastText: '#ffffff',
-      },
-    },
-  });
+  /* حالة دفاعية: RoleLayout لا يبلغ GenericRoleLayout بلا إعداد، وأي
+     توجيه إلى دورHome سيؤدي عائداً إلى هنا — نعرض الحالة الصريحة بدل الحلقة. */
+  if (!config) return <WorkspaceUnavailable role={role} />;
 
   const isCollapsed = collapsed && !isMobile;
   const drawerWidth = isCollapsed ? drawerMiniWidth : drawerExpandedWidth;
@@ -125,6 +150,7 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
         )}
         <RoleNavMenu
           sections={[{ items: navItems ?? [] }]}
+          permissions={user?.permissions}
           accent={config.color}
           collapsed={isCollapsed}
           microBadgeCount={microCount}
@@ -167,6 +193,8 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
 
   const drawer = isMobile ? (
     <Drawer
+      component="nav"
+      aria-label="القائمة الرئيسية"
       anchor="right"
       open={mobileOpen}
       onClose={closeMobile}
@@ -176,8 +204,10 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
       {sidebarContent}
     </Drawer>
   ) : (
-    <Drawer
-      variant="permanent"
+      <Drawer
+        component="nav"
+        aria-label="القائمة الرئيسية"
+        variant="permanent"
       anchor="right"
       open
       sx={{
@@ -211,6 +241,9 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
 
   return (
     <ThemeProvider theme={theme}>
+      <a href="#main-content" className="skip-link">
+        تخطَّ إلى المحتوى الرئيسي
+      </a>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F4F6F9' }}>
         <LayoutChrome
           drawerWidth={drawerWidth}
@@ -242,6 +275,8 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
 
         <Box
           component="main"
+          id="main-content"
+          tabIndex={-1}
           sx={{
             flexGrow: 1,
             p: { xs: 2, md: 3 },
@@ -250,6 +285,9 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
             width: { md: `calc(100% - ${drawerWidth}px)` },
             maxWidth: 1760,
             mx: 'auto',
+            /* Focused programmatically by the skip link — the ring would be
+               noise here, and the landmark already announced the jump. */
+            outline: 'none',
             transition: (t) =>
               t.transitions.create('width', {
                 easing: t.transitions.easing.sharp,

@@ -5,13 +5,12 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import ScienceIcon from '@mui/icons-material/Science';
+import { FormTextField, FormSelect } from '../uikit';
 import { createLabParameter, updateLabParameter } from '../../api/endpoints/foodlab';
 import { labBench } from '../../utils/status';
 import { notifySuccess } from '../../utils/toast';
@@ -116,7 +115,7 @@ const LabParameterFormDialog = ({ open, param, onClose, onSaved }: Props) => {
         sx={{
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
-          background: 'linear-gradient(120deg, #0a6b58, #0e8a72, #12a585)',
+          background: 'linear-gradient(120deg, #075e4d, #0a6b58, #0c7f6a)',
           px: 3,
           py: 2,
           display: 'flex',
@@ -154,77 +153,64 @@ const LabParameterFormDialog = ({ open, param, onClose, onSaved }: Props) => {
           </Alert>
         )}
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          <TextField
+          <FormTextField
             label="الكود"
             value={form.code}
             onChange={set('code')}
-            fullWidth
             disabled={!!param}
-            helperText="مثال: MOISTURE-01"
+            hint="مثال: MOISTURE-01"
           />
-          <TextField
+          <FormTextField
             label="الاسم بالعربية"
             value={form.name_ar}
             onChange={set('name_ar')}
-            fullWidth
             required
           />
-          <TextField
+          <FormTextField
             label="الاسم بالإنجليزية"
             value={form.name_en}
             onChange={set('name_en')}
-            fullWidth
           />
-          <TextField
-            select
+          <FormSelect
             label="المختبر"
             value={form.bench}
-            onChange={set('bench')}
-            fullWidth
-          >
-            {Object.entries(labBench).map(([value, meta]) => (
-              <MenuItem key={value} value={value}>
-                {meta.label}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField label="الوحدة" value={form.unit} onChange={set('unit')} fullWidth />
-          <TextField label="الطريقة" value={form.method} onChange={set('method')} fullWidth />
-          <TextField
+            onChange={(v) => setForm((f) => ({ ...f, bench: v }))}
+            options={Object.entries(labBench).map(([value, meta]) => ({ value, label: meta.label }))}
+          />
+          <FormTextField label="الوحدة" value={form.unit} onChange={set('unit')} />
+          <FormTextField label="الطريقة" value={form.method} onChange={set('method')} />
+          <FormTextField
             label="الحد المرجعي"
             value={form.reference_limit}
             onChange={set('reference_limit')}
-            fullWidth
           />
-          <TextField
+          <FormTextField
             label="حد الكشف"
             value={form.detection_limit}
             onChange={set('detection_limit')}
-            fullWidth
           />
-          <TextField
+          <FormTextField
             label="سعر التحليل (جنيه)"
             value={form.price}
             onChange={set('price')}
-            fullWidth
             type="number"
             required
-            helperText="يُخصم تلقائياً على كل عينة تُجرى عليها"
+            hint="يُخصم تلقائياً على كل عينة تُجرى عليها"
           />
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <TextField
+            <FormTextField
               label="الحد الأدنى (يوم)"
               value={form.sla_min_days}
               onChange={set('sla_min_days')}
               type="number"
             />
-            <TextField
+            <FormTextField
               label="الحد الأقصى (يوم)"
               value={form.sla_max_days}
               onChange={set('sla_max_days')}
               type="number"
             />
-            <TextField label="الترتيب" value={form.order} onChange={set('order')} type="number" />
+            <FormTextField label="الترتيب" value={form.order} onChange={set('order')} type="number" />
           </Box>
           <FormControlLabel
             control={

@@ -5,13 +5,13 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
-import { SectorPageShell, useSectorSite, ErrorNotice, NEWS_CATEGORY_LABELS, usePageTitle } from './SectorCmsShared';
+import { SectorPageShell, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
 import { EmptyState, ListSkeleton } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { getNewsById, getNews } from '../../api/endpoints/public';
 import type { NewsArticle } from '../../api/endpoints/public';
 
@@ -84,7 +84,7 @@ const SectorCmsNewsDetail = () => {
               )}
               <Box sx={{ p: { xs: 3, md: 4 } }}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                  <Chip label={NEWS_CATEGORY_LABELS[article.category] || 'عام'} size="small" color="primary" />
+                  <NewsCategoryChip category={article.category} />
                   <Typography variant="caption" color="text.secondary">
                     {formatDate(article.published_at)}
                   </Typography>
@@ -127,7 +127,7 @@ const SectorCmsNewsDetail = () => {
                     <CardMedia component="img" height={140} image={n.image} alt={n.title} sx={{ objectFit: 'cover' }} />
                   )}
                   <Box sx={{ p: 2 }}>
-                    <Chip label={NEWS_CATEGORY_LABELS[n.category] || 'عام'} size="small" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                    <NewsCategoryChip category={n.category} sx={{ mb: 1 }} />
                     <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.4 }}>
                       {n.title}
                     </Typography>

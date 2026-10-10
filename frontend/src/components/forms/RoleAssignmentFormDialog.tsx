@@ -6,7 +6,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -14,6 +13,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import InputAdornment from '@mui/material/InputAdornment';
 import EditIcon from '@mui/icons-material/Edit';
+import { FormTextField, FormSelect } from '../uikit';
 import { createRoleAssignment, updateRoleAssignment } from '../../api/endpoints/roleAssignments';
 import { getRoles, getUsers } from '../../api/endpoints/users';
 import { SCOPE_TYPES } from '../../types/user';
@@ -119,7 +119,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
         sx={{
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
-          background: 'linear-gradient(120deg, #0a6b58, #0e8a72, #12a585)',
+          background: 'linear-gradient(120deg, #075e4d, #0a6b58, #0c7f6a)',
           px: 3,
           py: 2,
           display: 'flex',
@@ -195,48 +195,38 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
             )}
           />
 
-          <TextField
-            select
+          <FormSelect
             label="النطاق"
             value={scopeTypeVal}
-            onChange={(e) => setScopeTypeVal(e.target.value as ScopeType)}
-            fullWidth
-            helperText="نطاق تطبيق الصلاحيات"
-          >
-            {SCOPE_TYPES.map((s) => (
-              <MenuItem key={s} value={s}>
-                {scopeType[s] || s}
-              </MenuItem>
-            ))}
-          </TextField>
+            onChange={(v) => setScopeTypeVal(v as ScopeType)}
+            options={SCOPE_TYPES.map((s) => ({ value: s, label: scopeType[s] || s }))}
+            hint="نطاق تطبيق الصلاحيات"
+          />
 
-          <TextField
+          <FormTextField
             label="معرف النطاق (scope ID)"
             value={scopeId}
             onChange={(e) => setScopeId(e.target.value)}
-            fullWidth
             placeholder="UUID محدد — اختياري"
-            helperText="اتركه فارغاً إذا كان النطاق عاماً (GLOBAL)"
+            hint="اتركه فارغاً إذا كان النطاق عاماً (GLOBAL)"
             disabled={scopeTypeVal === 'GLOBAL'}
           />
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField
+            <FormTextField
               label="تاريخ البداية"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              fullWidth
               InputLabelProps={{ shrink: true }}
             />
-            <TextField
+            <FormTextField
               label="تاريخ النهاية (اختياري)"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              fullWidth
               InputLabelProps={{ shrink: true }}
-              helperText="اتركه فارغاً لدور مفتوح"
+              hint="اتركه فارغاً لدور مفتوح"
             />
           </Box>
 

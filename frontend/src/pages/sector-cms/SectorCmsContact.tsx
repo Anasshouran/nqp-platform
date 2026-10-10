@@ -20,6 +20,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { SectorPageShell, SectorHomeLink, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
 import { getSectorPorts, getContactSettings, sendContactMessage } from '../../api/endpoints/public';
 import type { PublicPort, ContactInfo } from '../../api/endpoints/public';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const contactLabel = (title: string, value?: string | null) => (
   <Stack direction="row" spacing={1.5} alignItems="flex-start">
@@ -117,8 +118,8 @@ const SectorCmsContact = () => {
                 {contactLabel('الهاتف', contact.official_phone)}
                 {contactLabel('البريد الإلكتروني', contact.official_email)}
                 {contactLabel('ساعات العمل', sector.working_hours || '— يُضاف عند الاعتماد —')}
-                {contact.website && (
-                  <a href={contact.website} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                {contact.website && safeExternalUrl(contact.website) && (
+                  <a href={safeExternalUrl(contact.website)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main' }} dir="ltr">
                       {contact.website}
                     </Typography>

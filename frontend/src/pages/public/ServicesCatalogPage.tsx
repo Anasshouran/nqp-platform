@@ -22,6 +22,7 @@ import {
 } from '../../api/endpoints/services';
 import { PageHeader, ListSkeleton, EmptyState } from '../../components/common';
 import { iconFor } from '../../utils/iconMap';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const audienceLabels: Record<string, string> = {
   PUBLIC: 'عام',
@@ -41,8 +42,9 @@ const filterChips = [
 
 const ServiceCard = ({ service }: { service: Service }) => {
   const Icon = iconFor(service.icon);
-  const href = service.external_url || service.route || '/services';
-  const isExternal = Boolean(service.external_url);
+  const externalUrl = safeExternalUrl(service.external_url);
+  const href = externalUrl || service.route || '/services';
+  const isExternal = Boolean(externalUrl);
 
   const cardSx = {
     border: '1px solid' as const,

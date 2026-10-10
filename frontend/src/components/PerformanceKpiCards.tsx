@@ -31,11 +31,11 @@ interface StatDef {
 }
 
 const statDefs: StatDef[] = [
-  { key: 'entry_points', label: 'منافذ الدخول', icon: <AirportShuttleIcon />, accent: '#0e8a72', hint: 'منفذ برّي وبحري وجوي نشط' },
+  { key: 'entry_points', label: 'منافذ الدخول', icon: <AirportShuttleIcon />, accent: '#0c7f6a', hint: 'منفذ برّي وبحري وجوي نشط' },
   { key: 'sectors', label: 'القطاعات الصحية', icon: <DomainIcon />, accent: '#2f6f9f', hint: 'قطاع صحي تغطّي المنافذ' },
   { key: 'travelers', label: 'المسافرون المسجلون', icon: <GroupsIcon />, accent: '#7a5c9e', hint: 'مسافر عبر بوابة المنصة' },
-  { key: 'screenings', label: 'الفحوصات الصحية', icon: <HealthAndSafetyIcon />, accent: '#c8a13a', hint: 'عملية فرز صحي عند المنافذ' },
-  { key: 'certificates', label: 'الشهادات الصحية', icon: <WorkspacePremiumIcon />, accent: '#0e8a72', hint: 'شهادة صدرت واعتُمدت' },
+  { key: 'screenings', label: 'الفحوصات الصحية', icon: <HealthAndSafetyIcon />, accent: '#8c6d1f', hint: 'عملية فرز صحي عند المنافذ' },
+  { key: 'certificates', label: 'الشهادات الصحية', icon: <WorkspacePremiumIcon />, accent: '#0c7f6a', hint: 'شهادة صدرت واعتُمدت' },
   { key: 'food_shipments', label: 'شحنات الأغذية', icon: <LocalShippingIcon />, accent: '#b3544b', hint: 'شحنة خاضعة للفحص الصحي' },
   { key: 'lab_samples', label: 'العينات المخبرية', icon: <ScienceIcon />, accent: '#2f6f9f', hint: 'عينة محلّلة في المختبر' },
   { key: 'diseases', label: 'الأمراض المُترصَّدة', icon: <BugReportIcon />, accent: '#c62828', hint: 'مرض ضمن منظومة الترصد' },
@@ -121,7 +121,7 @@ const PerformanceKpiCards = ({ stats, loading, onRetry }: PerformanceKpiCardsPro
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="h5"
-                    sx={{ fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}
+                    sx={{ fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', letterSpacing: 0 }}
                   >
                     {formatNumber(Number(stats[def.key] ?? 0))}
                   </Typography>

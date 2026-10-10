@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -157,7 +158,7 @@ const QuarantineDirectorPage = () => {
             <ExportButton
               filename="director-brief"
               headers={['المنفذ', 'القطاع', 'الحالات', 'الفحوصات', 'مستوى الانتباه']}
-              rows={portRows.map((p) => [p.name, p.sector, p.cases, p.screenings, riskMeta[p.risk].label])}
+              rows={portRows.map((p) => [p.name, p.sector, p.cases, p.screenings, labelOf(riskMeta, p.risk)])}
             />
           </Stack>
         }
@@ -212,7 +213,7 @@ const QuarantineDirectorPage = () => {
                       {
                         label: 'الفحوصات',
                         data: screenings,
-                        borderColor: '#0c7f6a',
+                        borderColor: 'primary.main',
                         backgroundColor: 'rgba(12,127,106,0.14)',
                         fill: true,
                         tension: 0.4,
@@ -222,7 +223,7 @@ const QuarantineDirectorPage = () => {
                       {
                         label: 'حالات مؤكدة',
                         data: confirmed,
-                        borderColor: '#c63a3a',
+                        borderColor: 'error.main',
                         backgroundColor: 'transparent',
                         borderDash: [6, 4],
                         fill: false,
@@ -348,7 +349,7 @@ const QuarantineDirectorPage = () => {
               { key: 'sector', label: 'القطاع', hideOnMobile: true },
               { key: 'cases', label: 'حالات نشطة', align: 'center' },
               { key: 'screenings', label: 'فحوصات الأسبوع', align: 'center', hideOnMobile: true },
-              { key: 'risk', label: 'مستوى الانتباه', render: (r) => <StatusChip label={riskMeta[r.risk].label} tone={riskMeta[r.risk].tone} /> },
+              { key: 'risk', label: 'مستوى الانتباه', render: (r) => <StatusChip label={labelOf(riskMeta, r.risk)} tone={toneOf(riskMeta, r.risk)} /> },
               { key: 'trend', label: 'الاتجاه', render: (r) => <Typography variant="body2" sx={{ fontWeight: 700, color: r.trend.startsWith('▲') ? 'error.main' : r.trend.startsWith('▼') ? 'success.main' : 'text.secondary' }}>{r.trend}</Typography> },
             ]}
             rows={portRows}

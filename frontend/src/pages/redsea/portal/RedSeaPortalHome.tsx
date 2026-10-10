@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../../utils/labels';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -333,7 +334,7 @@ const RedSeaPortalHome = () => {
                           <FlowStat icon={<VerifiedIcon />} label="جاهزية" value={`${s.readiness}%`} />
                           <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>الحالة</Typography>
-                            <StatusChip label={statusMeta[s.status].label} tone={statusMeta[s.status].tone} />
+                            <StatusChip label={labelOf(statusMeta, s.status)} tone={toneOf(statusMeta, s.status)} />
                           </Stack>
                         </Stack>
                       </CardContent>

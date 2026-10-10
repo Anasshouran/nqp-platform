@@ -29,7 +29,7 @@ const chipSx = {
   bgcolor: 'primary.light',
   color: 'primary.dark',
   fontFamily: 'monospace',
-  fontWeight: 800,
+  fontWeight: 700,
   fontSize: 12,
 } as const;
 

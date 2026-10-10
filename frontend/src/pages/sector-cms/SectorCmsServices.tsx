@@ -99,7 +99,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
         >
           <Icon />
         </Box>
-        <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, lineHeight: 1.3 }}>
+        <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5, lineHeight: 1.3 }}>
           {service.name_ar}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ flex: 1, fontSize: '0.82rem', lineHeight: 1.7, mb: 2 }}>
@@ -234,7 +234,7 @@ const SectorCmsServices = () => {
         <Typography variant="overline" color="primary.main" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, '& .MuiSvgIcon-root': { fontSize: 15 } }}>
           <AutoAwesomeIcon /> منصة الخدمات — {sectorBareName(sector.name_ar)}
         </Typography>
-        <Typography component="h1" variant="h3" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.01em' }}>
+        <Typography component="h1" variant="h3" sx={{ fontWeight: 700, mb: 1, letterSpacing: 0 }}>
           الخدمات
           <Box component="span" sx={{ color: 'warning.main' }}> والعمليات</Box>
         </Typography>
@@ -317,7 +317,7 @@ const SectorCmsServices = () => {
                 borderRadius: 3,
                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                 color: 'primary.main',
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             />
           </Stack>
@@ -364,10 +364,10 @@ const SectorCmsServices = () => {
                         return <CatIcon />;
                       })()}
                     </Box>
-                    <Typography component="h2" variant="h5" sx={{ fontWeight: 800 }}>
+                    <Typography component="h2" variant="h5" sx={{ fontWeight: 700 }}>
                       {category.name_ar}
                     </Typography>
-                    <Chip label={`${category.services.length}`} size="small" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.main', fontWeight: 800 }} />
+                    <Chip label={`${category.services.length}`} size="small" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.main', fontWeight: 700 }} />
                   </Stack>
                   {category.description_ar && (
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -425,7 +425,7 @@ function CenteredState({ icon, title, body, action }: { icon: React.ReactNode; t
       >
         {icon}
       </Box>
-      <Typography variant="h6" sx={{ fontWeight: 800 }}>{title}</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>{title}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: action ? 3 : 0 }}>{body}</Typography>
       {action}
     </Paper>

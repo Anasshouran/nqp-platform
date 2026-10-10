@@ -103,9 +103,9 @@ const SHIPMENT_STATUS_META: Record<string, { label: string; color: string }> = {
   UNDER_INSPECTION: { label: 'قيد التفتيش', color: '#0d6efd' },
   AWAITING_LAB_RESULTS: { label: 'في المختبر', color: '#6f42c1' },
   AWAITING_DECISION: { label: 'قيد المراجعة', color: '#f0ad4e' },
-  RELEASED: { label: 'مفرج عنها', color: '#1d7a54' },
+  RELEASED: { label: 'مفرج عنها', color: 'success.main' },
   CONDITIONAL_RELEASE: { label: 'إفراج مشروط', color: '#20c997' },
-  REJECTED: { label: 'مرفوضة', color: '#c63a3a' },
+  REJECTED: { label: 'مرفوضة', color: 'error.main' },
   HOLD: { label: 'محتجزة', color: '#fd7e14' },
   DESTROYED: { label: 'إتلاف', color: '#842029' },
   RE_EXPORT: { label: 'إعادة تصدير', color: '#664d03' },
@@ -763,7 +763,7 @@ const SectionHeadDashboardPage = () => {
                   <FinanceRow label="الإجمالي" value={dash.finance.total} bold />
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
-                  <PaymentsIcon fontSize="small" sx={{ color: '#1d7a54' }} />
+                  <PaymentsIcon fontSize="small" sx={{ color: 'success.main' }} />
                   <Typography variant="caption" color="text.secondary">جميع المبالغ بالجنيه السوداني (SDG) — فواتير محصّلة فقط</Typography>
                 </Stack>
               </Paper>

@@ -72,7 +72,7 @@ const NotificationBell = ({ iconColor = 'text.secondary' }: NotificationBellProp
               {count > 0 ? `${count} غير مقروء` : 'لا توجد إشعارات غير مقروءة'}
             </Typography>
           </Stack>
-          <Box sx={{ fontSize: 12, fontWeight: 700, color: 'primary.main', bgcolor: 'primary.lighter', px: 1.25, py: 0.5, borderRadius: 2 }}>
+          <Box sx={{ fontSize: 12, fontWeight: 700, color: 'primary.dark', bgcolor: 'primary.lighter', px: 1.25, py: 0.5, borderRadius: 2 }}>
             {count > 0 ? 'جديد' : 'مقروء'}
           </Box>
         </Stack>

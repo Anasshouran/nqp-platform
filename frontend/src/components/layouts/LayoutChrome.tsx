@@ -20,10 +20,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GlobalSearchPalette, { openGlobalSearch } from '../search/GlobalSearchPalette';
 import NotificationBell from './NotificationBell';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { logout } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store/store';
 import { logout as logoutApi } from '../../api/endpoints/auth';
 import { useAuth } from '../../hooks/useAuth';
+import { pendingCount } from '../../utils/vectorOffline';
 
 interface LayoutChromeProps {
   /** مكان الإقحام يتطابق مع عرض الدرج الجانبي للاحتفاظ بمحاذاة الصفحة */
@@ -60,27 +62,51 @@ const LayoutChrome = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const openUserMenu = (e: React.MouseEvent<HTMLElement>) => setUserMenuAnchor(e.currentTarget);
   const closeUserMenu = () => setUserMenuAnchor(null);
 
+  const performLogout = async () => {
+    setLogoutPending(true);
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          await logoutApi(refreshToken);
+        } catch {
+          // ignore logout API errors
+        }
+      }
+      dispatch(logout());
+      navigate('/login', { replace: true });
+    } finally {
+      setLogoutPending(false);
+      setLogoutConfirmOpen(false);
+    }
+  };
+
   const handleLogout = async () => {
     closeUserMenu();
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (refreshToken) {
-      try {
-        await logoutApi(refreshToken);
-      } catch {
-        // ignore logout API errors
-      }
+    // إن كانت هناك عمليات محفوظة محلياً بانتظار المزامنة، نحذِّر قبل خساراتها.
+    let pending = 0;
+    try {
+      pending = await pendingCount();
+    } catch {
+      pending = 0;
     }
-    dispatch(logout());
-    navigate('/login', { replace: true });
+    if (pending > 0) {
+      setLogoutConfirmOpen(true);
+      return;
+    }
+    await performLogout();
   };
 
   return (
     <>
       <AppBar
+        component="header"
         position="fixed"
         color="inherit"
         elevation={0}
@@ -170,6 +196,16 @@ const LayoutChrome = ({
         </Toolbar>
       </AppBar>
       <GlobalSearchPalette />
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        title="عمليات محفوظة محلياً"
+        message="لديك عمليات محفوظة محلياً لم تتم مزامنتها. تسجيل الخروج سيؤدي إلى حذفها. هل تريد المتابعة؟"
+        confirmLabel="تسجيل الخروج"
+        cancelLabel="إلغاء"
+        loading={logoutPending}
+        onConfirm={performLogout}
+        onClose={() => setLogoutConfirmOpen(false)}
+      />
     </>
   );
 };
