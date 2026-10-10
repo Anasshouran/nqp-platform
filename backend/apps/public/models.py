@@ -126,3 +126,114 @@ class HealthCertificate(BaseModel):
     def __str__(self):
         return f'{self.certificate_number} - {self.traveler_name}'
 
+
+
+# --------------------------------------------------------------------------- #
+# المساعد الذكي: تسجيل مجهول + تقييم الرضا
+# --------------------------------------------------------------------------- #
+
+class AssistantConversation(BaseModel):
+    """سؤال واحد للمساعد — سجل مجهول لتحسين النوايا.
+
+    التوثيق يطلب «تسجيل المحادثات مجهول الهوية». لذلك **لا** نخزّن نص
+    السؤال ولا الـIP ولا معرّف الجلسة: ما يُحفظ هو تصنيف النية ونوع
+    الإجابة ودرجة الثقة واللغة وطول النص فقط. تحليل النوايا لا يحتاج
+    النص الأصلي، والاحتفاظ به يجعل السجل بيانات شخصية.
+    """
+
+    class Intent(models.TextChoices):
+        GREETING = 'GREETING'
+        THANKS = 'THANKS'
+        FAQ = 'FAQ'
+        TRAVEL_REQUIREMENTS = 'TRAVEL_REQUIREMENTS'
+        COUNTRY_REQUIREMENTS = 'COUNTRY_REQUIREMENTS'
+        VACCINATION = 'VACCINATION'
+        DOCUMENTS = 'DOCUMENTS'
+        QR = 'QR'
+        CERTIFICATE = 'CERTIFICATE'
+        TRACKING = 'TRACKING'
+        REGISTRATION = 'REGISTRATION'
+        SERVICES = 'SERVICES'
+        NOTICE = 'NOTICE'
+        DISEASE = 'DISEASE'
+        CONTACT = 'CONTACT'
+        ESCALATE = 'ESCALATE'
+        UNKNOWN = 'UNKNOWN'
+
+    class AnswerType(models.TextChoices):
+        INFO = 'INFO'
+        ACTION = 'ACTION'
+        ALERT = 'ALERT'
+        SOURCE = 'SOURCE'
+        NOT_FOUND = 'NOT_FOUND'
+
+    class Confidence(models.TextChoices):
+        LOW = 'LOW'
+        MEDIUM = 'MEDIUM'
+        HIGH = 'HIGH'
+
+    intent = models.CharField(
+        max_length=30, choices=Intent.choices, db_index=True, verbose_name='النية'
+    )
+    answer_type = models.CharField(
+        max_length=12, choices=AnswerType.choices, default=AnswerType.INFO, db_index=True,
+        verbose_name='نوع الإجابة',
+    )
+    confidence = models.CharField(
+        max_length=6, choices=Confidence.choices, default=Confidence.LOW, verbose_name='درجة الثقة'
+    )
+    language = models.CharField(max_length=2, default='ar', verbose_name='اللغة')
+    source_count = models.PositiveIntegerField(default=0, verbose_name='عدد المصادر')
+    message_length = models.PositiveIntegerField(default=0, verbose_name='طول الرسالة')
+    has_disclaimer = models.BooleanField(default=False, verbose_name='حمل إخلاء المسؤولية')
+    engine = models.CharField(max_length=20, default='rules', verbose_name='المحرّك')
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['intent', '-created_at']),
+            models.Index(fields=['-created_at']),
+        ]
+        verbose_name = 'محادثة مساعد'
+        verbose_name_plural = 'محادثات المساعد'
+
+    def __str__(self) -> str:
+        return f'{self.intent} - {self.created_at:%Y-%m-%d %H:%M}'
+
+
+class AssistantFeedback(BaseModel):
+    """تقييم المستخدم لإجابة (👍/👎) — يُربط بالمحادثة نفسها.
+
+    لا يحمل نصاً حراً: التعليق الحر في محادثة عامة يفتح باب إدخال بيانات
+    شخصية، والتوثيق يكتفي بعلامة الرضا. `conversation` اختياري لأن
+    التقييم قد يصل بلا جلسة معروفة (أو بعد انتهاء retention).
+    """
+
+    class Rating(models.IntegerChoices):
+        UP = 1, 'مفيد'
+        DOWN = -1, 'غير مفيد'
+
+    conversation = models.ForeignKey(
+        AssistantConversation, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='feedback', verbose_name='المحادثة',
+    )
+    rating = models.SmallIntegerField(choices=Rating.choices, verbose_name='التقييم')
+    intent = models.CharField(
+        max_length=30, blank=True, db_index=True,
+        choices=AssistantConversation.Intent.choices, default=AssistantConversation.Intent.UNKNOWN,
+        verbose_name='النية (نسخة عند التقييم)',
+    )
+    answer_type = models.CharField(
+        max_length=12, blank=True, choices=AssistantConversation.AnswerType.choices,
+        default=AssistantConversation.AnswerType.INFO, verbose_name='نوع الإجابة (نسخة عند التقييم)',
+    )
+    engine = models.CharField(max_length=20, default='rules', verbose_name='المحرّك')
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['intent', '-created_at'])]
+        verbose_name = 'تقييم مساعد'
+        verbose_name_plural = 'تقييمات المساعد'
+
+    def __str__(self) -> str:
+        return f'{"مفيد" if self.rating == 1 else "غير مفيد"} - {self.intent}'

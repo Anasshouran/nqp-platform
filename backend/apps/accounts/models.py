@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from core.models import BaseModel
+from core.utils.authorization import resolve_permission_codes
 
 
 class ScopeType(models.TextChoices):
@@ -14,6 +15,7 @@ class ScopeType(models.TextChoices):
     SECTOR = 'SECTOR', 'قطاع إداري'
     DEPARTMENT = 'DEPARTMENT', 'إدارة'
     STATION = 'STATION', 'محطة'
+    COMPANY = 'COMPANY', 'شركة'
 
 
 class Role(BaseModel):
@@ -203,11 +205,20 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return self.can(code)
 
     def can(self, permission_code):
+        """هل يملك المستخدم صلاحية واحدة أو حزمة aliased؟
+
+        يقبل إمّا كود `resource:action` القائم كما هو، وإمّا الاسم التجاري
+        المفصول بنقاط (`who.integration.view`) فيُترجم عبر
+        `resolve_permission_codes`. الحزمة تتطلب امتلاك كل مكوّناتها.
+        """
         if self.is_superuser:
             return True
-        if self.blocked_permissions.filter(code=permission_code).exists():
+        codes = resolve_permission_codes(permission_code)
+        if not codes:
             return False
-        if self.extra_permissions.filter(code=permission_code).exists():
+        if self.blocked_permissions.filter(code__in=codes).exists():
+            return False
+        if self.extra_permissions.filter(code__in=codes).count() == len(codes):
             return True
         now = timezone.now()
         assignments = self.role_assignments.filter(
@@ -216,10 +227,13 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         ).filter(
             models.Q(end_date__isnull=True) | models.Q(end_date__gt=now),
         ).select_related('role')
+        # مجموعة الأكواد الممنوحة فعلياً عبر التعيينات النشطة
+        granted = set()
         for assignment in assignments:
-            if assignment.role.permissions.filter(code=permission_code).exists():
-                return True
-        return False
+            granted.update(
+                assignment.role.permissions.filter(code__in=codes).values_list('code', flat=True)
+            )
+        return set(codes).issubset(granted)
 
     def can_resource(self, resource, action='view'):
         return self.can(f'{resource}:{action}')
@@ -324,6 +338,17 @@ class RoleAssignment(BaseModel):
             raise ValidationError({'scope_id': 'النطاق العام GLOBAL لا يقبل معرّف نطاق'})
         if self.scope_type != ScopeType.GLOBAL and not self.scope_id:
             raise ValidationError({'scope_id': f'نطاق {self.scope_type} يتطلب معرّف نطاق'})
+
+    def save(self, *args, **kwargs):
+        """يثبّت ثابت GLOBAL→scope_id=None على مستوى النموذج أيضاً.
+
+        ``clean()`` لا يُستدعى تلقائياً، فمسارات ORM/الإدارة كانت تستطيع حفظ
+        تعيين عام بمعرّف نطاق. التطبيع هنا يجعل الثابت صحيحاً مهما كان مسار
+        الكتابة، دون أي تغيير في المخطط.
+        """
+        if self.scope_type == ScopeType.GLOBAL:
+            self.scope_id = None
+        super().save(*args, **kwargs)
 
 
 class PermissionAudit(BaseModel):
@@ -445,6 +470,41 @@ class EmployeeProfile(BaseModel):
     certificate = models.CharField(max_length=255, blank=True, verbose_name='الشهادة')
     signature_issue_date = models.DateField(null=True, blank=True, verbose_name='تاريخ الإصدار')
     signature_expiry_date = models.DateField(null=True, blank=True, verbose_name='تاريخ الانتهاء')
+
+    # بيانات الموظف الأساسية المطلوبة للمستوى التالي من HRMS (الملف + السيرة الوظيفية)
+    photo = models.ImageField(
+        upload_to='employees/photos/', null=True, blank=True, verbose_name='الصورة الشخصية'
+    )
+    home_address = models.TextField(blank=True, verbose_name='العنوان المنزلي')
+    emergency_contact_name = models.CharField(max_length=100, blank=True, verbose_name='اسم الطوارئ')
+    emergency_contact_phone = models.CharField(max_length=20, blank=True, verbose_name='رقم الاتصال الطارئ')
+    emergency_contact_relation = models.CharField(max_length=50, blank=True, verbose_name='صلة القرابة')
+
+    class EmploymentType(models.TextChoices):
+        PERMANENT = 'PERMANENT', 'دائم'
+        CONTRACT = 'CONTRACT', 'عقد'
+        TEMPORARY = 'TEMPORARY', 'مؤقت'
+        CONSULTANT = 'CONSULTANT', 'مستشار'
+        INTERN = 'INTERN', 'متدرب'
+
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EmploymentType.choices,
+        blank=True,
+        default=EmploymentType.PERMANENT,
+        verbose_name='نوع العمل',
+    )
+    degree = models.CharField(max_length=100, blank=True, verbose_name='الشهادة')
+    specialization = models.CharField(max_length=100, blank=True, verbose_name='التخصص')
+    probation_end_date = models.DateField(null=True, blank=True, verbose_name='نهاية فترة الاختبار')
+    reporting_manager = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='direct_reports',
+        verbose_name='المدير المباشر',
+    )
 
     class Meta:
         ordering = ['-updated_at']

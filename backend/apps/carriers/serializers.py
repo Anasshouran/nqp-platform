@@ -11,11 +11,13 @@ from apps.travelers.models import Country
 from .models import (
     Carrier,
     CarrierApiUsageLog,
+    CarrierDocument,
     CarrierMember,
     CarrierRegistrationRequest,
     Flight,
     FlightHealthEvent,
     FlightHealthEventLog,
+    HealthDeclaration,
     HealthNotice,
     ManifestPassenger,
     NoticeAcknowledgement,
@@ -98,13 +100,94 @@ class CarrierProfileSerializer(serializers.ModelSerializer):
 
 
 class CarrierMemberSerializer(serializers.ModelSerializer):
+    """قراءة فقط: لا أسرار، لا أدوار، لا tokens، لا معلومات أمن حساب."""
+
     user_email = serializers.EmailField(source='user.email', read_only=True)
     user_full_name = serializers.CharField(source='user.full_name', read_only=True)
 
     class Meta:
         model = CarrierMember
-        fields = ['id', 'user', 'user_email', 'user_full_name', 'is_primary', 'is_active']
+        fields = [
+            'id', 'user', 'user_email', 'user_full_name',
+            'is_primary', 'is_active', 'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+
+def _reject_unknown_fields(initial_data, allowed):
+    unknown = set(initial_data) - set(allowed)
+    if unknown:
+        raise serializers.ValidationError(
+            {key: 'هذا الحقل غير مسموح في هذا المسار' for key in sorted(unknown)}
+        )
+
+
+class CarrierMemberCreateSerializer(serializers.ModelSerializer):
+    """إنشاء عضوية: `carrier` و`is_active` يضبطهما الخادم فقط، ولا تعديل لاحق."""
+
+    class Meta:
+        model = CarrierMember
+        fields = ['id', 'user', 'is_primary']
         read_only_fields = ['id']
+
+    _ALLOWED_INPUT = ('user', 'is_primary')
+
+    def validate(self, attrs):
+        _reject_unknown_fields(
+            self.initial_data, set(self._ALLOWED_INPUT)
+        )
+        user = attrs.get('user')
+        carrier = self.context['carrier']
+        if user is None:
+            raise serializers.ValidationError({'user': 'مطلوب'})
+        if not user.is_active:
+            raise serializers.ValidationError(
+                {'user': 'الحساب معطّل — لا يمكن إضافته كعضو نشط'}
+            )
+        if CarrierMember.objects.filter(user=user, carrier=carrier).exists():
+            raise serializers.ValidationError(
+                {'user': 'المستخدم عضو في هذه الشركة بالفعل'}
+            )
+        if attrs.get('is_primary'):
+            conflict = CarrierMember.objects.select_for_update().filter(
+                carrier=carrier, is_primary=True
+            )
+            if conflict.exists():
+                raise serializers.ValidationError(
+                    {'is_primary': 'يوجد ممثل رئيسي آخر لهذه الشركة — عطِّل عضويته السابقة ثم أعد المحاولة'}
+                )
+        return attrs
+
+    def create(self, validated_data):
+        return CarrierMember.objects.create(
+            carrier=self.context['carrier'],
+            is_active=True,
+            **validated_data,
+        )
+
+
+class CarrierMemberUpdateSerializer(serializers.ModelSerializer):
+    """PATCH: `is_primary` فقط. الهوية `user`/`carrier` و`is_active` لا تتعدل."""
+
+    class Meta:
+        model = CarrierMember
+        fields = ['is_primary']
+
+    _ALLOWED_INPUT = ('is_primary',)
+
+    def validate(self, attrs):
+        _reject_unknown_fields(
+            self.initial_data, set(self._ALLOWED_INPUT)
+        )
+        if attrs.get('is_primary') is True:
+            conflict = CarrierMember.objects.select_for_update().filter(
+                carrier=self.instance.carrier, is_primary=True,
+            ).exclude(pk=self.instance.pk)
+            if conflict.exists():
+                raise serializers.ValidationError(
+                    {'is_primary': 'يوجد ممثل رئيسي آخر لهذه الشركة — يُرفض تعيين عضوين رئيسيين'}
+                )
+        return attrs
 
 
 class FlightSerializer(serializers.ModelSerializer):
@@ -139,6 +222,7 @@ class FlightSerializer(serializers.ModelSerializer):
             if duplicate.exists():
                 raise serializers.ValidationError('رحلة بنفس رقم الرحلة وموعد الوصول مسجلة مسبقاً')
         origin_country = attrs.get('origin_country', getattr(self.instance, 'origin_country', None))
+        destination_port = attrs.get('destination_port', getattr(self.instance, 'destination_port', None))
         if (
             origin_country
             and origin_country.code == getattr(settings, 'HOME_COUNTRY_CODE', 'SD')
@@ -155,6 +239,45 @@ class PassengerManifestSerializer(serializers.ModelSerializer):
         model = PassengerManifest
         fields = ['id', 'flight', 'file', 'status', 'total_passengers', 'error_report', 'processed_at']
         read_only_fields = ['id', 'status', 'total_passengers', 'error_report', 'processed_at']
+
+
+class CarrierDocumentSerializer(serializers.ModelSerializer):
+    carrier = serializers.SlugRelatedField(
+        slug_field='iata_code', queryset=Carrier.objects.all(), required=False, allow_null=True
+    )
+    document_type_label = serializers.CharField(source='get_document_type_display', read_only=True)
+    carrier_name = serializers.CharField(source='carrier.name', read_only=True, allow_null=True)
+    flight_number = serializers.CharField(source='flight.flight_number', read_only=True, allow_null=True)
+
+    class Meta:
+        model = CarrierDocument
+        fields = [
+            'id', 'carrier', 'carrier_name', 'flight', 'flight_number', 'document_type',
+            'document_type_label', 'title', 'file', 'original_filename', 'mime_type',
+            'file_size', 'uploaded_by', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'original_filename', 'mime_type', 'file_size', 'uploaded_by', 'created_at', 'updated_at']
+        extra_kwargs = {'carrier': {'required': False, 'allow_null': True}}
+
+    def validate_file(self, value):
+        if not value:
+            raise serializers.ValidationError('الملف مطلوب')
+        if value.size > 10 * 1024 * 1024:
+            raise serializers.ValidationError('حجم الملف يتجاوز 10MB')
+        allowed = {
+            'application/pdf', 'image/jpeg', 'image/png', 'text/csv',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        }
+        if getattr(value, 'content_type', None) and value.content_type not in allowed:
+            raise serializers.ValidationError('صيغة الملف غير مدعومة')
+        return value
+
+    def validate(self, attrs):
+        flight = attrs.get('flight', getattr(self.instance, 'flight', None))
+        carrier = attrs.get('carrier', getattr(self.instance, 'carrier', None))
+        if flight is not None and carrier is not None and carrier.id != flight.carrier_id:
+            raise serializers.ValidationError({'flight': 'الرحلة لا تتبع شركة النقل الحالية'})
+        return attrs
 
 
 class ManifestPassengerSerializer(serializers.ModelSerializer):
@@ -292,6 +415,43 @@ class FlightHealthEventSerializer(serializers.ModelSerializer):
             'id', 'reporter_user', 'reported_at', 'status', 'escalated_at',
             'transmitted_to_eoc_at', 'created_at', 'updated_at',
         ]
+
+
+class HealthDeclarationSerializer(serializers.ModelSerializer):
+    """إقرار صحي لرحلة — يقدَّم من الناقل ويُراجع من صحة المطار.
+
+    الحالة (status) لا تُعدَّل مباشرة عبر PATCH؛ الانتقالات حصرية عبر
+    actions: submit/review/approve/reject.
+    """
+
+    flight_number = serializers.CharField(source='flight.flight_number', read_only=True)
+    carrier_name = serializers.CharField(source='carrier.name', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = HealthDeclaration
+        fields = [
+            'id', 'flight', 'flight_number', 'carrier', 'carrier_name',
+            'declaration_date', 'officer_name', 'officer_phone',
+            'doctor_name', 'doctor_phone', 'passenger_count', 'crew_count',
+            'ill_passenger_count', 'has_medical_emergency', 'symptoms_present',
+            'notes', 'status', 'status_label', 'submitted_by', 'submitted_at',
+            'reviewed_by', 'reviewed_at', 'review_notes', 'rejection_reason',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'flight_number', 'carrier_name', 'status', 'status_label',
+            'submitted_by', 'submitted_at', 'reviewed_by', 'reviewed_at',
+            'created_at', 'updated_at',
+        ]
+        extra_kwargs = {'carrier': {'required': False, 'allow_null': True}}
+
+    def validate(self, attrs):
+        flight = attrs.get('flight', getattr(self.instance, 'flight', None))
+        carrier = attrs.get('carrier', getattr(self.instance, 'carrier', None))
+        if flight is not None and carrier is not None and carrier.id != flight.carrier_id:
+            raise serializers.ValidationError({'carrier': 'الناقل يجب أن يطابق ناقل الرحلة'})
+        return attrs
 
 
 class FlightHealthEventLogSerializer(serializers.ModelSerializer):

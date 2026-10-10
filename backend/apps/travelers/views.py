@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.filters import ExactFilterBackend
@@ -74,38 +74,95 @@ class TravelerViewSet(viewsets.ModelViewSet):
     permission_resource = 'travelers'
 
     def _staff_traveler_access(self, user):
-        """صلاحيات موظف على سجلات المسافرين (عرض/تعديل/مراجعة/حذف)."""
+        """صلاحيات موظف على سجلات المسافرين (عرض/تعديل/مراجعة/حذف).
+
+        تُستخدَم للحسابات المؤسسية/الموظفين فقط. حساب المسافر (user_type=TRAVELER)
+        لا يُوسَّع أبداً من خلال هذه الصلاحيات — انظر ``_is_traveler_principal``.
+        """
         if user.is_superuser:
             return True
         codes = set(user.effective_permission_codes())
         return bool(codes & {'travelers:view', 'travelers:edit', 'travelers:review', 'travelers:delete'})
 
+    def _is_traveler_principal(self, user):
+        """مبدأ مسافر: حساب مصادَق نوعه TRAVELER وليس موظفاً ولا مشرفاً.
+
+        القاعدة (F-M1-2): عزل إلزامي — ``TRAVELER → queryset مقصور على request.user``
+        ولا يمكن لصلاحيات مثل ``travelers:view`` توسعة هذا النطاق.
+        """
+        return bool(
+            user
+            and user.is_authenticated
+            and not user.is_staff
+            and not user.is_superuser
+            and getattr(user, 'user_type', None) == user.UserType.TRAVELER
+        )
+
     def get_permissions(self):
         action = self.action or 'list'
         self.permission_resource = 'travelers'
         self.permission_action = STAFF_ACTION_PERMS.get(action, 'view')
-        if action in PUBLIC_REGISTRATION_ACTIONS or action in SELF_SERVICE_ACTIONS:
+        if action in PUBLIC_REGISTRATION_ACTIONS:
+            return [AllowAny()]
+        # الخدمة الذاتية تُقيَّد على مستوى الكائن في get_object (ملكية/جلسة/صلاحية
+        # موظف) — لأن مسافري التسجيل العام لا يملكون حساب مستخدم.
+        if action in SELF_SERVICE_ACTIONS:
             return [AllowAny()]
         return [PermissionAction('travelers', self.permission_action)]
 
+    # --- ربط الجلسة للزائر ---
+    #
+    # التسجيل العام ينشئ مسافراً بلا حساب (user_id=None). previously كان أي
+    # زائر يمرّر أي id فيصل إلى أي سجل. الآن يرتبط السجل بجلسة المتصفح التي
+    # أنشأته، فلا يملكه إلا نفس الجهاز/المتصفح ما لم يسجّل الدخول.
+
+    SESSION_KEY = 'traveler_session_ids'
+
+    def _session_traveler_ids(self):
+        session = getattr(self.request, 'session', None)
+        if session is None:
+            return set()
+        return set(session.get(self.SESSION_KEY) or [])
+
+    def _bind_to_session(self, traveler):
+        session = getattr(self.request, 'session', None)
+        if session is None:
+            return
+        ids = self._session_traveler_ids()
+        ids.add(str(traveler.pk))
+        # حد أعلى لعدد المعرّفات في الجلسة لحماية الذاكرة من التخمين/abuse
+        session[self.SESSION_KEY] = sorted(ids)[-20:]
+        session.modified = True
+
+    def _session_owns(self, traveler):
+        return str(traveler.pk) in self._session_traveler_ids()
+
     def get_object(self):
         traveler = super().get_object()
-        if self.action not in SELF_SERVICE_ACTIONS:
-            return traveler
         user = self.request.user
-        if traveler.user_id is None:
+        if user.is_authenticated and user.is_superuser:
             return traveler
-        if user.is_authenticated and (user.is_superuser or traveler.user_id == user.id):
+        if self._is_traveler_principal(user):
+            # عزل صارم (F-M1-2) لكل الإجراءات بلا استثناء:
+            # الصلاحيات مثل travelers:edit لا توسّع حساب المسافر إلى سجل آخر أبداً.
+            if traveler.user_id == user.id:
+                return traveler
+            raise NotFound('المسافر غير موجود')
+        if self.action not in SELF_SERVICE_ACTIONS:
+            # إجراء مؤسسي: البوابة في get_permissions (PermissionAction).
             return traveler
         if user.is_authenticated and self._staff_traveler_access(user):
             return traveler
+        if traveler.user_id is None and self._session_owns(traveler):
+            return traveler
+        # لا ملكية حساب ولا ربط جلسة — نخفي السجل كأنه غير موجود.
         raise NotFound('المسافر غير موجود')
 
     def get_queryset(self):
         qs = super().get_queryset()
-        user = self.request.user
-        if user.is_authenticated and user.user_type == user.UserType.TRAVELER and not self._staff_traveler_access(user):
-            return qs.filter(user=user)
+        if self._is_traveler_principal(self.request.user):
+            # فشل آمناً: مهما حُملت صلاحيات المؤسسة، حساب المسافر يرى سجلاته فقط.
+            return qs.filter(user=self.request.user)
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -115,6 +172,8 @@ class TravelerViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated and not traveler.user and request.user.user_type == 'TRAVELER':
             traveler.user = request.user
             traveler.save(update_fields=['user'])
+        # اربط السجل بجلسة المتصفح التي أنشأته (تسجيل عام بلا حساب).
+        self._bind_to_session(traveler)
         return Response(
             success_response(TravelerSerializer(traveler).data),
             status=status.HTTP_201_CREATED,

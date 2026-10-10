@@ -33,6 +33,8 @@ urlpatterns = [
         PublicVaccinationVerifyView.as_view(),
         name='vaccination-public-verify',
     ),
+    # throttle_scope 'traveler_lookup' is shared with public traveler lookup;
+    # consider a dedicated scope for production to limit enumeration risk.
     path(
         'public/lookup/',
         PublicVaccinationLookupView.as_view(),

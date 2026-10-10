@@ -12,6 +12,14 @@ def api_client():
     return APIClient()
 
 
+def bind_session(client, traveler):
+    """يربط السجل بجلسة العميل — يحاكي متصفحاً أنشأ هذا السجل via التسجيل العام."""
+    session = client.session
+    session['traveler_session_ids'] = [str(traveler.pk)]
+    session.save()
+    return client
+
+
 @pytest.fixture
 def country(db):
     return Country.objects.create(code='SD', name='Sudan', name_ar='السودان')
@@ -65,6 +73,7 @@ def test_personal_info_endpoint(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.patch(
         f'/api/v1/travelers/{traveler.id}/personal-info/',
         {'email': 'update@example.com', 'phone': '+249911223344'},
@@ -84,6 +93,7 @@ def test_submit_endpoint(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.post(f'/api/v1/travelers/{traveler.id}/submit/')
     assert response.status_code == 200
     traveler.refresh_from_db()
@@ -99,6 +109,7 @@ def test_list_delete_download_documents(api_client, country, db):
         date_of_birth='1995-03-10',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     uploaded = SimpleUploadedFile(
         'passport.jpg', b'fake-image-content', content_type='image/jpeg'
     )
@@ -147,6 +158,7 @@ def test_upload_document(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     uploaded = SimpleUploadedFile(
         'passport.jpg', b'fake-file-content', content_type='image/jpeg'
     )
@@ -168,6 +180,7 @@ def test_get_status(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.get(f'/api/v1/travelers/{traveler.id}/status/')
     assert response.status_code == 200
     data = response.data['data']
@@ -184,6 +197,7 @@ def test_timeline_after_submit(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.get(f'/api/v1/travelers/{traveler.id}/timeline/')
     assert response.status_code == 200
     assert response.data['data'] == []
@@ -271,6 +285,7 @@ def test_get_qr_code(api_client, country, db):
     import hmac
     import json
 
+    bind_session(api_client, traveler)
     response = api_client.get(f'/api/v1/travelers/{traveler.id}/qr-code/')
     assert response.status_code == 200
     data = response.data['data']
@@ -292,6 +307,7 @@ def test_qr_download(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.get(f'/api/v1/travelers/{traveler.id}/qr-code/download/')
     assert response.status_code == 200
     assert response['Content-Type'] == 'image/png'
@@ -305,6 +321,7 @@ def test_qr_refresh(api_client, country, db):
         date_of_birth='1990-05-15',
         nationality=country,
     )
+    bind_session(api_client, traveler)
     response = api_client.post(f'/api/v1/travelers/{traveler.id}/qr-code/refresh/')
     assert response.status_code == 200
     data = response.data['data']
@@ -327,6 +344,114 @@ def test_traveler_list_requires_auth(api_client, country, db):
     )
     response = api_client.get('/api/v1/travelers/')
     assert response.status_code == 401
+
+
+# --- حراسة ملكية السجل (IDOR) ---
+
+def test_anonymous_cannot_read_another_traveler(api_client, country, db):
+    """زائر بلا جلسة لا يصل إلى سجل أنشأه زائر آخر."""
+    owner = Traveler.objects.create(
+        passport_number='OWNER001',
+        first_name='مالك',
+        last_name='السجل',
+        date_of_birth='1990-05-15',
+        nationality=country,
+    )
+    stranger = APIClient()  # جلسة مختلفة تماماً
+    assert stranger.get(f'/api/v1/travelers/{owner.id}/status/').status_code == 404
+    assert stranger.get(f'/api/v1/travelers/{owner.id}/qr-code/').status_code == 404
+    assert stranger.post(f'/api/v1/travelers/{owner.id}/submit/').status_code == 404
+    assert stranger.patch(
+        f'/api/v1/travelers/{owner.id}/personal-info/',
+        {'email': 'attacker@example.com'},
+        format='json',
+    ).status_code == 404
+
+
+def test_anonymous_cannot_delete_another_traveler_documents(api_client, country, db):
+    """حذف المستندات مقيّد بنفس الملكية."""
+    from apps.travelers.models import TravelerDocument
+
+    victim = Traveler.objects.create(
+        passport_number='DOCVICTM',
+        first_name='ضحية',
+        last_name='مستندات',
+        date_of_birth='1990-05-15',
+        nationality=country,
+    )
+    doc = TravelerDocument.objects.create(
+        traveler=victim, document_type='PASSPORT', file='media/test/passport.jpg',
+    )
+    stranger = APIClient()
+    response = stranger.delete(f'/api/v1/travelers/{victim.id}/documents/{doc.id}/')
+    assert response.status_code == 404
+    assert TravelerDocument.objects.filter(pk=doc.pk).exists()
+
+
+def test_session_owner_can_access(api_client, country, db):
+    """الجلسة التي أنشأت السجل تحتفظ بالوصول (مسار التسجيل العام)."""
+    traveler = Traveler.objects.create(
+        passport_number='OWNOK001',
+        first_name='مالك',
+        last_name='الجلسة',
+        date_of_birth='1990-05-15',
+        nationality=country,
+    )
+    bind_session(api_client, traveler)
+    assert api_client.get(f'/api/v1/travelers/{traveler.id}/status/').status_code == 200
+
+
+def test_public_register_binds_session_and_blocks_other_sessions(api_client, country):
+    """التسجيل العام يربط السجل بالجلسة الحالية ولا يمنح غيرها وصولاً."""
+    response = api_client.post(
+        '/api/v1/travelers/register/',
+        {
+            'passport_number': 'REGBIND1',
+            'first_name': 'سارة',
+            'last_name': 'محمد',
+            'date_of_birth': '1995-03-10',
+            'nationality': 'SD',
+        },
+        format='json',
+    )
+    assert response.status_code == 201
+    traveler_id = response.data['data']['id']
+
+    # الجلسة التي سجّلت تصل
+    assert api_client.get(f'/api/v1/travelers/{traveler_id}/status/').status_code == 200
+    # جلسة أخرى لا تصل
+    assert APIClient().get(f'/api/v1/travelers/{traveler_id}/status/').status_code == 404
+
+
+def test_staff_with_permission_can_access_unowned_traveler(api_client, country, db, grant_permissions):
+    """موظف بصلاحية مراجعة يبقى قادراً على سجلات التسجيل العام."""
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    staff = User.objects.create_user(
+        email='quarantine.officer@nqp.gov.sd',
+        password='StrongPass123!',
+        full_name='ضابط حجر',
+        user_type='STAFF',
+    )
+    grant_permissions(staff, 'FOOD_OFFICER', codes=['travelers:review'])
+    login = api_client.post(
+        '/api/v1/auth/login/',
+        {'email': 'quarantine.officer@nqp.gov.sd', 'password': 'StrongPass123!'},
+        format='json',
+    )
+    api_client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}"
+    )
+    traveler = Traveler.objects.create(
+        passport_number='STAFF001',
+        first_name='مسافر',
+        last_name='عام',
+        date_of_birth='1990-05-15',
+        nationality=country,
+    )
+    response = api_client.get(f'/api/v1/travelers/{traveler.id}/status/')
+    assert response.status_code == 200
 
 
 @pytest.fixture

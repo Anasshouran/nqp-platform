@@ -127,6 +127,22 @@ class ClinicReferral(BaseModel):
         related_name='clinic_referrals',
         verbose_name='الفحص',
     )
+    flight = models.ForeignKey(
+        'carriers.Flight',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='clinic_referrals',
+        verbose_name='الرحلة',
+    )
+    health_event = models.ForeignKey(
+        'carriers.FlightHealthEvent',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='clinic_referrals',
+        verbose_name='الحدث الصحي للرحلة',
+    )
     traveler = models.ForeignKey(
         'travelers.Traveler', on_delete=models.CASCADE, related_name='clinic_referrals', verbose_name='المسافر'
     )

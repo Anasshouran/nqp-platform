@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from apps.accounts.models import Role, RoleAssignment
+from apps.accounts.models import Permission, Role, RoleAssignment
 from apps.masterdata.models import EntryPoint, Sector, State
 from apps.organization.models import Sector as AdminSector
 from apps.vector_control.models import (
@@ -19,6 +19,7 @@ from apps.vector_control.models import (
     VectorSample,
     VectorSurvey,
     VectorTeam,
+    VectorUnit,
 )
 
 pytestmark = pytest.mark.django_db
@@ -102,6 +103,13 @@ def _auth_sector_user(client, sector, role_code='VECTOR_SECTOR_MANAGER'):
     role = Role.objects.create(
         code=role_code, name=role_code, name_ar=role_code, default_scope='SECTOR',
     )
+    # الموديول يفرض الآن صلاحيات `vector:*` عبر VectorPermissionMixin
+    for action in ('view', 'add', 'edit', 'delete', 'approve', 'close', 'assess'):
+        perm, _ = Permission.objects.get_or_create(
+            code=f'vector:{action}',
+            defaults={'name': f'{action} vector', 'resource': 'vector', 'action': action},
+        )
+        role.permissions.add(perm)
     RoleAssignment.objects.create(
         user=user, role=role, scope_type=RoleAssignment.ScopeType.SECTOR,
         scope_id=sector.pk, is_active=True, assigned_by=user,
@@ -413,6 +421,80 @@ def test_sector_scoping_isolates_other_sector(api_client, entry_point, vector):
     res = api_client.get('/api/v1/vector-control/foci/')
     assert res.status_code == 200
     assert res.json()['data']['results'] == []
+
+
+def _auth_unscoped_vector_user(client):
+    """مستخدم يحمل صلاحيات vector:* لكن بلا أي نطاق (لا قطاع ولا GLOBAL)."""
+    user = User.objects.create_user(
+        email='vector_unscoped@nqp.gov.sd', password='StrongPass123!', full_name='بلا نطاق',
+    )
+    role = Role.objects.create(
+        code='VECTOR_UNSCOPED', name='VECTOR_UNSCOPED', name_ar='بلا نطاق', default_scope='SECTOR',
+    )
+    perm, _ = Permission.objects.get_or_create(
+        code='vector:view', defaults={'name': 'view vector', 'resource': 'vector', 'action': 'view'},
+    )
+    role.permissions.add(perm)
+    RoleAssignment.objects.create(
+        user=user, role=role, scope_type=RoleAssignment.ScopeType.SECTOR,
+        scope_id=None, is_active=True, assigned_by=user,
+    )
+    login = client.post(
+        '/api/v1/auth/login/',
+        {'email': user.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}")
+    return user
+
+
+def test_sector_field_scoped_viewsets_deny_user_without_any_scope(api_client, admin_user, admin_sector):
+    """وحدة/فريق المتجهات قطاعيان إلزامياً: مستخدم بلا نطاق يجب ألا يرى أي قطاع.
+
+    `SectorFieldScopedMixin` كان يُعيد queryset كاملاً لمستخدم بلا قطاع
+    (`if not sectors: return qs`)، فتسريب كامل بين القطاعات. المرحلة 3B
+    جعل الافتراضي فشلاً آمناً؛ الاستثناء الصريح الوحيد هو
+    `scope_optional = True` وهو غير معلن هنا.
+    """
+    VectorUnit.objects.create(code='UNIT-A', name_ar='وحدة أ', sector=admin_sector)
+    VectorUnit.objects.create(
+        code='UNIT-B', name_ar='وحدة ب',
+        sector=AdminSector.objects.create(code='KS2', name_ar='قطاع كسلا'),
+    )
+    _auth_unscoped_vector_user(api_client)
+    for url in ('/api/v1/vector-control/units/', '/api/v1/vector-control/teams/'):
+        res = api_client.get(url)
+        assert res.status_code == 200
+        assert res.json()['data']['results'] == [], f'{url} كشف صفوف لمستخدم بلا نطاق'
+
+
+def test_sector_field_scoped_viewsets_still_isolate_and_allow_global(api_client, admin_user, admin_sector):
+    """بعد تفعيل الفشل الآمن: القطاعي يرى قطاعه فقط، والوطني يرى الكل."""
+    other = AdminSector.objects.create(code='KS3', name_ar='قطاع كسلا')
+    VectorUnit.objects.create(code='UNIT-A', name_ar='وحدة أ', sector=admin_sector)
+    VectorUnit.objects.create(code='UNIT-B', name_ar='وحدة ب', sector=other)
+
+    _auth_sector_user(api_client, admin_sector)
+    res = api_client.get('/api/v1/vector-control/units/')
+    assert [r['code'] for r in res.json()['data']['results']] == ['UNIT-A']
+
+    # مستخدم بنطاق GLOBAL يرى قطاعيه
+    role = Role.objects.get(code='VECTOR_SECTOR_MANAGER')
+    global_user = User.objects.create_user(
+        email='vector_global@nqp.gov.sd', password='StrongPass123!', full_name='وطني',
+    )
+    RoleAssignment.objects.create(
+        user=global_user, role=role, scope_type=RoleAssignment.ScopeType.GLOBAL,
+        scope_id=None, is_active=True, assigned_by=admin_user,
+    )
+    login = api_client.post(
+        '/api/v1/auth/login/',
+        {'email': global_user.email, 'password': 'StrongPass123!'},
+        format='json',
+    )
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['data']['access_token']}")
+    res = api_client.get('/api/v1/vector-control/units/')
+    assert sorted(r['code'] for r in res.json()['data']['results']) == ['UNIT-A', 'UNIT-B']
 
 
 def test_dashboard_overview_and_map(api_client, admin_user, entry_point, vector):

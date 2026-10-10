@@ -123,6 +123,13 @@ def test_lookup_by_sample_number_with_code(api_client, auth_client, disease):
     assert data['tests'][0]['test_name'] == 'فحص بيولوجي'
     assert data['tests'][0]['outcome'] == 'POSITIVE'
     assert data['tests'][0]['disease_name'] == disease.name_ar
+    # التحقق العام لا يُرجع بيّنات القياس الخام الحساسة.
+    test = data['tests'][0]
+    assert 'result_value' not in test
+    assert 'result_text' not in test
+    assert 'unit' not in test
+    assert 'reference_range' not in test
+    assert 'is_critical' not in test
 
 
 def test_lookup_by_barcode_case_insensitive(api_client, auth_client, disease):

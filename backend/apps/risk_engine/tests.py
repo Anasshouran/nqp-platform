@@ -24,7 +24,7 @@ def screening():
     officer = User.objects.create_user(
         email='risk-officer@nqp.gov.sd', password='StrongPass123!', full_name='مفتش'
     )
-    ms = MasterSector.objects.create(code='SEA', name_ar='البحري')
+    ms = MasterSector.objects.create(code='SEA_RISK', name_ar='البحري')
     state = State.objects.create(code='RS', name_ar='البحر الأحمر', sector=ms)
     port = EntryPoint.objects.create(
         code='SZN', name_ar='ميناء سواكن', kind=EntryPoint.Kind.SEAPORT, state=state

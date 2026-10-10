@@ -18,10 +18,12 @@ RESOURCES = {
     'ports': 'المنافذ',
     'risk': 'تقييم المخاطر',
     'notifications': 'الإشعارات',
+    'flights': 'الرحلات الجوية',
     'settings': 'الإعدادات',
     'organization': 'الهيكل الإداري',
      'port_health': 'صحة الموانئ',
     'airport_health': 'صحة المطارات',
+    'borders_health': 'صحة المعابر البرية',
     'clinic': 'عيادات الحجر الصحي',
     'it': 'تقنية المعلومات',
     'db_admin': 'إدارة قاعدة البيانات',
@@ -45,6 +47,34 @@ RESOURCES = {
     'food_samples': 'عينات الأغذية',
     'permissions': 'الصلاحيات (تعريف)',
     'role_assignments': 'تعيينات الأدوار',
+    'hr_employee': 'ملفات الموظفين',
+    'hr_establishment': 'البيانات التأسيسية والوحدات',
+    'hr_posting': 'النقل والمناوبات',
+    'hr_attendance': 'الحضور والانصراف',
+    'hr_leave': 'الإجازات',
+    'hr_training': 'التدريب',
+    'hr_performance': 'تقييم الأداء',
+    'hr_payroll': 'الرواتب',
+    'hr_document': 'وثائق الموظفين',
+    'hr_dashboard': 'لوحة الموارد البشرية',
+    # بوابة تكامل المنظمات
+    'integration': 'تكاملات المنظمات',
+    'api_endpoint': 'كتالوج نقاط API',
+    'integration_health': 'سجلات صحة التكامل',
+    'webhook_subscription': 'اشتراكات الويب هوك',
+    'webhook_delivery': 'توصيلات الويب هوك',
+    'audit_log': 'سجلات مراجعة البوابة',
+    'data_scope': 'نطاقات تبادل البيانات',
+    'credential': 'بيانات اعتماد التكامل',
+    'shipping_companies': 'شركات الملاحة',
+    'shipping_agents': 'الوكلاء الملاحيون',
+    'pre_arrivals': 'الإخطارات المسبقة للسفن',
+    'vessel_company_relationships': 'علاقات الشركات بالسفن',
+    'shipping_audit_logs': 'سجلات تدقيق الملاحة',
+    'clearance_decisions': 'قرارات الإفراج الصحي البحري',
+    'vessels': 'السفن',
+    'vessel_visits': 'زيارات السفن',
+    'carrier_members': 'أعضاء شركات النقل',
 }
 
 ACTIONS = {
@@ -83,6 +113,61 @@ EXTRA_ACTIONS = {
         'reject': 'رفض اقتراحات الربط',
         'search': 'البحث في تصنيف ICD-11',
     },
+    'integration': {
+        'view': 'عرض التكاملات',
+        'add': 'إضافة تكامل',
+        'edit': 'تعديل تكامل',
+        'delete': 'حذف تكامل',
+        'test': 'اختبار الاتصال',
+        'sync': 'مزامنة',
+        'verify': 'تفعيل/توثيق',
+        'export': 'تصدير',
+    },
+    'api_endpoint': {
+        'view': 'عرض كتالوج API',
+        'add': 'إضافة نقطة API',
+        'edit': 'تعديل نقطة API',
+        'delete': 'حذف نقطة API',
+        'verify': 'تفعيل/توثيق نقطة',
+        'export': 'تصدير الكتالوج',
+    },
+    'integration_health': {
+        'view': 'عرض حالة الصحة',
+        'run_check': 'تشغيل فحص صحة',
+    },
+    'webhook_subscription': {
+        'view': 'عرض اشتراكات الويب هوك',
+        'add': 'إضافة اشتراك',
+        'edit': 'تعديل اشتراك',
+        'delete': 'حذف اشتراك',
+    },
+    'webhook_delivery': {
+        'view': 'عرض محاولات التوصيل',
+        'retry': 'إعادة محاولة توصيل فاشلة',
+    },
+    'audit_log': {
+        'view': 'عرض سجلات المراجعة',
+        'export': 'تصدير السجلات',
+    },
+    'data_scope': {
+        'view': 'عرض نطاقات البيانات',
+        'add': 'إضافة نطاق',
+        'edit': 'تعديل نطاق',
+        'delete': 'حذف نطاق',
+    },
+    'credential': {
+        'view': 'عرض بيانات الاعتماد',
+        'add': 'إضافة اعتماد',
+        'edit': 'تعديل اعتماد',
+        'delete': 'حذف اعتماد',
+        'rotate': 'تدوير سر',
+    },
+    'organization': {
+        'view': 'عرض المنظمات',
+        'add': 'إضافة منظمة',
+        'edit': 'تعديل منظمة',
+        'delete': 'حذف منظمة',
+    },
     'vaccination': {
         'issue': 'إصدار شهادات التطعيم',
         'verify': 'التحقق من شهادات التطعيم',
@@ -100,9 +185,73 @@ EXTRA_ACTIONS = {
     'food_window': {
         'approve': 'اعتماد معاملات نافذة الأغذية',
     },
+    'food': {
+        'review': 'مراجعة واعتماد قرارات الفسح الغذائي',
+        'approve': 'اعتماد الشحنات والرقابة النهائية',
+    },
+    'hr_employee': {
+        'approve': 'اعتماد بيانات الملف الوظيفي',
+    },
+    'hr_establishment': {
+        'approve': 'اعتماد الوحدات والأقسام التنظيمية',
+    },
+    'hr_posting': {
+        'approve': 'اعتماد النقل أو المناوبة',
+        'reject': 'رفض طلب النقل',
+    },
+    'hr_attendance': {
+        'approve': 'اعتماد سجلات الحضور',
+    },
+    'hr_leave': {
+        'approve': 'اعتماد الإجازة',
+        'reject': 'رفض طلب الإجازة',
+    },
+    'hr_training': {
+        'approve': 'اعتماد الدورات التدريبية',
+    },
+    'hr_performance': {
+        'approve': 'اعتماد تقييم الأداء',
+    },
+    'hr_payroll': {
+        'run': 'تشغيل مسير الرواتب',
+        'approve': 'اعتماد مسير الرواتب',
+        'pay': 'صرف الرواتب',
+    },
+    'hr_document': {
+        'approve': 'اعتماد الوثائق',
+    },
+    'borders_health': {
+        'register_traveler': 'تسجيل مسافر',
+        'health_screen': 'فحص صحي',
+        'vehicle_inspect': 'تفتيش مركبة',
+        'cargo_inspect': 'تفتيش شحنة',
+        'sample_create': 'جمع عيّنة',
+        'sample_send': 'إرسال عيّنة',
+        'case_create': 'فتح حالة',
+        'quarantine_manage': 'إدارة الحجر',
+        'isolation_manage': 'إدارة العزل',
+        'contact_trace': 'تتبع مخالطين',
+        'emergency_manage': 'إدارة طوارئ',
+        'certificate_issue': 'إصدار شهادة',
+        'report_view': 'عرض تقارير المعابر',
+        'dashboard_view': 'عرض لوحة قيادة المعابر',
+    },
+    # M8-B.2: دورة حياة العضوية إجراءات مخصّصة لا `delete` — التعطيل هو مسار
+    # الإزالة التشغيلي (يُبقي الصف والتدقيق)، والحذف النهائي إداري خارج الـAPI.
+    'carrier_members': {
+        'activate': 'تفعيل عضوية شركة نقل',
+        'deactivate': 'تعطيل عضوية شركة نقل',
+    },
 }
 
 ALL_RESOURCES = list(RESOURCES.keys())
+
+# أفعال مخصّصة لا تُولَّد لها صلاحية رغم انتسابها لـ`ACTIONS`:
+# `carrier_members:delete` غير مسنود عمداً — الإزالة التشغيلية هي `deactivate`،
+# والحذف النهائي مسار إداري خارج الـAPI (M8-B.2).
+PERMISSION_EXCLUSIONS = {
+    'carrier_members': {'delete'},
+}
 
 
 # الأدوار بخرائط الصلاحيات والنطاق الافتراضي لكل مستوى إداري
@@ -134,12 +283,21 @@ ROLES = [
             'port_health': ['view'],
             'ports': ['view'],
             'notifications': ['view'],
+            'flights': ['view', 'add', 'edit', 'delete', 'export'],
             'settings': ['view'],
-            'ihr_event': ['view', 'export'],
+            'ihr_event': ['view', 'export', 'assess', 'approve'],
             'ihr_risk': ['view'],
             'ihr_spar': ['view'],
-            'who_logs': ['view'],
+            # إشراف ومراقبة تقارير WHO/IHR فقط: بلا `test` أو `sync`
+            # (فصل المهام: التشغيل التقني لمسؤول التكامل مع WHO).
+            'who_integration': ['view', 'export'],
+            'who_logs': ['view', 'export'],
+            'who_diseases': ['view', 'export'],
+            'who_mappings': ['view', 'export'],
             'vaccination': ['view', 'export'],
+            'hr_dashboard': ['view', 'export'],
+            'hr_employee': ['view', 'export'],
+            'hr_payroll': ['view', 'export'],
         },
     },
     {
@@ -175,6 +333,8 @@ ROLES = [
             'food': ['view', 'add', 'edit', 'export'],
             'laboratory': ['view', 'add', 'edit', 'export'],
             'port_health': ['view', 'add', 'edit', 'export'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'ports': ['view', 'export'],
             'screening': ['view', 'export'],
             'travelers': ['view'],
@@ -217,6 +377,8 @@ ROLES = [
             'food': ['view', 'add', 'edit', 'export'],
             'laboratory': ['view', 'add', 'edit', 'export'],
             'port_health': ['view', 'add', 'edit', 'export'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'ports': ['view', 'export'],
             'screening': ['view', 'export'],
             'surveillance': ['view', 'export'],
@@ -264,6 +426,8 @@ ROLES = [
             'laboratory': ['view', 'edit'],
             'food': ['view', 'edit'],
             'port_health': ['view', 'edit'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'risk': ['view'],
             'notifications': ['view'],
             'organization': ['view'],
@@ -281,6 +445,8 @@ ROLES = [
             'laboratory': ['view', 'edit'],
             'food': ['view', 'edit'],
             'port_health': ['view', 'add', 'edit'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'risk': ['view'],
             'reports': ['view', 'export'],
             'notifications': ['view'],
@@ -352,6 +518,8 @@ ROLES = [
         'default_scope': ScopeType.STATION,
         'resources': {
             'port_health': ['view', 'add', 'edit'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'food': ['view', 'add', 'edit'],
             'travelers': ['view'],
             'reports': ['view'],
@@ -366,6 +534,8 @@ ROLES = [
         'default_scope': ScopeType.STATION,
         'resources': {
             'port_health': ['view', 'add', 'edit'],
+            'pre_arrivals': ['view', 'add', 'edit'],
+            'clearance_decisions': ['view', 'add'],
             'screening': ['view', 'add', 'edit'],
             'surveillance': ['view', 'add', 'edit'],
             'travelers': ['view'],
@@ -374,7 +544,167 @@ ROLES = [
             'risk': ['view', 'add'],
             'reports': ['view'],
             'notifications': ['view'],
+            'flights': ['view'],
             'vaccination': ['view', 'add', 'verify'],
+            'borders_health': [
+                'view', 'add', 'edit', 'register_traveler', 'health_screen',
+                'vehicle_inspect', 'cargo_inspect', 'sample_create', 'sample_send',
+                'certificate_issue', 'report_view', 'dashboard_view',
+            ],
+        },
+    },
+    # -----------------------------------------------------------------------
+    # نظام صحة المعابر البرية — أدوار مستوى المعبر (النطاق = نقطة دخول)
+    #
+    # مطابقة مواصفات النظام (03_Border_Health_Command.md) بأكواد المستودع:
+    #   ENVIRONMENTAL_HEALTH_INSPECTOR ← ENV_INSPECTOR  (يُعاد استخدامه بدل
+    #       دور مكرر بنفس الاسم والصلاحيات — انظر تعريفه أدناه)
+    #   SYSTEM_ADMIN                  ← BORDER_SYSTEM_ADMIN
+    #   MANAGER                       ← BORDER_STATION_MANAGER
+    #   HEALTH_OFFICER                ← BORDER_HEALTH_OFFICER
+    #   QUARANTINE_MANAGER            ← QUARANTINE_SECTOR_DIRECTOR
+    #   DISEASE_CONTROL               ← EPIDEMIOLOGY_OFFICER
+    #   LAB_TECH / LAB_SPECIALIST     ← LAB_TECHNICIAN
+    #   OFFICER / DATA_ENTRY / CUSTOMS / IMMIGRATION
+    #                                ← BORDER_HEALTH_OFFICER، TRAVELER_REGISTRATION_OFFICER،
+    #                                   CUSTOMS_OFFICER، IMMIGRATION_OFFICER
+    #   QUARANTINE_DOCTOR / FOOD_INSPECTOR / EMERGENCY_OFFICER / BORDER_DIRECTOR
+    #                                ← تُستخدم بنفس أسمائها
+    # -----------------------------------------------------------------------
+    {
+        'code': 'BORDER_SYSTEM_ADMIN',
+        'name': 'Border Health System Administrator',
+        'name_ar': 'مدير نظام صحة المعابر',
+        'description': 'إدارة كاملة لبيانات المعابر البرية: المعابر والمرافق والورديات والكادر',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'export',
+                               'dashboard_view', 'report_view'],
+        },
+    },
+    {
+        'code': 'BORDER_STATION_MANAGER',
+        'name': 'Border Station Manager',
+        'name_ar': 'مدير محطة المعبر',
+        'description': 'إدارة محطة المعبر: الورديات والكادر والمرافق ومتابعة الأداء اليومي',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'export',
+                               'dashboard_view', 'report_view', 'health_screen'],
+        },
+    },
+    {
+        'code': 'BORDER_HEALTH_OFFICER',
+        'name': 'Border Health Officer',
+        'name_ar': 'ضابط الصحة الحدودية',
+        'description': 'فحص المسافرين والمركبات والشحنات وقرارات الإفراج عند المعبر',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'register_traveler',
+                               'health_screen', 'vehicle_inspect', 'cargo_inspect',
+                               'sample_create', 'dashboard_view'],
+        },
+    },
+    {
+        'code': 'QUARANTINE_DOCTOR',
+        'name': 'Quarantine Doctor',
+        'name_ar': 'طبيب الحجر',
+        'description': 'التقييم الطبي للمسافرين وإدارة حالات الحجر والعزل وقرارات الإفراج',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'health_screen', 'case_create',
+                               'quarantine_manage', 'isolation_manage',
+                               'contact_trace', 'dashboard_view'],
+        },
+    },
+    {
+        'code': 'TRAVELER_REGISTRATION_OFFICER',
+        'name': 'Traveler Registration Officer',
+        'name_ar': 'موظف تسجيل المسافرين',
+        'description': 'تسجيل بيانات المسافرين وإقرارات الصحة عند المعبر',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'register_traveler'],
+        },
+    },
+    {
+        'code': 'EPIDEMIOLOGY_OFFICER',
+        'name': 'Epidemiology Officer',
+        'name_ar': 'ضابط الترصد',
+        'description': 'ترصد الحالات وتتبع المخالطين وتحليل اتجاهات الأمراض على مستوى القطاع',
+        'default_scope': ScopeType.SECTOR,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'case_create', 'contact_trace',
+                               'quarantine_manage', 'report_view', 'export',
+                               'dashboard_view'],
+        },
+    },
+    {
+        'code': 'EMERGENCY_OFFICER',
+        'name': 'Emergency Officer',
+        'name_ar': 'ضابط الطوارئ',
+        'description': 'إدارة الطوارئ والحوادث الصحية على مستوى القطاع والقومي',
+        'default_scope': ScopeType.SECTOR,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'emergency_manage',
+                               'sample_create', 'sample_send', 'dashboard_view',
+                               'report_view', 'export'],
+        },
+    },
+    {
+        'code': 'CUSTOMS_OFFICER',
+        'name': 'Customs Officer',
+        'name_ar': 'ضابط الجمارك',
+        'description': 'قراءة بيانات تفتيش الشحنات والمركبات للربط مع إجراءات الجمارك',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'cargo_inspect', 'vehicle_inspect'],
+        },
+    },
+    {
+        'code': 'IMMIGRATION_OFFICER',
+        'name': 'Immigration Officer',
+        'name_ar': 'ضابط الهجرة',
+        'description': 'قراءة سجلات حركة المسافرين وقرارات الإفراج للربط مع الهجرة',
+        'default_scope': ScopeType.PORT,
+        'resources': {
+            'borders_health': ['view', 'register_traveler', 'health_screen'],
+        },
+    },
+    {
+        'code': 'BORDER_DIRECTOR',
+        'name': 'Border Health Director',
+        'name_ar': 'مدير صحة المعابر',
+        'description': 'إدارة صحة المعابر على مستوى المعبر والقطاع: الأداء والقرارات والتقارير',
+        'default_scope': ScopeType.SECTOR,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'export', 'dashboard_view',
+                               'report_view', 'health_screen', 'certificate_issue',
+                               'emergency_manage'],
+        },
+    },
+    {
+        'code': 'QUARANTINE_SECTOR_DIRECTOR',
+        'name': 'Quarantine Sector Director',
+        'name_ar': 'مدير قطاع الحجر الصحي',
+        'description': 'إدارة قطاع الحجر الصحي ومتابعة المعابر والعزل والتدقيق',
+        'default_scope': ScopeType.SECTOR,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'export', 'dashboard_view',
+                               'report_view', 'quarantine_manage', 'isolation_manage',
+                               'contact_trace', 'emergency_manage'],
+        },
+    },
+    {
+        'code': 'NATIONAL_QUARANTINE_DIRECTOR',
+        'name': 'National Quarantine Director',
+        'name_ar': 'المدير الوطني للحجر الصحي',
+        'description': 'الإشراف الوطني على صحة المعابر: السياسات والمقارنة القومية والتفعيل',
+        'default_scope': ScopeType.GLOBAL,
+        'resources': {
+            'borders_health': ['view', 'add', 'edit', 'delete', 'export', 'dashboard_view',
+                               'report_view', 'quarantine_manage', 'isolation_manage',
+                               'emergency_manage', 'certificate_issue'],
         },
     },
     {
@@ -446,6 +776,8 @@ ROLES = [
             'reports': ['view'],
             'travelers': ['view'],
             'notifications': ['view'],
+            'borders_health': ['view', 'add', 'edit', 'cargo_inspect',
+                               'sample_create', 'report_view'],
         },
     },
     {
@@ -461,6 +793,8 @@ ROLES = [
             'risk': ['view'],
             'reports': ['view', 'add'],
             'notifications': ['view'],
+            'borders_health': ['view', 'add', 'edit', 'cargo_inspect',
+                               'health_screen', 'report_view'],
         },
     },
     {
@@ -522,6 +856,8 @@ ROLES = [
             'laboratory': ['view', 'add', 'edit'],
             'reports': ['view'],
             'notifications': ['view'],
+            'borders_health': ['view', 'add', 'edit', 'sample_create',
+                               'sample_send', 'report_view'],
         },
     },
     {
@@ -805,10 +1141,25 @@ ROLES = [
             'roles': ['view'],
             'settings': ['view', 'edit'],
             'reports': ['view', 'export'],
-            'organization': ['view'],
+            'organization': ['view', 'add', 'edit', 'delete'],
             'notifications': ['view'],
-            'who_integration': ['view', 'test'],
-            'who_logs': ['view'],
+            # إشراف تقني على تكامل WHO: مراقبة + تشغيل الاختبارات + تصدير.
+            # بلا `edit`/`sync` (التشغيل والمزامنة لمسؤول التكامل مع WHO)،
+            # وبلا أي صلاحيات `ihr_*` الوظيفية (تلك لنقطة الاتصال الوطنية).
+            'who_integration': ['view', 'test', 'export'],
+            'who_logs': ['view', 'export'],
+            # قراءة خريطة الأمراض وICD-11 وتصديرها: الدور يشرف على التكاملات
+            # دون أن يعدّل البيانات الصحية، فـ«view» بلا edit/sync.
+            'who_diseases': ['view', 'export'],
+            'who_mappings': ['view', 'export'],
+            'integration': ['view', 'add', 'edit', 'delete', 'test', 'sync', 'verify', 'export'],
+            'api_endpoint': ['view', 'add', 'edit', 'delete', 'verify', 'export'],
+            'integration_health': ['view', 'run_check'],
+            'webhook_subscription': ['view', 'add', 'edit', 'delete'],
+            'webhook_delivery': ['view', 'retry'],
+            'audit_log': ['view', 'export'],
+            'data_scope': ['view', 'add', 'edit', 'delete'],
+            'credential': ['view', 'add', 'edit', 'delete', 'rotate'],
         },
     },
     {
@@ -829,6 +1180,10 @@ ROLES = [
             'who_diseases': ['view'],
             'who_mappings': ['view', 'review', 'approve', 'reject', 'export'],
             'notifications': ['view'],
+            'integration': ['view'],
+            'integration_health': ['view'],
+            'audit_log': ['view'],
+            'organization': ['view'],
         },
     },
     {
@@ -847,6 +1202,50 @@ ROLES = [
             'it': ['view'],
             'reports': ['view'],
             'notifications': ['view'],
+            'integration': ['view', 'edit', 'test', 'sync', 'verify'],
+            'api_endpoint': ['view', 'edit', 'verify'],
+            'integration_health': ['view', 'run_check'],
+            'webhook_subscription': ['view', 'add', 'edit'],
+            'webhook_delivery': ['view', 'retry'],
+            'audit_log': ['view'],
+            'data_scope': ['view'],
+            'credential': ['view', 'rotate'],
+            'organization': ['view'],
+        },
+    },
+    {
+        'code': 'CARRIER',
+        'name': 'Carrier Representative',
+        'name_ar': 'ممثل شركة نقل',
+        'description': 'دخول بوابة شركات النقل: إدارة رحلات شركته فقط، والاطلاع على الإشعارات الصحية وإقرارات الاطلاع. الرفع الآلي للكشوف عبر قناة التكامل بمفتاح API، لا عبر هذه الصلاحيات.',
+        'default_scope': ScopeType.GLOBAL,
+        'resources': {
+            # CRUD على الرحلات مقصود لممثّل الناقل: خدمة البوابة تتطلب
+            # إنشاء رحلة وتحديث حالتها ورفع كشف المسافرين وحذفها.
+            # التقييد إلى شركة الناقل نفسه ليس من هذه الصلاحيات، بل من
+            # `FlightViewSet`: `get_queryset` يقصر النتائج على
+            # `get_portal_carrier(user)`، و`perform_create` يثبّت `carrier`،
+            # و`_guard_company` يمنع التعديل على رحلة شركة أخرى.
+            # ممنوع `export` حتى لا تُسحب البيانات خارج المنصة.
+            'flights': ['view', 'add', 'edit', 'delete'],
+        },
+    },
+    {
+        # M8-B.2: مدير شركة نقل — يدير *أعضاء* شركته فقط.
+        # لا `flights:*`: الوصول التشغيلي للرحلات يأتي من دور `CARRIER`/العضوية،
+        # وفصل الدورين هو ما يمنع اختلاط «إدارة PEOPLE» بـ«إدارة DATA».
+        # لا `users:*`/`roles:*`/`permissions:*`/`role_assignments:*` إطلاقاً:
+        # `ADMIN_RESOURCES` تجعل أي دور يلمسها دوراً إدارياً، وهذا الدور ليس
+        # إدارياً — فلا يستطيع منح دور لنفسه ولا لغيره
+        # (`check_grant_capability` يشترط حمل الدور نفسه + نطاق الفاعل).
+        # لا `delete`: الإزالة التشغيلية = `deactivate`، والحذف النهائي إداري.
+        'code': 'CARRIER_ADMIN',
+        'name': 'Carrier Administrator',
+        'name_ar': 'مدير شركة نقل',
+        'description': 'يدير أعضاء شركة النقل المعيّنة في نطاقه فقط: إنشاء العضوية وتعطيلها وتفعيلها وضبط الممثل الرئيسي. لا يوزّع الأدوار ولا يعدّل الحسابات ولا يدير الرحلات، ولا يُمنح نطاق GLOBAL.',
+        'default_scope': ScopeType.COMPANY,
+        'resources': {
+            'carrier_members': ['view', 'add', 'edit', 'activate', 'deactivate'],
         },
     },
     {
@@ -864,6 +1263,12 @@ ROLES = [
             'emergency': ['view'],
             'reports': ['view', 'export'],
             'notifications': ['view'],
+            # قراءة الرحلات للتنسيق القومي مع المنافذ والبلدان.
+            'flights': ['view'],
+            'integration': ['view'],
+            'integration_health': ['view'],
+            'audit_log': ['view'],
+            'webhook_delivery': ['view'],
         },
     },
     {
@@ -879,6 +1284,8 @@ ROLES = [
             'risk': ['view', 'add'],
             'reports': ['view'],
             'notifications': ['view'],
+            # قراءة الرحلات للتواصل والتنسيق عبر المنافذ.
+            'flights': ['view'],
         },
     },
     {
@@ -895,6 +1302,8 @@ ROLES = [
             'risk': ['view', 'add'],
             'reports': ['view'],
             'notifications': ['view'],
+            # وصول اللقاء والإحوال عبر منفذ الدخول.
+            'flights': ['view'],
         },
     },
     {
@@ -923,6 +1332,102 @@ ROLES = [
             'notifications': ['view'],
         },
     },
+    {
+        'code': 'HR_MANAGER',
+        'name': 'National HR Manager',
+        'name_ar': 'مدير الموارد البشرية القومي',
+        'description': 'الإدارة الكاملة لملفات الموظفين والبيانات التأسيسية والنقل والحضور والإجازات والتدريب والتقييم والوثائق ومسير الرواتب على المستوى القومي. بلا صلاحيات الاعتماد أو الصرف (فصل المهام): الاعتماد والصرف لدور HR_APPROVER.',
+        'default_scope': ScopeType.GLOBAL,
+        'resources': {
+            'hr_employee': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_establishment': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_posting': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_attendance': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_leave': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_training': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_performance': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_payroll': ['view', 'add', 'edit', 'delete', 'export', 'run'],
+            'hr_document': ['view', 'add', 'edit', 'delete', 'export'],
+            'hr_dashboard': ['view', 'export'],
+            'users': ['view'],
+            'organization': ['view', 'export'],
+            'reports': ['view', 'export'],
+            'notifications': ['view'],
+        },
+    },
+    {
+        'code': 'HR_SPECIALIST',
+        'name': 'HR Specialist',
+        'name_ar': 'أخصائي موارد بشرية',
+        'description': 'يدخل بيانات الموظفين والنقل والحضور والإجازات والتدريب والوثائق داخل نطاق إداري واحد (قطاع أو إدارة). بلا حذف وبلا اعتماد.',
+        'default_scope': ScopeType.DEPARTMENT,
+        'resources': {
+            'hr_employee': ['view', 'add', 'edit', 'export'],
+            'hr_establishment': ['view', 'add', 'edit', 'export'],
+            'hr_posting': ['view', 'add', 'edit', 'export'],
+            'hr_attendance': ['view', 'add', 'edit', 'export'],
+            'hr_leave': ['view', 'add', 'edit', 'export'],
+            'hr_training': ['view', 'add', 'edit', 'export'],
+            'hr_performance': ['view', 'add', 'edit', 'export'],
+            'hr_document': ['view', 'add', 'edit', 'export'],
+            'hr_dashboard': ['view'],
+            'reports': ['view'],
+        },
+    },
+    {
+        'code': 'SHIPPING_COMPANY',
+        'name': 'Shipping Company Representative',
+        'name_ar': 'ممثل شركة ملاحة',
+        'description': 'ممثل شركة ملاحية — يدير سفن الشركة ووكلاءها، ويقدم الإخطارات المسبقة، ويدير زيارات السفن.',
+        'default_scope': ScopeType.COMPANY,
+        'resources': {
+            'shipping_companies': ['view', 'edit'],
+            'shipping_agents': ['view', 'add', 'edit'],
+            'pre_arrivals': ['view', 'add', 'edit', 'delete'],
+            'clearance_decisions': ['view'],
+            'vessel_company_relationships': ['view', 'add', 'edit'],
+            'vessels': ['view', 'add', 'edit'],
+            'vessel_visits': ['view', 'add', 'edit'],
+            'shipping_audit_logs': ['view'],
+            'port_health': ['view'],
+            'ports': ['view'],
+        },
+    },
+    {
+        'code': 'SHIPPING_AGENT',
+        'name': 'Shipping Agent',
+        'name_ar': 'وكيل ملاحي',
+        'description': 'وكيل ملاحي معتمد — يمثل شركة ملاحية في ميناء محدد، يقدم الإخطارات ويدير إجراءات السفينة.',
+        'default_scope': ScopeType.COMPANY,
+        'resources': {
+            'shipping_agents': ['view', 'edit'],
+            'pre_arrivals': ['view', 'add'],
+            'clearance_decisions': ['view'],
+            'vessels': ['view'],
+            'vessel_visits': ['view', 'add', 'edit'],
+            'port_health': ['view'],
+            'ports': ['view'],
+        },
+    },
+    {
+        'code': 'HR_APPROVER',
+        'name': 'HR Approver',
+        'name_ar': 'معتمد الموارد البشرية',
+        'description': 'اعتماد الطلبات والمسيرات فقط: النقل والإجازات والحضور والملف الوظيفي والبيانات التأسيسية، واعتماد مسير الرواتب وصرفه. لا يُمنح صلاحيات الإدخال أو التعديل، لفصل مُنشئ الطلب عن المعتمد.',
+        'default_scope': ScopeType.GLOBAL,
+        'resources': {
+            'hr_employee': ['view', 'approve'],
+            'hr_establishment': ['view', 'approve'],
+            'hr_posting': ['view', 'approve', 'reject'],
+            'hr_attendance': ['view', 'approve'],
+            'hr_leave': ['view', 'approve', 'reject'],
+            'hr_training': ['view', 'approve'],
+            'hr_performance': ['view', 'approve'],
+            'hr_payroll': ['view', 'approve', 'pay'],
+            'hr_document': ['view', 'approve'],
+            'hr_dashboard': ['view', 'export'],
+        },
+    },
 ]
 
 
@@ -944,6 +1449,11 @@ class Command(BaseCommand):
         updated_perms = 0
         for resource, resource_ar in RESOURCES.items():
             actions = {**ACTIONS, **EXTRA_ACTIONS.get(resource, {})}
+            actions = {
+                action: label
+                for action, label in actions.items()
+                if action not in PERMISSION_EXCLUSIONS.get(resource, set())
+            }
             for action, action_ar in actions.items():
                 code = f'{resource}:{action}'
                 _, created = Permission.objects.update_or_create(
@@ -994,9 +1504,15 @@ class Command(BaseCommand):
                 if created:
                     created_assignments += 1
 
-        total_perms = sum(
-            len({**ACTIONS, **EXTRA_ACTIONS.get(res, {})}) for res in RESOURCES
-        )
+        total_perms = 0
+        for res in RESOURCES:
+            actions = {**ACTIONS, **EXTRA_ACTIONS.get(res, {})}
+            actions = {
+                action: label
+                for action, label in actions.items()
+                if action not in PERMISSION_EXCLUSIONS.get(res, set())
+            }
+            total_perms += len(actions)
         self.stdout.write(
             self.style.SUCCESS(
                 f'تم البذر بنجاح: {total_perms} صلاحية '

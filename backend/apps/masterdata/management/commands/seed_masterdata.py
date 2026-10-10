@@ -64,45 +64,61 @@ class Command(BaseCommand):
         states['RED_SEA_AIR'] = ensure_state('MD_RED_SEA_AIR', 'ولاية البحر الأحمر', 'AIR', 8)
         # المعابر البرية الحدودية لقطاع البحر الأحمر (أوسيف، قباتيت)
         states['RED_SEA_LAND'] = ensure_state('MD_RED_SEA_LAND', 'ولاية البحر الأحمر', 'LAND', 9)
+        # المعابر الغربية مع تشاد (أشكيت، اللفة) — لم تكن موجودة رغم ورودها
+        # في مواصفات مركز قيادة المعابر البرية.
+        states['N_DARFUR'] = ensure_state('MD_N_DARFUR', 'ولاية شمال دارفور', 'LAND', 10)
 
         # ============ منافذ الدخول ============
         entry_points = {}
 
-        def ensure_entry(code, name, kind, state_code, location='', order=1, org_sector_code=None, address=None, phone='', email=''):
-            obj, was = get_or(name, code, EntryPoint, {
-                'code': code, 'name_ar': name, 'name_en': '', 'kind': kind,
+        def ensure_entry(code, name, kind, state_code, location='', order=1, org_sector_code=None, address=None, phone='', email='', coord=None, name_en=''):
+            defaults = {
+                'code': code, 'name_ar': name, 'name_en': name_en, 'kind': kind,
                 'state': states[state_code], 'location': location, 'order': order,
                 'address': address if address is not None else location,
                 'phone': phone, 'email': email,
                 'sector': org_sectors.get(org_sector_code),
-            })
+            }
+            # إحداثيات WGS84 لواجهة الخريطة العامة (GeoJSON: [lon, lat]).
+            # تُكتب فقط عند تمرير coord حتى لا تُمسح إحداثيات قائمة.
+            if coord:
+                defaults['location_geo'] = {'type': 'Point', 'coordinates': [float(coord[0]), float(coord[1])]}
+            obj, was = get_or(name, code, EntryPoint, defaults)
             entry_points[code] = obj
             created['entry_points'] += int(was)
             return obj
 
         # — البحري: ميناء بورتسودان + منشآته
-        ep_port_sudan = ensure_entry('EP_PORT_SUDAN', 'ميناء بورتسودان', 'SEAPORT', 'RED_SEA', 'بورتسودان', 1, 'RED_SEA')
-        entry_points['SUAKIN'] = ensure_entry('EP_SUAKIN', 'ميناء الأمير عثمان دقنة – سواكن', 'SEAPORT', 'RED_SEA', 'سواكن', 2, 'RED_SEA')
-        entry_points['MARSABASHAIR'] = ensure_entry('EP_MARSABASHAIR', 'ميناء مرسى بشاير', 'SEAPORT', 'RED_SEA', 'مرسى بشاير', 4, 'RED_SEA')
-        entry_points['ELKHAIR'] = ensure_entry('EP_ELKHAIR', 'ميناء الخير', 'SEAPORT', 'RED_SEA', 'ميناء الخير', 5, 'RED_SEA')
-        entry_points['ZUBEIR'] = ensure_entry('EP_ZUBEIR', 'ميناء الزبير محمد صالح', 'SEAPORT', 'RED_SEA', 'بورتسودان', 6, 'RED_SEA')
+        ep_port_sudan = ensure_entry('EP_PORT_SUDAN', 'ميناء بورتسودان', 'SEAPORT', 'RED_SEA', 'بورتسودان', 1, 'RED_SEA', coord=(37.2164, 19.6158))
+        entry_points['SUAKIN'] = ensure_entry('EP_SUAKIN', 'ميناء الأمير عثمان دقنة – سواكن', 'SEAPORT', 'RED_SEA', 'سواكن', 2, 'RED_SEA', coord=(37.3324, 19.1056))
+        entry_points['MARSABASHAIR'] = ensure_entry('EP_MARSABASHAIR', 'ميناء مرسى بشاير', 'SEAPORT', 'RED_SEA', 'مرسى بشاير', 4, 'RED_SEA', coord=(37.2000, 19.3300))
+        entry_points['ELKHAIR'] = ensure_entry('EP_ELKHAIR', 'ميناء الخير', 'SEAPORT', 'RED_SEA', 'ميناء الخير', 5, 'RED_SEA', coord=(37.2410, 19.5470))
+        entry_points['ZUBEIR'] = ensure_entry('EP_ZUBEIR', 'ميناء الزبير محمد صالح', 'SEAPORT', 'RED_SEA', 'بورتسودان', 6, 'RED_SEA', coord=(37.2400, 19.5000))
 
         # — البري
-        entry_points['ARGIN'] = ensure_entry('EP_ARGIN', 'معبر أرقين', 'LAND_PORT', 'NORTHERN', 'أرقين', 1, 'NORTHERN')
-        entry_points['WADI_HALFA'] = ensure_entry('EP_WADI_HALFA', 'معبر وادي حلفا', 'LAND_PORT', 'NORTHERN', 'وادي حلفا', 2, 'NORTHERN')
-        entry_points['MUTHALLATH'] = ensure_entry('EP_MUTHALLATH', 'معبر المثلث', 'LAND_PORT', 'NORTHERN', 'المثلث', 3, 'NORTHERN')
-        entry_points['ERITREA_BORDER'] = ensure_entry('EP_ERITREA_BORDER', 'المعابر الحدودية مع إريتريا', 'LAND_PORT', 'KASSALA', '', 4, 'KASSALA')
-        entry_points['GALLABAT'] = ensure_entry('EP_GALLABAT', 'معبر القلابات', 'LAND_PORT', 'GEDAREF', 'القلابات', 5, 'GEDAREF')
-        entry_points['SOUTH_SUDAN_BORDER'] = ensure_entry('EP_SOUTH_SUDAN_BORDER', 'المعابر الحدودية مع جنوب السودان', 'LAND_PORT', 'BLUE_NILE', '', 6, 'EL_OBEID')
-        entry_points['ADRE'] = ensure_entry('EP_ADRE', 'معبر أدري', 'LAND_PORT', 'W_DARFUR', 'أدري', 7, 'EL_OBEID')
-        entry_points['TINE'] = ensure_entry('EP_TINE', 'معبر تينة', 'LAND_PORT', 'W_DARFUR', 'تينة', 8, 'EL_OBEID')
-        # معابر قطاع البحر الأحمر البرية (الحدود مع مصر)
-        entry_points['OSEIF'] = ensure_entry('EP_OSEIF', 'معبر أوسيف', 'LAND_PORT', 'RED_SEA_LAND', 'أوسيف', 9, 'RED_SEA')
-        entry_points['GABAIT'] = ensure_entry('EP_GABAIT', 'معبر قباتيت', 'LAND_PORT', 'RED_SEA_LAND', 'قباتيت', 10, 'RED_SEA')
+        entry_points['ARGIN'] = ensure_entry('EP_ARGIN', 'معبر أرقين', 'LAND_PORT', 'NORTHERN', 'أرقين', 1, 'NORTHERN', coord=(31.3130, 21.6330), name_en='Argin')
+        entry_points['WADI_HALFA'] = ensure_entry('EP_WADI_HALFA', 'معبر وادي حلفا', 'LAND_PORT', 'NORTHERN', 'وادي حلفا', 2, 'NORTHERN', coord=(31.3500, 21.8000), name_en='Wadi Halfa')
+        # المثلث: لا يوجد اسم إنجليزي معتمد في المستودع — يُترك فارغاً عمداً.
+        entry_points['MUTHALLATH'] = ensure_entry('EP_MUTHALLATH', 'معبر المثلث', 'LAND_PORT', 'NORTHERN', 'المثلث', 3, 'NORTHERN', coord=(31.0000, 21.9000))
+        # سلة حدودية عامة غير مسمّاة — لا اسم إنجليزي مُختلق.
+        entry_points['ERITREA_BORDER'] = ensure_entry('EP_ERITREA_BORDER', 'المعابر الحدودية مع إريتريا', 'LAND_PORT', 'KASSALA', '', 4, 'KASSALA', coord=(36.6000, 15.3000))
+        entry_points['GALLABAT'] = ensure_entry('EP_GALLABAT', 'معبر القلابات', 'LAND_PORT', 'GEDAREF', 'القلابات', 5, 'GEDAREF', coord=(35.4700, 12.6200), name_en='Gallabat')
+        # سلة حدودية عامة غير مسمّاة — لا اسم إنجليزي مُختلق.
+        entry_points['SOUTH_SUDAN_BORDER'] = ensure_entry('EP_SOUTH_SUDAN_BORDER', 'المعابر الحدودية مع جنوب السودان', 'LAND_PORT', 'BLUE_NILE', '', 6, 'EL_OBEID', coord=(33.9000, 11.4000))
+        entry_points['ADRE'] = ensure_entry('EP_ADRE', 'معبر أدري', 'LAND_PORT', 'W_DARFUR', 'أدري', 7, 'EL_OBEID', coord=(22.2000, 13.4600), name_en='Adre')
+        entry_points['TINE'] = ensure_entry('EP_TINE', 'معبر تينة', 'LAND_PORT', 'W_DARFUR', 'تينة', 8, 'EL_OBEID', coord=(22.8000, 14.0000), name_en='Tine')
+        # معابر قطاع البحر الأحمر البرية — الدولة المجاورة متعارضة في المستودع (مصر هنا، إريتريا في
+        # BORDER_PROFILE)؛ القيمة محفوظة كما هي ولا تُغيَّر صامتة — انظر اختبار سلامة بيانات المعابر.
+        entry_points['OSEIF'] = ensure_entry('EP_OSEIF', 'معبر أوسيف', 'LAND_PORT', 'RED_SEA_LAND', 'أوسيف', 9, 'RED_SEA', coord=(37.2200, 20.2000), name_en='Oseif')
+        entry_points['GABAIT'] = ensure_entry('EP_GABAIT', 'معبر قباتيت', 'LAND_PORT', 'RED_SEA_LAND', 'قباتيت', 10, 'RED_SEA', coord=(37.0000, 21.0000), name_en='Gabait')
+        # المعابر الغربية مع تشاد (كانت ناقصة رغم ورودها في مواصفات
+        # مركز قيادة المعابر البرية — docs/04_Modules/20_Land_Border_Health_System).
+        entry_points['ASHKEIT'] = ensure_entry('EP_ASHKEIT', 'معبر أشكيت', 'LAND_PORT', 'N_DARFUR', 'أشكيت', 11, 'EL_OBEID', coord=(24.3500, 13.6000), name_en='Ashkeit')
+        entry_points['ALAFIA'] = ensure_entry('EP_ALAFIA', 'معبر اللفة', 'LAND_PORT', 'N_DARFUR', 'اللفة', 12, 'EL_OBEID', coord=(24.1000, 13.9000), name_en='Alafia')
 
         # — الجوي
-        entry_points['KRT_AIRPORT'] = ensure_entry('EP_KRT_AIRPORT', 'مطار الخرطوم الدولي', 'AIRPORT', 'KHARTOUM', 'الخرطوم', 1, 'KHARTOUM')
-        entry_points['PZU_AIRPORT'] = ensure_entry('EP_PZU_AIRPORT', 'مطار بورتسودان الدولي', 'AIRPORT', 'RED_SEA_AIR', 'بورتسودان', 2, 'RED_SEA')
+        entry_points['KRT_AIRPORT'] = ensure_entry('EP_KRT_AIRPORT', 'مطار الخرطوم الدولي', 'AIRPORT', 'KHARTOUM', 'الخرطوم', 1, 'KHARTOUM', coord=(32.5532, 15.5895))
+        entry_points['PZU_AIRPORT'] = ensure_entry('EP_PZU_AIRPORT', 'مطار بورتسودان الدولي', 'AIRPORT', 'RED_SEA_AIR', 'بورتسودان', 2, 'RED_SEA', coord=(37.2341, 19.4336))
 
         # ============ المنشآت / الطرفيات ============
         terminals = {}

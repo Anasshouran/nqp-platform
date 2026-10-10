@@ -313,6 +313,50 @@ class Flight(BaseModel):
     def __str__(self):
         return self.flight_number
 
+    def transition_to(self, new_status, user=None, note=''):
+        """انتقال منضبط بين مراحل الرحلة مع تسجيل انتقال الحالة."""
+        allowed = {
+            self.FlightStatus.SCHEDULED: {self.FlightStatus.MANIFEST_UPLOADED, self.FlightStatus.CANCELLED},
+            self.FlightStatus.MANIFEST_UPLOADED: {self.FlightStatus.IN_TRANSIT, self.FlightStatus.CANCELLED},
+            self.FlightStatus.IN_TRANSIT: {self.FlightStatus.ARRIVED, self.FlightStatus.CANCELLED},
+            self.FlightStatus.ARRIVED: set(),
+            self.FlightStatus.CANCELLED: set(),
+        }
+        if new_status == self.status:
+            raise ValueError('الرحلة في هذه الحالة بالفعل')
+        if new_status not in allowed.get(self.status, set()):
+            raise ValueError('انتقال غير مسموح به في هذا المسار')
+        old_status = self.status
+        FlightStatusLog.objects.create(
+            flight=self, from_status=old_status, to_status=new_status, changed_by=user, note=note,
+        )
+        self.status = new_status
+        self.save(update_fields=['status', 'updated_at'])
+        return True
+
+
+class FlightStatusLog(BaseModel):
+    """سجل انتقال حالة الرحلة."""
+
+    flight = models.ForeignKey(
+        Flight, on_delete=models.CASCADE, related_name='status_logs', verbose_name='الرحلة'
+    )
+    from_status = models.CharField(max_length=20, verbose_name='من حالة')
+    to_status = models.CharField(max_length=20, verbose_name='إلى حالة')
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='flight_status_transitions', verbose_name='غيّرها',
+    )
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'سجل انتقال حالة الرحلة'
+        verbose_name_plural = 'سجلات انتقال حالة الرحلة'
+
+    def __str__(self):
+        return f'{self.flight.flight_number} : {self.from_status} → {self.to_status}'
+
 
 class PassengerManifest(BaseModel):
     class ManifestStatus(models.TextChoices):
@@ -391,6 +435,48 @@ class ManifestPassenger(BaseModel):
 
     def __str__(self):
         return f'{self.passport_number} - {self.first_name} {self.last_name}'
+
+
+class CarrierDocument(BaseModel):
+    class DocumentType(models.TextChoices):
+        AIRCRAFT_DOCUMENT = 'AIRCRAFT_DOCUMENT', 'مستند طائرة'
+        FLIGHT_DOCUMENT = 'FLIGHT_DOCUMENT', 'مستند رحلة'
+        MANIFEST_DOCUMENT = 'MANIFEST_DOCUMENT', 'مستند كشف'
+        HEALTH_DOCUMENT = 'HEALTH_DOCUMENT', 'مستند صحي'
+        LICENSE = 'LICENSE', 'رخصة'
+        CERTIFICATE = 'CERTIFICATE', 'شهادة'
+        OTHER = 'OTHER', 'أخرى'
+
+    carrier = models.ForeignKey(
+        Carrier, on_delete=models.CASCADE, related_name='documents', verbose_name='شركة النقل'
+    )
+    flight = models.ForeignKey(
+        Flight, on_delete=models.SET_NULL, null=True, blank=True, related_name='documents', verbose_name='الرحلة'
+    )
+    document_type = models.CharField(
+        max_length=30, choices=DocumentType.choices, default=DocumentType.OTHER, verbose_name='نوع المستند'
+    )
+    title = models.CharField(max_length=255, blank=True, verbose_name='عنوان المستند')
+    file = models.FileField(upload_to='carrier_documents/%Y/%m/', verbose_name='الملف')
+    original_filename = models.CharField(max_length=255, blank=True, verbose_name='اسم الملف الأصلي')
+    mime_type = models.CharField(max_length=100, blank=True, verbose_name='نوع الملف')
+    file_size = models.PositiveBigIntegerField(default=0, verbose_name='حجم الملف')
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='carrier_documents_uploaded', verbose_name='رفعها',
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['carrier', 'document_type']),
+            models.Index(fields=['flight']),
+        ]
+        verbose_name = 'مستند ناقل'
+        verbose_name_plural = 'مستندات الناقلات'
+
+    def __str__(self):
+        return f'{self.carrier.name} - {self.get_document_type_display()}'
 
 
 class HealthNotice(BaseModel):
@@ -485,7 +571,15 @@ class FlightHealthEvent(BaseModel):
     )
     assigned_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت الإسناد')
     quarantine_state = models.CharField(
-        max_length=20, blank=True, verbose_name='حالة الحجر/العزل',
+        max_length=20,
+        blank=True,
+        choices=[
+            ('PENDING', 'معلق'),
+            ('IN_QUARANTINE', 'في الحجر'),
+            ('ISOLATED', 'معزول'),
+            ('RELEASED', 'أُفرج عنه'),
+        ],
+        verbose_name='حالة الحجر/العزل',
         help_text='PENDING / IN_QUARANTINE / ISOLATED / RELEASED',
     )
     health_facility = models.CharField(max_length=200, blank=True, verbose_name='المرفق الصحي المعالج')
@@ -583,3 +677,116 @@ class FlightHealthEventLog(BaseModel):
 
     def __str__(self):
         return f'{self.event} : {self.from_status} → {self.to_status}'
+
+
+class HealthDeclaration(BaseModel):
+    """إقرار صحي مقدَّم من شركة النقل لكل رحلة (MDH/PHE مراقبة).
+
+    تدفق الحالة:
+        DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED
+                                        ↘ REJECTED → SUBMITTED
+    الإقرار واحد لكل رحلة (OneToOne)، وحدّ المعالج لا يُنشئ إقرارًا لرحلة
+    تتبع ناقلاً آخر.
+    """
+
+    class Status(models.TextChoices):
+        DRAFT = 'DRAFT', 'مسودة'
+        SUBMITTED = 'SUBMITTED', 'مُقدَّم'
+        UNDER_REVIEW = 'UNDER_REVIEW', 'قيد المراجعة'
+        APPROVED = 'APPROVED', 'مُعتمد'
+        REJECTED = 'REJECTED', 'مرفوض'
+
+    flight = models.OneToOneField(
+        Flight, on_delete=models.CASCADE, related_name='health_declaration', verbose_name='الرحلة'
+    )
+    carrier = models.ForeignKey(
+        Carrier, on_delete=models.CASCADE, related_name='health_declarations', verbose_name='شركة النقل'
+    )
+    declaration_date = models.DateField(null=True, blank=True, verbose_name='تاريخ الإقرار')
+    officer_name = models.CharField(max_length=150, blank=True, verbose_name='اسم الضابط المسؤول')
+    officer_phone = models.CharField(max_length=30, blank=True, verbose_name='هاتف الضابط')
+    doctor_name = models.CharField(max_length=150, blank=True, verbose_name='اسم الطبيب على المتن')
+    doctor_phone = models.CharField(max_length=30, blank=True, verbose_name='هاتف الطبيب')
+    passenger_count = models.PositiveIntegerField(default=0, verbose_name='عدد الركاب')
+    crew_count = models.PositiveIntegerField(default=0, verbose_name='عدد أفراد الطاقم')
+    ill_passenger_count = models.PositiveIntegerField(default=0, verbose_name='عدد الحالات الممرضة')
+    has_medical_emergency = models.BooleanField(default=False, verbose_name='حالة طوارئ طبية')
+    symptoms_present = models.BooleanField(default=False, verbose_name='أعراض مرصودة على المتن')
+    notes = models.TextField(blank=True, verbose_name='ملاحظات')
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.DRAFT, verbose_name='الحالة'
+    )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='submitted_health_declarations', verbose_name='مُقدِّم الإقرار',
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت التقديم')
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='reviewed_health_declarations', verbose_name='مُراجع الإقرار',
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت المراجعة')
+    review_notes = models.TextField(blank=True, verbose_name='ملاحظات المراجعة')
+    rejection_reason = models.TextField(blank=True, verbose_name='سبب الرفض')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'إقرار صحي'
+        verbose_name_plural = 'الإقرارات الصحية'
+
+    def __str__(self):
+        return f'{self.flight.flight_number} - {self.get_status_display()}'
+
+    def transition_to(self, new_status, user=None, note=''):
+        """انتقال منضبط بين مراحل الإقرار مع تسجيل في سجل التدقيق."""
+        if new_status == self.status:
+            return False
+        allowed = {
+            self.Status.DRAFT: {self.Status.SUBMITTED},
+            self.Status.SUBMITTED: {self.Status.UNDER_REVIEW},
+            self.Status.UNDER_REVIEW: {self.Status.APPROVED, self.Status.REJECTED},
+            self.Status.REJECTED: {self.Status.SUBMITTED},
+            self.Status.APPROVED: set(),
+        }
+        if new_status not in allowed[self.status]:
+            raise ValueError('انتقال غير مسموح به في هذا المسار')
+        now = timezone.now()
+        update_fields = ['status', 'updated_at']
+        if new_status == self.Status.SUBMITTED:
+            self.submitted_at = now
+            self.submitted_by = user
+            update_fields += ['submitted_at', 'submitted_by']
+        if new_status in (self.Status.APPROVED, self.Status.REJECTED):
+            self.reviewed_at = now
+            self.reviewed_by = user
+            update_fields += ['reviewed_at', 'reviewed_by']
+        HealthDeclarationLog.objects.create(
+            declaration=self, from_status=self.status, to_status=new_status,
+            changed_by=user, note=note,
+        )
+        self.status = new_status
+        self.save(update_fields=update_fields)
+        return True
+
+
+class HealthDeclarationLog(BaseModel):
+    """سجل تدقيق مؤسسي لكل انتقال حالة في الإقرار الصحي."""
+
+    declaration = models.ForeignKey(
+        HealthDeclaration, on_delete=models.CASCADE, related_name='status_logs', verbose_name='الإقرار'
+    )
+    from_status = models.CharField(max_length=20, verbose_name='من حالة')
+    to_status = models.CharField(max_length=20, verbose_name='إلى حالة')
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='health_declaration_transitions', verbose_name='غيّرها',
+    )
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'سجل انتقال إقرار صحي'
+        verbose_name_plural = 'سجلات انتقال الإقرارات الصحية'
+
+    def __str__(self):
+        return f'{self.declaration} : {self.from_status} → {self.to_status}'

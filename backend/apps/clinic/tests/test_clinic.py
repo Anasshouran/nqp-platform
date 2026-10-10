@@ -6,7 +6,7 @@ from apps.masterdata.models import EntryPoint as Port
 from apps.screening.models import HealthScreening
 from apps.travelers.models import Country, Traveler
 
-from ..models import ClinicReferral, ClinicVisit, EMRRecord, Medication
+from ..models import ClinicReferral, ClinicVisit, EMRRecord, HealthCertificate, Medication
 
 pytestmark = pytest.mark.django_db
 
@@ -228,3 +228,44 @@ def _ep_state():
     )
     return state
 
+
+
+def test_public_certificate_verify_minimizes_fields(api_client, doctor, port, traveler):
+    from apps.screening.models import HealthScreening
+
+    screening = HealthScreening.objects.create(traveler=traveler, port=port, officer=doctor)
+    visit = ClinicVisit.objects.create(
+        referral=ClinicReferral.objects.create(
+            screening=screening, traveler=traveler, port=port,
+            status=ClinicReferral.ReferralStatus.PENDING,
+        ),
+        traveler=traveler,
+        doctor=doctor,
+        visit_status=ClinicVisit.VisitStatus.CLOSED,
+    )
+    cert = HealthCertificate.objects.create(
+        visit=visit,
+        certificate_number='QC-PRIVTEST0001',
+        certificate_type=HealthCertificate.CertificateType.CLEARANCE,
+        verdict=HealthCertificate.Verdict.ISOLATION,
+        decision='تم تحويل المسافر إلى العزل بسبب ارتفاع الحرارة وضيق التنفس',
+        status=HealthCertificate.Status.ACTIVE,
+        issued_by=doctor,
+    )
+
+    response = api_client.get(f'/api/v1/clinic/public/certificates/{cert.certificate_number}/verify/')
+    assert response.status_code == 200
+    data = response.json()['data']
+    assert data['verified'] is True
+    assert data['certificate_number'] == cert.certificate_number
+    assert data['status'] == 'ACTIVE'
+    # التحقق العام من شهادة العيادة لا يُرجع بيّنات سريرية أو هوية.
+    assert 'verdict' not in data
+    assert 'decision' not in data
+    assert 'traveler_name' not in data
+    assert 'passport_number' not in data
+
+
+def test_public_certificate_verify_not_found(api_client):
+    response = api_client.get('/api/v1/clinic/public/certificates/QC-UNKNOWN/verify/')
+    assert response.status_code == 404

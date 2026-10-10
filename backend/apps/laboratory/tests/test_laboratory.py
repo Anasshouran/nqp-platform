@@ -25,9 +25,50 @@ def api_client():
 
 
 @pytest.fixture
-def auth_client(api_client, db):
+def lab_technician_scope():
+    """نطاق صريح لـ `LAB_TECHNICIAN`.
+
+    `SectorFieldScopedMixin` كان — قبل Phase 3B — يتجاهل غياب النطاق ويُرجع
+    الاستعلام كاملاً (fail-open)، وكانت هذه الاختبارات تنجح بسببه: المستخدم
+    بلا قطاع وبلا دور. بعد الإغلاق الفاشل الآمن صار ذلك حجباً، فصار لزم
+    تفويض صريح.
+
+    النطاق `GLOBAL` مقصود: `create_sample` تُنتج عيّنات بـ `sector=None` عمداً
+    (لأن ترقيمها يبدأ `NQL-<year>-` لا `NQL-<sector>-<year>-`)، ونطاق قطاع
+    لا يرى عيّنات بلا قطاع. الاختبارات فحص تدفّق المختبر لا عزل القطاعات —
+    وعزل القطاعات له `./test_sector_scope.py`.
+    """
+    from apps.accounts.models import Permission, Role, RoleAssignment
+
+    role, _ = Role.objects.get_or_create(
+        code='LAB_TECHNICIAN',
+        defaults={
+            'name': 'Lab Technician', 'name_ar': 'فني مختبر',
+            'default_scope': 'SECTOR',
+        },
+    )
+    for code in (
+        'laboratory:view', 'laboratory:add', 'laboratory:edit', 'laboratory:delete',
+        'laboratory:health_screen',
+    ):
+        action = code.split(':', 1)[1]
+        role.permissions.add(Permission.objects.get_or_create(
+            code=code,
+            defaults={'name': f'laboratory {action}', 'resource': 'laboratory', 'action': action},
+        )[0])
+    return role
+
+
+@pytest.fixture
+def auth_client(api_client, db, lab_technician_scope):
+    from apps.accounts.models import RoleAssignment
+
     user = User.objects.create_user(
         email='lab@nqp.gov.sd', password='StrongPass123!', full_name='فني مختبر'
+    )
+    RoleAssignment.objects.create(
+        user=user, role=lab_technician_scope,
+        scope_type='GLOBAL', scope_id=None, is_active=True, assigned_by=user,
     )
     login = api_client.post(
         '/api/v1/auth/login/',

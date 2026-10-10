@@ -457,17 +457,20 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
         return user
 
     def _enforce_grant(self, role, scope_type, scope_id):
-        """يعتمد تفويض الدور المعملي على موارد الفاعل ونطاقه (H3)."""
+        """تفويض الدور المعملي عبر سياسة المنح المركزية نفسها المستخدمة في accounts.
+
+        `is_staff` لم يعد يتجاوز الفحص: كان أي حساب موظف (حتى بلا أدوار) يمنح
+        نفسه `LAB_DIRECTOR` من `/api/v1/laboratory/users/`. الاستثناء الآن
+        للمشرف فقط، وتبقى قواعد المستوى والنطاق (LAB tiers) كما هي.
+        """
         actor = self._actor(self.context)
-        if not actor or actor.is_superuser or actor.is_staff:
+        if not actor or actor.is_superuser:
             return
-        allowed, _ = check_grant_capability(
+        allowed, reason = check_grant_capability(
             actor, role, scope_type=scope_type, scope_id=scope_id,
         )
         if not allowed:
-            raise serializers.ValidationError(
-                'الدور المطلوب خارج نطاق صلاحياتك (نطاق أو مستوى دور)'
-            )
+            raise serializers.ValidationError(reason or 'الدور المطلوب خارج نطاق صلاحياتك')
 
     def _validate_grant(self, role, sector_id):
         """تحقق قبلي (قبل أي كتابة) من صلاحية منح الدور في النطاق المستهدف."""
@@ -526,11 +529,13 @@ class LabUserWriteSerializer(serializers.ModelSerializer):
                 if sector:
                     instance.sector = sector
                     instance.save(update_fields=['sector'])
-                RoleAssignment.objects.update_or_create(
-                    user=instance,
-                    role=role,
-                    scope_type=scope_type,
-                    scope_id=scope_id,
-                    defaults={'is_active': True, 'start_date': timezone.localdate()},
-                )
+                # `role: null` = سحب دور ⇒ لا صف RoleAssignment (كان ينتج IntegrityError).
+                if role is not None:
+                    RoleAssignment.objects.update_or_create(
+                        user=instance,
+                        role=role,
+                        scope_type=scope_type,
+                        scope_id=scope_id,
+                        defaults={'is_active': True, 'start_date': timezone.localdate()},
+                    )
         return instance

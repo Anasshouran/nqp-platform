@@ -398,53 +398,63 @@ def issue_invoice(invoice, user, due_days=14, request=None):
 
 def confirm_payment(invoice, user, method, amount=None, gateway_ref='',
                     notes='', gateway_status=GatewayStatus.CONFIRMED, request=None):
-    """تحصيل الدفعة وإصدار الإيصال — كامل → PAID، جزئي → PARTIAL."""
-    if invoice.status not in (InvoiceStatus.PENDING_PAYMENT, InvoiceStatus.OVERDUE, InvoiceStatus.ISSUED, InvoiceStatus.PARTIAL):
-        raise FinanceServiceError('لا يمكن التحصيل على هذه الحالة.')
-    try:
-        method_value = PaymentMethod(method)
-    except ValueError:
-        raise FinanceServiceError('طريقة دفع غير صالحة.')
-    bal = balance_due(invoice)
-    amount = amount if amount is not None else bal
-    amount = Decimal(str(amount))
-    if amount <= 0:
-        raise FinanceServiceError('المبلغ يجب أن يكون أكبر من صفر.')
-    if amount > bal:
-        raise FinanceServiceError('المبلغ المدخل يتجاوز المتبقي.')
-    payment = PaymentAttempt.objects.create(
-        invoice=invoice,
-        method=method_value,
-        amount=amount,
-        currency=invoice.currency,
-        gateway_ref=gateway_ref,
-        gateway_status=gateway_status,
-        collected_by=user,
-        collected_at=timezone.now(),
-        notes=notes,
-    )
-    receipt_number = next_receipt_number()
-    receipt = Receipt.objects.create(
-        receipt_number=receipt_number,
-        invoice=invoice,
-        payment=payment,
-        amount=amount,
-        currency=invoice.currency,
-        issued_by=user,
-        issued_at=timezone.now(),
-    )
-    old = invoice.status
-    remaining = balance_due(invoice)
-    if remaining <= 0:
-        invoice.status = InvoiceStatus.PAID
-    else:
-        invoice.status = InvoiceStatus.PARTIAL
-    invoice.receipt_number = receipt_number
-    invoice.save(update_fields=['status', 'receipt_number'])
-    audit(request, AuditAction.MARK_PAID, 'Invoice', resource_id=str(invoice.id),
-          invoice=invoice, field_name='status', old_value=old, new_value=invoice.status,
-          event='confirm_payment', method=method_value, receipt=receipt_number, amount=str(amount))
-    return invoice, payment, receipt
+    """تحصيل الدفعة وإصدار الإيصال — كامل → PAID، جزئي → PARTIAL.
+
+    ذرّية: القفل على الفاتورة + إعادة حساب الرصيد داخل المعاملة يمنعان
+    التحصيل المزدوج المتزامن (كان يُنشئ إيصالين ويصرف رصيداً سالباً).
+    """
+    with transaction.atomic():
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
+        if locked.status not in (InvoiceStatus.PENDING_PAYMENT, InvoiceStatus.OVERDUE, InvoiceStatus.ISSUED, InvoiceStatus.PARTIAL):
+            raise FinanceServiceError('لا يمكن التحصيل على هذه الحالة.')
+        try:
+            method_value = PaymentMethod(method)
+        except ValueError:
+            raise FinanceServiceError('طريقة دفع غير صالحة.')
+        bal = balance_due(locked)
+        amount = amount if amount is not None else bal
+        amount = Decimal(str(amount))
+        if amount <= 0:
+            raise FinanceServiceError('المبلغ يجب أن يكون أكبر من صفر.')
+        if amount > bal:
+            raise FinanceServiceError('المبلغ المدخل يتجاوز المتبقي.')
+        payment = PaymentAttempt.objects.create(
+            invoice=locked,
+            method=method_value,
+            amount=amount,
+            currency=locked.currency,
+            gateway_ref=gateway_ref,
+            gateway_status=gateway_status,
+            collected_by=user,
+            collected_at=timezone.now(),
+            notes=notes,
+        )
+        receipt_number = next_receipt_number()
+        receipt = Receipt.objects.create(
+            receipt_number=receipt_number,
+            invoice=locked,
+            payment=payment,
+            amount=amount,
+            currency=locked.currency,
+            issued_by=user,
+            issued_at=timezone.now(),
+        )
+        old = locked.status
+        remaining = balance_due(locked)
+        if remaining <= 0:
+            locked.status = InvoiceStatus.PAID
+        else:
+            locked.status = InvoiceStatus.PARTIAL
+        locked.receipt_number = receipt_number
+        locked.save(update_fields=['status', 'receipt_number'])
+        # بعض المستدعين يتجاهلون القيمة المُعادة ويصيّرون النسخة التي مرّرت
+        # إليهم، فنزامن الحقول عليها أيضاً بدل تركها قديمة.
+        invoice.status = locked.status
+        invoice.receipt_number = locked.receipt_number
+        audit(request, AuditAction.MARK_PAID, 'Invoice', resource_id=str(locked.id),
+              invoice=locked, field_name='status', old_value=old, new_value=locked.status,
+              event='confirm_payment', method=method_value, receipt=receipt_number, amount=str(amount))
+        return locked, payment, receipt
 
 
 def reconcile_invoice(invoice, user, collector_id=None, request=None):
@@ -493,33 +503,67 @@ def cancel_invoice(invoice, user, reason, approver_id=None, request=None):
 
 
 def refund_invoice(invoice, user, reason, amount=None, approver_id=None, request=None):
-    """استرداد فاتورة مسددة → REFUNDED (يُحتفظ بالسجل والدفع)."""
-    if invoice.status not in (InvoiceStatus.PAID, InvoiceStatus.RECONCILED, InvoiceStatus.OVERDUE, InvoiceStatus.PARTIAL):
-        raise FinanceServiceError('الاسترداد يتطلب فاتورة مدفوعة.')
-    amount = amount if amount is not None else paid_amount(invoice)
-    amount = Decimal(str(amount))
-    approver = None
-    approved_at = None
-    if approver_id:
-        from apps.accounts.models import User
+    """طلب/تنفيذ استرداد فاتورة مسدّدة.
 
-        approver = User.objects.filter(id=approver_id).first()
-        approved_at = timezone.now()
-    refund = Refund.objects.create(
-        invoice=invoice, reason=reason, amount=amount,
-        status=RefundStatus.EXECUTED if approver else RefundStatus.REQUESTED,
-        requested_by=user, requested_at=timezone.now(),
-        approved_by=approver, approved_at=approved_at,
-        executed_at=timezone.now() if approver else None,
-        notes='',
-    )
-    old = invoice.status
-    invoice.status = InvoiceStatus.REFUNDED
-    invoice.save(update_fields=['status'])
-    audit(request, AuditAction.REFUND, 'Invoice', resource_id=str(invoice.id),
-          invoice=invoice, field_name='status', old_value=old, new_value=invoice.status,
-          event='refund_invoice', reason=reason, amount=str(amount), refund=refund.status)
-    return invoice, refund
+    حالة الفاتورة لا تتغيّر إلى REFUNDED إلا عند التنفيذ الفعلي (RefundStatus
+    EXECUTED)؛ الطلب بانتظار الموافقة كان يقلب الحالة فوراً فيخفي الفاتورة
+    المسدّقة عن سجل التحصيل. الاسترداد يتطلب مالاً محصّلاً فعلاً.
+    """
+    with transaction.atomic():
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
+        if locked.status not in (InvoiceStatus.PAID, InvoiceStatus.RECONCILED, InvoiceStatus.PARTIAL):
+            raise FinanceServiceError('الاسترداد يتطلب فاتورة عليها تحصيل فعلي.')
+        collected = paid_amount(locked)
+        if collected <= 0:
+            raise FinanceServiceError('لا يوجد مبلغ محصّل للاسترداد.')
+        amount = Decimal(str(amount)) if amount is not None else collected
+        if amount <= 0:
+            raise FinanceServiceError('مبلغ الاسترداد يجب أن يكون أكبر من صفر.')
+        if amount > collected:
+            raise FinanceServiceError('مبلغ الاسترداد يتجاوز المحصّل فعلياً.')
+        approver = None
+        if approver_id:
+            from apps.accounts.models import User
+
+            approver = User.objects.filter(id=approver_id).first()
+        refund = Refund.objects.create(
+            invoice=locked, reason=reason, amount=amount,
+            status=RefundStatus.EXECUTED if approver else RefundStatus.REQUESTED,
+            requested_by=user, requested_at=timezone.now(),
+            approved_by=approver, approved_at=timezone.now() if approver else None,
+            executed_at=timezone.now() if approver else None,
+            notes='',
+        )
+        old = locked.status
+        if approver:
+            locked.status = InvoiceStatus.REFUNDED
+            locked.save(update_fields=['status'])
+        invoice.status = locked.status
+        audit(request, AuditAction.REFUND, 'Invoice', resource_id=str(locked.id),
+              invoice=locked, field_name='status', old_value=old, new_value=locked.status,
+              event='refund_invoice', reason=reason, amount=str(amount), refund=refund.status)
+        return locked, refund
+
+
+def execute_refund(refund, user, request=None):
+    """اعتماد وتنفيذ طلب استرداد معلّق ثم نقل الفاتورة إلى REFUNDED."""
+    with transaction.atomic():
+        locked = Refund.objects.select_for_update().get(pk=refund.pk)
+        if locked.status != RefundStatus.REQUESTED:
+            raise FinanceServiceError('طلب الاسترداد مُعالَج مسبقاً.')
+        old_invoice = locked.invoice.status
+        locked.status = RefundStatus.EXECUTED
+        locked.approved_by = user
+        locked.approved_at = timezone.now()
+        locked.executed_at = timezone.now()
+        locked.save(update_fields=['status', 'approved_by', 'approved_at', 'executed_at'])
+        locked.invoice.status = InvoiceStatus.REFUNDED
+        locked.invoice.save(update_fields=['status'])
+        audit(request, AuditAction.REFUND, 'Invoice', resource_id=str(locked.invoice_id),
+              invoice=locked.invoice, field_name='status', old_value=old_invoice,
+              new_value=InvoiceStatus.REFUNDED, event='execute_refund', refund=locked.status,
+              amount=str(locked.amount))
+        return locked
 
 
 def mark_overdue(invoice, request=None):

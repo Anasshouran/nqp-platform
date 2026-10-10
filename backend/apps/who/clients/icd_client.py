@@ -1,41 +1,48 @@
-"""عميل تصنيف ICD-11 الرسمي من منصة WHO (بحث/عنصر/مزامنة)."""
+"""عميل تصنيف ICD-11 من منصة WHO — طبقة النقل فقط.
 
+الإعدادات وعقدها في ``apps.who.config``؛ هنا فقط كيفية إرسال الطلب.
+
+نقاط النهاية الرسمية المعتمدة في هذا المشروع (ICD-API v2):
+  Auth : https://icdaccessmanagement.who.int/connect/token
+  API  : https://id.who.int/icd/...  (يتطلب رأس API-Version: v2)
+  OAuth: HTTP Basic + grant_type=client_credentials + scope=icdapi_access
+
+انضباط Phase 0: لا يُطلب أي توكن عند الاستيراد ولا عند البناء، ولا قبل التأكد
+من الصلاحية؛ التهيئة المغلقة تمنع إرسال أي طلب.
+"""
+
+import re
 from typing import Optional
 
 import httpx
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 
-from apps.who.clients.base_client import WHOClientError
+from apps.who.clients.base_client import (
+    WHOClientError,
+    WHOClientValidationError,
+    WHOExternalAccessDisabled,
+)
+from apps.who.config import (
+    SETTING_ENABLED,
+    SETTING_ICD_CLIENT_ID,
+    SETTING_ICD_CLIENT_SECRET,
+    is_valid_language,
+    load_icd_configuration,
+)
 
-# نقاط نهاية WHO ICD-API الرسمية (إصدار 2):
-#   Auth:  https://icdaccessmanagement.who.int/connect/token
-#   API:   https://id.who.int/icd/...  (يُشترط رأس API-Version: v2)
-WHO_API_BASE_URL = 'https://id.who.int'
-WHO_API_TOKEN_URL = 'https://icdaccessmanagement.who.int/connect/token'
-WHO_API_VERSION = 'v2'
-WHO_OAUTH_SCOPE = 'icdapi_access'
-WHO_OAUTH_GRANT = 'client_credentials'
+#: نطاق الحروف العربية (Basic Arabic + Supplement + Extended-A).
+_ARABIC_RANGE = re.compile(r'[؀-ۿݐ-ݿ]')
 
 
-def _setting(name: str, fallback: str = '') -> str:
-    """قراءة إعداد مركزي من Django settings مع الرجوع للافتراضي غير السري.
-
-    الغرض: إبقاء بيانات الاعتماد في البيئة (WHO_ICD_*) ومصدرها settings وحده،
-    دون كسر استيراد أو استخدام هذا العميل خارج Django أو قبل تهيئة الإعدادات.
-    """
-    try:
-        value = getattr(settings, name, fallback)
-    except ImproperlyConfigured:
-        return fallback
-    return value or fallback
+def _is_arabic(text: str) -> bool:
+    """هل يحتوي النص حرفاً عربياً؟ يُقرّر لغة الاستعلام في ``find_by_name``."""
+    return bool(_ARABIC_RANGE.search(text or ''))
 
 
 class ICD11Client:
     """وصول إلى واجهة WHO ICD-11 API.
 
-    الافتراضيات تُقرأ من الإعدادات المركزية (WHO_ICD_BASE_URL / WHO_ICD_TOKEN_URL /
-    WHO_ICD_CLIENT_ID / WHO_ICD_CLIENT_SECRET)، ويمكن تجاوزها صراحةً عند البناء.
+    الافتراضيات تُقرأ من الإعدادات (``WHO_ICD_*``)، ويمكن تجاوزها صراحةً
+    عند البناء. لا يجري أي طلب شبكي إلا عند استدعاء ``search`` أو ``entity``.
     """
 
     def __init__(
@@ -43,35 +50,69 @@ class ICD11Client:
         base_url: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
-        timeout: float = 15.0,
+        timeout: Optional[float] = None,
         token_url: Optional[str] = None,
     ):
-        self.base_url = (base_url or _setting('WHO_ICD_BASE_URL', WHO_API_BASE_URL)).rstrip('/')
-        self.token_url = (token_url or _setting('WHO_ICD_TOKEN_URL', WHO_API_TOKEN_URL)).rstrip('/')
-        self.client_id = client_id or _setting('WHO_ICD_CLIENT_ID')
-        self.client_secret = client_secret or _setting('WHO_ICD_CLIENT_SECRET')
-        self.timeout = timeout
+        self.config = load_icd_configuration(
+            base_url=base_url,
+            client_id=client_id,
+            client_secret=client_secret,
+            timeout=timeout,
+            token_url=token_url,
+        )
+        self.base_url = self.config.base_url
+        self.token_url = self.config.token_url
+        self.client_id = self.config.client_id
+        self.client_secret = self.config.client_secret
+        self.timeout = self.config.timeout
+        self.api_version = self.config.api_version
+        self.scope = self.config.scope
         self._token_cache: Optional[str] = None
 
     @property
     def is_configured(self) -> bool:
         """هل بيانات الاعتماد متوفرة؟ تُفحص قبل أي طلب شبكي."""
-        return bool(self.client_id and self.client_secret)
+        return self.config.has_credentials
+
+    @property
+    def is_enabled(self) -> bool:
+        """هل التكامل مفعّل وصالح للإرسال؟"""
+        return self.config.can_connect
+
+    def _assert_ready(self, language: Optional[str] = None) -> None:
+        """حراسة مشتركة قبل أي طلب: لغة ← اعتماد ← إعدادات سليمة ← تفعيل.
+
+        ترتيب الفحص مقصود: غياب الاعتماد هو العطل الجذري ويُبلَّغ كخطأ عميل
+        عام، أما التعطيل فيُبلَّغ فقط عندما تكون الاعتمادادات سليمة.
+        """
+        if language is not None and not is_valid_language(language):
+            raise WHOClientValidationError(
+                f'لغة غير مدعومة: {language!r} — استخدم رمز لغة قياسي (ar / en مدعومان).'
+            )
+        problems = []
+        if not self.config.has_credentials:
+            problems.append(
+                f'بيانات الاعتماد غير مضبوطة: {SETTING_ICD_CLIENT_ID} / {SETTING_ICD_CLIENT_SECRET}'
+            )
+        problems.extend(self.config.issues)
+        if problems:
+            raise WHOClientError('تعذّر الاتصال بخدمة WHO ICD-11 — ' + '، '.join(problems) + '.')
+        if not self.config.enabled:
+            raise WHOExternalAccessDisabled(
+                f'التكامل مع منظمة الصحة العالمية معطّل عبر {SETTING_ENABLED}=false — '
+                'لم يُرسل أي طلب إلى ICD-11.'
+            )
 
     def _token(self) -> str:
         if self._token_cache:
             return self._token_cache
-        if not self.is_configured:
-            raise WHOClientError(
-                'بيانات اعتماد WHO ICD-11 غير مُهيّأة — يجب ضبط '
-                'WHO_ICD_CLIENT_ID و WHO_ICD_CLIENT_SECRET في البيئة.'
-            )
+        self._assert_ready()
         resp = httpx.post(
             self.token_url,
             auth=(self.client_id, self.client_secret),
             data={
-                'grant_type': WHO_OAUTH_GRANT,
-                'scope': WHO_OAUTH_SCOPE,
+                'grant_type': 'client_credentials',
+                'scope': self.scope,
             },
             timeout=self.timeout,
         )
@@ -85,11 +126,13 @@ class ICD11Client:
         return {
             'Authorization': f'Bearer {self._token()}',
             'Accept': 'application/json',
-            'API-Version': WHO_API_VERSION,
+            'API-Version': self.api_version,
             'Accept-Language': language,
         }
 
     def search(self, query: str, release: str = 'mms', language: str = 'en') -> list:
+        """بحث نصي في التصنيف. ``language`` يقبل ar / en ضمن نطاق ICD-11."""
+        self._assert_ready(language)
         params = {'q': query}
         if release and release != 'mms':
             params['releaseId'] = release
@@ -103,6 +146,8 @@ class ICD11Client:
         return resp.json().get('destinationEntities', [])
 
     def entity(self, entity_id: str, release: str = 'mms', language: str = 'ar') -> dict:
+        """جلب كيان واحد بمعرّفه (URI كامل أو كود مختصر)."""
+        self._assert_ready(language)
         if entity_id.startswith('http://'):
             url = f'https://{entity_id[len("http://"):]}'
         elif entity_id.startswith('https://'):
@@ -122,7 +167,16 @@ class ICD11Client:
         return resp.json()
 
     def find_by_name(self, name_en: str, language: str = 'ar') -> Optional[dict]:
-        results = self.search(name_en, language=language)
+        """بحث بالاسم ثم جلب أفضل نتيجة. يفشل بهدوء إن لم يوجد تطابق.
+
+        ``language`` هي لغة **العرض** لا لغة الاستعلام. الاستعلام يُرسل
+        بلغة الاسم نفسه: مفهرس ICD-11 لكل لغة مستقل، فبحثٌ عن ``"Cholera"``
+        في الفهرس العربي يُرجع اللقاحات غير المترجمة
+        (``Cholera, live attenuated vaccines``) بينما يُرجع الفهرس
+        الإنجليزي مفهوم المرض نفسه. خلط اللغتين يُنتج ربطاً خاطئاً صامتاً.
+        """
+        query_language = 'ar' if _is_arabic(name_en) else 'en'
+        results = self.search(name_en, language=query_language)
         if not results:
             return None
         first = results[0]
@@ -130,3 +184,6 @@ class ICD11Client:
             return self.entity(first.get('id', ''), language=language)
         except httpx.HTTPError:
             return {'code': first.get('id', ''), 'klass': name_en}
+
+    def __repr__(self) -> str:  # pragma: no cover - حماية من التسرّب في السجلات
+        return f'<ICD11Client base_url={self.base_url} client_id_set={bool(self.client_id)}>'

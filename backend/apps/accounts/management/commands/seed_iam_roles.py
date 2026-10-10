@@ -16,6 +16,9 @@ ALL_RESOURCES = [
     'food', 'it', 'laboratory', 'notifications', 'organization', 'port_health',
     'ports', 'quality', 'reports', 'risk', 'roles', 'screening', 'surveillance',
     'settings', 'travelers', 'users', 'vector',
+    'hr_attendance', 'hr_dashboard', 'hr_document', 'hr_employee',
+    'hr_establishment', 'hr_leave', 'hr_payroll', 'hr_performance', 'hr_posting',
+    'hr_training',
 ]
 
 
@@ -109,6 +112,18 @@ ROLES = {
             + perm('organization', 'add', 'edit', 'view', 'export')
             + perm('settings', 'view')
             + perm('reports', 'view')
+            + [
+                'hr_employee:add', 'hr_employee:edit', 'hr_employee:view',
+                'hr_employee:export', 'hr_establishment:add', 'hr_establishment:edit',
+                'hr_establishment:view', 'hr_establishment:export', 'hr_posting:add',
+                'hr_posting:edit', 'hr_posting:view', 'hr_posting:export',
+                'hr_attendance:add', 'hr_attendance:edit', 'hr_attendance:view',
+                'hr_leave:add', 'hr_leave:edit', 'hr_leave:view', 'hr_leave:export',
+                'hr_training:add', 'hr_training:edit', 'hr_training:view',
+                'hr_performance:add', 'hr_performance:edit', 'hr_performance:view',
+                'hr_document:add', 'hr_document:edit', 'hr_document:view',
+                'hr_dashboard:view',
+            ]
         ),
     },
     'STORE_OFFICER': {

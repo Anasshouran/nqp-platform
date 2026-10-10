@@ -2,6 +2,7 @@ import os
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
@@ -10,8 +11,9 @@ from django.utils import timezone
 from datetime import date
 
 from core.filters import ExactFilterBackend
+from core.permissions import AdminOrPermissionAction
 from core.utils.response import success_response
-from core.utils.scoping import SectorScopedMixin
+from core.utils.scoping import SectorScopedMixin, resolve_user_port_ids
 from apps.carriers.models import Flight
 from apps.clinic.models import ClinicReferral
 from apps.notifications.models import NotificationLog
@@ -37,13 +39,76 @@ from .serializers import (
 )
 
 
-class PortViewSet(viewsets.ModelViewSet):
+def _port_of_reference(obj):
+    """منفذ الدخول المرجعي لسجل قيد الإنشاء: منفذ/صالة/نقطة فحص/رحلة."""
+    if isinstance(obj, Port):
+        return obj
+    if isinstance(obj, AirportTerminal):
+        return obj.port
+    if isinstance(obj, ScreeningPoint):
+        return obj.terminal.port
+    if isinstance(obj, Flight):
+        return obj.destination_port
+    return None
+
+
+class AirportHealthRBACMixin(SectorScopedMixin):
+    """يغلق بيانات صحة المطارات خلف صلاحيات دقيقة ونطاق منافذ المستخدم.
+
+    كانت كل الـ viewset هنا ترث `IsAuthenticated` من `DEFAULT_PERMISSION_CLASSES`،
+    فقرأ أي حساب مصادق — بما فيه ممثل شركة نقل (`CARRIER`) — بيانات فحص المسافرين
+    وسجلات صحة الطاقم (درجة الحرارة، تشبع الأكسجين، الأعراض، أرقام جوازات
+    السفر) لكل المطارات على مستوى الدولة.
+
+    السلوك الجديد:
+
+    - `is_staff`/`is_superuser` يمران كما كان، توافقاً مع بقية الموديولات.
+    - غير الموظفين يتطلّبون صلاحية `airport_health:<action>` عبر
+      `AdminOrPermissionAction`، وهي فاشلة آمنة: أي إجراء غير معروف يُرفض.
+    - القوائم والأكائن تُقصَر على منافذ نطاق المستخدم عبر `SectorScopedMixin`:
+      نطاق عام ⇒ بلا تقييد، ولا نطاق قابل للحل ⇒ لا صفوف.
+    - الإنشاء يفرض المنفذ المرجعي داخل النطاق، فلا يُحقن سجل في منفذ آخر.
+    - لا يوجد إجراء `delete` في الدورين `AIRPORT_DIRECTOR` و`AIRPORT_INSPECTOR`،
+      فالحذف يبقى مقصوراً على الهيئة الإدارية.
+    """
+
+    permission_resource = 'airport_health'
+    permission_classes = [AdminOrPermissionAction]
+    #: حقل مرجعي يحدد منفذ السجل (يُتحقق من نطاقه قبل الحفظ).
+    port_reference_field = None
+
+    def perform_create(self, serializer):
+        self._assert_reference_port_in_scope(serializer.validated_data)
+        serializer.save()
+
+    def _assert_reference_port_in_scope(self, data):
+        if not self.port_reference_field:
+            return
+        user = self.request.user
+        if not user or not user.is_authenticated or user.is_superuser:
+            return
+        allowed = resolve_user_port_ids(user)
+        if allowed is None:
+            return
+        reference = data.get(self.port_reference_field)
+        if reference is None:
+            return
+        port = _port_of_reference(reference)
+        if port is None:
+            raise PermissionDenied('تعذّر تحديد منفذ السجل — تُرفض العملية')
+        if str(port.pk) not in {str(pid) for pid in allowed}:
+            raise PermissionDenied('السجل خارج نطاق منافذك — تُرفض العملية')
+
+
+class PortViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = Port.objects.select_related('state').all()
     serializer_class = PortSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['code', 'name_ar', 'name_en']
     filter_fields = ['kind', 'state', 'is_active']
     ordering_fields = ['code', 'name_ar']
+    port_field = 'id'
+    action_permission_map = {'stats': 'view', 'toggle_status': 'edit'}
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
@@ -76,25 +141,28 @@ class PortViewSet(viewsets.ModelViewSet):
         return Response(success_response(PortSerializer(port).data))
 
 
-class TerminalViewSet(viewsets.ModelViewSet):
+class TerminalViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = AirportTerminal.objects.select_related('port').all()
     serializer_class = AirportTerminalSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['name_ar', 'name_en', 'terminal_code']
     filter_fields = ['port', 'is_active']
     ordering_fields = ['terminal_code']
+    port_reference_field = 'port'
 
 
-class ScreeningPointViewSet(viewsets.ModelViewSet):
+class ScreeningPointViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = ScreeningPoint.objects.select_related('terminal', 'terminal__port').all()
     serializer_class = ScreeningPointSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['point_code']
     filter_fields = ['terminal', 'point_type', 'is_active']
     ordering_fields = ['point_code']
+    port_field = 'terminal__port'
+    port_reference_field = 'terminal'
 
 
-class AirportScreeningViewSet(viewsets.ModelViewSet):
+class AirportScreeningViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = AirportScreening.objects.select_related('traveler', 'screening_point', 'screening_point__terminal', 'screened_by').all()
     serializer_class = AirportScreeningSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
@@ -102,12 +170,14 @@ class AirportScreeningViewSet(viewsets.ModelViewSet):
     filter_fields = ['status', 'risk_level', 'screening_type', 'screening_point']
     ordering_fields = ['screened_at']
     port_field = 'screening_point__terminal__port'
+    port_reference_field = 'screening_point'
     http_method_names = ['get', 'post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        screening = serializer.save()
+        self.perform_create(serializer)
+        screening = serializer.instance
         level = self._compute_risk(screening)
         screening.risk_level = level
         screening.save(update_fields=['risk_level'])
@@ -146,7 +216,7 @@ class AirportScreeningViewSet(viewsets.ModelViewSet):
         return 'GREEN'
 
 
-class AircraftInspectionViewSet(viewsets.ModelViewSet):
+class AircraftInspectionViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = AircraftInspection.objects.select_related('flight', 'inspector').all()
     serializer_class = AircraftInspectionSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
@@ -154,45 +224,69 @@ class AircraftInspectionViewSet(viewsets.ModelViewSet):
     filter_fields = ['overall_status', 'certificate_issued']
     ordering_fields = ['inspection_date']
     http_method_names = ['get', 'post']
+    port_field = 'flight__destination_port'
+    port_reference_field = 'flight'
 
 
-class CrewHealthRecordViewSet(viewsets.ModelViewSet):
+class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = CrewHealthRecord.objects.select_related('crew', 'flight').all()
     serializer_class = CrewHealthRecordSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['crew__full_name', 'crew__email', 'flight__flight_number']
     filter_fields = ['health_status', 'flight']
     ordering_fields = ['created_at']
+    port_field = 'flight__destination_port'
+    port_reference_field = 'flight'
 
 
 class AirportDashboardViewSet(viewsets.ViewSet):
     """واجهة لوحة مفتش الحجر الصحي في المطار (تجميع عام لكل المنافذ الجوية)."""
+
     serializer_class = AirportDashboardSerializer
+    permission_resource = 'airport_health'
+    permission_classes = [AdminOrPermissionAction]
 
     AIRPORT = Port.Kind.AIRPORT
 
     def _flights(self):
         return Flight.objects.filter(destination_port__kind=self.AIRPORT)
 
+    def _port_scope(self):
+        """منافذ نطاق المستخدم: None لغير المقيدين (وطني)، [] عند غياب النطاق (فشل آمن)."""
+        user = self.request.user
+        if not user or not user.is_authenticated or user.is_superuser:
+            return None
+        return resolve_user_port_ids(user)
+
+    def _scope_ports(self, queryset, port_ids, path):
+        if port_ids is None:
+            return queryset
+        return queryset.filter(**{f'{path}__in': port_ids})
+
     def list(self, request):
         now = timezone.now()
         today = now.date()
-        flights = self._flights()
+        port_ids = self._port_scope()
+        flights = self._scope_ports(self._flights(), port_ids, 'destination_port')
+        screenings = self._scope_ports(
+            AirportScreening.objects.all(), port_ids, 'screening_point__terminal__port'
+        )
+        referrals = self._scope_ports(ClinicReferral.objects.all(), port_ids, 'port')
 
         flights_today = flights.filter(scheduled_arrival__date=today).count()
         passengers_today = Traveler.objects.filter(created_at__date=today).count()
-        pending_screenings = AirportScreening.objects.filter(
+        pending_screenings = screenings.filter(
             status=AirportScreening.ScreeningStatus.PENDING
         ).count()
-        screened_today = AirportScreening.objects.filter(created_at__date=today).count()
-        referrals_today = ClinicReferral.objects.filter(created_at__date=today).count()
-        red_today = AirportScreening.objects.filter(
+        screened_today = screenings.filter(created_at__date=today).count()
+        referrals_today = referrals.filter(created_at__date=today).count()
+        red_today = screenings.filter(
             risk_level=AirportScreening.RiskLevel.RED, created_at__date=today
         ).count()
-        suspected_today = red_today + ClinicReferral.objects.filter(
+        suspected_today = red_today + referrals.filter(
             status=ClinicReferral.ReferralStatus.PENDING, created_at__date=today
         ).count()
-        completed_today = AirportScreening.objects.filter(
+        completed_today = screenings.filter(
             status='CLEARED', created_at__date=today
         ).count()
 
@@ -223,7 +317,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
 
         suspected = []
         red_screenings = (
-            AirportScreening.objects.filter(risk_level=AirportScreening.RiskLevel.RED, created_at__date=today)
+            screenings.filter(risk_level=AirportScreening.RiskLevel.RED, created_at__date=today)
             .select_related('traveler', 'flight')
             .order_by('-created_at')[:8]
         )
@@ -236,7 +330,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
                 'at': s.created_at.isoformat(),
             })
         pending_referrals = (
-            ClinicReferral.objects.filter(status='PENDING')
+            referrals.filter(status='PENDING')
             .select_related('traveler', 'port')
             .order_by('-created_at')[:8]
         )
@@ -252,7 +346,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
         tasks = []
         for f in flights.filter(scheduled_arrival__date=today, status__in=['ARRIVED', 'IN_TRANSIT'])[:8]:
             tasks.append({'kind': 'flight', 'title': f'فحص رحلة {f.flight_number}', 'priority': 'medium'})
-        for s in AirportScreening.objects.filter(status='PENDING', risk_level='RED').select_related('traveler')[:6]:
+        for s in screenings.filter(status='PENDING', risk_level='RED').select_related('traveler')[:6]:
             tasks.append({'kind': 'refer', 'title': f'مراجعة حالة {s.traveler.full_name}', 'priority': 'high'})
         for f in flights.filter(status='IN_TRANSIT')[:4]:
             tasks.append({'kind': 'declare', 'title': f'مراجعة الإقرار الصحي لرحلة {f.flight_number}', 'priority': 'low'})
@@ -269,7 +363,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
         ]
 
         by_flight = list(
-            AirportScreening.objects.filter(created_at__date=today)
+            screenings.filter(created_at__date=today)
             .values('flight__flight_number')
             .annotate(count=Count('id'))
             .order_by('-count')[:5]

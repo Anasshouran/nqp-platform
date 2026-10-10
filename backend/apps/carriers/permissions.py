@@ -8,6 +8,49 @@ from rest_framework.permissions import BasePermission
 
 from .models import Carrier, CarrierMember
 
+# ---------------------------------------------------------------------------
+# M8-B.2: نطاق إدارة أعضاء شركات النقل
+# ---------------------------------------------------------------------------
+# مصدر النطاق هو تفويض صريح فقط: تعيين دور بنطاق `COMPANY` على مورد
+# `carrier_members`. الاتجاه صارم:
+#
+#     RoleAssignment(COMPANY) ──► CarrierMember management
+#     CarrierMember ──► بوابة الناقل فقط (لا إدارة)
+#
+# لا تُستخدم هنا `resolve_user_company_ids` ولا `resolve_combined_scope_ids`:
+# كليهما يعتمد `has_global_scope` (أي تعيين GLOBAL نشط) فيعامّلان كـ«بلا تقييد»
+# — ودور `CARRIER` مبذور بنطاق GLOBAL، فأيٌّ منهما كان سيمنح نطاقاً مفتوحاً.
+# كما أن `resolve_combined_scope_ids` يوسّع النطاق بعضويات المستخدم، وهو عكس
+# المطلوب هنا: عضوية الشركة B لا تمنح إدارةَ B.
+#
+# `GLOBAL` على `CARRIER_ADMIN` لا يجعله مديراً قومياً: الإسناد العام يُتجاهل
+# عمداً، ويبقى الفاعل على نطاقه الـCOMPANY فقط.
+
+CARRIER_MEMBERS_RESOURCE = 'carrier_members'
+
+
+def manageable_carrier_ids(user):
+    """معرّفات الشركات التي يحق للمستخدم إدارة أعضائها.
+
+    يعيد:
+      * ``None``  → الفاعل على المستوى الوطني/المنصّة (إدارة بلا تقييد).
+        محجوز لـ`is_superuser`/`is_staff` وهي بوابة الوصول الإدارية القائمة
+        (M8-S). لا تُشتق من أي صلاحية منح ولا من `CarrierMember`.
+      * ``set()`` → لا شيء قابل للإدارة (فشل آمن: كل رابط.company يُعطى 404).
+      * ``set``  → معرّفات ``Carrier.id`` من تعيينات `COMPANY` النشطة فقط.
+    """
+    if user is None or not getattr(user, 'is_authenticated', False):
+        return set()
+    if getattr(user, 'is_superuser', False) or getattr(user, 'is_staff', False):
+        return None
+    from apps.accounts.models import ScopeType
+
+    return {
+        scope['scope_id']
+        for scope in user.active_scopes(CARRIER_MEMBERS_RESOURCE)
+        if scope['scope_type'] == ScopeType.COMPANY and scope['scope_id']
+    }
+
 
 class IsCarrierRep(BasePermission):
     """صلاحية ممثل شركة النقل (عضو نشط في شركة نقل)."""

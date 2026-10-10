@@ -10,6 +10,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -639,6 +640,10 @@ class CertificatesViewSet(viewsets.ReadOnlyModelViewSet):
 class PublicCertificateVerifyView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    # التحقق العام يجب ألا يكون بوابة تفحّص جماعي للشهادات؛ نُقيّد السقف
+    # بالعنوان لتمكين التحقق التشغيلي ومنع الاستعلام الآلي عن الأرقام.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_verify'
 
     def get(self, request, number):
         cert = (
@@ -651,15 +656,15 @@ class PublicCertificateVerifyView(APIView):
                 {'status': 'error', 'message': 'رقم الشهادة غير موجود'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        # PUBLIC VERIFICATION ≠ PUBLIC RECORD RETRIEVAL: نعيد الحد الأدنى
+        # اللازم لإثبات الصلاحية والحالة دون كشف اسم الحامل أو الحكم السريري
+        # (عزل/تحويل) أو القرار الحر — تلك تبقى للتشغيل المصرَّح به فقط.
         payload = {
             'certificate_number': cert.certificate_number,
             'certificate_type': cert.certificate_type,
-            'verdict': cert.verdict,
-            'decision': cert.decision,
             'status': cert.status,
             'issued_at': cert.issued_at,
             'clinic_name': cert.visit.clinic.name_ar if cert.visit.clinic else '',
-            'traveler_name': cert.visit.traveler.full_name if cert.visit.traveler else '',
         }
         if cert.status == HealthCertificate.Status.ACTIVE:
             payload['verified'] = True

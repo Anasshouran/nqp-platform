@@ -5,7 +5,16 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
-from core.utils.authorization import check_grant_capability
+from core.utils.authorization import (
+    GRANT,
+    RESTRICT,
+    REVOKE,
+    UNRESTRICT,
+    check_grant_capability,
+    check_permission_mutation,
+    is_admin_permission_code,
+    is_admin_power_role,
+)
 from core.utils.scoping import resolve_user_sectors
 
 from .models import EmployeeProfile, Permission, PermissionAudit, Role, RoleAssignment, ScopeType, User
@@ -53,19 +62,81 @@ class RoleWriteSerializer(serializers.ModelSerializer):
         fields = ['id', 'code', 'name', 'name_ar', 'description', 'default_scope', 'permissions']
         read_only_fields = ['id']
 
+    @staticmethod
+    def _actor(context):
+        """المستخدم الفاعل من سياق الطلب (مصدر واحد مع بقية مسارات الهوية)."""
+        return UserWriteSerializer._actor(context)
+
+    def _enforce_code_immutable(self, attrs):
+        """`Role.code` هوية الدور التي تعتمد عليها abilities других الوحدات.
+
+        قبل M8-S كان قابلاً للتعديل عبر `PATCH /api/v1/auth/roles/{id}/` لأي
+        موظف، فكسب تلاعبٌ تدرّجاً جناحاً باسم دور إداري. الآن غير قابل
+        للتعديل إلا للمشرف (immutable-after-creation لغيره).
+        """
+        instance = self.instance
+        if instance is None or 'code' not in attrs:
+            return
+        if attrs['code'] == instance.code:
+            return
+        actor = self._actor(self.context)
+        if not actor or not actor.is_superuser:
+            raise serializers.ValidationError({
+                'code': 'رمز الدور (code) غير قابل للتعديل إلا بواسطة المشرف'
+            })
+
+    def _enforce_role_permissions(self, attrs):
+        """حزمة صلاحيات الدور تُبنى من صلاحيات الفاعل فقط، والأدوار الإدارية للمشرف."""
+        instance = self.instance
+        if 'permissions' not in attrs:
+            return
+        new_codes = [p.code for p in attrs['permissions']]
+        old_codes = list(instance.permissions.values_list('code', flat=True)) if instance else []
+        admin_power = (
+            is_admin_power_role(instance)
+            if instance is not None
+            else any(is_admin_permission_code(c) for c in new_codes)
+        )
+        actor = self._actor(self.context)
+        is_super = bool(actor and actor.is_superuser)
+        if admin_power and not is_super:
+            raise serializers.ValidationError({
+                'permissions': 'تعديل صلاحيات دور إداري (users/roles/permissions/role_assignments) مقصور على المشرف'
+            })
+        if not actor or is_super:
+            return
+        # كل كود في الحزمة الناتجة + كل كود يُسحب: لا يُبنى دور إلا مما يملكه الفاعل.
+        touched = sorted(set(new_codes) | (set(old_codes) - set(new_codes)))
+        for code in touched:
+            if not actor.can(code):
+                if is_admin_permission_code(code):
+                    raise serializers.ValidationError({
+                        'permissions': f'لا يمكنك منح صلاحية إدارية لا تحملها: {code}'
+                    })
+                raise serializers.ValidationError({
+                    'permissions': f'لا يمكنك منح صلاحية لا تحملها: {code}'
+                })
+
+    def validate(self, attrs):
+        self._enforce_code_immutable(attrs)
+        self._enforce_role_permissions(attrs)
+        return attrs
+
     def create(self, validated_data):
         permissions = validated_data.pop('permissions', [])
-        role = Role.objects.create(**validated_data)
-        role.permissions.set(permissions)
+        with transaction.atomic():
+            role = Role.objects.create(**validated_data)
+            role.permissions.set(permissions)
         return role
 
     def update(self, instance, validated_data):
         permissions = validated_data.pop('permissions', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if permissions is not None:
-            instance.permissions.set(permissions)
-        instance.save()
+        with transaction.atomic():
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            if permissions is not None:
+                instance.permissions.set(permissions)
+            instance.save()
         return instance
 
 
@@ -134,15 +205,27 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
         else:
             scope_type = attrs.get('scope_type', default_scope)
         attrs['scope_type'] = scope_type
-        scope_id = attrs.get('scope_id')
-        instance = self.instance
-        if scope_type == 'GLOBAL':
+
+        # ---- canonical scope normalisation (must precede every check) -------
+        # A GLOBAL assignment carries no scope by definition. Normalising here —
+        # not after the capability/duplicate checks — guarantees that nothing
+        # downstream ever evaluates a stale client-supplied ``scope_id`` as if
+        # it were a real scope. The project convention is to normalise silently
+        # (the API contract already documents GLOBAL as always scope_id=null).
+        if scope_type == ScopeType.GLOBAL:
+            scope_id = None
             attrs['scope_id'] = None
-        elif not scope_id:
-            raise serializers.ValidationError({'scope_id': 'النطاق المحدد يتطلب معرّفاً'})
         else:
+            scope_id = attrs.get('scope_id')
+            if not scope_id:
+                raise serializers.ValidationError({'scope_id': 'النطاق المحدد يتطلب معرّفاً'})
             self._validate_scope_id(scope_type, scope_id)
-        qs = RoleAssignment.objects.filter(user=user, role=role, scope_type=scope_type, scope_id=scope_id)
+            attrs['scope_id'] = scope_id
+
+        instance = self.instance
+        qs = RoleAssignment.objects.filter(
+            user=user, role=role, scope_type=scope_type, scope_id=scope_id,
+        )
         if instance:
             qs = qs.exclude(pk=instance.pk)
         if qs.exists():
@@ -155,6 +238,7 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
             if target and target.is_staff and not actor.is_staff:
                 raise serializers.ValidationError('لا يمكن تعديل تعيينات حساب موظف إلا بواسطة موظف أو مشرف')
         if actor:
+            # Capability validation only ever sees the normalised scope.
             allowed, reason = check_grant_capability(
                 actor, role, scope_type=scope_type, scope_id=scope_id,
             )
@@ -170,6 +254,7 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
             'POINT': ('masterdata.EntryPoint', 'نقطة الدخول'),
             'PORT': ('masterdata.EntryPoint', 'الميناء'),
             'REGION': ('organization.Sector', 'المنطقة'),
+            'COMPANY': ('carriers.Carrier', 'شركة النقل'),
         }
         model_path, label = mapping.get(scope_type)
         if not model_path:
@@ -309,12 +394,39 @@ class UserWriteSerializer(serializers.ModelSerializer):
         return user
 
     def _enforce_role_grant(self, role, scope_type, scope_id, sector_field='role'):
+        """يحرس منح الدور في مسار كتابة المستخدم بنفس قاعدة `RoleAssignment`.
+
+        `is_staff` راية دخول لوحة الإدارة، وليست راية إدارة الهوية. لذلك لا
+        يجوز تجاوز `check_grant_capability` لمجرد حمل الراية: التجاوز السابق
+        مكّن أي حساب موظف منح نفسه دوراً إدارياً (users/roles/permissions)
+        عبر `PATCH /api/v1/auth/users/{id}/`. الاستثناء الآن للمشرف فقط.
+        """
         actor = self._actor(self.context)
-        if not actor or actor.is_superuser or actor.is_staff:
+        if not actor or actor.is_superuser:
             return
         allowed, reason = check_grant_capability(
             actor, role, scope_type=scope_type, scope_id=scope_id,
         )
+        if not allowed:
+            raise serializers.ValidationError({sector_field: reason})
+
+    def _enforce_role_clear(self, instance, sector_field='role'):
+        """إلغاء دور مستخدم سحبٌ لصلاحية، فيخضع لقاعدة المنح على الدور السابق.
+
+        حقل `role` يقبل `null` صراحةً (نموذج المستخدم في الواجهة يرسل
+        `role: role || null`)، فبلا هذا الحارس يصبح سحب الدور متاحاً لكل
+        من يملك `users:edit` حتى لو لم يكن يحمل الدور المسحوب أصلاً.
+        """
+        actor = self._actor(self.context)
+        if not actor or actor.is_superuser:
+            return
+        current = instance.role
+        # إن لم يكن للحساب دور أصلاً فالإلغاء لا يغيّر أي صلاحية: لا داعي
+        # للحراسة، ورفضه هنا يكسر حفظ المستخدمين بلا دور لأن الواجهة ترسل
+        # `role: null` في كل عملية تعديل.
+        if current is None:
+            return
+        allowed, reason = check_grant_capability(actor, current, scope_type='GLOBAL', scope_id=None)
         if not allowed:
             raise serializers.ValidationError({sector_field: reason})
 
@@ -330,10 +442,36 @@ class UserWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'sector': 'القطاع المحدد غير موجود'})
         return sector
 
+    def _enforce_permission_mutation(self, field, codes, target=None, operation=GRANT):
+        """حارس `extra_permissions` / `blocked_permissions` بسياسة المنح الموحّدة.
+
+        المعنى الفعلي للحقلين:
+        - `extra_permissions` = **منح** ⇒ توسيع سلطة ⇒ يخضع لقواعد A–D كلها.
+        - `blocked_permissions` = **منع** ⇒ لا يوسّع السلطة لكنه تحكّم في
+          الصلاحيات الفعّالة، فزيادته تتطلّب أن يكون الفاعل حاملاً لنفس
+          الصلاحية، وإزالته (استعادة صلاحية محجوبة) تُعامَل كمنح كامل.
+        - `is_staff` لا يُستشار في أي فرع هنا.
+        """
+        if not codes:
+            return
+        actor = self._actor(self.context)
+        allowed, reason = check_permission_mutation(actor, target, codes, operation)
+        if not allowed:
+            raise serializers.ValidationError({field: reason})
+
     @staticmethod
-    def _apply_role(user, role, sector=None):
-        """مرآة كتابة الدور: تحدّث الحقل القديم وأنشئ/فعّل RoleAssignment (GLOBAL + SECTOR عند قطاع)."""
-        _ = user  # اسماً محجوزاً لتوضيح التوقيع
+    def _apply_role(user, role, sector=None, *, policy_checked=False):
+        """مرآة كتابة الدور: تحدّث الحقل القديم وأنشئ/فعّل RoleAssignment (GLOBAL + SECTOR عند قطاع).
+
+        مسار داخلي بحت: لا يُستدعى إلا بعد `_enforce_role_grant`/`_enforce_role_clear`.
+        `policy_checked` إقرار صريح بذلك، فيفشل أي استدعاء مستقبلي بلا فحص
+        بدل أن يتحول إلى باب جانبي لتجاوز سياسة المنح.
+        """
+        if not policy_checked:
+            raise RuntimeError(
+                '_apply_role requires policy_checked=True: role writes must pass '
+                '_enforce_role_grant/_enforce_role_clear first'
+            )
         RoleAssignment.objects.filter(user=user, role=role, scope_type=ScopeType.GLOBAL).update(
             is_active=True, start_date=timezone.localdate()
         )
@@ -378,6 +516,13 @@ class UserWriteSerializer(serializers.ModelSerializer):
             self._enforce_role_grant(role, 'GLOBAL', None)
             if sector:
                 self._enforce_role_grant(role, 'SECTOR', sector.pk, sector_field='sector')
+        # حكم الصلاحيات يسبق أي كتابة: لا يُنشأ حساب حامل صلاحيات غير مخول بها.
+        self._enforce_permission_mutation(
+            'extra_permissions', [p.code for p in extra_permissions], operation=GRANT,
+        )
+        self._enforce_permission_mutation(
+            'blocked_permissions', [p.code for p in blocked_permissions], operation=RESTRICT,
+        )
         user = UserModel(**validated_data)
         if requested_staff and actor and actor.is_superuser:
             user.is_staff = True
@@ -392,7 +537,7 @@ class UserWriteSerializer(serializers.ModelSerializer):
             with transaction.atomic():
                 user.role = role
                 user.save(update_fields=['role'])
-                self._apply_role(user, role, sector)
+                self._apply_role(user, role, sector, policy_checked=True)
         if employee_number:
             self._apply_employee_number(user, employee_number)
         return user
@@ -416,33 +561,65 @@ class UserWriteSerializer(serializers.ModelSerializer):
                 'is_staff': 'لا يمكن تغيير صلاحية الموظف (is_staff) إلا بواسطة المشرف'
             })
         self._clean_optional_identifiers(validated_data)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if sector_id != 'UNSET':
-            instance.sector = self._resolve_sector(sector_id)
-        if password:
-            instance.set_password(password)
-        instance.save()
-        if requested_staff is not None and actor and actor.is_superuser:
-            instance.is_staff = requested_staff
-            instance.save(update_fields=['is_staff'])
-        if extra_permissions is not None:
-            instance.extra_permissions.set(extra_permissions)
-        if blocked_permissions is not None:
-            instance.blocked_permissions.set(blocked_permissions)
-        if employee_number is not None:
-            self._apply_employee_number(instance, employee_number or None)
+        target_sector = self._resolve_sector(sector_id) if sector_id != 'UNSET' else instance.sector
+        # حكم صلاحية تغيير الدور يسبق أي كتابة: في الرفض لا تُحفظ بقية الحقول
+        # جزئياً (PATCH متعدد الحقول كان يترك الاسم/القطاع مكتوبين مع 400).
         if role != 'UNSET':
-            self._enforce_role_grant(role, 'GLOBAL', None)
-            if instance.sector:
-                self._enforce_role_grant(role, 'SECTOR', instance.sector.pk, sector_field='sector')
-            with transaction.atomic():
+            if role is None:
+                self._enforce_role_clear(instance)
+            else:
+                self._enforce_role_grant(role, 'GLOBAL', None)
+                if target_sector:
+                    self._enforce_role_grant(role, 'SECTOR', target_sector.pk, sector_field='sector')
+        # حكم الصلاحيات (M8-S) قبل أي كتابة: الفروق فقط، فالتغيير الشكلي
+        # (إعادة إرسال القائمة نفسها) لا يُرفض، والسحب المسموح يمر كسحب.
+        if extra_permissions is not None:
+            new_extra = {p.code for p in extra_permissions}
+            old_extra = set(instance.extra_permissions.values_list('code', flat=True))
+            self._enforce_permission_mutation(
+                'extra_permissions', new_extra - old_extra, instance, GRANT,
+            )
+            self._enforce_permission_mutation(
+                'extra_permissions', old_extra - new_extra, instance, REVOKE,
+            )
+        if blocked_permissions is not None:
+            new_blocked = {p.code for p in blocked_permissions}
+            old_blocked = set(instance.blocked_permissions.values_list('code', flat=True))
+            self._enforce_permission_mutation(
+                'blocked_permissions', new_blocked - old_blocked, instance, RESTRICT,
+            )
+            self._enforce_permission_mutation(
+                'blocked_permissions', old_blocked - new_blocked, instance, UNRESTRICT,
+            )
+        with transaction.atomic():
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            if sector_id != 'UNSET':
+                instance.sector = target_sector
+            if password:
+                instance.set_password(password)
+            instance.save()
+            if requested_staff is not None and actor and actor.is_superuser:
+                instance.is_staff = requested_staff
+                instance.save(update_fields=['is_staff'])
+            if extra_permissions is not None:
+                instance.extra_permissions.set(extra_permissions)
+            if blocked_permissions is not None:
+                instance.blocked_permissions.set(blocked_permissions)
+            if employee_number is not None:
+                self._apply_employee_number(instance, employee_number or None)
+            if role != 'UNSET':
                 old_role = instance.role
                 instance.role = role
                 instance.save(update_fields=['role'])
-                if old_role and old_role != role:
-                    RoleAssignment.objects.filter(user=instance, role=old_role, is_active=True).update(is_active=False)
-                self._apply_role(instance, role, instance.sector)
+                # الحراس يوقف الدور المطابق فقط (مرآة الحقل القديم) ولا يمس
+                # بقية التعيينات التي قد يديرها مسار role-assignments.
+                if old_role is not None and old_role != role:
+                    RoleAssignment.objects.filter(
+                        user=instance, role=old_role, is_active=True,
+                    ).update(is_active=False)
+                if role is not None:
+                    self._apply_role(instance, role, instance.sector, policy_checked=True)
         return instance
 
 
@@ -574,6 +751,7 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
 
     birth_date = serializers.DateField(required=False, allow_null=True)
     hire_date = serializers.DateField(required=False, allow_null=True)
+    probation_end_date = serializers.DateField(required=False, allow_null=True)
     signature_issue_date = serializers.DateField(required=False, allow_null=True)
     signature_expiry_date = serializers.DateField(required=False, allow_null=True)
 
@@ -582,6 +760,10 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         fields = [
             'employee_number', 'full_name_ar', 'full_name_en', 'gender',
             'birth_date', 'job_title', 'hire_date', 'employment_status',
+            'employment_type', 'degree', 'specialization', 'probation_end_date',
+            'reporting_manager', 'photo',
+            'home_address',
+            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
             'internal_phone', 'office', 'preferred_contact',
             'language', 'theme', 'timezone',
             'notify_email', 'notify_sms', 'notify_in_app',
@@ -594,21 +776,52 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         ]
 
 
+class SelfServiceProfileSerializer(serializers.ModelSerializer):
+    """حقول الملف الوظيفي القابلة للتعديل ذاتياً فقط.
+
+    استبعاد مقصود: `employee_number` و`signature_status` و`certificate`
+    و`hire_date` و`employment_status` تُدار من الإدارة ولا يعدّلها المستخدم بنفسه.
+    كان أي حقل في قاموس `profile` قابلاً للكتابة عبر `setattr` دون قائمة بيضاء.
+    """
+
+    class Meta:
+        model = EmployeeProfile
+        fields = [
+            'full_name_ar', 'full_name_en', 'gender', 'birth_date',
+            'job_title', 'internal_phone', 'office', 'preferred_contact',
+            'home_address',
+            'emergency_contact_name', 'emergency_contact_phone',
+            'emergency_contact_relation',
+            'language', 'theme', 'timezone',
+            'notify_email', 'notify_sms', 'notify_in_app',
+        ]
+        read_only_fields = []
+
+
 class ProfileUpdateSerializer(serializers.Serializer):
     """تحديث ذاتي للملف الشخصي (بيانات الموظف + التفضيلات + وسائل التواصل)."""
 
     phone = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     full_name = serializers.CharField(required=False)
-    profile = EmployeeProfileSerializer(required=False, partial=True)
+    profile = SelfServiceProfileSerializer(required=False, partial=True)
+
+    def validate_phone(self, value):
+        value = (value or '').strip() or None
+        if value is None:
+            return value
+        qs = UserModel.objects.filter(phone=value).exclude(pk=self.instance.pk if self.instance else None)
+        if qs.exists():
+            raise serializers.ValidationError('رقم الجوال مسجل مسبقاً')
+        return value
 
     def update(self, user, validated_data):
         phone = validated_data.get('phone')
         if phone is not None:
-            user.phone = phone or None
+            user.phone = phone
         full_name = validated_data.get('full_name')
         if full_name:
             user.full_name = full_name
-        user.save()
+        user.save(update_fields=['phone', 'full_name'])
         profile_data = validated_data.get('profile')
         if profile_data:
             profile, _ = EmployeeProfile.objects.get_or_create(user=user)

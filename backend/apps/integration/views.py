@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 from xml.sax.saxutils import escape as xml_escape
 
@@ -14,17 +15,128 @@ from core.filters import ExactFilterBackend
 from core.permissions import IsAdmin
 from core.utils.response import success_response
 
-from .models import DeveloperApp, ExternalEntity, IntegrationLog, WebhookEndpoint
-from .serializers import (
-    DeveloperAppSerializer,
-    ExternalEntitySerializer,
-    ImmigrationVerifySerializer,
-    IntegrationLogSerializer,
-    WebhookEndpointSerializer,
+from .models import (
+    ApiEndpoint,
+    AuditLog,
+    DataScope,
+    DeveloperApp,
+    EncryptedCredentialValue,
+    Integration,
+    IntegrationHealth,
+    IntegrationLog,
+    Organization,
+    WebhookDelivery,
+    WebhookEndpoint,
+    WebhookSubscription,
 )
+from .organizations.results import redact_text
+from .serializers import (
+    ApiEndpointSerializer,
+    AuditLogSerializer,
+    DataScopeSerializer,
+    DeveloperAppSerializer,
+    EncryptedCredentialValueSerializer,
+    ImmigrationVerifySerializer,
+    IntegrationHealthSerializer,
+    IntegrationLogSerializer,
+    IntegrationSerializer,
+    OrganizationSerializer,
+    WebhookDeliverySerializer,
+    WebhookEndpointSerializer,
+    WebhookSubscriptionSerializer,
+)
+
+#: اتجاه كل نوع طلب في السجل.
+#:
+#: `_ack` استُخدم مع `request_type` اصطلاحي: اللاحقة `*_SEND` تعني أن
+#: المنصة تُرسل، و`*_RECEIVE` تعني أن النظام الخارجي أرسل. هذا الاستخراج
+#: جديد ولا يُستخدم على البيانات القديمة (اتجاهها يبقى `UNKNOWN`).
+_DIRECTION_BY_VERB = {
+    'RECEIVE': IntegrationLog.Direction.INBOUND,
+    'VERIFY': IntegrationLog.Direction.INBOUND,
+    'SEND': IntegrationLog.Direction.OUTBOUND,
+}
+
+
+def _direction_for(request_type: str) -> str:
+    """يحدّد اتجاه الرسالة من اصطلاح اسم الطلب، وإلا `UNKNOWN`.
+
+    اللاحقة `SEND` و`RECEIVE` تُفحص على آخر جزء بعد `_` حتى لا يُطابَق
+    `RECEIVE` داخل كلمة أطول. أي اسم لا يتبع الاصطلاح يبقى `UNKNOWN`
+    أفضل من تخمين خاطئ.
+    """
+    tail = (request_type or '').rsplit('_', 1)[-1]
+    return _DIRECTION_BY_VERB.get(tail, IntegrationLog.Direction.UNKNOWN)
+
+
+def _redacted_payload(value):
+    """يخزّن الـ payload بعد تنقية الأسرار منه.
+
+    `redact_text` يعمل على نصوص، لذا يُسلسَل الـ payload أولاً ثم تُنقّى
+    القيم النصية داخله وتُعاد بنية JSON. كان الحفظ قبل ذلك يكتب
+    `request.data` خاماً، فأي مفتاح مكرر في جسم الطلب كان يصل إلى قاعدة
+    البيانات دون تنقية رغم أن عقد الإخفاء معرّف في نفس التطبيق.
+
+    التنقية تتم على **مفتاح** الحقل أيضاً (`_is_secret_key`): أنماط
+    `redact_text` تبحث عن `api_key: قيمة` داخل نص، بينما في الـ payload
+    المُفكَّك يكون `api_key` اسم مفتاح والقيمة مجرولة عنه فلا تطابقه.
+    """
+    if value is None:
+        return {}
+    try:
+        decoded = json.loads(json.dumps(value, default=str, ensure_ascii=False))
+    except (TypeError, ValueError):
+        return {'summary': redact_text(value)}
+
+    if isinstance(decoded, dict):
+        return {key: _redacted_value(item, key) for key, item in decoded.items()}
+    if isinstance(decoded, list):
+        return [_redacted_value(item) for item in decoded]
+    return _redacted_value(decoded)
+
+
+#: أسماء المفاتيح التي قيمتها سرّية بحد ذاتها.
+#:
+#: مطابقة التسمية (لا القيمة) مقصودة: `api_key: 'nqp_...'` سر حتى لو لم
+#: يمرّ عبر أنماط `redact_text`، لأن الاسم ينفي ببساطة أن القيمة عامة.
+_SECRET_KEY_NAMES = frozenset({
+    'api_key', 'apikey', 'key',
+    'client_secret', 'client_id',
+    'access_token', 'refresh_token', 'id_token', 'token',
+    'secret', 'password', 'passwd', 'pin',
+    'authorization', 'auth',
+})
+
+REDACTED = '[REDACTED]'
+
+
+def _is_secret_key(key) -> bool:
+    """هل اسم المفتاح يكفي للحكم بأن قيمته سرّ؟"""
+    if not isinstance(key, str):
+        return False
+    return key.strip().lower().replace('-', '_') in _SECRET_KEY_NAMES
+
+
+def _redacted_value(value, key=None):
+    if _is_secret_key(key):
+        return REDACTED if value not in (None, '') else value
+    if isinstance(value, str):
+        return redact_text(value, limit=0)
+    if isinstance(value, dict):
+        return {k: _redacted_value(item, k) for k, item in value.items()}
+    if isinstance(value, list):
+        return [_redacted_value(item) for item in value]
+    return value
 
 
 def _ihr_header(report_type):
+    """ترويسة تقرير IHR.
+
+    قيد مُوثَّق: `report_id` بدقة الثانية، فطلبان في الثانية نفسها يتشاركان
+    المعرّف. وهو مقبول لأن المعرّف يميّز **التقرير** لا الطلب، لكن لا يجوز
+    بناء ربط بين عمليتين على أساسه وحده. له قيمة تسلسل (`IHR-SD-...`
+    في `apps.ihr`) بدل ذلك.
+    """
     now = timezone.now()
     return {
         'report_id': f'IHR-{report_type}-{now:%Y%m%d-%H%M%S}',
@@ -169,19 +281,86 @@ def _to_spar_xml(report):
 
 class IntegrationViewSet(viewsets.ViewSet):
     serializer_class = serializers.Serializer
-    def _log(self, name, request_type, request_payload, response_payload, status_code):
+
+    def _log(
+        self,
+        name,
+        request_type,
+        request_payload,
+        response_payload,
+        status_code,
+        *,
+        status=None,
+        direction=None,
+        error_message='',
+        duration_ms=None,
+        correlation_id='',
+        started_at=None,
+    ):
+        """يسجّل عملية تبادل واحدة بكل حقول المراقبة.
+
+        `status_code` هو رمز HTTP الذي يقابل الاستجابة الفعلية، و`status`
+        هو نتيجة العملية. لا يتطابقان بالضرورة: التبادل الداخلي (IHR مثلاً)
+        نجاح بلا رمز HTTP، والفشل قد يكون برمجياً لا HTTP.
+        """
+        if status is None:
+            if status_code is None:
+                status = IntegrationLog.Status.UNKNOWN
+            elif 200 <= status_code < 400:
+                status = IntegrationLog.Status.SUCCESS
+            else:
+                status = IntegrationLog.Status.FAILED
+
+        completed_at = timezone.now()
+        if started_at is None:
+            started_at = completed_at
+        if duration_ms is None:
+            duration_ms = max(
+                0, int((completed_at - started_at).total_seconds() * 1000)
+            )
+
         return IntegrationLog.objects.create(
             integration_name=name,
             request_type=request_type,
-            request_payload=request_payload,
-            response_payload=response_payload,
+            request_payload=_redacted_payload(request_payload),
+            response_payload=_redacted_payload(response_payload),
             status_code=status_code,
+            direction=direction or _direction_for(request_type),
+            status=status,
+            error_message=redact_text(error_message) if error_message else '',
+            duration_ms=duration_ms,
+            correlation_id=correlation_id or '',
+            completed_at=completed_at,
         )
 
     def _ack(self, name, request_type, request, result=None, code=200):
+        """يستقبل رسالة من نظام خارجي ويجيب بتأكيد.
+
+        `code` هو **رمز الاستجابة المرسَل فعلياً** وليس رمزاً منفصلاً
+        للقراءة في السجل: الكود القديم كان يسجّل `201` ويرد `HTTP 200`،
+        فكان السجل يقول شيئاً لا يقوله الرد.
+        """
         data = result if result is not None else {'accepted': True, 'message': 'تم الاستلام'}
-        self._log(name, request_type, request.data, data, code)
-        return Response(success_response(data), status=status.HTTP_200_OK if code == 200 else status.HTTP_201_CREATED)
+        started_at = timezone.now()
+        # `request.data` يُنشئ QueryDict حتى لطلب GET بلا جسم، فيقرأ
+        # معاملات الاستعلام. الفحص الصريح أوضح من الاعتماد على ذلك.
+        payload = request.data if request.method in ('POST', 'PUT', 'PATCH') else request.query_params
+        # الاتجاه يُشتق من اصطلاح `request_type` لا يُثبَّت على INBOUND:
+        # بعض نقاط `_ack` تمثّل **إرسالاً** من المنصة (`CERTIFICATE_SEND`
+        # و`AGGREGATED_SEND`)، وثبّتها كواردة كانت تسجّل اتجاهاً خاطئاً.
+        self._log(
+            name,
+            request_type,
+            payload,
+            data,
+            code,
+            direction=_direction_for(request_type),
+            started_at=started_at,
+        )
+        return Response(
+            success_response(data),
+            status=status.HTTP_200_OK if code == 200 else status.HTTP_201_CREATED,
+        )
 
     def overview(self, request):
         return Response(success_response({
@@ -240,7 +419,15 @@ class IntegrationViewSet(viewsets.ViewSet):
         data = {'report': report}
         if request.query_params.get('output') == 'xml':
             data['spar_xml'] = _to_spar_xml({'header': header, 'events': events})
-        self._log('WHO', 'IHR_PHEIC', {'output': request.query_params.get('output', 'json')}, data, 200)
+        self._log(
+            'WHO',
+            'IHR_PHEIC',
+            {'output': request.query_params.get('output', 'json')},
+            data,
+            200,
+            direction=IntegrationLog.Direction.OUTBOUND,
+            correlation_id=header['report_id'],
+        )
         return Response(success_response(data))
 
     @action(detail=False, methods=['get'], url_path='ihr/report/weekly')
@@ -263,7 +450,15 @@ class IntegrationViewSet(viewsets.ViewSet):
             },
         }
         data = {'report': report}
-        self._log('WHO', 'IHR_WEEKLY', {'period': report['period']}, data, 200)
+        self._log(
+            'WHO',
+            'IHR_WEEKLY',
+            {'period': report['period']},
+            data,
+            200,
+            direction=IntegrationLog.Direction.OUTBOUND,
+            correlation_id=header['report_id'],
+        )
         return Response(success_response(data))
 
     @action(detail=False, methods=['post'], url_path='ihr/report/submit')
@@ -300,7 +495,15 @@ class IntegrationViewSet(viewsets.ViewSet):
             'submitted_at': timezone.now().isoformat(),
             'receipt': f"{header['report_id']}:SEALED",
         }
-        self._log('WHO', f'IHR_SUBMIT_{report_type}', payload, result, 201)
+        self._log(
+            'WHO',
+            f'IHR_SUBMIT_{report_type}',
+            payload,
+            result,
+            201,
+            direction=IntegrationLog.Direction.OUTBOUND,
+            correlation_id=header['report_id'],
+        )
         return Response(success_response({**payload, **result}), status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'], url_path='immigration/verify')
@@ -317,7 +520,14 @@ class IntegrationViewSet(viewsets.ViewSet):
             'expiry_date': None,
             'visa_status': 'VALID' if traveler else 'NONE',
         }
-        self._log('IMMIGRATION', 'VERIFY', request.data, result, 200)
+        self._log(
+            'IMMIGRATION',
+            'VERIFY',
+            request.data,
+            result,
+            200,
+            direction=IntegrationLog.Direction.INBOUND,
+        )
         return Response(success_response(result))
 
     @action(detail=False, methods=['post'], url_path='labs/request')
@@ -330,7 +540,20 @@ class IntegrationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='labs/status/{sample_id}')
     def labs_status(self, request, sample_id=None):
-        return self._ack('REFERENCE_LAB', 'STATUS', request)
+        # نقطة GET: `request.data` غير متاح لحالة الاستعلام، وتمريره
+        # إلى `_ack` كان سيعطي payload فارغاً بلا معرّف العينة.
+        # الاسم `STATUS_RECEIVE` يتضمّن `RECEIVE` عمداً حتى يُشتق منه
+        # الاتجاه الوارد؛ الاسم القديم `STATUS` كان يُسجَّل `UNKNOWN`.
+        return self._ack(
+            'REFERENCE_LAB',
+            'STATUS_RECEIVE',
+            request,
+            result={
+                'accepted': True,
+                'sample_id': sample_id,
+                'message': 'تم تسجيل طلب الحالة',
+            },
+        )
 
     @action(detail=False, methods=['post'], url_path='surveillance/aggregated')
     def surveillance_aggregated(self, request):
@@ -350,21 +573,27 @@ class IntegrationViewSet(viewsets.ViewSet):
 
 
 class IntegrationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """سجل مراقبة التبادل: قراءة فقط، مع فلاتر состояة والاتجاه.
+
+    `direction` و`status` ها محور المراقبة، لذلك قابلان للتصفية
+    والترتيب؛ و`correlation_id` للربط بين عمليتين.
+    """
+
     queryset = IntegrationLog.objects.all()
     serializer_class = IntegrationLogSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
-    search_fields = ['integration_name', 'request_type']
-    ordering_fields = ['request_timestamp']
-    filter_fields = ['integration_name', 'status_code']
+    search_fields = ['integration_name', 'request_type', 'correlation_id']
+    ordering_fields = ['request_timestamp', 'duration_ms', 'status_code']
+    filter_fields = ['integration_name', 'status_code', 'direction', 'status', 'request_type']
 
 
-class ExternalEntityViewSet(viewsets.ModelViewSet):
-    queryset = ExternalEntity.objects.all()
-    serializer_class = ExternalEntitySerializer
+class OrganizationViewSet(viewsets.ModelViewSet):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
-    search_fields = ['name']
-    ordering_fields = ['name', 'created_at']
-    filter_fields = ['is_active']
+    search_fields = ['name_en', 'name_ar', 'code']
+    ordering_fields = ['name_en', 'created_at']
+    filter_fields = ['org_type', 'status', 'is_active', 'country']
 
 
 class DeveloperAppViewSet(viewsets.ModelViewSet):
@@ -396,3 +625,130 @@ class WebhookEndpointViewSet(viewsets.ModelViewSet):
     search_fields = ['event_type', 'endpoint_url']
     ordering_fields = ['created_at']
     filter_fields = ['app', 'event_type', 'is_active']
+
+
+class ApiEndpointViewSet(viewsets.ModelViewSet):
+    """إدارة كتالوج نقاط API الخارجية."""
+
+    queryset = ApiEndpoint.objects.select_related('organization').all()
+    serializer_class = ApiEndpointSerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['code', 'name_en', 'name_ar', 'organization__name_en']
+    ordering_fields = ['code', 'name_en', 'scope', 'created_at']
+    filter_fields = ['organization', 'protocol', 'scope', 'is_active']
+
+
+class IntegrationViewSetPortal(viewsets.ModelViewSet):
+    """إدارة تكاملات المنظمات — شاشة 'التكاملات'."""
+
+    queryset = Integration.objects.select_related('organization', 'endpoint').all()
+    serializer_class = IntegrationSerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['organization__name_en', 'endpoint__code', 'endpoint__name_en']
+    ordering_fields = ['organization__name_en', 'endpoint__code', 'status', 'created_at']
+    filter_fields = ['organization', 'endpoint', 'environment', 'status', 'is_active']
+
+
+class IntegrationHealthViewSet(viewsets.ReadOnlyModelViewSet):
+    """سجلات صحة التكامل — شاشة 'الاتصال والصحة'.
+
+    القراءة فقط لأن الحقول تُشتق من فحص فعلي، لكن `run_check` يتيح
+    تسجيل نتيجة فحص موثّقة عبر `POST /integration/health/run_check/`.
+    """
+
+    queryset = IntegrationHealth.objects.select_related('integration__organization').all()
+    serializer_class = IntegrationHealthSerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['integration__organization__name_en', 'check_type']
+    ordering_fields = ['checked_at']
+    filter_fields = ['integration', 'passed']
+
+    @action(detail=False, methods=['post'], url_path='run_check')
+    def run_check(self, request):
+        """يسجّل نتيجة فحص اتصال يدوياً كـevidence قابل للتدقيق."""
+        integration_id = request.data.get('integration')
+        if not integration_id:
+            raise ValidationError({'integration': 'هذا الحقل مطلوب.'})
+        try:
+            integration = Integration.objects.select_related('organization', 'endpoint').get(id=integration_id)
+        except (Integration.DoesNotExist, ValueError):
+            raise ValidationError({'integration': 'تكامل غير موجود.'})
+
+        check_type = request.data.get('check_type', 'manual')
+        passed = bool(request.data.get('passed', False))
+        detail = redact_text(request.data.get('detail', ''))
+
+        health = IntegrationHealth.objects.create(
+            integration=integration,
+            check_type=check_type,
+            passed=passed,
+            detail=detail,
+            checked_by=request.user.full_name,
+        )
+        if passed:
+            integration.status = Integration.Status.VERIFIED
+            integration.verified_at = health.checked_at
+            integration.save(update_fields=['status', 'verified_at', 'updated_at'])
+
+        return Response(
+            success_response(IntegrationHealthSerializer(health).data),
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class WebhookSubscriptionViewSet(viewsets.ModelViewSet):
+    """إدارة اشتراكات الويب هوك — شاشة 'Webhooks'."""
+
+    queryset = WebhookSubscription.objects.select_related('organization', 'integration').all()
+    serializer_class = WebhookSubscriptionSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['organization__name_en', 'event_type', 'endpoint_url']
+    ordering_fields = ['created_at', 'failure_count']
+    filter_fields = ['organization', 'integration', 'event_type', 'is_active']
+
+
+class WebhookDeliveryViewSet(viewsets.ReadOnlyModelViewSet):
+    """سجل محاولات توصيل الويب هوك — شاشة 'الأخطاء' / 'المزامنة'."""
+
+    queryset = WebhookDelivery.objects.select_related('subscription').all()
+    serializer_class = WebhookDeliverySerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['subscription__event_type', 'subscription__organization__name_en']
+    ordering_fields = ['fired_at', 'duration_ms']
+    filter_fields = ['subscription', 'status']
+
+
+class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """سجل مراجعة عمليات البوابة — شاشة 'Audit Logs'."""
+
+    queryset = AuditLog.objects.all()
+    serializer_class = AuditLogSerializer
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['user', 'action', 'resource_type', 'resource_id']
+    ordering_fields = ['created_at']
+    filter_fields = ['result', 'resource_type', 'user']
+
+
+class DataScopeViewSet(viewsets.ModelViewSet):
+    """نطاقات تبادل البيانات — شاشة 'خدمات البيانات' / 'الأمن والصلاحيات'."""
+
+    queryset = DataScope.objects.select_related('organization', 'endpoint', 'granted_by').all()
+    serializer_class = DataScopeSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['organization__name_en', 'endpoint__code', 'resource']
+    ordering_fields = ['created_at']
+    filter_fields = ['organization', 'endpoint', 'direction', 'is_active']
+
+
+class EncryptedCredentialValueViewSet(viewsets.ModelViewSet):
+    """إدارة الأسرار المشفرة — شاشة 'بيانات الاعتماد'."""
+
+    queryset = EncryptedCredentialValue.objects.select_related('integration__organization').all()
+    serializer_class = EncryptedCredentialValueSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['integration__organization__name_en', 'key_name']
+    ordering_fields = ['created_at']
+    filter_fields = ['integration', 'key_type']

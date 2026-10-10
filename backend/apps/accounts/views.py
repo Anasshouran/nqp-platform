@@ -15,6 +15,7 @@ from rest_framework_simplejwt.settings import api_settings
 
 from core.filters import ExactFilterBackend
 from core.permissions import AdminOrPermissionAction
+from core.utils.authorization import is_admin_power_role
 from core.utils.response import success_response
 
 from .models import EmployeeProfile, Permission, PermissionAudit, Role, RoleAssignment, User
@@ -263,25 +264,15 @@ class MeViewSet(ViewSet):
         return Response(success_response(UserSerializer(request.user).data))
 
     def update_profile(self, request):
-        user = request.user
-        phone = request.data.get('phone')
-        if phone is not None:
-            user.phone = phone or None
-        full_name = request.data.get('full_name')
-        if full_name:
-            user.full_name = full_name
-        user.save()
-        profile_data = request.data.get('profile')
-        fields = ('full_name_ar', 'full_name_en', 'job_title')
-        top_level = {f: request.data.get(f) for f in fields if request.data.get(f) is not None}
-        if profile_data or top_level:
-            profile, _ = EmployeeProfile.objects.get_or_create(user=user)
-            merged = {**(profile_data or {}), **top_level}
-            for field, value in merged.items():
-                if hasattr(profile, field):
-                    setattr(profile, field, value)
-            profile.save()
-        return Response(success_response(ProfileSerializer(user).data))
+        # عبر المسلسل فقط: كان الكود يمرر قاموس `profile` الخام إلى
+        # hasattr/setattr فيسمح للمستخدم بكتابة أي حقل في EmployeeProfile
+        # (employee_number، signature_status، user، created_at...).
+        serializer = ProfileUpdateSerializer(
+            data=request.data, partial=True, instance=request.user,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(success_response(ProfileSerializer(request.user).data))
 
     def organization(self, request):
         user = request.user
@@ -442,11 +433,17 @@ class MeViewSet(ViewSet):
         return Response(success_response(data))
 
 
-def log_permission_audit(request, user, old_extra, old_blocked, new_extra, new_blocked):
-    """يسجّل تغييرات المنح/الحظر على صلاحيات المستخدم في PermissionAudit."""
+def _audit_request_context(request):
+    """بيانات الطلب التي تُحفظ مع سجل التدقيق (IP ووكيل المستخدم فقط، بلا أسرار)."""
     xff = request.META.get('HTTP_X_FORWARDED_FOR')
     ip = (xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')) or ''
     ua = (request.META.get('HTTP_USER_AGENT') or '')[:255]
+    return ip, ua
+
+
+def log_permission_audit(request, user, old_extra, old_blocked, new_extra, new_blocked):
+    """يسجّل تغييرات المنح/الحظر على صلاحيات المستخدم في PermissionAudit."""
+    ip, ua = _audit_request_context(request)
 
     entries = []
     changes = [
@@ -467,6 +464,47 @@ def log_permission_audit(request, user, old_extra, old_blocked, new_extra, new_b
             )
             for code in codes
         ])
+    if entries:
+        PermissionAudit.objects.bulk_create(entries)
+
+
+def log_role_assignment_audit(request, user, role, action, reason=''):
+    """تدقيق منح/سحب دور على مستوى RBAC (نفس جدول PermissionAudit بلا حقل جديد)."""
+    ip, ua = _audit_request_context(request)
+    PermissionAudit.objects.create(
+        user=user,
+        permission_code=f'role:{role.code}',
+        action=action,
+        granted=action == PermissionAudit.Action.GRANT,
+        reason=reason,
+        ip_address=ip or None,
+        user_agent=ua,
+    )
+
+
+def log_role_permission_audit(request, role, old_codes, new_codes, old_code=None, event='تعديل'):
+    """تدقيق تغيّر حزمة صلاحيات الدور/رمزه. القيد هنا هو الفاعل نفسه (الدور ليس حساباً)."""
+    ip, ua = _audit_request_context(request)
+    actor = request.user
+    entries = []
+    for code in sorted(set(new_codes) - set(old_codes)):
+        entries.append(PermissionAudit(
+            user=actor, permission_code=code, action=PermissionAudit.Action.GRANT,
+            granted=True, reason=f'{event} الدور {role.code}: إضافة {code}',
+            ip_address=ip or None, user_agent=ua,
+        ))
+    for code in sorted(set(old_codes) - set(new_codes)):
+        entries.append(PermissionAudit(
+            user=actor, permission_code=code, action=PermissionAudit.Action.REVOKE,
+            granted=False, reason=f'{event} الدور {role.code}: سحب {code}',
+            ip_address=ip or None, user_agent=ua,
+        ))
+    if old_code and old_code != role.code:
+        entries.append(PermissionAudit(
+            user=actor, permission_code=f'role:{role.code}', action=PermissionAudit.Action.GRANT,
+            granted=True, reason=f'{event} الدور: تغيير الرمز من {old_code} إلى {role.code}',
+            ip_address=ip or None, user_agent=ua,
+        ))
     if entries:
         PermissionAudit.objects.bulk_create(entries)
 
@@ -523,6 +561,11 @@ class UserViewSet(viewsets.ModelViewSet):
             list(user.extra_permissions.values_list('code', flat=True)),
             list(user.blocked_permissions.values_list('code', flat=True)),
         )
+        if user.role is not None:
+            log_role_assignment_audit(
+                request, user, user.role, PermissionAudit.Action.GRANT,
+                'منح الدور عند إنشاء المستخدم',
+            )
         return Response(
             success_response(UserSerializer(user).data),
             status=status.HTTP_201_CREATED,
@@ -535,6 +578,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return protected
         old_extra = list(instance.extra_permissions.values_list('code', flat=True))
         old_blocked = list(instance.blocked_permissions.values_list('code', flat=True))
+        old_role = instance.role
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -544,6 +588,19 @@ class UserViewSet(viewsets.ModelViewSet):
             list(user.extra_permissions.values_list('code', flat=True)),
             list(user.blocked_permissions.values_list('code', flat=True)),
         )
+        # تدقيق تغيّر الدور (مصدر الحقيقة هو RoleAssignment الذي أنشأه المسلسل).
+        new_role = user.role
+        if old_role != new_role:
+            if old_role is not None:
+                log_role_assignment_audit(
+                    request, user, old_role, PermissionAudit.Action.REVOKE,
+                    'سحب الدور عبر PATCH /api/v1/auth/users/',
+                )
+            if new_role is not None:
+                log_role_assignment_audit(
+                    request, user, new_role, PermissionAudit.Action.GRANT,
+                    'منح الدور عبر PATCH /api/v1/auth/users/',
+                )
         return Response(success_response(UserSerializer(user).data))
 
     def destroy(self, request, *args, **kwargs):
@@ -622,6 +679,10 @@ class RoleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         role = serializer.save()
+        log_role_permission_audit(
+            request, role, set(), set(role.permissions.values_list('code', flat=True)),
+            event='إنشاء',
+        )
         return Response(
             success_response(RoleSerializer(role).data),
             status=status.HTTP_201_CREATED,
@@ -629,20 +690,35 @@ class RoleViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        old_codes = set(instance.permissions.values_list('code', flat=True))
+        old_code = instance.code
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         role = serializer.save()
+        log_role_permission_audit(
+            request, role, old_codes, set(role.permissions.values_list('code', flat=True)),
+            old_code=old_code,
+        )
         return Response(success_response(RoleSerializer(role).data))
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        # دور ذو سلطة إدارية لا يُحذف إلا بأمر المشرف: الحذف تغيير في إعداد RBAC.
+        actor = getattr(request, 'user', None)
+        if is_admin_power_role(instance) and not (actor and actor.is_superuser):
+            return Response(
+                {'status': 'error', 'message': 'لا يمكن حذف دور إداري إلا بواسطة المشرف'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
+            old_codes = set(instance.permissions.values_list('code', flat=True))
             self.perform_destroy(instance)
         except ProtectedError:
             return Response(
                 {'status': 'error', 'message': 'لا يمكن حذف هذا الدور لأنه معيّن لمستخدمين'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        log_role_permission_audit(request, instance, old_codes, set(), event='حذف')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -706,6 +782,10 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         assignment = serializer.save()
+        log_role_assignment_audit(
+            request, assignment.user, assignment.role, PermissionAudit.Action.GRANT,
+            f'تعيين دور {assignment.role.code} عبر /api/v1/auth/role-assignments/',
+        )
         return Response(
             success_response(RoleAssignmentSerializer(assignment).data),
             status=status.HTTP_201_CREATED,
@@ -716,9 +796,20 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
         protected = self._protect_assignment(request, instance)
         if protected:
             return protected
+        old_role = instance.role
+        old_active = instance.is_active
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         assignment = serializer.save()
+        if assignment.role != old_role or assignment.is_active != old_active:
+            audit_action = (
+                PermissionAudit.Action.GRANT
+                if assignment.is_active else PermissionAudit.Action.REVOKE
+            )
+            log_role_assignment_audit(
+                request, assignment.user, assignment.role, audit_action,
+                f'تعديل تعيين دور {assignment.role.code} عبر /api/v1/auth/role-assignments/',
+            )
         return Response(success_response(RoleAssignmentSerializer(assignment).data))
 
     def destroy(self, request, *args, **kwargs):
@@ -726,4 +817,10 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
         protected = self._protect_assignment(request, instance)
         if protected:
             return protected
-        return super().destroy(request, *args, **kwargs)
+        user, role = instance.user, instance.role
+        response = super().destroy(request, *args, **kwargs)
+        log_role_assignment_audit(
+            request, user, role, PermissionAudit.Action.REVOKE,
+            f'حذف تعيين دور {role.code} عبر /api/v1/auth/role-assignments/',
+        )
+        return response
