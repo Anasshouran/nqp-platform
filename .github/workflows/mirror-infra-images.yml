@@ -13,6 +13,7 @@ jobs:
   mirror:
     name: Mirror base images to GHCR
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: read
       packages: write
