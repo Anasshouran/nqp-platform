@@ -42,13 +42,12 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'لوحة التحكم',
     subtitle: 'Federal Administration',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     overline: 'الإدارة الاتحادية للحجر الصحي',
     logo: <GovernmentHeader />,
     nav: [
       { label: 'لوحة التحكم', target: '/app', exact: true, icon: <DashboardIcon /> },
       { label: 'لوحة موظف الحجر', target: '/app/port-officer', icon: <HealthAndSafetyIcon /> },
-      { label: 'بوابة شركات الطيران', target: '/app/carrier', icon: <FlightTakeoffIcon /> },
       {
         label: 'القيادة الوطنية',
         icon: <MonitorHeartIcon />,
@@ -71,6 +70,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
           { label: 'الرحلات', target: '/app/carriers' },
           { label: 'نظام صحة المطارات', target: '/app/airport-health' },
           { label: 'صحة الموانئ', target: '/app/port-health' },
+          { label: 'صحة المعابر البرية', target: '/app/borders-health' },
           { label: 'مركز القيادة الصحي', target: '/app/health' },
           { label: 'العيادة', target: '/app/clinic/dashboard' },
           { label: 'التطعيم الدولي', target: '/app/vaccination' },
@@ -98,15 +98,6 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
           { label: 'البلاغات والطوارئ', target: '/app/emergency' },
           { label: 'المؤشرات الوطنية', target: '/app/risk' },
           { label: 'التكاملات الحكومية', target: '/app/integration' },
-          {
-            label: 'التكامل مع منظمة الصحة',
-            children: [
-              { label: 'لوحة WHO', target: '/app/integration/who' },
-              { label: 'أحداث IHR', target: '/app/integration/who/events' },
-              { label: 'مؤشرات SPAR', target: '/app/integration/who/spar' },
-              { label: 'أمراض ICD-11', target: '/app/integration/who/diseases' },
-            ],
-          },
         ],
       },
       {
@@ -158,7 +149,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'القيادة الوطنية',
     subtitle: 'National Leadership',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app', exact: true, icon: <DashboardIcon /> },
       { label: 'لوحة القيادة', target: '/app/national-command', icon: <MonitorHeartIcon /> },
@@ -181,13 +172,29 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
       { label: 'المؤشرات الوطنية', target: '/app/risk', icon: <RiskIcon /> },
       { label: 'التكاملات الحكومية', target: '/app/integration', icon: <IntegrationInstructionsIconSafe /> },
       {
+        label: 'بوابة المنظمات',
+        icon: <IntegrationInstructionsIconSafe />,
+        children: [
+          { label: 'لوحة البوابة', target: '/app/integration/portal' },
+          { label: 'المنظمات', target: '/app/integration/portal/organizations' },
+          { label: 'التكاملات', target: '/app/integration/portal/integrations' },
+          { label: 'كتالوج الـAPI', target: '/app/integration/portal/api-catalog' },
+          { label: 'نطاقات البيانات', target: '/app/integration/portal/data-scopes' },
+          { label: 'بيانات الاعتماد', target: '/app/integration/portal/credentials' },
+          { label: 'الويب هوك', target: '/app/integration/portal/webhooks' },
+          { label: 'الصحة والمراقبة', target: '/app/integration/portal/health' },
+          { label: 'سجلات المراجعة', target: '/app/integration/portal/audit-logs' },
+        ],
+      },
+      {
         label: 'التكامل مع منظمة الصحة',
         icon: <PublicHealthIconSafe />,
         children: [
-          { label: 'لوحة WHO', target: '/app/integration/who' },
-          { label: 'أحداث IHR', target: '/app/integration/who/events' },
-          { label: 'مؤشرات SPAR', target: '/app/integration/who/spar' },
-          { label: 'أمراض ICD-11', target: '/app/integration/who/diseases' },
+          { label: 'لوحة WHO', target: '/app/integration/who', permission: 'who_integration:view' },
+          { label: 'أحداث IHR', target: '/app/integration/who/events', permission: 'ihr_event:view' },
+          { label: 'مؤشرات SPAR', target: '/app/integration/who/spar', permission: 'ihr_spar:view' },
+          { label: 'أمراض ICD-11', target: '/app/integration/who/diseases', permission: 'who_diseases:view' },
+          { label: 'سجلات المزامنة', target: '/app/integration/who/logs', permission: 'who_logs:view' },
         ],
       },
       { label: 'إدارة المستخدمين', target: '/app/users', icon: <SettingsIcon /> },
@@ -211,7 +218,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير اتحادي',
     subtitle: 'Federal Director',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'الرئيسية', target: '/app', exact: true, icon: <HomeIcon /> },
       { label: 'مركز القيادة الصحي', target: '/app/health', icon: <LocalHospitalIcon /> },
@@ -227,7 +234,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مدير نقطة الدخول',
     subtitle: 'Point of Entry Manager',
     brand: 'وزارة الصحة الاتحادية – السودان',
-    color: '#2f6dd0',
+    color: 'info.main',
     nav: [
       { label: 'لوحة الترصد', target: '/app/surveillance', icon: <RiskIcon /> },
       { label: 'الفحص الصحي', target: '/app/screening', icon: <FactCheckIcon /> },
@@ -242,7 +249,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'قيادة قطاع البحر الأحمر',
     subtitle: 'Red Sea Sector Command',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#0c7f6a',
+    color: 'primary.main',
     nav: [
       { label: 'لوحة القطاع', target: '/dashboard/sector/red-sea', icon: <DashboardIcon /> },
       {
@@ -255,7 +262,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
         ],
       },
       {
-        label: 'نقاط الدخول',
+        label: 'المنافذ',
         icon: <AnchorIcon />,
         children: [
           { label: 'المطارات', target: '/dashboard/sector/red-sea/points' },
@@ -286,7 +293,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مديرة الحجر الصحي بالمطار',
     subtitle: 'Airport Health Director',
     brand: 'وزارة الصحة الاتحادية',
-    color: '#2f6dd0',
+    color: 'info.main',
     nav: [
       { label: 'الرئيسية', target: '/app/airport-director#overview', icon: <HomeIcon /> },
       { label: 'التنبيهات', target: '/app/airport-director#alerts', icon: <NotificationsIcon /> },

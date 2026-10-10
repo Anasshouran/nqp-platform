@@ -173,7 +173,7 @@ const BatchesInventoryPage = () => {
               label: 'الرصيد',
               render: (v) => (
                 <Stack spacing={0.5} sx={{ minWidth: 120 }}>
-                  <Typography sx={{ fontWeight: 800, fontSize: 14 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
                     {v.available_quantity} / {v.received_quantity}
                   </Typography>
                   <LinearProgress
@@ -252,7 +252,7 @@ const BatchesInventoryPage = () => {
                 return m ? <StatusChip label={m.label} tone={m.tone} /> : v.type;
               },
             },
-            { key: 'quantity', label: 'الكمية', render: (v) => <Typography sx={{ fontWeight: 800 }}>{v.quantity}</Typography> },
+            { key: 'quantity', label: 'الكمية', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.quantity}</Typography> },
             {
               key: 'created_by_name',
               label: 'بواسطة',

@@ -376,10 +376,11 @@ export interface CertificateVerifyResult {
   reason?: string;
   certificate?: {
     certificate_number: string;
-    traveler_name: string;
-    passport_number: string;
+    /** هوية/مرض غير مطلوبة للتحقق العام — اختيارية للتوافق مع عقود سابقة. */
+    traveler_name?: string;
+    passport_number?: string;
     certificate_type: string;
-    disease: string;
+    disease?: string;
     issued_date: string;
     expiry_date: string | null;
   };
@@ -395,12 +396,14 @@ export interface LabResultTest {
   disease_name: string;
   outcome: string;
   outcome_label: string;
+  /** بيّنات القياس الخام غير مُعادة في التحقق العام — اختيارية للتوافق مع
+   *  عقود سابقة وحقول مختبرات داخلية. */
   result_value?: number | null;
-  result_text: string;
-  unit: string;
-  reference_range: string;
-  is_critical: boolean;
-  approved_at: string | null;
+  result_text?: string;
+  unit?: string;
+  reference_range?: string;
+  is_critical?: boolean;
+  approved_at?: string | null;
 }
 
 export interface LabResultLookupResult {

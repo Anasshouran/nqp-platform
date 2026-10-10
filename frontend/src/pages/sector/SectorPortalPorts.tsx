@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -126,7 +127,7 @@ const SectorPortalPorts = () => {
                           <Chip label={portTypeLabels[port.type] || port.type} size="small" variant="outlined" />
                         </Stack>
                         <Typography variant="h6" sx={{ fontWeight: 700, mt: 2 }}>{port.name_ar}</Typography>
-                        <Typography variant="body2" color="text.secondary">{port.name_en}</Typography>
+                        <Typography variant="body2" color="text.secondary"><En>{port.name_en}</En></Typography>
                         {port.address && <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{port.address}</Typography>}
                         <Typography variant="caption" color="text.secondary" dir="ltr" sx={{ display: 'block', mt: 1.5 }}>{port.code}</Typography>
                       </CardContent>

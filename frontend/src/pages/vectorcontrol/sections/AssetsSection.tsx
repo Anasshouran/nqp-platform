@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -63,7 +64,7 @@ const EquipTable = ({ lk, open, setOpen }: InnerProps) => {
       t.refresh();
       setOpen?.(false);
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ المعدة — تأكد من الرمز');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ المعدة — تأكد من الرمز');
     } finally {
       setSaving(false);
     }
@@ -145,7 +146,7 @@ const TeamTable = ({ lk, open, setOpen }: InnerProps) => {
       lk.reload();
       setOpen?.(false);
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ الفريق');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ الفريق');
     } finally {
       setSaving(false);
     }

@@ -105,7 +105,7 @@ const glass = {
   bg: 'rgba(248, 252, 249, 0.72)',
   bgStrong: 'rgba(255, 255, 255, 0.86)',
   tint: 'rgba(238, 250, 246, 0.6)',
-  blur: 'blur(20px) saturate(1.4)',
+  blur: 'blur(12px) saturate(1.25)',
   border: ink,
   highlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.65)',
 };
@@ -226,11 +226,15 @@ const theme = createTheme({
   typography: {
     fontFamily: '"IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif',
     htmlFontSize: 16,
-    /* Display */
-    h1: { fontWeight: 800, fontSize: 'clamp(2.25rem, 4.5vw, 3.25rem)', lineHeight: 1.15, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 800, fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.2, letterSpacing: '-0.01em' },
-    h3: { fontWeight: 800, fontSize: 'clamp(1.375rem, 2.2vw, 1.875rem)', lineHeight: 1.28 },
-    h4: { fontWeight: 800, fontSize: '1.375rem', lineHeight: 1.32 },
+    /* Display — IBM Plex Sans Arabic ships 100–700 only; 700 is the family max.
+       Hierarchy comes from size + the surface ramp, never from a non-existent 800
+       (which the browser would synthesise as faux-bold, mismatching body metrics).
+       letterSpacing stays 0: Arabic is a joining script and negative tracking
+       collides contextual forms. lineHeight is raised for Arabic vertical extents. */
+    h1: { fontWeight: 700, fontSize: 'clamp(2rem, 4vw, 2.75rem)', lineHeight: 1.35, letterSpacing: 0 },
+    h2: { fontWeight: 700, fontSize: 'clamp(1.625rem, 2.8vw, 2.25rem)', lineHeight: 1.3, letterSpacing: 0 },
+    h3: { fontWeight: 700, fontSize: 'clamp(1.3125rem, 2.1vw, 1.75rem)', lineHeight: 1.32, letterSpacing: 0 },
+    h4: { fontWeight: 700, fontSize: '1.3125rem', lineHeight: 1.35, letterSpacing: 0 },
     h5: { fontWeight: 700, fontSize: '1.125rem', lineHeight: 1.36 },
     h6: { fontWeight: 700, fontSize: '1rem', lineHeight: 1.42 },
     /* Body */
@@ -241,23 +245,32 @@ const theme = createTheme({
     /* Labels */
     button: { fontWeight: 700, fontSize: '0.9375rem', letterSpacing: 0 },
     caption: { fontWeight: 500, fontSize: '0.8125rem', lineHeight: 1.55 },
-    overline: { fontWeight: 700, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: '0.12em' },
+    /* No tracking: Arabic has no lettercase, and letterspacing a joining script
+       breaks the connection rhythm even at small sizes. */
+    overline: { fontWeight: 700, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: 0 },
   },
   shadows,
   components: {
     /* ------- Base ------- */
     MuiCssBaseline: {
       styleOverrides: {
-        html: { colorScheme: 'light' },
-        body: {
-          minHeight: '100vh',
-          color: onSurface,
+        /* The ambient gradient wash lives on the root element, not on a
+           background-attachment:fixed body. A root background is painted onto
+           the canvas and stays put without attachment, which avoids the
+           full-page repaint on every scroll frame that mobile Safari suffers
+           from. Body must therefore stay transparent or it would cover it. */
+        html: {
+          colorScheme: 'light',
           background:
             'radial-gradient(1100px 520px at 88% -8%, rgba(18,165,133,0.09), transparent 60%),' +
             'radial-gradient(900px 480px at -8% 112%, rgba(47,109,208,0.07), transparent 55%),' +
             'radial-gradient(760px 420px at 60% 118%, rgba(140,109,31,0.05), transparent 55%),' +
             surface.default,
-          backgroundAttachment: 'fixed',
+        },
+        body: {
+          minHeight: '100vh',
+          color: onSurface,
+          background: 'transparent',
         },
         'img, svg, video': { display: 'block' },
         /* Numerals stay aligned in tables & stats */
@@ -298,10 +311,12 @@ const theme = createTheme({
       },
     },
     MuiCardContent: {
-      styleOverrides: { root: { padding: 28, '&:last-child': { paddingBottom: 28 } } },
+      styleOverrides: {
+          root: { padding: 'var(--pad-card)', '&:last-child': { paddingBottom: 'var(--pad-card-bottom)' } },
+        },
     },
     MuiCardActions: {
-      styleOverrides: { root: { padding: '0 28px 24px' } },
+      styleOverrides: { root: { padding: '0 var(--pad-card-x) var(--pad-card-actions)' } },
     },
     MuiCardActionArea: {
       styleOverrides: {
@@ -316,9 +331,9 @@ const theme = createTheme({
           position: 'relative',
           textTransform: 'none',
           borderRadius: radius.md,
-          fontWeight: 800,
+          fontWeight: 700,
           padding: '0.625rem 1.5rem',
-          minHeight: 48,
+          minHeight: 'var(--control-min-h)',
           transition: 'transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease',
           '&:hover': { transform: 'translateY(-1px)' },
           '&:active': { transform: 'translateY(0) scale(0.99)' },
@@ -446,7 +461,10 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-notchedOutline': { borderColor: outlineVariant },
         },
-        input: { '&::placeholder': { opacity: 0.75 } },
+        /* Placeholder is real content, not decoration, so it is exempt from the
+           disabled-text allowance and must clear 4.5:1. At opacity 0.75 the ink
+           composited to 3.42:1; onSurfaceVariant at full opacity gives 5.95:1. */
+        input: { '&::placeholder': { color: onSurfaceVariant, opacity: 1 } },
       },
     },
     MuiSelect: {
@@ -519,6 +537,20 @@ const theme = createTheme({
         },
         filled: { backgroundColor: alpha(brand.main, 0.1), color: brand.dark, '&:hover': { backgroundColor: alpha(brand.main, 0.16) } },
         colorPrimary: { backgroundColor: brand.main, color: '#fff' },
+        /* `colorPrimary` also lands on outlined chips, so the outlined variants get an
+           explicit rule: the tag stays light, its ink is the dark brand (7.7:1). */
+        outlinedPrimary: {
+          backgroundColor: 'rgba(255,255,255,0.62)',
+          color: brand.dark,
+          borderColor: alpha(brand.dark, 0.42),
+          '&:hover': { backgroundColor: alpha(brand.main, 0.08) },
+        },
+        outlinedSecondary: {
+          backgroundColor: 'rgba(255,255,255,0.62)',
+          color: gold.dark,
+          borderColor: alpha(gold.dark, 0.42),
+          '&:hover': { backgroundColor: alpha(gold.main, 0.08) },
+        },
         clickable: { '&:hover': { backgroundColor: alpha(brand.main, 0.1) } },
       },
     },
@@ -527,7 +559,7 @@ const theme = createTheme({
     },
     MuiAvatar: {
       styleOverrides: {
-        root: { fontWeight: 800, backgroundColor: brand[200], color: brand[900], '&.Mui-focusVisible': { boxShadow: focusRing } },
+        root: { fontWeight: 700, backgroundColor: brand[200], color: brand[900], '&.Mui-focusVisible': { boxShadow: focusRing } },
       },
     },
     /* ------- Lists / navigation ------- */
@@ -536,7 +568,7 @@ const theme = createTheme({
         root: {
           borderRadius: radius.md,
           margin: '2px 8px',
-          minHeight: 46,
+          minHeight: 'var(--list-min-h)',
           transition: 'background-color 150ms ease, color 150ms ease',
           '&:hover': { backgroundColor: alpha(brand.main, 0.07) },
           '&.Mui-selected': {
@@ -585,7 +617,7 @@ const theme = createTheme({
         root: {
           '& .MuiTableCell-head': {
             backgroundColor: 'rgba(16,40,34,0.04)',
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: '0.75rem',
             letterSpacing: 0.03,
             color: onSurfaceVariant,
@@ -596,8 +628,17 @@ const theme = createTheme({
     },
     MuiTableCell: {
       styleOverrides: {
-        head: { fontWeight: 800, backgroundColor: 'rgba(16,40,34,0.04)', fontSize: '0.8125rem' },
-        root: { borderBottomColor: 'rgba(16,40,34,0.08)', fontSize: '0.875rem', py: '0.9rem' },
+        head: { fontWeight: 700, backgroundColor: 'rgba(16,40,34,0.04)', fontSize: '0.8125rem' },
+        /* Default to tabular figures: passport numbers, ICD-11 codes, fee
+           amounts and counts all sit in these columns, and proportional digits
+           make them jitter as values change. Affects numerals only, so Arabic
+           text in the same cell is unaffected. */
+        root: {
+          borderBottomColor: 'rgba(16,40,34,0.08)',
+          fontSize: '0.875rem',
+          py: 'var(--row-py)',
+          fontVariantNumeric: 'tabular-nums',
+        },
       },
     },
     MuiTableRow: {
@@ -628,9 +669,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 800,
+          fontWeight: 700,
           borderRadius: radius.md,
-          minHeight: 44,
+          minHeight: 'var(--tab-min-h)',
           padding: '6px 18px',
           margin: '2px 4px',
           color: onSurfaceVariant,
@@ -737,7 +778,7 @@ const theme = createTheme({
           borderRadius: radius.sm,
           minWidth: 40,
           height: 40,
-          fontWeight: 800,
+          fontWeight: 700,
           border: '1px solid transparent',
           '&.Mui-selected': {
             bgcolor: brand.main,

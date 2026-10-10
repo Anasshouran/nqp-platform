@@ -262,7 +262,7 @@ const GlobalSearchPalette = () => {
                 sx={{ px: 2.5, pt: 2, pb: 0.5 }}
               >
                 <Box sx={{ color: 'primary.main', display: 'inline-flex' }}>{section.icon}</Box>
-                <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 0.5 }}>
+                <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
                   {section.label}
                 </Typography>
               </Stack>

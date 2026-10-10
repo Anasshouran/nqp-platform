@@ -103,7 +103,32 @@
   --shadow-3: 0 6px 14px rgba(16, 40, 34, 0.06), 0 18px 44px rgba(16, 40, 34, 0.11);
   --shadow-4: 0 10px 22px rgba(16, 40, 34, 0.08), 0 26px 60px rgba(16, 40, 34, 0.15);
   --shadow-5: 0 14px 30px rgba(16, 40, 34, 0.1), 0 34px 80px rgba(16, 40, 34, 0.2);
-  --glass-blur: blur(20px) saturate(1.4);
+  --glass-blur: blur(12px) saturate(1.25);
+  /* ---- Density scale ----
+     Comfortable is the default, tuned for public/marketing pages.
+     [data-density='compact'] tightens these for operational screens (port
+     counters, lab benches) where vertical space is the scarce resource. */
+  --pad-card: 28px;
+  --pad-card-x: 28px;
+  --pad-card-bottom: 28px;
+  --pad-card-actions: 24px;
+  --pad-section: 16px;
+  --row-py: 0.9rem;
+  --control-min-h: 48px;
+  --tab-min-h: 44px;
+  --list-min-h: 46px;
+}
+
+[data-density='compact'] {
+  --pad-card: 16px;
+  --pad-card-x: 16px;
+  --pad-card-bottom: 16px;
+  --pad-card-actions: 16px;
+  --pad-section: 12px;
+  --row-py: 0.5rem;
+  --control-min-h: 40px;
+  --tab-min-h: 38px;
+  --list-min-h: 38px;
 }
 
 html {

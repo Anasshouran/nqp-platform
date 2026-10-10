@@ -18,6 +18,10 @@ export function isOnline(): boolean {
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('IndexedDB غير مدعوم'));
+      return;
+    }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
@@ -90,6 +94,21 @@ export async function pendingCount(): Promise<number> {
   return (await listPending()).length;
 }
 
+export async function clearPendingMutations(): Promise<void> {
+  try {
+    const db = await openDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch {
+    /* ignore */
+  }
+}
+
 export class OfflineQueuedError extends Error {
   queued = true;
   constructor(message = 'غير متصل — حُفظت العملية محليًا وستُرسل تلقائيًا عند عودة الاتصال') {
@@ -99,11 +118,19 @@ export class OfflineQueuedError extends Error {
 }
 
 export function notifyOfflineQueued(): void {
-  window.dispatchEvent(new CustomEvent('vector:offline-queued', { detail: Date.now() }));
+  try {
+    window.dispatchEvent(new CustomEvent('vector:offline-queued', { detail: Date.now() }));
+  } catch {
+    /* ignore listeners errors */
+  }
 }
 
 export function notifyOfflineSynced(count: number): void {
-  window.dispatchEvent(new CustomEvent('vector:offline-synced', { detail: count }));
+  try {
+    window.dispatchEvent(new CustomEvent('vector:offline-synced', { detail: count }));
+  } catch {
+    /* ignore listeners errors */
+  }
 }
 
 /**
@@ -144,14 +171,17 @@ export async function flushPendingMutations(): Promise<number> {
 }
 
 export function initVectorOffline(): void {
+  if (typeof window === 'undefined') return;
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
   window.addEventListener('online', () => {
-    flushPendingMutations();
+    flushPendingMutations().catch(() => {});
   });
   if (!isOnline()) {
-    window.addEventListener('load', () => flushPendingMutations());
+    window.addEventListener('load', () => {
+      flushPendingMutations().catch(() => {});
+    });
   }
 }
 

@@ -7,7 +7,6 @@ import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
@@ -16,16 +15,10 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import { getNews } from '../../api/endpoints/public';
 import type { NewsArticle } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton, ErrorState } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { useApi } from '../../hooks/useApi';
 
 const PAGE_SIZE = 6;
-
-const categoryLabels: Record<string, string> = {
-  GENERAL: 'عام',
-  HEALTH: 'صحي',
-  TRAVEL: 'سفر',
-  OFFICIAL: 'رسمي',
-};
 
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
@@ -79,7 +72,7 @@ const NewsPage = () => {
                 )}
                 <CardContent sx={{ p: 3 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-                    <Chip label={categoryLabels[article.category] || article.category} size="small" color="primary" variant="outlined" />
+                    <NewsCategoryChip category={article.category} />
                     <Typography variant="caption" color="text.secondary">
                       {formatDate(article.published_at)}
                     </Typography>

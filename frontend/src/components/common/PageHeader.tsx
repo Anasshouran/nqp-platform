@@ -59,7 +59,7 @@ const PageHeader = ({ title, subtitle, eyebrow, action }: PageHeaderProps) => {
               boxShadow: '0 0 0 3px rgba(12,127,106,0.14)',
             }}
           />
-          <Typography variant="overline" sx={{ fontWeight: 800, color: 'primary.dark', letterSpacing: '0.1em', fontSize: 11, lineHeight: 1.6 }}>
+          <Typography variant="overline" sx={{ fontWeight: 700, color: 'primary.dark', letterSpacing: '0.1em', fontSize: 11, lineHeight: 1.6 }}>
             {eyebrow}
           </Typography>
         </Stack>
@@ -67,7 +67,7 @@ const PageHeader = ({ title, subtitle, eyebrow, action }: PageHeaderProps) => {
       <Typography
         variant="h1"
         component="h1"
-        sx={{ mb: subtitle ? 1 : 0, textWrap: 'balance', fontWeight: 800, letterSpacing: '-0.01em' }}
+        sx={{ mb: subtitle ? 1 : 0, textWrap: 'balance', fontWeight: 700, letterSpacing: 0 }}
       >
         {title}
       </Typography>

@@ -111,7 +111,7 @@ const MedicationPage = () => {
                         <Chip
                           size="small"
                           label={m.unit}
-                          sx={{ bgcolor: 'rgba(12,127,106,0.1)', color: '#0c7f6a', fontWeight: 700, fontSize: 11 }}
+                          sx={{ bgcolor: 'rgba(12,127,106,0.1)', color: 'primary.main', fontWeight: 700, fontSize: 11 }}
                         />
                       )}
                       {(m.interactions ?? []).length > 0 && (

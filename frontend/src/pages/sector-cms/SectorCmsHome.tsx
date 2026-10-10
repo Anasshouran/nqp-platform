@@ -31,10 +31,10 @@ import {
   sectorBareName,
   useSectorSite,
   ErrorNotice,
-  NEWS_CATEGORY_LABELS,
   usePageTitle,
 } from './SectorCmsShared';
 import { EmptyState, ErrorState } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { getSectorPorts, getNews, getPublicStatistics } from '../../api/endpoints/public';
 import type { PublicPort, NewsArticle } from '../../api/endpoints/public';
 import { getServiceCategories } from '../../api/endpoints/services';
@@ -315,7 +315,7 @@ const SectorCmsHome = () => {
           <Typography variant="h5" sx={{ fontWeight: 700 }}>خدمات القطاع</Typography>
           <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
             {!sectionsLoading && services.length > 0 && (
-              <Chip label={`${services.length} خدمة`} size="small" sx={{ bgcolor: (t) => alpha(t.palette.primary.main, 0.08), color: 'primary.main', fontWeight: 800 }} />
+              <Chip label={`${services.length} خدمة`} size="small" sx={{ bgcolor: (t) => alpha(t.palette.primary.main, 0.08), color: 'primary.main', fontWeight: 700 }} />
             )}
             <Button component={Link} to={`/sector/${slug}/services`} endIcon={<ArrowForwardIcon />} size="small">
               جميع الخدمات
@@ -379,7 +379,7 @@ const SectorCmsHome = () => {
                         </Box>
                         <ArrowForwardIcon sx={{ fontSize: 18, color: (t) => alpha(t.palette.primary.main, 0.5) }} />
                       </Stack>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1.35, mt: 1.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.35, mt: 1.5 }}>
                         {s.name_ar}
                       </Typography>
                       {s.description_ar && (
@@ -541,7 +541,7 @@ const SectorCmsHome = () => {
                     />
                   )}
                   <CardContent sx={{ p: 3, flex: 1 }}>
-                    <Chip label={NEWS_CATEGORY_LABELS[article.category] || 'عام'} size="small" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                    <NewsCategoryChip category={article.category} sx={{ mb: 1 }} />
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>{article.title}</Typography>
                     <Typography variant="caption" color="text.secondary">{formatDate(article.published_at)}</Typography>
                   </CardContent>

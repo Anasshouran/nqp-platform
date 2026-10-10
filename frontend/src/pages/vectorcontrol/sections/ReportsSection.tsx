@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -7,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import { DataTable, StatusChip } from '../../../components/ui';
+import { FormDialog } from '../../../components/uikit';
 import { useServerTable } from '../../../hooks/useServerTable';
 import {
   acceptReport,
@@ -64,7 +66,7 @@ const NewReportForm = ({ onSaved }: { onSaved: () => void }) => {
       onSaved();
     } catch (err) {
       if (!(err instanceof OfflineQueuedError)) {
-        window.alert('تعذر حفظ البلاغ — راجع الحقول المطلوبة');
+        notifyError('تعذر حفظ البلاغ — راجع الحقول المطلوبة');
       }
     } finally {
       setSaving(false);
@@ -115,12 +117,15 @@ const ReportsSection = () => {
   const t = useServerTable<VectorReport>({ fetchData: getReports });
   const [formOpen, setFormOpen] = useState(false);
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const [note, setNote] = useState<{
+    title: string;
+    submitLabel: string;
+    required?: boolean;
+    onDone: (value: string, cancelled: boolean) => void;
+  } | null>(null);
+  const [noteText, setNoteText] = useState('');
 
-  const askNote = (title: string): string | null => {
-    const v = window.prompt(title);
-    return v;
-  };
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   return (
     <SectionCard id="reports">
@@ -147,22 +152,22 @@ const ReportsSection = () => {
               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                 {r.status === 'NEW' && (
                   <>
-                    <Button size="small" variant="outlined" onClick={() => act(assessReport(r.id, askNote('ملاحظة التقييم:') ?? ''))}>تقييم</Button>
-                    <Button size="small" color="error" onClick={() => { const n = askNote('سبب الرفض:'); if (n !== null) act(rejectReport(r.id, n)); }}>رفض</Button>
+                    <Button size="small" variant="outlined" onClick={() => { setNoteText(''); setNote({ title: 'ملاحظة التقييم', submitLabel: 'تقييم', onDone: (v, cancelled) => act(assessReport(r.id, cancelled ? '' : v)) }); }}>تقييم</Button>
+                    <Button size="small" color="error" onClick={() => { setNoteText(''); setNote({ title: 'سبب الرفض', submitLabel: 'رفض', required: true, onDone: (v, cancelled) => { if (!cancelled) act(rejectReport(r.id, v)); } }); }}>رفض</Button>
                   </>
                 )}
                 {r.status === 'ASSESSING' && (
                   <>
                     <Button size="small" color="success" onClick={() => act(acceptReport(r.id))}>اعتماد</Button>
                     <Button size="small" variant="outlined" onClick={() => act(openFocusFromReport(r.id))}>فتح بؤرة</Button>
-                    <Button size="small" color="error" onClick={() => { const n = askNote('سبب الرفض:'); if (n !== null) act(rejectReport(r.id, n)); }}>رفض</Button>
+                    <Button size="small" color="error" onClick={() => { setNoteText(''); setNote({ title: 'سبب الرفض', submitLabel: 'رفض', required: true, onDone: (v, cancelled) => { if (!cancelled) act(rejectReport(r.id, v)); } }); }}>رفض</Button>
                   </>
                 )}
                 {['NEW', 'ACCEPTED', 'IN_PROGRESS', 'FOLLOW_UP'].includes(r.status) && r.status !== 'ASSESSING' && (
                   <Button size="small" variant="outlined" onClick={() => act(openFocusFromReport(r.id))}>فتح بؤرة</Button>
                 )}
                 {!['CLOSED', 'REJECTED', 'NEW', 'ASSESSING'].includes(r.status) && (
-                  <Button size="small" color="inherit" onClick={() => { const n = askNote('سبب الإغلاق (اختياري):'); if (n !== null) act(closeReport(r.id)); }}>إغلاق</Button>
+                  <Button size="small" color="inherit" onClick={() => { setNoteText(''); setNote({ title: 'سبب الإغلاق (اختياري)', submitLabel: 'إغلاق', onDone: (_v, cancelled) => { if (!cancelled) act(closeReport(r.id)); } }); }}>إغلاق</Button>
                 )}
               </Box>
             ),
@@ -180,6 +185,33 @@ const ReportsSection = () => {
         emptyTitle="لا توجد بلاغات" emptyDescription="بلاغات النواقل تظهر هنا"
       />
       {t.count === 0 && <Alert severity="info" sx={{ mt: 2 }}>يمكن تسجيل بلاغ ميداني يعمل أيضًا دون اتصال.</Alert>}
+
+      <FormDialog
+        open={Boolean(note)}
+        title={note?.title ?? ''}
+        submitLabel={note?.submitLabel ?? 'حفظ'}
+        onClose={() => {
+          if (note) note.onDone('', true);
+          setNote(null);
+          setNoteText('');
+        }}
+        onSubmit={() => {
+          if (note) note.onDone(noteText, false);
+          setNote(null);
+          setNoteText('');
+        }}
+        submitDisabled={Boolean(note?.required) && !noteText.trim()}
+      >
+        <TextField
+          autoFocus
+          multiline
+          minRows={2}
+          label="الملاحظة"
+          placeholder="أدخل ملاحظة..."
+          value={noteText}
+          onChange={(e) => setNoteText(e.target.value)}
+        />
+      </FormDialog>
     </SectionCard>
   );
 };

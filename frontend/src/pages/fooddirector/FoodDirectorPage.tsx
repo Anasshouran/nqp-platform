@@ -43,6 +43,7 @@ import {
 } from 'recharts';
 import { getFoodDirectorDashboard } from '../../api/endpoints/food';
 import type { FoodDirectorDashboard } from '../../types/food';
+import { notifyError } from '../../utils/toast';
 
 const PERIODS = [
   { value: 'DAY', label: 'اليوم' },
@@ -53,9 +54,9 @@ const PERIODS = [
 ];
 
 const DOT_META = {
-  green: { emoji: '🟢', color: '#1d7a54' },
+  green: { emoji: '🟢', color: 'success.main' },
   yellow: { emoji: '🟡', color: '#f0ad4e' },
-  red: { emoji: '🔴', color: '#c63a3a' },
+  red: { emoji: '🔴', color: 'error.main' },
 } as const;
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
@@ -65,7 +66,6 @@ const getErrMessage = (e: unknown, fallback: string): string => {
   const err = e as { response?: { data?: { message?: string } } };
   return err?.response?.data?.message || fallback;
 };
-const notifyError = (m: string) => console.error(m);
 
 const FoodDirectorPage = () => {
   const navigate = useNavigate();
@@ -74,16 +74,20 @@ const FoodDirectorPage = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const periodRef = useRef(period);
+  const reqId = useRef(0);
 
   const loadData = useCallback(async (p: string) => {
+    const current = ++reqId.current;
     try {
       const res = await getFoodDirectorDashboard(p);
+      if (reqId.current !== current) return;
       setDash(res.data.data);
       setLastUpdated(new Date());
     } catch (e) {
+      if (reqId.current !== current) return;
       notifyError(getErrMessage(e, 'تعذر تحميل اللوحة القومية'));
     } finally {
-      setLoadingData(false);
+      if (reqId.current === current) setLoadingData(false);
     }
   }, []);
 
@@ -190,7 +194,16 @@ const FoodDirectorPage = () => {
                     key={s.id}
                     hover
                     onClick={() => navigate('/app/sector-dashboard')}
-                    sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'rgba(10,107,88,.05)' } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate('/app/sector-dashboard');
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`عرض لوحة القطاع ${s.name_ar}`}
+                    sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'rgba(10,107,88,.05)' }, '&:focus-visible td': { bgcolor: 'rgba(10,107,88,.12)', outline: '2px solid #0a6b58', outlineOffset: '-2px' } }}
                   >
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
@@ -250,7 +263,17 @@ const FoodDirectorPage = () => {
                         <TableCell align="center">{k.current}</TableCell>
                         <TableCell align="center"><Typography variant="caption" color="text.secondary">{k.target}</Typography></TableCell>
                         <TableCell align="center">
-                          {k.ok ? '✅' : '⚠️'}
+                          {k.ok ? (
+                            <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center">
+                              <span aria-hidden>✅</span>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>محقق</Typography>
+                            </Stack>
+                          ) : (
+                            <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center">
+                              <span aria-hidden>⚠️</span>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'warning.main' }}>تحتاج تدخلاً</Typography>
+                            </Stack>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -317,7 +340,7 @@ const FoodDirectorPage = () => {
                   <FinanceRow label="الإجمالي" value={dash.finance.total} bold />
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
-                  <PaymentsIcon fontSize="small" sx={{ color: '#1d7a54' }} />
+                  <PaymentsIcon fontSize="small" sx={{ color: 'success.main' }} />
                   <Typography variant="caption" color="text.secondary">فواتير محصّلة SDG — الانتقال للنظام المالي دون تعديل قيود</Typography>
                 </Stack>
               </Paper>
@@ -396,11 +419,11 @@ const TradeCard = ({ kind, data, accent }: {
         <Chip size="small" label={`${fmtNum(data.total)} شحنة`} sx={{ bgcolor: `${accent}14`, color: accent, fontWeight: 700 }} />
       </Stack>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
-        <Typography variant="caption" sx={{ fontWeight: 700, color: '#1d7a54' }}>✅ إفراج / اعتماد</Typography>
-        <Typography variant="body2" sx={{ fontWeight: 700, color: '#1d7a54' }}>{data.released_pct}%</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>✅ إفراج / اعتماد</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>{data.released_pct}%</Typography>
       </Stack>
       <Box sx={{ height: 8, borderRadius: 4, bgcolor: '#e9ecef', overflow: 'hidden', mb: 1 }}>
-        <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: '#1d7a54' }} />
+        <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: 'success.main' }} />
       </Box>
       <Stack direction="row" justifyContent="space-between">
         <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>🚫 رفض {data.rejected_pct}%</Typography>

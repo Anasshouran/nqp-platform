@@ -24,6 +24,7 @@ import { login } from '../../api/endpoints/auth';
 import { setCredentials } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store/store';
 import { roleHomePathFor } from '../../utils/roleHome';
+import { sanitizeNextPath } from '../../utils/navigation';
 
 const errorMessage = (err: unknown): string => {
   const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data;
@@ -65,9 +66,7 @@ const TravelerLoginPage = () => {
         })
       );
       const target =
-        next && next.startsWith('/') && !next.startsWith('//')
-          ? next
-          : roleHomePathFor(payload.user);
+        sanitizeNextPath(next) ?? roleHomePathFor(payload.user);
       navigate(target, { replace: true });
     } catch (err: unknown) {
       setError(errorMessage(err));

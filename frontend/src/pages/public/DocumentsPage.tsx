@@ -25,25 +25,17 @@ import ArticleIcon from '@mui/icons-material/Article';
 import { getDocuments } from '../../api/endpoints/public';
 import type { CmsDocument } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton, SectionTitle, ErrorState } from '../../components/common';
+import { CategoryChip } from '../../components/common/CategoryChip';
+import {
+  DOC_CATEGORY_LABELS,
+  DOC_CATEGORY_TONES,
+  DOC_CATEGORY_FILLS,
+  DOC_CATEGORY_STYLES,
+} from '../../components/common/categoryMaps';
 import { useApi } from '../../hooks/useApi';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const PAGE_SIZE = 8;
-
-const categoryLabels: Record<string, string> = {
-  LAW: 'قانون',
-  REGULATION: 'لائحة',
-  FORM: 'نموذج',
-  GUIDE: 'دليل',
-  OTHER: 'أخرى',
-};
-
-const categoryColors: Record<string, string> = {
-  LAW: '#0e8a72',
-  REGULATION: '#2f6f9f',
-  FORM: '#c8a13a',
-  GUIDE: '#7a5c9e',
-  OTHER: '#4f6f8f',
-};
 
 const categoryIcons: Record<string, React.ReactNode> = {
   LAW: <ArticleIcon />,
@@ -106,7 +98,7 @@ const DocumentsPage = () => {
     { value: 'ALL', label: 'الكل', count: documents.length },
     ...(['LAW', 'REGULATION', 'FORM', 'GUIDE', 'OTHER'] as const).map((key) => ({
       value: key,
-      label: categoryLabels[key] || key,
+      label: DOC_CATEGORY_LABELS[key] || key,
       count: stats[key] || 0,
     })),
   ];
@@ -135,7 +127,7 @@ const DocumentsPage = () => {
                   height: '100%',
                   border: '1px solid',
                   borderColor: 'divider',
-                  borderTop: `4px solid ${categoryColors[option.value] || '#0e8a72'}`,
+                  borderTop: `4px solid ${DOC_CATEGORY_FILLS[option.value] || DOC_CATEGORY_FILLS.OTHER}`,
                   '&:hover': { boxShadow: 4, transform: 'translateY(-4px)' },
                 }}
               >
@@ -149,8 +141,8 @@ const DocumentsPage = () => {
                       borderRadius: 2.5,
                       display: 'grid',
                       placeItems: 'center',
-                      color: categoryColors[option.value] || '#0e8a72',
-                      bgcolor: `${categoryColors[option.value] || '#0e8a72'}1a`,
+                      color: DOC_CATEGORY_TONES[option.value] || DOC_CATEGORY_TONES.OTHER,
+                      bgcolor: `${DOC_CATEGORY_TONES[option.value] || DOC_CATEGORY_TONES.OTHER}1a`,
                     }}
                   >
                     {categoryIcons[option.value]}
@@ -251,19 +243,14 @@ const DocumentsPage = () => {
                         placeItems: 'center',
                         flexShrink: 0,
                         color: '#fff',
-                        background: categoryColors[document.category] || '#0e8a72',
+                        background: DOC_CATEGORY_FILLS[document.category] || DOC_CATEGORY_FILLS.OTHER,
                       }}
                     >
                       {fileIcon}
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip
-                          label={categoryLabels[document.category] || document.category}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
+                        <CategoryChip category={document.category} labels={DOC_CATEGORY_LABELS} styles={DOC_CATEGORY_STYLES} />
                         <Chip
                           label={fileType}
                           size="small"
@@ -292,9 +279,9 @@ const DocumentsPage = () => {
                       variant="contained"
                       size="medium"
                       startIcon={<DownloadIcon />}
-                      href={document.file}
-                      target="_blank"
-                      rel="noreferrer"
+                      {...(safeExternalUrl(document.file)
+                        ? { href: safeExternalUrl(document.file), target: '_blank', rel: 'noreferrer' }
+                        : { disabled: true })}
                       sx={{ flexShrink: 0 }}
                     >
                       تحميل

@@ -5,11 +5,13 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
+import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
@@ -46,11 +48,16 @@ const COMPLIANCE_OPTIONS: { value: Compliance; label: string }[] = [
   { value: 'NOT_APPLICABLE', label: 'غير متاح' },
 ];
 
-const OVERALL_OPTIONS = [
-  { value: 'PASSED', label: 'سليمة — لا توجد نواقص' },
-  { value: 'CONDITIONAL', label: 'نواقص طفيفة — يمنح مهلة للتصحيح' },
-  { value: 'FAILED', label: 'نواقص جسيمة — توقيف السفينة' },
-];
+/**
+ * Phase 1D-6B: the final verdict is DERIVED by the backend from the eight
+ * zones. These labels are for read-only display only; the operator cannot
+ * choose one, and the client never sends `overall_status`.
+ */
+const DERIVED_STATUS_LABEL: Record<string, string> = {
+  PASSED: 'سليمة — لا توجد نواقص',
+  FAILED: 'نواقص جسيمة — توقيف السفينة',
+  CONDITIONAL: 'مشروط',
+};
 
 const emptyAreas = Object.fromEntries(AREAS.map((a) => [a.field, 'COMPLIANT'])) as Record<AreaDef['field'], Compliance>;
 
@@ -61,8 +68,8 @@ const ShipInspectionForm = () => {
   const [visitId, setVisitId] = useState('');
   const [areas, setAreas] = useState(emptyAreas);
   const [findings, setFindings] = useState('');
-  const [overall, setOverall] = useState('PASSED');
   const [saving, setSaving] = useState(false);
+  const [derived, setDerived] = useState<ShipInspection | null>(null);
 
   useEffect(() => {
     getVessels({ page_size: 100 }).then((r) => setVessels(r.data.data.results));
@@ -81,6 +88,14 @@ const ShipInspectionForm = () => {
     () => Object.values(areas).filter((v) => v === 'NON_COMPLIANT').length,
     [areas],
   );
+  const notApplicableCount = useMemo(
+    () => Object.values(areas).filter((v) => v === 'NOT_APPLICABLE').length,
+    [areas],
+  );
+  // Live preview of the backend verdict (Rule 1 > Rule 2 > fail-closed).
+  // Preview only — the server remains the authority and recomputes on save.
+  const previewStatus: 'PASSED' | 'FAILED' | 'AMBIGUOUS' =
+    nonCompliantCount > 0 ? 'FAILED' : notApplicableCount > 0 ? 'AMBIGUOUS' : 'PASSED';
   const selectedVessel = vessels.find((v) => v.id === vesselId);
 
   const reset = () => {
@@ -88,23 +103,26 @@ const ShipInspectionForm = () => {
     setVisitId('');
     setAreas(emptyAreas);
     setFindings('');
-    setOverall('PASSED');
   };
 
   const handleSubmit = async () => {
+    if (notApplicableCount > 0) {
+      notifyError('«غير متاح» غير مدعوم: يجب تصنيف كل المناطق الثماني قاطعاً للحفظ');
+      return;
+    }
     if (!vesselId) {
       notifyError('اختر السفينة أولاً');
       return;
     }
     setSaving(true);
     try {
-      await createShipInspection({
+      const res = await createShipInspection({
         vessel: vesselId,
         visit: visitId || null,
         findings,
-        overall_status: overall,
         ...areas,
       });
+      setDerived(res.data.data);
       notifySuccess(`تم حفظ تفتيش السفينة «${selectedVessel?.vessel_name ?? ''}»`);
       reset();
     } catch {
@@ -192,13 +210,31 @@ const ShipInspectionForm = () => {
           value={findings} onChange={(e) => setFindings(e.target.value)}
         />
 
+        <Alert severity="info" sx={{ mt: 2 }}>
+          النتيجة النهائية تُستنتج آلياً من مناطق الفحص الثماني بواسطة الخادم، ولا تُختار يدوياً.
+        </Alert>
+
         <Box sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
-          <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>النتيجة النهائية (إلزامية)</Typography>
-          <RadioGroup row value={overall} onChange={(_, v) => setOverall(v)}>
-            {OVERALL_OPTIONS.map((o) => (
-              <FormControlLabel key={o.value} value={o.value} control={<Radio />} label={o.label} />
-            ))}
-          </RadioGroup>
+          <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>
+            النتيجة النهائية (مستنتجة من الخادم)
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Chip
+              color={previewStatus === 'FAILED' ? 'error' : previewStatus === 'AMBIGUOUS' ? 'warning' : 'success'}
+              label={
+                previewStatus === 'AMBIGUOUS'
+                  ? 'غير قابلة للاستنتاج — الحفظ سيُرفض'
+                  : DERIVED_STATUS_LABEL[previewStatus]
+              }
+            />
+            <Chip size="small" variant="outlined" label={`مناطق غير مطابقة: ${nonCompliantCount}`} />
+            <Chip size="small" variant="outlined" label={`مناطق غير متاحة: ${notApplicableCount}`} />
+          </Stack>
+          {derived && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              آخر نتيجة محفوظة: {DERIVED_STATUS_LABEL[derived.overall_status] ?? derived.overall_status}
+            </Typography>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1.5, mt: 2.5 }}>

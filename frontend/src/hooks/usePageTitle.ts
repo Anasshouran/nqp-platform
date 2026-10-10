@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'منصة الحجر الصحي القومي';
+const DEFAULT_TITLE = 'عافيتنا | AFYATNA — منصة الحجر الصحي القومي';
 
 export const usePageTitle = (title?: string) => {
   useEffect(() => {

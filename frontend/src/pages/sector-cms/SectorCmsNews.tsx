@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { SectorPageShell, SectorHomeLink, useSectorSite, NEWS_CATEGORY_LABELS, usePageTitle } from './SectorCmsShared';
+import { SectorPageShell, SectorHomeLink, useSectorSite, usePageTitle } from './SectorCmsShared';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { EmptyState } from '../../components/common';
 import { getNews } from '../../api/endpoints/public';
 import type { NewsArticle } from '../../api/endpoints/public';
@@ -59,7 +58,7 @@ const SectorCmsNews = () => {
                 )}
                 <CardContent sx={{ p: 3, flex: 1 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                    <Chip label={NEWS_CATEGORY_LABELS[article.category] || 'عام'} size="small" color="primary" variant="outlined" />
+                    <NewsCategoryChip category={article.category} />
                     <Typography variant="caption" color="text.secondary">{formatDate(article.published_at)}</Typography>
                   </Stack>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{article.title}</Typography>

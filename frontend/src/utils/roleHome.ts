@@ -46,7 +46,27 @@ export type RoleCode =
   | 'POE_HEALTH_OFFICER'
   | 'VACCINATION_MANAGER'
   | 'VACCINATION_OFFICER'
-  | 'TRAVELER';
+  | 'TRAVELER'
+  | 'CARRIER_ADMIN'
+  | 'BORDER_SYSTEM_ADMIN'
+  | 'BORDER_STATION_MANAGER'
+  | 'BORDER_HEALTH_OFFICER'
+  | 'BORDER_DIRECTOR'
+  | 'NATIONAL_QUARANTINE_DIRECTOR'
+  | 'QUARANTINE_SECTOR_DIRECTOR'
+  | 'QUARANTINE_DOCTOR'
+  | 'TRAVELER_REGISTRATION_OFFICER'
+  | 'CUSTOMS_OFFICER'
+  | 'IMMIGRATION_OFFICER'
+  | 'ENV_INSPECTOR'
+  | 'EPIDEMIOLOGY_OFFICER'
+  | 'EMERGENCY_OFFICER'
+  | 'FOOD_WINDOW_CLERK'
+  | 'FOOD_WINDOW_SUPERVISOR'
+  | 'HR_MANAGER'
+  | 'HR_SPECIALIST'
+  | 'HR_APPROVER'
+  | 'NATIONAL_LAB_ADMIN';
 
 export const ROLE_HOME: Record<RoleCode, string> = {
   ADMIN: '/app',
@@ -81,6 +101,7 @@ export const ROLE_HOME: Record<RoleCode, string> = {
   AIRPORT_DIRECTOR: '/app/airport-director',
   RISK_ANALYST: '/app/food-surveillance',
   CARRIER: '/app/carrier',
+  CARRIER_ADMIN: '/app/carrier/members',
   CLINIC_DOCTOR: '/app/clinic/dashboard',
   NATIONAL_IT_DIRECTOR: '/dashboard/national/it',
   IHR_NFP: '/app/integration/who/events',
@@ -94,6 +115,27 @@ export const ROLE_HOME: Record<RoleCode, string> = {
   POE_MANAGER: '/app/surveillance',
   FEDERAL_DIRECTOR: '/app',
   VIEWER: '/app',
+  /* أدوار لها مساحة عمل في الواجهة لكنها كانت بلا مسار رئيسي، فتهبط
+     على لوحة القيادة الوطنية — أول عنصر في قائمتها الجانبية هو بيتها. */
+  BORDER_SYSTEM_ADMIN: '/app/borders-health',
+  BORDER_STATION_MANAGER: '/app/borders-health',
+  BORDER_HEALTH_OFFICER: '/app/borders-health',
+  BORDER_DIRECTOR: '/app/borders-health',
+  NATIONAL_QUARANTINE_DIRECTOR: '/app/borders-health',
+  QUARANTINE_SECTOR_DIRECTOR: '/app/borders-health',
+  QUARANTINE_DOCTOR: '/app/borders-health',
+  TRAVELER_REGISTRATION_OFFICER: '/app/borders-health',
+  CUSTOMS_OFFICER: '/app/borders-health',
+  IMMIGRATION_OFFICER: '/app/borders-health',
+  ENV_INSPECTOR: '/app/borders-health',
+  EPIDEMIOLOGY_OFFICER: '/app/borders-health',
+  EMERGENCY_OFFICER: '/app/borders-health',
+  FOOD_WINDOW_CLERK: '/app/food-window',
+  FOOD_WINDOW_SUPERVISOR: '/app/food-window',
+  HR_MANAGER: '/app/hr',
+  HR_SPECIALIST: '/app/hr',
+  HR_APPROVER: '/app/hr',
+  NATIONAL_LAB_ADMIN: '/app/laboratory/national',
 };
 
 export const roleHomePath = (role?: string | null): string =>

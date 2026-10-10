@@ -10,15 +10,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { SectorPageShell, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
 import { EmptyState, ListSkeleton, PageHeader } from '../../components/common';
+import { CategoryChip } from '../../components/common/CategoryChip';
+import { CIRCULAR_CATEGORY_LABELS, CIRCULAR_CATEGORY_STYLES } from '../../components/common/categoryMaps';
 import { getCircularById } from '../../api/endpoints/public';
 import type { Circular } from '../../api/endpoints/public';
-
-const categoryLabels: Record<string, string> = {
-  OFFICIAL: 'رسمي',
-  HEALTH: 'صحي',
-  ADMIN: 'إداري',
-  GENERAL: 'عام',
-};
 
 const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   URGENT: 'error',
@@ -90,7 +85,7 @@ const SectorCmsCircularDetail = () => {
             eyebrow="تعميم"
             action={
               <Stack direction="row" spacing={1}>
-                <Chip label={categoryLabels[circular.category] || circular.category} color="primary" variant="outlined" />
+                <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
                 <Chip
                   label={priorityLabels[circular.priority] || circular.priority}
                   color={priorityColors[circular.priority] || 'default'}

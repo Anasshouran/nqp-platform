@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
+import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
@@ -25,12 +26,15 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import CloseIcon from '@mui/icons-material/Close';
 import SourceIcon from '@mui/icons-material/Source';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
   chatAssistant,
   getAssistantSuggestions,
+  submitAssistantFeedback,
   type AssistantAction,
   type AssistantAnswer,
   type AssistantAnswerType,
@@ -44,6 +48,10 @@ interface ChatMessage {
   sources?: AssistantSource[];
   action?: AssistantAction | null;
   failed?: boolean;
+  conversationId?: string | null;
+  rated?: 1 | -1;
+  disclaimer?: string | null;
+  engine?: string;
 }
 
 type Lang = 'ar' | 'en';
@@ -62,10 +70,19 @@ const sourceTypeLabel: Record<string, string> = {
   SERVICE: 'خدمة',
 };
 
-const typeMeta: Record<AssistantAnswerType, { icon: React.ReactElement; label: string; color: 'info' | 'success' | 'warning' | 'secondary' | 'error' }> = {
+const typeMeta: Record<AssistantAnswerType, { icon: React.ReactElement; label: string; color: 'info' | 'success' | 'warning' | 'secondary' | 'error';
+  sx?: object;
+}> = {
   INFO: { icon: <InfoIcon fontSize="small" />, label: 'معلومات', color: 'info' },
   ACTION: { icon: <VerifiedUserIcon fontSize="small" />, label: 'إجراء', color: 'success' },
-  ALERT: { icon: <NotificationsActiveIcon fontSize="small" />, label: 'تنبيه صحي', color: 'warning' },
+  // `warning` (‎#a86400) تباينه 4.6:1 — يمرّ لنصّ كبير فقط. الشارة هنا
+  // صغيرة (0.66rem) فنعتمّها إلى `warning.dark` (‎#7d4a00، 6.9:1) عبر sx.
+  ALERT: {
+    icon: <NotificationsActiveIcon fontSize="small" />,
+    label: 'تنبيه صحي',
+    color: 'warning',
+    sx: { color: 'warning.dark', '& .MuiChip-icon': { color: 'warning.dark' } },
+  },
   SOURCE: { icon: <SourceIcon fontSize="small" />, label: 'مصدر رسمي', color: 'secondary' },
   NOT_FOUND: { icon: <ErrorOutlineIcon fontSize="small" />, label: 'لم أجد معلومة', color: 'error' },
 };
@@ -86,7 +103,7 @@ const UserBubble = ({ text }: { text: string }) => (
       sx={{
         maxWidth: '78%',
         bgcolor: 'primary.main',
-        color: '#fff',
+        color: 'primary.contrastText',
         borderRadius: 3,
         borderTopLeftRadius: 3,
         p: 1.5,
@@ -131,7 +148,7 @@ const SourceBlock = ({ sources }: { sources: AssistantSource[] }) => {
         borderRadius: 2,
         border: '1px dashed',
         borderColor: 'divider',
-        bgcolor: 'rgba(16,40,34,0.02)',
+        bgcolor: (t) => t.palette.primary.lighter,
       }}
     >
       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5 }}>
@@ -176,7 +193,7 @@ const SourceBlock = ({ sources }: { sources: AssistantSource[] }) => {
   );
 };
 
-const BotBubble = ({ msg }: { msg: ChatMessage }) => {
+const BotBubble = ({ msg, onRate }: { msg: ChatMessage; onRate: (msg: ChatMessage, rating: 1 | -1) => void }) => {
   const meta = msg.answer_type ? typeMeta[msg.answer_type] : null;
   return (
     <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ justifyContent: 'flex-end', flexDirection: 'row' }}>
@@ -191,12 +208,18 @@ const BotBubble = ({ msg }: { msg: ChatMessage }) => {
             label={meta.label}
             color={meta.color}
             variant={msg.failed ? 'outlined' : 'filled'}
-            sx={{ fontSize: '0.66rem', height: 22, width: 'fit-content', mb: 0.5 }}
+            sx={{
+              fontSize: '0.66rem',
+              height: 22,
+              width: 'fit-content',
+              mb: 0.5,
+              ...(meta.sx ?? {}),
+            }}
           />
         )}
         <Box
           sx={{
-            bgcolor: msg.failed ? '#fdeaea' : '#fff',
+            bgcolor: msg.failed ? 'error.light' : 'background.paper',
             color: 'text.primary',
             borderRadius: 3,
             borderTopRightRadius: 0,
@@ -211,8 +234,38 @@ const BotBubble = ({ msg }: { msg: ChatMessage }) => {
         >
           {msg.text}
         </Box>
+        {msg.disclaimer && !msg.failed && (
+          <Alert severity="warning" icon={<ErrorOutlineIcon fontSize="small" />} sx={{ mt: 0.5, py: 0, fontSize: '0.72rem' }}>
+            {msg.disclaimer}
+          </Alert>
+        )}
         {msg.action && msg.action.route && !msg.failed && <ActionCta action={msg.action} />}
         {!msg.failed && <SourceBlock sources={msg.sources || []} />}
+        {!msg.failed && (
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+            <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
+              {msg.rated ? 'شكراً لتقييمك' : 'هل كان الرد مفيداً؟'}
+            </Typography>
+            <IconButton
+              size="small"
+              aria-label="رد مفيد"
+              onClick={() => onRate(msg, 1)}
+              color={msg.rated === 1 ? 'success' : 'default'}
+              sx={{ p: 0.25 }}
+            >
+              <ThumbUpIcon sx={{ fontSize: 15 }} />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label="رد غير مفيد"
+              onClick={() => onRate(msg, -1)}
+              color={msg.rated === -1 ? 'error' : 'default'}
+              sx={{ p: 0.25 }}
+            >
+              <ThumbDownIcon sx={{ fontSize: 15 }} />
+            </IconButton>
+          </Stack>
+        )}
         {!msg.failed && msg.answer_type === 'NOT_FOUND' && (
           <Button component={Link} to="/contact" size="small" sx={{ textTransform: 'none', mt: 0.5, alignSelf: 'flex-start' }}>
             تواصل معنا
@@ -293,6 +346,9 @@ const SmartAssistant = ({
           answer_type: data.answer_type,
           sources: data.sources || [],
           action: data.action,
+          conversationId: data.conversation_id ?? null,
+          engine: data.engine,
+          disclaimer: data.disclaimer ?? null,
         },
       ]);
     } catch {
@@ -309,6 +365,23 @@ const SmartAssistant = ({
       ]);
     } finally {
       setTyping(false);
+    }
+  };
+
+  const handleRate = async (msg: ChatMessage, rating: 1 | -1) => {
+    if (msg.rated) return;
+    setMessages((prev) =>
+      prev.map((m) => (m === msg || (m.conversationId != null && m.conversationId === msg.conversationId) ? { ...m, rated: rating } : m)),
+    );
+    try {
+      await submitAssistantFeedback({
+        conversation_id: msg.conversationId ?? undefined,
+        rating,
+        answer_type: msg.answer_type,
+        engine: msg.engine,
+      });
+    } catch {
+      setMessages((prev) => prev.map((m) => (m.rated === rating ? { ...m, rated: undefined } : m)));
     }
   };
 
@@ -357,8 +430,9 @@ const SmartAssistant = ({
             width: 12,
             height: 12,
             borderRadius: '50%',
-            bgcolor: '#22c55e',
-            border: '2px solid #fff',
+            bgcolor: 'success.main',
+            border: '2px solid',
+            borderColor: 'background.paper',
           }}
         />
       </Box>
@@ -370,7 +444,7 @@ const SmartAssistant = ({
           <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, whiteSpace: 'nowrap' }}>
             {language === 'ar' ? 'بوابة ذكية للإجابة عن الاستفسارات' : 'Smart gateway for official Q&A'}
           </Typography>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.8)' }} />
+          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main', boxShadow: (t) => `0 0 6px ${t.palette.success.main}cc` }} />
           <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700, whiteSpace: 'nowrap' }}>
             {language === 'ar' ? 'متصل الآن' : 'Online'}
           </Typography>
@@ -416,7 +490,7 @@ const SmartAssistant = ({
             <UserBubble key={i} text={msg.text} />
           ) : (
             <Box key={i} className={i === messages.length - 1 ? 'fade-in' : undefined}>
-              <BotBubble msg={msg} />
+              <BotBubble msg={msg} onRate={handleRate} />
             </Box>
           ),
         )}
@@ -425,7 +499,7 @@ const SmartAssistant = ({
             <Avatar sx={{ width: 30, height: 30, bgcolor: 'primary.main' }}>
               <SmartToyIcon sx={{ fontSize: 18 }} />
             </Avatar>
-            <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 1.5, boxShadow: 1 }}>
+            <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, p: 1.5, boxShadow: 1 }}>
               <Stack direction="row" spacing={0.6} alignItems="center" sx={{ color: 'primary.main' }}>
                 <Box className="typing-dot" />
                 <Box className="typing-dot" sx={{ animationDelay: '0.15s' }} />
@@ -455,7 +529,11 @@ const SmartAssistant = ({
             sx={{
               fontWeight: 700,
               borderColor: 'primary.main',
-              '&:hover': { bgcolor: 'primary.main', color: '#fff', boxShadow: '0 4px 12px rgba(14,138,114,0.35)' },
+              '&:hover': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                boxShadow: (t) => `0 4px 12px ${t.palette.primary.main}59`,
+              },
               transition: 'background 250ms ease, color 250ms ease, box-shadow 250ms ease',
             }}
             variant="outlined"
@@ -492,7 +570,11 @@ const SmartAssistant = ({
           color="primary"
           onClick={() => send(input)}
           disabled={!input.trim() || typing}
-          sx={{ bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.dark' } }}
+          sx={{
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            '&:hover': { bgcolor: 'primary.dark' },
+          }}
         >
           <SendIcon />
         </IconButton>

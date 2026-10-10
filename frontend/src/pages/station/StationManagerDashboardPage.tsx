@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -899,7 +900,7 @@ const RequestsGridView = ({ requests, statusOf, openReview, byStatus }: {
         <Typography variant="caption" color="text.secondary">{requests.length} طلب في المحطة</Typography>
       </Box>
       {(['PENDING_REVIEW', 'UNDER_INSPECTION', 'IN_LAB', 'READY_DECISION', 'APPROVED'] as StationStatus[]).map((s) => (
-        <Chip key={s} label={`${stationStatusMeta[s].label}: ${byStatus(s).length}`} size="small" color={stationStatusMeta[s].tone} variant="outlined" onClick={() => notifySuccess(`تصفية: ${stationStatusMeta[s].label}`)} />
+        <Chip key={s} label={`${labelOf(stationStatusMeta, s)}: ${byStatus(s).length}`} size="small" color={toneOf(stationStatusMeta, s) ?? 'default'} variant="outlined" onClick={() => notifySuccess(`تصفية: ${labelOf(stationStatusMeta, s)}`)} />
       ))}
     </Stack>
     <Box sx={{ overflowX: 'auto' }}>
@@ -1031,12 +1032,12 @@ const InspectorsView = ({ inspectors, assignments, requestNumbers, onAssign }: {
 
 const PriorityChip = ({ p }: { p: InspectionAssignment['priority'] }) => {
   const map = { normal: { label: 'عادية', tone: 'default' as const }, high: { label: 'عالية', tone: 'warning' as const }, urgent: { label: 'عاجلة', tone: 'error' as const }, };
-  return <Chip label={map[p].label} size="small" color={map[p].tone} variant="outlined" />;
+  return <Chip label={labelOf(map, p)} size="small" color={toneOf(map, p) ?? 'default'} variant="outlined" />;
 };
 
 const AssignmentChip = ({ s }: { s: InspectionAssignment['status'] }) => {
   const map = { PENDING: { label: 'في الانتظار', tone: 'info' as const }, IN_PROGRESS: { label: 'جارية', tone: 'warning' as const }, DONE: { label: 'مكتملة', tone: 'success' as const }, };
-  return <Chip label={map[s].label} size="small" color={map[s].tone} variant="filled" />;
+  return <Chip label={labelOf(map, s)} size="small" color={toneOf(map, s) ?? 'default'} variant="filled" />;
 };
 
 const LabView = ({ orders, requests, onIssue }: {
@@ -1183,7 +1184,7 @@ const CertificatesView = ({ requests, statusOf, certificates, canCertify, onIssu
               <Stack key={r.id} direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1.25, borderRadius: 2, border: '1px solid rgba(16,40,34,0.07)' }}>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{r.number}</Typography>
-                  <Typography variant="caption" color="text.secondary">{stationStatusMeta[statusOf(r)].label}</Typography>
+                  <Typography variant="caption" color="text.secondary">{labelOf(stationStatusMeta, statusOf(r))}</Typography>
                 </Box>
                 <Chip label={blockReason(statusOf(r))} size="small" color="default" variant="outlined" />
               </Stack>
@@ -1262,7 +1263,7 @@ const ReportsView = ({ statusOf, requests, assignments, labOrders, certificates 
         <CardContent>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>مصفوفة العملية التشغيلية</Typography>
           {(['PENDING_REVIEW', 'UNDER_INSPECTION', 'IN_LAB', 'READY_DECISION', 'APPROVED'] as StationStatus[]).map((s) => (
-            <ReportRow key={s} label={stationStatusMeta[s].label} value={`${requests.filter((r) => statusOf(r) === s).length}`} />
+            <ReportRow key={s} label={labelOf(stationStatusMeta, s)} value={`${requests.filter((r) => statusOf(r) === s).length}`} />
           ))}
         </CardContent>
       </Card>

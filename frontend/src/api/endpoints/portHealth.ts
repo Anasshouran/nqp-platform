@@ -14,6 +14,7 @@ import type {
   SanitationCertificate,
   SeaPort,
   ShipInspection,
+  ShipInspectionCreate,
   SurveillanceCase,
   VectorControl,
   Vessel,
@@ -45,10 +46,32 @@ export const getPassengers = (params?: Record<string, unknown>) =>
 export const getHealthDeclarations = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<HealthDeclaration>>>('/port-health/declarations/', { params });
 
+/**
+ * Lifecycle actions (Phase 1D-6B). `status` is server-owned: a declaration
+ * moves RECEIVED -> REVIEWED -> {APPROVED, REJECTED} only through these.
+ * REJECTED is terminal — re-submission means creating a NEW declaration.
+ */
+export const submitDeclarationReview = (id: string, note?: string) =>
+  apiClient.post<ApiResponse<HealthDeclaration>>(`/port-health/declarations/${id}/submit-review/`, { note });
+
+export const approveDeclaration = (id: string, note?: string) =>
+  apiClient.post<ApiResponse<HealthDeclaration>>(`/port-health/declarations/${id}/approve/`, { note });
+
+/** `rejection_reason` is mandatory and must be non-blank. */
+export const rejectDeclaration = (id: string, rejectionReason: string) =>
+  apiClient.post<ApiResponse<HealthDeclaration>>(`/port-health/declarations/${id}/reject/`, {
+    rejection_reason: rejectionReason,
+  });
+
 export const getShipInspections = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<ShipInspection>>>('/port-health/ship-inspections/', { params });
 
-export const createShipInspection = (data: Partial<ShipInspection>) =>
+/**
+ * `ShipInspectionCreate` omits the server-owned fields (`overall_status`,
+ * `inspection_date`, `inspector`, `certificate_issued`), so the verdict can no
+ * longer be supplied by the client even at the type level.
+ */
+export const createShipInspection = (data: ShipInspectionCreate) =>
   apiClient.post<ApiResponse<ShipInspection>>('/port-health/ship-inspections/', data);
 
 export const getFoodWaterInspections = (params?: Record<string, unknown>) =>

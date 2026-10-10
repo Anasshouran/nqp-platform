@@ -187,11 +187,11 @@ const PortOfficerDashboardPage = () => {
                         {
                           label: 'المسافرون',
                           data: dailyCounts,
-                          borderColor: '#0c7f6a',
+                          borderColor: 'primary.main',
                           backgroundColor: 'rgba(12,127,106,0.16)',
                           fill: true,
                           tension: 0.4,
-                          pointBackgroundColor: '#0c7f6a',
+                          pointBackgroundColor: 'primary.main',
                           pointBorderColor: '#fff',
                           pointBorderWidth: 2,
                           pointRadius: 4,

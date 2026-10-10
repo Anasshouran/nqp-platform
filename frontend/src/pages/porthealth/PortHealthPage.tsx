@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
@@ -21,6 +23,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import { PageHeader } from '../../components/common';
 import { DataTable, StatusChip } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
+import { notifyError, notifySuccess } from '../../utils/toast';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import KpiCard from '../../components/dashboard/KpiCard';
 import { useServerTable } from '../../hooks/useServerTable';
@@ -33,6 +36,9 @@ import {
   getFoodWaterInspections,
   getHealthCertificates,
   getHealthDeclarations,
+  submitDeclarationReview,
+  approveDeclaration,
+  rejectDeclaration,
   getIsolationRecords,
   getPassengers,
   getPortEmergencies,
@@ -250,6 +256,68 @@ const PassengersTab = () => {
   );
 };
 
+/**
+ * Phase 1D-6B lifecycle actions. Only the transitions the frozen state machine
+ * allows are offered: RECEIVED -> REVIEWED -> {APPROVED, REJECTED}. APPROVED and
+ * REJECTED are terminal — a rejected declaration is never revived in place;
+ * re-submission means creating a new declaration.
+ */
+const DeclarationActions = ({ row, onDone }: { row: HealthDeclaration; onDone: () => void }) => {
+  const [busy, setBusy] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [reason, setReason] = useState('');
+
+  const run = async (fn: () => Promise<unknown>, okMsg: string) => {
+    setBusy(true);
+    try {
+      await fn();
+      notifySuccess(okMsg);
+      setRejectOpen(false);
+      setReason('');
+      onDone();
+    } catch {
+      notifyError('تعذّر تنفيذ الإجراء — تحقق من الحالة الحالية والصلاحيات');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (row.status !== 'RECEIVED' && row.status !== 'REVIEWED') return null;
+
+  return (
+    <Stack direction="row" spacing={1} alignItems="center">
+      {row.status === 'RECEIVED' && (
+        <Button size="small" variant="outlined" disabled={busy}
+          onClick={() => run(() => submitDeclarationReview(row.id), 'تم تحويل الإقرار قيد المراجعة')}>
+          بدء المراجعة
+        </Button>
+      )}
+      {row.status === 'REVIEWED' && (
+        <>
+          <Button size="small" variant="contained" color="success" disabled={busy}
+            onClick={() => run(() => approveDeclaration(row.id), 'تم اعتماد الإقرار')}>
+            اعتماد
+          </Button>
+          <Button size="small" variant="outlined" color="error" disabled={busy || rejectOpen}
+            onClick={() => setRejectOpen((v) => !v)}>
+            رفض
+          </Button>
+        </>
+      )}
+      {rejectOpen && (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <TextField size="small" label="سبب الرفض (مطلوب)" value={reason}
+            onChange={(e) => setReason(e.target.value)} />
+          <Button size="small" variant="contained" color="error" disabled={busy || !reason.trim()}
+            onClick={() => run(() => rejectDeclaration(row.id, reason.trim()), 'تم رفض الإقرار')}>
+            تأكيد الرفض
+          </Button>
+        </Stack>
+      )}
+    </Stack>
+  );
+};
+
 const DeclarationsTab = () => {
   const t = useServerTable<HealthDeclaration>({ fetchData: getHealthDeclarations });
   return (
@@ -261,6 +329,21 @@ const DeclarationsTab = () => {
         { key: 'illness_on_board', label: 'حالات مرضية', render: (r) => (r.illness_on_board ? 'نعم' : 'لا'), hideOnMobile: true },
         { key: 'deaths_on_board', label: 'الوفيات', render: (r) => r.deaths_on_board, hideOnMobile: true },
         { key: 'status', label: 'الحالة', render: (r) => { const m = declarationStatus[r.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : r.status; } },
+        {
+          key: 'actions',
+          label: 'الإجراءات',
+          render: (r) => <DeclarationActions row={r} onDone={t.refresh} />,
+        },
+        {
+          key: 'reviewed',
+          label: 'المراجعة',
+          hideOnMobile: true,
+          render: (r) => (r.reviewed_by_name ? (
+            <Typography variant="caption">{r.reviewed_by_name} · {r.reviewed_at ? formatDate(r.reviewed_at) : '—'}</Typography>
+          ) : (
+            <Typography variant="caption" color="text.secondary">{r.rejection_reason || '—'}</Typography>
+          )),
+        },
       ]}
       rows={t.rows} rowKey={(r) => r.id} count={t.count} page={t.page} rowsPerPage={t.rowsPerPage}
       pageSizeOptions={t.pageSizeOptions} loading={t.loading} error={t.error}

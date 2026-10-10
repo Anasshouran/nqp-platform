@@ -57,6 +57,7 @@ import type {
   TravelRequirement,
 } from '../api/endpoints/public';
 import { notifyError } from '../utils/toast';
+import { maskIdentity } from '../utils/maskIdentity';
 import { formatDateTime } from '../utils/formatters';
 
 interface TabPanelProps {
@@ -66,7 +67,7 @@ interface TabPanelProps {
 }
 
 const TabPanel = ({ children, value, index }: TabPanelProps) => (
-  <Box role="tabpanel" hidden={value !== index} id={`verify-tab-${index}`} aria-labelledby={`verify-tab-${index}`}>
+  <Box role="tabpanel" hidden={value !== index} id={`verify-tabpanel-${index}`} aria-labelledby={`verify-tab-${index}`} tabIndex={0}>
     {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
   </Box>
 );
@@ -174,10 +175,10 @@ const LookupTab = () => {
                     </Box>
                     <Box>
                       <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        {result.full_name}
+                        {maskIdentity(result.full_name)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" dir="ltr" textAlign="right">
-                        {result.passport_number}
+                        {result.passport_number ? `••••${result.passport_number.slice(-4)}` : '—'}
                       </Typography>
                     </Box>
                   </Stack>
@@ -481,10 +482,10 @@ const QrTab = () => {
               {result.valid && result.traveler ? (
                 <Stack spacing={1}>
                   <Typography variant="body1">
-                    <b>الاسم:</b> {result.traveler.full_name}
+                    <b>الاسم:</b> {maskIdentity(result.traveler.full_name)}
                   </Typography>
                   <Typography variant="body1">
-                    <b>جواز السفر:</b> {result.traveler.passport_number}
+                    <b>جواز السفر:</b> {result.traveler.passport_number ? `••••${result.traveler.passport_number.slice(-4)}` : '—'}
                   </Typography>
                   <Typography variant="body1">
                     <b>الحالة:</b> {registrationLabels[result.traveler.registration_status] || result.traveler.registration_status}
@@ -637,10 +638,10 @@ const CertificateTab = () => {
                     <b>رقم الشهادة:</b> {result.certificate.certificate_number}
                   </Typography>
                   <Typography variant="body1">
-                    <b>اسم الحامل:</b> {result.certificate.traveler_name}
+                    <b>اسم الحامل:</b> {maskIdentity(result.certificate.traveler_name)}
                   </Typography>
                   <Typography variant="body1">
-                    <b>جواز السفر:</b> {result.certificate.passport_number}
+                    <b>جواز السفر:</b> {result.certificate.passport_number ? `••••${result.certificate.passport_number.slice(-4)}` : '—'}
                   </Typography>
                   <Typography variant="body1">
                     <b>النوع:</b> {certificateTypeLabels[result.certificate.certificate_type] || result.certificate.certificate_type}
@@ -979,7 +980,7 @@ const FlightTab = () => {
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" flexWrap="wrap">
                 <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Typography sx={{ fontWeight: 800, fontFamily: 'monospace', fontSize: 16 }}>
+                  <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 16 }}>
                     {f.flight_number}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">{f.carrier_name}</Typography>
@@ -1046,7 +1047,7 @@ const FoodShipmentTab = () => {
           <CardContent>
             <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" flexWrap="wrap">
               <Stack direction="row" spacing={1.5} alignItems="center">
-                <Typography sx={{ fontWeight: 800, fontFamily: 'monospace', fontSize: 16 }}>{shipment.manifest_number}</Typography>
+                <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 16 }}>{shipment.manifest_number}</Typography>
                 <Typography variant="caption" color="text.secondary">{shipment.port_name}</Typography>
               </Stack>
               <StatusChip label={shipment.status_label} tone={released ? 'success' : shipment.status === 'REJECTED' || shipment.status === 'DESTROYED' || shipment.status === 'HOLD' ? 'error' : 'warning'} />
@@ -1100,13 +1101,13 @@ const VerifyTools = () => {
           scrollButtons="auto"
           aria-label="أدوات التحقق"
         >
-          <Tab icon={<SearchIcon />} iconPosition="start" label="بحث عن الطلب" />
-          <Tab icon={<QrCode2Icon />} iconPosition="start" label="QR Code" />
-          <Tab icon={<VerifiedIcon />} iconPosition="start" label="شهادة صحية" />
-          <Tab icon={<NotificationsIcon />} iconPosition="start" label="إشعارات فورية" />
-          <Tab icon={<PublicIcon />} iconPosition="start" label="مشورة السفر" />
-          <Tab icon={<FlightTakeoffIcon />} iconPosition="start" label="حالة الرحلة" />
-          <Tab icon={<LocalShippingIcon />} iconPosition="start" label="تتبع الشحنة" />
+          <Tab id="verify-tab-0" aria-controls="verify-tabpanel-0" icon={<SearchIcon />} iconPosition="start" label="بحث عن الطلب" />
+          <Tab id="verify-tab-1" aria-controls="verify-tabpanel-1" icon={<QrCode2Icon />} iconPosition="start" label="QR Code" />
+          <Tab id="verify-tab-2" aria-controls="verify-tabpanel-2" icon={<VerifiedIcon />} iconPosition="start" label="شهادة صحية" />
+          <Tab id="verify-tab-3" aria-controls="verify-tabpanel-3" icon={<NotificationsIcon />} iconPosition="start" label="إشعارات فورية" />
+          <Tab id="verify-tab-4" aria-controls="verify-tabpanel-4" icon={<PublicIcon />} iconPosition="start" label="مشورة السفر" />
+          <Tab id="verify-tab-5" aria-controls="verify-tabpanel-5" icon={<FlightTakeoffIcon />} iconPosition="start" label="حالة الرحلة" />
+          <Tab id="verify-tab-6" aria-controls="verify-tabpanel-6" icon={<LocalShippingIcon />} iconPosition="start" label="تتبع الشحنة" />
         </Tabs>
       </Box>
 

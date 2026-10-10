@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -225,7 +226,7 @@ const GeneralDirectorPage = () => {
             <ExportButton
               filename="executive-dashboard"
               headers={['القطاع', 'المحطات', 'الفحوصات', 'المشتبهة', 'الجاهزية%', 'الحالة']}
-              rows={chartSectors.map((s) => [s.name, s.stations, s.screens, s.suspected, s.readiness, sectorMeta[s.status].label])}
+              rows={chartSectors.map((s) => [s.name, s.stations, s.screens, s.suspected, s.readiness, labelOf(sectorMeta, s.status)])}
               disabled={loading}
             />
           </Stack>
@@ -408,7 +409,7 @@ const GeneralDirectorPage = () => {
               { key: 'screens', label: 'فحوصات', align: 'center', hideOnMobile: true },
               { key: 'suspected', label: 'مشتبهة', align: 'center', hideOnMobile: true },
               { key: 'readiness', label: 'الجاهزية%', align: 'center', render: (r: SectorRow) => <StatusChip label={`${r.readiness}%`} tone={r.readiness >= 95 ? 'success' : r.readiness >= 90 ? 'info' : 'warning'} /> },
-              { key: 'status', label: 'الحالة', render: (r: SectorRow) => <StatusChip label={sectorMeta[r.status].label} tone={sectorMeta[r.status].tone} /> },
+              { key: 'status', label: 'الحالة', render: (r: SectorRow) => <StatusChip label={labelOf(sectorMeta, r.status)} tone={toneOf(sectorMeta, r.status)} /> },
             ]}
             rows={sectors}
             rowKey={(r: SectorRow) => r.id}

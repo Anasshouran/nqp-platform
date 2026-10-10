@@ -49,9 +49,9 @@ export const getRecords = (params?: Record<string, unknown>) =>
 export const createRecord = (payload: Record<string, unknown>) =>
   apiClient.post<ApiResponse<VaccinationRecord>>('/vaccination/records/', payload);
 
-export const searchTraveler = (passport: string) =>
+export const searchTraveler = (passport: string, destination?: string) =>
   apiClient.get<ApiResponse<TravelerLookupResult>>('/vaccination/records/search-traveler/', {
-    params: { passport },
+    params: { passport, destination: destination || undefined },
   });
 
 export const getCertificates = (params?: Record<string, unknown>) =>
@@ -64,7 +64,9 @@ export const issueCertificate = (recordId: string, validityDays?: number) =>
   });
 
 export const getCertificateQr = (id: string) =>
-  apiClient.get<ApiResponse<{ qr_png: string }>>(`/vaccination/certificates/${id}/qr/`);
+  apiClient.get<ApiResponse<{ qr_png: string; verification_url: string; signature: string }>>(
+    `/vaccination/certificates/${id}/qr/`,
+  );
 
 export const revokeCertificate = (id: string) =>
   apiClient.post<ApiResponse<VaccinationCertificate>>(`/vaccination/certificates/${id}/revoke/`);
@@ -87,6 +89,21 @@ export const getVerifications = (params?: Record<string, unknown>) =>
 export const publicVerifyCertificate = (code: string) =>
   apiClient.get<ApiResponse<VaccineCertificateVerifyResult>>(
     `/vaccination/public/verify/${encodeURIComponent(code)}/`,
+  );
+
+export const replaceCertificate = (
+  certificateId: string,
+  replacementReason: string,
+) =>
+  apiClient.post<ApiResponse<VaccinationCertificate>>(
+    `/vaccination/certificates/${certificateId}/replace/`,
+    { replacement_reason: replacementReason },
+  );
+
+export const reissueCertificate = (certificateId: string) =>
+  apiClient.post<ApiResponse<VaccinationCertificate>>(
+    `/vaccination/certificates/${certificateId}/reissue/`,
+    {},
   );
 
 export interface VaccineCertificateVerifyResult {

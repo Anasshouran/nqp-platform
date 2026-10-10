@@ -1,3 +1,4 @@
+import { labelOf, colorOf } from '../../utils/labels';
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -126,11 +127,11 @@ export const KpiCard = ({ icon, value, label, trend, trendLabel, status, statusC
 };
 
 export const RiskBadge = ({ risk }: { risk: RiskKey }) => (
-  <Chip label={RISK_META[risk].label} size="small" sx={{ bgcolor: RISK_META[risk].bg, color: RISK_META[risk].color, fontWeight: 700, borderRadius: 2 }} />
+  <Chip label={labelOf(RISK_META, risk)} size="small" sx={{ bgcolor: colorOf(RISK_META, risk, 'bg'), color: colorOf(RISK_META, risk, 'color'), fontWeight: 700, borderRadius: 2 }} />
 );
 
 export const StatusBadge = ({ status }: { status: HealthStatus }) => (
-  <Chip label={STATUS_META[status].label} size="small" sx={{ bgcolor: STATUS_META[status].bg, color: STATUS_META[status].color, fontWeight: 700, borderRadius: 2 }} />
+  <Chip label={labelOf(STATUS_META, status)} size="small" sx={{ bgcolor: colorOf(STATUS_META, status, 'bg'), color: colorOf(STATUS_META, status, 'color'), fontWeight: 700, borderRadius: 2 }} />
 );
 
 /* شريط تقدم أفقي ملوّن */

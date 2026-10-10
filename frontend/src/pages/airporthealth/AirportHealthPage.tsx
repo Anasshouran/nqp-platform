@@ -36,6 +36,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import EmergencyIcon from '@mui/icons-material/Campaign';
 import type { NavGroup } from './shared';
 import { C, OfflinePill } from './shared';
+import { useOfflineSync } from '../../hooks/useOfflineSync';
 import * as Operations from './screens/operations';
 import * as PassengerHealth from './screens/passenger-health';
 import * as Clinical from './screens/clinical';
@@ -183,6 +184,9 @@ const AirportHealthPage = () => {
   const navigate = useNavigate();
   const Active = SCREEN[screen] || SCREEN.dashboard;
   const nav = (id: string) => setScreen(id);
+  const { status } = useOfflineSync();
+  const offlineConn = status === 'OFFLINE';
+  const pillState = offlineConn ? 'OFFLINE' : status === 'SYNC_PENDING' ? 'SYNCING' : 'ONLINE';
 
   return (
     <ThemeProvider theme={healthTheme}>
@@ -201,7 +205,7 @@ const AirportHealthPage = () => {
             <Typography variant="caption" color="text.secondary">مطار الخرطوم الدولي · محطة الحجر الصحي</Typography>
           </Box>
           <Chip label="محطة رئيسية" size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
-          <OfflinePill state="ONLINE" />
+          <OfflinePill state={pillState} />
         </Stack>
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>

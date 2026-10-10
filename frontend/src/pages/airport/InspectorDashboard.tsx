@@ -58,7 +58,7 @@ const FlightNumberChip = ({ code }: { code: string }) => (
       bgcolor: 'primary.light',
       color: 'primary.dark',
       fontFamily: 'monospace',
-      fontWeight: 800,
+      fontWeight: 700,
       fontSize: 12,
       letterSpacing: '0.02em',
     }}
@@ -257,7 +257,7 @@ const InspectorDashboard = () => {
                         width: 42,
                         height: 42,
                         fontSize: 15,
-                        fontWeight: 800,
+                        fontWeight: 700,
                         flexShrink: 0,
                         bgcolor: s.kind === 'RED' ? 'error.light' : 'warning.light',
                         color: s.kind === 'RED' ? 'error.main' : 'warning.main',
@@ -377,7 +377,7 @@ const InspectorDashboard = () => {
                         const pct = Math.round((s.count / max) * 100);
                         return (
                           <Stack key={s.flight_number} direction="row" spacing={1.25} alignItems="center">
-                            <Typography variant="caption" component="span" sx={{ fontFamily: 'monospace', fontWeight: 800, minWidth: 84 }}>
+                            <Typography variant="caption" component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, minWidth: 84 }}>
                               {s.flight_number}
                             </Typography>
                             <Box sx={{ flexGrow: 1, height: 6, borderRadius: 99, bgcolor: 'rgba(16,40,34,0.07)' }}>
@@ -417,7 +417,7 @@ const ReportRow = ({ label, value }: { label: string; value: number }) => (
     </Typography>
     <Typography
       component="span"
-      sx={{ fontWeight: 800, fontSize: 15, fontVariantNumeric: 'tabular-nums', color: 'primary.dark' }}
+      sx={{ fontWeight: 700, fontSize: 15, fontVariantNumeric: 'tabular-nums', color: 'primary.dark' }}
     >
       {value.toLocaleString('en-US')}
     </Typography>

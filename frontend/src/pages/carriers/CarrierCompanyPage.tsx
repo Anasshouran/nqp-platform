@@ -21,6 +21,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { PageHeader } from '../../components/common';
+import { ConfirmDialog } from '../../components/ui';
 import { getCompanyProfile, updateCompanyProfile, getApiKey, regenerateApiKey } from '../../api/endpoints/carriers';
 import type { CarrierApiKeyInfo, CarrierProfile } from '../../types/carrier';
 import { formatDateTime } from '../../utils/formatters';
@@ -33,6 +34,7 @@ const CarrierCompanyPage = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -79,7 +81,6 @@ const CarrierCompanyPage = () => {
   };
 
   const handleRegenerate = async () => {
-    if (!window.confirm('إعادة توليد مفتاح API يُبطل المفتاح الحالي فوراً. هل تريد المتابعة؟')) return;
     setMessage(null);
     try {
       const res = await regenerateApiKey();
@@ -242,7 +243,7 @@ const CarrierCompanyPage = () => {
 
               <Divider sx={{ my: 3 }} />
 
-              <Button variant="outlined" color="error" startIcon={<RefreshIcon />} fullWidth onClick={handleRegenerate}>
+              <Button variant="outlined" color="error" startIcon={<RefreshIcon />} fullWidth onClick={() => setConfirmRegenOpen(true)}>
                 إعادة توليد المفتاح
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
@@ -252,6 +253,20 @@ const CarrierCompanyPage = () => {
           </Card>
         </Grid>
       </Grid>
+
+      <ConfirmDialog
+        open={confirmRegenOpen}
+        title="إعادة توليد مفتاح API"
+        message="إعادة توليد مفتاح API يُبطل المفتاح الحالي فوراً. هل تريد المتابعة؟"
+        confirmLabel="إعادة التوليد"
+        cancelLabel="إلغاء"
+        tone="error"
+        onConfirm={() => {
+          setConfirmRegenOpen(false);
+          void handleRegenerate();
+        }}
+        onClose={() => setConfirmRegenOpen(false)}
+      />
     </Box>
   );
 };

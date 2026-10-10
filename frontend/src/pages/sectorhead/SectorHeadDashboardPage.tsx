@@ -44,6 +44,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { getSectorHeadDashboard } from '../../api/endpoints/food';
+import { notifyError } from '../../utils/toast';
 import type { SectorHeadDashboard } from '../../types/food';
 
 const PERIODS = [
@@ -67,9 +68,9 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   AWAITING_INSPECTION: { label: 'بانتظار التفتيش', color: '#fd7e14' },
   UNDER_INSPECTION: { label: 'قيد التفتيش', color: '#0d6efd' },
   AWAITING_DECISION: { label: 'بانتظار القرار', color: '#ab8208' },
-  HOLD: { label: 'محتجزة', color: '#c63a3a' },
+  HOLD: { label: 'محتجزة', color: 'error.main' },
   RE_EXPORT: { label: 'إعادة تصدير', color: '#e83e8c' },
-  RELEASED: { label: 'مفرج عنها', color: '#1d7a54' },
+  RELEASED: { label: 'مفرج عنها', color: 'success.main' },
   CONDITIONAL_RELEASE: { label: 'إفراج مشروط', color: '#20c997' },
   REJECTED: { label: 'مرفوضة', color: '#b02a37' },
   DESTROYED: { label: 'متلفة', color: '#6f2da8' },
@@ -83,7 +84,6 @@ const getErrMessage = (e: unknown, fallback: string): string => {
   const err = e as { response?: { data?: { message?: string } } };
   return err?.response?.data?.message || fallback;
 };
-const notifyError = (m: string) => console.error(m);
 
 const SectorHeadDashboardPage = () => {
   const navigate = useNavigate();
@@ -92,16 +92,20 @@ const SectorHeadDashboardPage = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const periodRef = useRef(period);
+  const reqId = useRef(0);
 
   const loadData = useCallback(async (p: string) => {
+    const current = ++reqId.current;
     try {
       const res = await getSectorHeadDashboard(p);
+      if (reqId.current !== current) return;
       setDash(res.data.data);
       setLastUpdated(new Date());
     } catch (e) {
+      if (reqId.current !== current) return;
       notifyError(getErrMessage(e, 'تعذر تحميل لوحة القطاع'));
     } finally {
-      setLoadingData(false);
+      if (reqId.current === current) setLoadingData(false);
     }
   }, []);
 
@@ -432,7 +436,7 @@ const SectorHeadDashboardPage = () => {
                   <FinanceRow label="الإجمالي" value={dash.finance.total} bold />
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
-                  <PaymentsIcon fontSize="small" sx={{ color: '#1d7a54' }} />
+                  <PaymentsIcon fontSize="small" sx={{ color: 'success.main' }} />
                   <Typography variant="caption" color="text.secondary">فواتير محصّلة بالجنيه السوداني (SDG) — للانتقال إلى النظام المالي دون تعديل القيود</Typography>
                 </Stack>
               </Paper>

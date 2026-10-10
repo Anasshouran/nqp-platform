@@ -31,6 +31,8 @@ import {
 import type { TravelerDocument } from '../../api/endpoints/travelers';
 import { getTravelerSession } from '../../utils/travelerSession';
 import { lookupTraveler } from '../../api/endpoints/public';
+import { ConfirmDialog } from '../../components/uikit';
+import { notifySuccess, notifyError } from '../../utils/toast';
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -69,6 +71,8 @@ const UploadDocumentsPage = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TravelerDocument | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const loadDocuments = async (id: string) => {
     try {
@@ -159,13 +163,18 @@ const UploadDocumentsPage = () => {
     uploadFiles(files);
   };
 
-  const removeDocument = async (docId: string) => {
-    if (!travelerId) return;
+  const confirmDelete = async () => {
+    if (!travelerId || !deleteTarget) return;
+    setDeleteBusy(true);
     try {
-      await deleteTravelerDocument(travelerId, docId);
-      setDocuments((prev) => prev.filter((d) => d.id !== docId));
+      await deleteTravelerDocument(travelerId, deleteTarget.id);
+      setDocuments((prev) => prev.filter((d) => d.id !== deleteTarget.id));
+      notifySuccess('تم حذف المستند');
+      setDeleteTarget(null);
     } catch {
-      setError('تعذر حذف المستند.');
+      notifyError('تعذر حذف المستند');
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -320,7 +329,7 @@ const UploadDocumentsPage = () => {
                         </Typography>
                       </Box>
                       <Chip label="مكتمل" size="small" color="success" />
-                      <IconButton aria-label="حذف" onClick={() => removeDocument(doc.id)} size="small">
+                      <IconButton aria-label="حذف" onClick={() => setDeleteTarget(doc)} size="small">
                         <DeleteOutlineIcon />
                       </IconButton>
                     </Stack>
@@ -345,6 +354,19 @@ const UploadDocumentsPage = () => {
           </Stack>
         </>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="حذف المستند"
+        message={`هل تريد حذف «${deleteTarget?.file.split('/').pop() || 'المستند'}»؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmLabel="حذف"
+        tone="error"
+        loading={deleteBusy}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+      />
     </Container>
   );
 };

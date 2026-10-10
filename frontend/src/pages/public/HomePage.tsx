@@ -1,3 +1,4 @@
+import En from '../../components/uikit/En';
 import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -35,14 +36,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { getNews, getCirculars, getPublicStatistics, getPorts } from '../../api/endpoints/public';
 import type { NewsArticle, Circular, PublicStatistics, PublicPort } from '../../api/endpoints/public';
 import { SectionTitle, CardsGridSkeleton, Particles } from '../../components/common';
+import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { accentTokens } from '../../styles/theme';
-
-const categoryLabels: Record<string, string> = {
-  GENERAL: 'عام',
-  HEALTH: 'صحي',
-  TRAVEL: 'سفر',
-  OFFICIAL: 'رسمي',
-};
 
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar') : '—';
@@ -387,7 +382,7 @@ const HomePage = () => {
                         {loading ? (
                           <Skeleton width={54} height={34} />
                         ) : (
-                          <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>
                             {stats ? `${Number(stats[stat.key] ?? 0).toLocaleString('en-US')}+` : '—'}
                           </Typography>
                         )}
@@ -475,7 +470,7 @@ const HomePage = () => {
                       <Popup>
                         <Box sx={{ minWidth: 200 }}>
                           <Typography sx={{ fontWeight: 700 }}>{p.name_ar}</Typography>
-                          {p.name_en && <Typography variant="caption" display="block" sx={{ mb: 0.5 }}>{p.name_en}</Typography>}
+                          {p.name_en && <Typography variant="caption" display="block" sx={{ mb: 0.5 }}><En>{p.name_en}</En></Typography>}
                           <Typography variant="caption" display="block" sx={{ opacity: 0.8 }}>
                             {PORT_TYPE_GROUPS.find((g) => g.type === p.type)?.label ?? p.type}
                             {p.address ? ` — ${p.address}` : ''}
@@ -617,21 +612,7 @@ const HomePage = () => {
                               alt={article.title}
                               sx={{ objectFit: 'cover' }}
                             />
-                            <Chip
-                              label={categoryLabels[article.category] || article.category}
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                position: 'absolute',
-                                top: 12,
-                                insetInlineStart: 12,
-                                bgcolor: 'rgba(255,255,255,0.9)',
-                                color: 'primary.dark',
-                                borderColor: 'rgba(255,255,255,0.7)',
-                                fontWeight: 700,
-                                backdropFilter: 'blur(8px)',
-                              }}
-                            />
+                            <NewsCategoryChip category={article.category} overMedia sx={{ position: 'absolute', top: 12, insetInlineStart: 12 }} />
                           </Box>
                         ) : (
                           <Box
@@ -643,13 +624,7 @@ const HomePage = () => {
                               pb: 0,
                             }}
                           >
-                            <Chip
-                              label={categoryLabels[article.category] || article.category}
-                              size="small"
-                              variant="outlined"
-                              color="primary"
-                              sx={{ fontWeight: 700 }}
-                            />
+                            <NewsCategoryChip category={article.category} sx={{ fontWeight: 700 }} />
                           </Box>
                         )}
                         <CardContent sx={{ p: 2.75, flex: 1 }}>
@@ -712,7 +687,7 @@ const HomePage = () => {
                   sx={{ px: 2.5, py: 1.75, bgcolor: 'primary.lighter' }}
                 >
                   <CampaignIcon sx={{ color: 'primary.dark' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 800, flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
                     التعاميم
                   </Typography>
                   <Button component={Link} to="/circulars" size="small" endIcon={<ArrowBackIcon />} sx={{ fontWeight: 700 }}>

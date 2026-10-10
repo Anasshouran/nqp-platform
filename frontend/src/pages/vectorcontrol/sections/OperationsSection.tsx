@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -59,7 +60,7 @@ const NewOperationForm = ({ onSaved }: { onSaved: () => void }) => {
       setForm((f) => ({ ...f, focus: '', site: '', vector: '', area_m2: '', team: '', application_method: '', planned_at: '', notes: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ العملية — تأكد من نقطة الدخول');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ العملية — تأكد من نقطة الدخول');
     } finally {
       setSaving(false);
     }
@@ -120,7 +121,7 @@ const NextDialog = ({ op, onClose, onSaved }: NextDialogProps) => {
       onSaved();
       onClose();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر تغيير حالة العملية');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر تغيير حالة العملية');
     } finally {
       setSaving(false);
     }
@@ -174,7 +175,7 @@ const ChemicalsDialog = ({ op, onClose, onSaved }: ChemicalsDialogProps) => {
       setForm((f) => ({ ...f, chemical: '', dosage: '', concentration: '', quantity_used: '', unit: '', area_covered: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر إضافة المبيد ');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر إضافة المبيد ');
     } finally {
       setSaving(false);
     }
@@ -227,7 +228,7 @@ const ResultDialog = ({ op, onClose, onSaved }: ResultDialogProps) => {
       onSaved();
       onClose();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ النتيجة');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ النتيجة');
     } finally {
       setSaving(false);
     }
@@ -259,7 +260,7 @@ const OperationsSection = () => {
   const [chemicalsFor, setChemicalsFor] = useState<VectorControlOperation | null>(null);
   const [resultFor, setResultFor] = useState<VectorControlOperation | null>(null);
 
-  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => t.refresh()).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   return (
     <SectionCard id="operations">

@@ -34,6 +34,8 @@ import { travelerMe, getTravelerStatus, getTravelerDeclaration } from '../../api
 import type { TravelerDeclaration, TravelerAuthUser } from '../../api/endpoints/travelers';
 import { getNotices } from '../../api/endpoints/public';
 import type { HealthNotice } from '../../api/endpoints/public';
+import { logout as logoutApi } from '../../api/endpoints/auth';
+import { purgeServiceWorkerCaches } from '../../api/client';
 
 const registrationLabels: Record<string, string> = {
   PENDING_DOCUMENTS: 'بانتظار المستندات',
@@ -145,9 +147,21 @@ const TravelerDashboardPage = () => {
       .finally(() => setDeclarationLoading(false));
   }, [travelerId]);
 
-  const logout = () => {
+  const logout = async () => {
+    // نبلّغ الخادم ليسقط رمز التحديث من القائمة السوداء، وإلا بقي صالحاً
+    // بعد "تسجيل الخروج" على جهاز مشترك.
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      try {
+        await logoutApi(refreshToken);
+      } catch {
+        // تجاهُل فشل الشبكة: التنظيف المحلي يبقى ضرورياً
+      }
+    }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('auth_user');
+    purgeServiceWorkerCaches();
     navigate('/traveler/login', { replace: true });
   };
 

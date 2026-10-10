@@ -1,5 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AxiosError } from 'axios';
 import type { ApiResponse, PaginatedResponse } from '../types/api';
+
+/** رسالة عجز تحميل واحدة، صادقة في سببها. */
+const GENERIC_LOAD_ERROR = 'تعذر تحميل البيانات، حاول مرة أخرى';
+const FORBIDDEN_ERROR = 'لا تملك صلاحية الوصول إلى هذه البيانات';
+
+/**
+ * يفصل بين «لا تملك الصلاحية» و«تعذّر الاتصال».
+ *
+ * الخطأ الوحيد الذي كان يُعرض للمستخدم هو catch فارغ يبتلع الاستثناء، فكل
+ * 403 كان يظهر كتعذّر تحميل — وهو ما أخفى ثلاثة أخطاء RBAC متتالية في
+ * صفحات WHO. نُبقي نصّ الخادم حين يكون مفيداً، ولا نخترع رسالة لغير ما نعرفه.
+ */
+export const describeLoadFailure = (err: unknown): string => {
+  if (err instanceof AxiosError) {
+    const status = err.response?.status;
+    if (status === 403) {
+      const detail = (err.response?.data as { detail?: string } | undefined)?.detail;
+      return detail?.trim() || FORBIDDEN_ERROR;
+    }
+    if (status === 401) return 'انتهت الجلسة، يرجى تسجيل الدخول من جديد';
+    if (status !== undefined) return `تعذر تحميل البيانات (خطأ ${status})`;
+  }
+  return GENERIC_LOAD_ERROR;
+};
 
 export interface DataTableFilterDef {
   key: string;
@@ -91,9 +116,12 @@ export const useServerTable = <T,>({
         if (runId.current !== current) return;
         setRows(response.data.data.results);
         setCount(response.data.data.count);
-      } catch {
+      } catch (err) {
         if (runId.current !== current) return;
-        setError('تعذر تحميل البيانات، حاول مرة أخرى');
+        // 403 ليس فشل شبكة: «تعذر تحميل البيانات» كانت تُخفي نقص الصلاحيات
+        // خلف رسالة عامة، فيبحث المستخدم عن عطل اتصال بينما المشكلة في RBAC.
+        // نعتمد نصّ الخادم حين يتوفّر لنقول الحقيقة.
+        setError(describeLoadFailure(err));
       } finally {
         if (runId.current === current) setLoading(false);
       }

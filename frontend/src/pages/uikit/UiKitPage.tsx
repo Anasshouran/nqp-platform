@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -89,7 +90,7 @@ const UiKitPage = () => {
           columns={[
             { key: 'code', label: 'الكود', render: (r) => <Chip label={r.code} size="small" color="primary" variant="outlined" /> },
             { key: 'name', label: 'الاسم' },
-            { key: 'status', label: 'الحالة', render: (r) => <StatusChip label={statusMap[r.status].label} tone={statusMap[r.status].tone} /> },
+            { key: 'status', label: 'الحالة', render: (r) => <StatusChip label={labelOf(statusMap, r.status)} tone={toneOf(statusMap, r.status)} /> },
             { key: 'count', label: 'العدد', align: 'center' },
           ]}
           rows={demoRows}

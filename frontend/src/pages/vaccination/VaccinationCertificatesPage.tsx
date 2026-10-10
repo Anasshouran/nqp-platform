@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,13 +17,15 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PrintIcon from '@mui/icons-material/Print';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BlockIcon from '@mui/icons-material/Block';
+import Rotate3dIcon from '@mui/icons-material/RotateRight';
 import PersonIcon from '@mui/icons-material/Person';
 import { PageHeader } from '../../components/common';
 import { DataTable, StatusChip } from '../../components/ui';
 import { useServerTable } from '../../hooks/useServerTable';
-import { getCertificateQr, getCertificates, revokeCertificate } from '../../api/endpoints/vaccination';
+import { getCertificateQr, getCertificates, revokeCertificate, replaceCertificate, reissueCertificate } from '../../api/endpoints/vaccination';
 import type { VaccinationCertificate } from '../../types/vaccination';
 import { formatDate, formatDateTime } from '../../utils/formatters';
+import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
 const statusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
@@ -38,7 +41,7 @@ const printCertificate = (cert: VaccinationCertificate, qrPng?: string) => {
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8" />
-<title>شهادة تطعيم دولية - ${cert.certificate_number}</title>
+<title>شهادة تطعيم دولية - ${escapeHtml(cert.certificate_number)}</title>
 <style>
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; padding: 32px; color: #102822; }
   .sheet { max-width: 720px; margin: 0 auto; border: 3px solid #0c7f6a; border-radius: 16px; padding: 40px; }
@@ -61,26 +64,26 @@ const printCertificate = (cert: VaccinationCertificate, qrPng?: string) => {
       <h1>وزارة الصحة الاتحادية - بوابة التطعيم الدولي</h1>
       <h2>شهادة التطعيم الدولية (International Vaccination Certificate)</h2>
     </div>
-    <div class="stamp">${statusMeta[cert.status]?.label || cert.status}</div>
+    <div class="stamp">${escapeHtml(statusMeta[cert.status]?.label || cert.status)}</div>
   </div>
-  <div class="row"><span>رقم الشهادة</span><b>${cert.certificate_number}</b></div>
-  <div class="row"><span>اسم حامل الشهادة</span><b>${cert.traveler?.full_name || '—'}</b></div>
-  <div class="row"><span>جواز السفر</span><b>${cert.traveler?.passport_number || '—'}</b></div>
-  <div class="row"><span>اللقاح</span><b>${cert.vaccine_name_ar || '—'}</b></div>
-  <div class="row"><span>رمز اللقاح</span><b>${cert.vaccine_code || '—'}</b></div>
+  <div class="row"><span>رقم الشهادة</span><b>${escapeHtml(cert.certificate_number)}</b></div>
+  <div class="row"><span>اسم حامل الشهادة</span><b>${escapeHtmlOr(cert.traveler?.full_name)}</b></div>
+  <div class="row"><span>جواز السفر</span><b>${escapeHtmlOr(cert.traveler?.passport_number)}</b></div>
+  <div class="row"><span>اللقاح</span><b>${escapeHtmlOr(cert.vaccine_name_ar)}</b></div>
+  <div class="row"><span>رمز اللقاح</span><b>${escapeHtmlOr(cert.vaccine_code)}</b></div>
   <div class="row"><span>الجهة المصدرة</span><b>بوابة التطعيم الدولي</b></div>
-  <div class="row"><span>تاريخ الإصدار</span><b>${formatDateTime(cert.issued_at)}</b></div>
-  <div class="row"><span>صالحة حتى</span><b>${formatDate(cert.valid_until)}</b></div>
+  <div class="row"><span>تاريخ الإصدار</span><b>${escapeHtml(formatDateTime(cert.issued_at))}</b></div>
+  <div class="row"><span>صالحة حتى</span><b>${escapeHtml(formatDate(cert.valid_until))}</b></div>
   <div class="foot">
     <div>
       <div class="qr">
-        ${qrPng ? `<img src="data:image/png;base64,${qrPng}" alt="QR" />` : ''}
-        <div class="verify">للتحقق: ${typeof window !== 'undefined' ? window.location.origin : ''}${cert.verification_path || ''}</div>
+        ${qrPng ? `<img src="data:image/png;base64,${escapeHtml(qrPng)}" alt="QR" />` : ''}
+        <div class="verify">للتحقق: ${typeof window !== 'undefined' ? window.location.origin : ''}${escapeHtml(cert.verification_path || '')}</div>
       </div>
     </div>
     <div style="text-align:left">
       <div style="font-weight:800">المصدر</div>
-      <div>${cert.issued_by_name || '—'}</div>
+      <div>${escapeHtmlOr(cert.issued_by_name)}</div>
     </div>
   </div>
 </div>
@@ -106,6 +109,11 @@ const VaccinationCertificatesPage = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<VaccinationCertificate | null>(null);
   const [revoking, setRevoking] = useState(false);
+  const [replaceTarget, setReplaceTarget] = useState<VaccinationCertificate | null>(null);
+  const [replaceReason, setReplaceReason] = useState('');
+  const [replacing, setReplacing] = useState(false);
+  const [reissueTarget, setReissueTarget] = useState<VaccinationCertificate | null>(null);
+  const [reissuing, setReissuing] = useState(false);
 
   const openView = async (c: VaccinationCertificate) => {
     setViewTarget(c);
@@ -132,6 +140,42 @@ const VaccinationCertificatesPage = () => {
       notifyError(extractErrorMessage(err, 'تعذر إلغاء الشهادة'));
     } finally {
       setRevoking(false);
+    }
+  };
+
+  //derive effective status: EXPIRED if status===ACTIVE and valid_until < today
+  const isCertificateEffectivelyExpired = (
+    cert: VaccinationCertificate
+  ): boolean => cert.status === 'ACTIVE' && new Date(cert.valid_until) < new Date();
+
+  const handleReplace = async () => {
+    if (!replaceTarget || replacing || !replaceReason.trim()) return;
+    setReplacing(true);
+    try {
+      await replaceCertificate(replaceTarget.id, replaceReason);
+      notifySuccess('تم استبدال الشهادة');
+      setReplaceTarget(null);
+      setReplaceReason('');
+      refresh();
+    } catch (err) {
+      notifyError(extractErrorMessage(err, 'تعذر استبدال الشهادة'));
+    } finally {
+      setReplacing(false);
+    }
+  };
+
+  const handleReissue = async () => {
+    if (!reissueTarget || reissuing) return;
+    setReissuing(true);
+    try {
+      await reissueCertificate(reissueTarget.id);
+      notifySuccess('تم إعادة إصدار الشهادة');
+      setReissueTarget(null);
+      refresh();
+    } catch (err) {
+      notifyError(extractErrorMessage(err, 'تعذر إعادة إصدار الشهادة'));
+    } finally {
+      setReissuing(false);
     }
   };
 
@@ -263,6 +307,32 @@ const VaccinationCertificatesPage = () => {
                 </IconButton>
               </Tooltip>
             )}
+            {v.status === 'ACTIVE' && !isCertificateEffectivelyExpired(v) && (
+              <Tooltip title="استبدال الشهادة">
+                <IconButton
+                  aria-label="استبدال الشهادة"
+                  size="small"
+                  color="warning"
+                  onClick={() => setReplaceTarget(v)}
+                  sx={{ bgcolor: 'warning.light', '&:hover': { bgcolor: 'warning.main', color: '#fff' } }}
+                >
+                  <VisibilityIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {(v.status !== 'ACTIVE' || isCertificateEffectivelyExpired(v)) && (
+              <Tooltip title="إعادة إصدار الشهادة">
+                <IconButton
+                  aria-label="إعادة إصدار الشهادة"
+                  size="small"
+                  color="primary"
+                  onClick={() => setReissueTarget(v)}
+                  sx={{ bgcolor: 'primary.light', '&:hover': { bgcolor: 'primary.main', color: '#fff' } }}
+                >
+                  <Rotate3dIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
           </>
         )}
       />
@@ -349,6 +419,57 @@ const VaccinationCertificatesPage = () => {
             sx={{ fontWeight: 700 }}
           >
             تأكيد الإلغاء
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={Boolean(replaceTarget)} onClose={() => setReplaceTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>استبدال الشهادة</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary">
+            هل تريد استبدال الشهادة «{replaceTarget?.certificate_number}»؟ سيتم إلغاء الشهادة الحالية وإنشاء شهادة جديدة برقم جديد.
+          </Typography>
+          <TextField
+            label="سبب الاستبدال"
+            type="text"
+            variant="outlined"
+            fullWidth
+            value={replaceReason}
+            onChange={(e) => setReplaceReason(e.target.value.trim().substring(0, 100))}
+            sx={{ marginBottom: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setReplaceTarget(null)} sx={{ fontWeight: 700 }}>تراجع</Button>
+          <Button
+            variant="contained"
+            disabled={replaceTarget === null || replacing}
+            startIcon={replacing ? <CircularProgress size={16} color="inherit" /> : null}
+            onClick={handleReplace}
+            sx={{ fontWeight: 700 }}
+          >
+            تأكيد الاستبدال
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={Boolean(reissueTarget)} onClose={() => setReissueTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>إعادة إصدار الشهادة</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary">
+            هل تريد إعادة إصدار شهادة جديدة من «{reissueTarget?.certificate_number}»؟ سيتم إنشاء شهادة جديدة بنشاط كامل.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setReissueTarget(null)} sx={{ fontWeight: 700 }}>تراجع</Button>
+          <Button
+            variant="contained"
+            disabled={reissueTarget === null || reissuing}
+            startIcon={reissuing ? <CircularProgress size={16} color="inherit" /> : null}
+            onClick={handleReissue}
+            sx={{ fontWeight: 700 }}
+          >
+            تأكيد إعادة الإصدار
           </Button>
         </DialogActions>
       </Dialog>

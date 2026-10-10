@@ -27,6 +27,9 @@ export interface AssistantAnswer {
   sources: AssistantSource[];
   confidence: AssistantConfidence;
   language?: string;
+  disclaimer?: string | null;
+  conversation_id?: string | null;
+  engine?: string;
 }
 
 export interface AssistantTopic {
@@ -49,3 +52,14 @@ export const getAssistantSuggestions = () =>
 
 export const getAssistantTopics = () =>
   apiClient.get<ApiResponse<AssistantTopic[]>>('/public/assistant/topics/');
+
+export interface AssistantFeedbackPayload {
+  conversation_id?: string | null;
+  rating: 1 | -1;
+  intent?: string;
+  answer_type?: string;
+  engine?: string;
+}
+
+export const submitAssistantFeedback = (payload: AssistantFeedbackPayload) =>
+  apiClient.post<ApiResponse<{ ok: boolean }>>("/public/assistant/feedback/", payload);

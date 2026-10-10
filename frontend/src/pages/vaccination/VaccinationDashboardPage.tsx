@@ -187,7 +187,7 @@ const VaccinationDashboardPage = () => {
           <Box component="section" ref={register('activity')} data-section="activity" sx={{ scrollMarginTop: '80px', mb: 4 }}>
             <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 } }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography sx={{ fontWeight: 800 }}>النشاط الأسبوعي</Typography>
+                <Typography sx={{ fontWeight: 700 }}>النشاط الأسبوعي</Typography>
                 <Chip size="small" label={`${data?.doses_this_week ?? 0} جرعة هذا الأسبوع`} color="info" sx={{ fontWeight: 700 }} />
               </Stack>
               {loading ? (
@@ -233,7 +233,7 @@ const VaccinationDashboardPage = () => {
           <Box component="section" ref={register('stocks')} data-section="stocks" sx={{ scrollMarginTop: '80px', mb: 4 }}>
             <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 } }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography sx={{ fontWeight: 800 }}>تشغيلات قاربت على الانتهاء</Typography>
+                <Typography sx={{ fontWeight: 700 }}>تشغيلات قاربت على الانتهاء</Typography>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}
@@ -289,7 +289,7 @@ const VaccinationDashboardPage = () => {
           <Box component="section" ref={register('recent')} data-section="recent" sx={{ scrollMarginTop: '80px', mb: 4 }}>
             <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 } }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography sx={{ fontWeight: 800 }}>آخر الجرعات المسجلة</Typography>
+                <Typography sx={{ fontWeight: 700 }}>آخر الجرعات المسجلة</Typography>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}

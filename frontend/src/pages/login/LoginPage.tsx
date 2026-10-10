@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -10,6 +10,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import LoginForm from '../../components/forms/LoginForm';
 import BrandLogo from '../../components/common/BrandLogo';
+import { useAuth } from '../../hooks/useAuth';
+import { roleHomePathFor } from '../../utils/roleHome';
+import { sanitizeNextPath } from '../../utils/navigation';
 
 const highlights = [
   'مراقبة وبائية على مدار الساعة',
@@ -19,7 +22,14 @@ const highlights = [
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams();
-  const next = searchParams.get('next');
+  const { isAuthenticated, user } = useAuth();
+  const next = sanitizeNextPath(searchParams.get('next'));
+
+  /* مستخدم موثَّق يصل إلى /login (رابط محفوظ أو زيارة مباشرة): توجيهه
+     لوجهته بدل عرض نموذج دخول جديد يحبطه — مع الحفاظ على ?next= الآمن. */
+  if (isAuthenticated) {
+    return <Navigate to={next ?? roleHomePathFor(user)} replace />;
+  }
 
   return (
   <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

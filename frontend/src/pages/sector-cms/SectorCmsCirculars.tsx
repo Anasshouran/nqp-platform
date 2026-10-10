@@ -13,15 +13,10 @@ import Skeleton from '@mui/material/Skeleton';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { SectorPageShell, SectorHomeLink, useSectorSite, usePageTitle } from './SectorCmsShared';
+import { CategoryChip } from '../../components/common/CategoryChip';
+import { CIRCULAR_CATEGORY_LABELS, CIRCULAR_CATEGORY_STYLES } from '../../components/common/categoryMaps';
 import { getCirculars } from '../../api/endpoints/public';
 import type { Circular } from '../../api/endpoints/public';
-
-const categoryLabels: Record<string, string> = {
-  OFFICIAL: 'رسمي',
-  HEALTH: 'صحي',
-  ADMIN: 'إداري',
-  GENERAL: 'عام',
-};
 
 const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   URGENT: 'error',
@@ -84,7 +79,7 @@ const SectorCmsCirculars = () => {
                 <CardContent sx={{ p: 3 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                     <Stack direction="row" spacing={1}>
-                      <Chip label={categoryLabels[circular.category] || circular.category} size="small" color="primary" variant="outlined" />
+                      <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
                       <Chip label={priorityLabels[circular.priority] || circular.priority} size="small" color={priorityColors[circular.priority] || 'default'} />
                     </Stack>
                     <Typography variant="caption" color="text.secondary">{formatDate(circular.published_at)}</Typography>

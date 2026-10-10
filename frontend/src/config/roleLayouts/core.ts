@@ -8,6 +8,12 @@ export interface RoleNavItem {
   exact?: boolean;
   icon?: ReactNode;
   badge?: number | 'micro';
+  /**
+   * صلاحية مطلوبة لظهور العنصر بصيغة `resource:action`.
+   * العنصر يُخفى إن كانت الصلاحية غير موجودة — حتى لا يُعرض رابط يُرجع 403.
+   * تُترك فارغةً تلقائياً: لا تقييد.
+   */
+  permission?: string;
   children?: RoleNavItem[];
 }
 

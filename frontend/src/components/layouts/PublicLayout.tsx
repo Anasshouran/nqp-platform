@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, Link, useLocation, useNavigationType } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -33,8 +33,8 @@ import BrandLogo from '../common/BrandLogo';
 import BackToTop from '../common/BackToTop';
 import AssistantFab from '../AssistantFab';
 import GlobalSearchPalette, { openGlobalSearch } from '../search/GlobalSearchPalette';
-import { getSectors, getNotices } from '../../api/endpoints/public';
-import type { Sector, HealthNotice } from '../../api/endpoints/public';
+import { getSectors, getNotices, getPorts } from '../../api/endpoints/public';
+import type { Sector, HealthNotice, PublicPort } from '../../api/endpoints/public';
 import { isCmsSector, sectorDashboardRoute } from '../../config/cmsSectors';
 
 interface NavItem {
@@ -80,24 +80,6 @@ const navItems: NavItem[] = [
     path: '/ports',
     children: [
       { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
-      { label: 'بوابة المنافذ', path: '/gateways', to: '/gateways#ports', section: 'شبكة المنافذ' },
-      { label: 'مطار الخرطوم الدولي', path: '/ports/3b348265-6c36-43d4-b0f0-ac38b36794cb', section: 'المطارات' },
-      { label: 'مطار بورتسودان الدولي', path: '/ports/fd20cfbb-41d7-4c8d-aea5-c12a690abd18', section: 'المطارات' },
-      { label: 'ميناء بورتسودان', path: '/ports/85280d13-1273-45af-9760-4c558ef49b77', section: 'الموانئ' },
-      { label: 'ميناء الأمير عثمان دقنة – سواكن', path: '/ports/9565c52e-aeed-4f8f-b04f-a539a168ef4b', section: 'الموانئ' },
-      { label: 'ميناء مرسى بشاير', path: '/ports/25b64bdf-7a5e-4534-b6e1-7299ffd5d0e8', section: 'الموانئ' },
-      { label: 'ميناء الخير', path: '/ports/f517ef6e-ba2b-4052-8c50-0d00bf6fcd12', section: 'الموانئ' },
-      { label: 'ميناء الزبير محمد صالح', path: '/ports/de2abf1c-f4b0-4327-8348-503bfb882f69', section: 'الموانئ' },
-      { label: 'معبر أرقين', path: '/ports/01dedab9-7ccc-4afb-8a5d-2f2b5937bc32', section: 'المعابر البرية' },
-      { label: 'معبر وادي حلفا', path: '/ports/e4202853-d398-4069-8e8a-01e70aa390c1', section: 'المعابر البرية' },
-      { label: 'معبر المثلث', path: '/ports/790a1843-9f88-4dd7-b482-087c59d4b01c', section: 'المعابر البرية' },
-      { label: 'المعابر الحدودية مع إريتريا', path: '/ports/cc1ce25b-b420-4977-8fe6-0a014d379293', section: 'المعابر البرية' },
-      { label: 'معبر القلابات', path: '/ports/6c308abe-4f0b-4100-9c0f-afd4b90b86b2', section: 'المعابر البرية' },
-      { label: 'المعابر الحدودية مع جنوب السودان', path: '/ports/ad3db613-e296-4c22-b49f-1ca7ae2c614b', section: 'المعابر البرية' },
-      { label: 'معبر أدري', path: '/ports/f959d2c8-7e60-4c04-887e-d26c7f3bf527', section: 'المعابر البرية' },
-      { label: 'معبر تينة', path: '/ports/8a000357-d514-466c-9bb6-9f235d2249e8', section: 'المعابر البرية' },
-      { label: 'معبر أوسيف', path: '/ports/987cd070-fc93-4c88-bbd0-04ac5c00844d', section: 'المعابر البرية' },
-      { label: 'معبر قباتيت', path: '/ports/39027876-3615-49df-8504-f9bb72531a6b', section: 'المعابر البرية' },
     ],
   },
   {
@@ -150,6 +132,12 @@ const navItems: NavItem[] = [
   },
 ];
 
+const PORT_TYPE_SECTION: Record<PublicPort['type'], string> = {
+  AIRPORT: 'المطارات',
+  SEAPORT: 'الموانئ',
+  LAND_PORT: 'المعابر البرية',
+};
+
 const UI_STRINGS: Record<string, string> = {
   'وزارة الصحة الاتحادية': 'Federal Ministry of Health',
   'الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة': 'General Directorate of Health Emergencies & Epidemic Control',
@@ -177,31 +165,11 @@ const UI_STRINGS: Record<string, string> = {
   'الاستعداد للسفر': 'Preparing to Travel',
   'المعرفة': 'Knowledge',
   'جميع المنافذ': 'All Ports',
-  'المنافذ الجوية': 'Airports',
-  'المنافذ البحرية': 'Seaports',
-  'المنافذ البرية': 'Land Ports',
   'بوابة المنافذ': 'Ports Gateway',
   'شبكة المنافذ': 'Ports Network',
   'المطارات': 'Airports',
   'الموانئ': 'Seaports',
   'المعابر البرية': 'Land Crossings',
-  'مطار الخرطوم الدولي': 'Khartoum International Airport',
-  'مطار بورتسودان الدولي': 'Port Sudan International Airport',
-  'ميناء بورتسودان': 'Port Sudan Seaport',
-  'ميناء الأمير عثمان دقنة – سواكن': 'Sakin Port (Prince Uthman Digna)',
-  'ميناء مرسى بشاير': 'Mersa Bashair Port',
-  'ميناء الخير': 'Al Khayr Port',
-  'ميناء الزبير محمد صالح': 'Al Zubair Mohamed Saleh Port',
-  'معبر أرقين': 'Arqin Crossing',
-  'معبر وادي حلفا': 'Wadi Halfa Crossing',
-  'معبر المثلث': 'Al Muthallath Crossing',
-  'المعابر الحدودية مع إريتريا': 'Eritrea Border Crossings',
-  'معبر القلابات': 'Al Qalabat Crossing',
-  'المعابر الحدودية مع جنوب السودان': 'South Sudan Border Crossings',
-  'معبر أدري': 'Adri Crossing',
-  'معبر تينة': 'Tina Crossing',
-  'معبر أوسيف': 'Usif Crossing',
-  'معبر قباتيت': 'Qubatit Crossing',
   'التنبيهات الصحية': 'Health Alerts',
   'التعاميم': 'Circulars',
   'تسجيل الدخول': 'Sign In',
@@ -358,6 +326,20 @@ const PublicLayout = () => {
   const dashboardRoute = sectorDashboardRoute(cmsSlug ?? undefined);
   const loginLink = dashboardRoute ? `/login?next=${dashboardRoute}` : '/login';
   const [activeSector, setActiveSector] = useState<Sector | null>(null);
+  const [ports, setPorts] = useState<PublicPort[]>([]);
+
+  useEffect(() => {
+    if (cmsSlug) return;
+    let mounted = true;
+    getPorts()
+      .then((res) => {
+        if (mounted) setPorts(res.data.data ?? []);
+      })
+      .catch(() => undefined);
+    return () => {
+      mounted = false;
+    };
+  }, [cmsSlug]);
 
   useEffect(() => {
     if (!cmsSlug) {
@@ -398,7 +380,18 @@ const PublicLayout = () => {
 
   const orgLabel = cmsSlug && activeSector ? `الحجر الصحي القومي - ${activeSector.name_ar}` : 'الحجر الصحي القومي - جمهورية السودان';
 
-  const activeNavItems = cmsSlug ? sectorNavItems(cmsSlug) : navItems;
+  const activeNavItems = useMemo(() => {
+    if (cmsSlug) return sectorNavItems(cmsSlug);
+    const portChildren: NavItem[] = [
+      { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
+      ...(['AIRPORT', 'SEAPORT', 'LAND_PORT'] as PublicPort['type'][]).flatMap((type) =>
+        ports
+          .filter((p) => p.is_active && p.type === type)
+          .map((p) => ({ label: p.name_ar, path: `/ports/${p.id}`, section: PORT_TYPE_SECTION[type] })),
+      ),
+    ];
+    return navItems.map((item) => (item.path === '/ports' ? { ...item, children: portChildren } : item));
+  }, [cmsSlug, ports]);
 
   const dismissBanner = () => {
     setBannerOpen(false);
@@ -612,7 +605,7 @@ const PublicLayout = () => {
                     {showSection && (
                       <Box sx={{ px: 2, pt: i > 0 ? 0.75 : 1, pb: 0.25 }}>
                         {i > 0 && <Divider sx={{ mb: 1 }} />}
-                        <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 0.5 }}>
+                        <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
                           {tl(child.section)}
                         </Typography>
                       </Box>
@@ -675,7 +668,7 @@ const PublicLayout = () => {
         <Box
           className="banner-slide gradient_shift"
           sx={{
-            background: 'linear-gradient(90deg, #0a6b58, #0e8a72, #12a585)',
+            background: 'linear-gradient(90deg, #075e4d, #0a6b58, #0c7f6a)',
             color: '#fff',
           }}
         >
@@ -759,7 +752,7 @@ const PublicLayout = () => {
                             {showSection && (
                               <Box sx={{ px: 3, pt: i > 0 ? 1 : 1.5, pb: 0.25 }}>
                                 {i > 0 && <Divider sx={{ mb: 1 }} />}
-                                <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block' }}>
+                                <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                                   {tl(child.section)}
                                 </Typography>
                               </Box>

@@ -18,6 +18,7 @@ import { DataTable, SectionCard, FormDialog, ConfirmDialog } from '../../../../.
 import type { DataTableColumn } from '../../../../../components/uikit';
 import { getCmsDocuments, createCmsDocument, updateCmsDocument, deleteCmsDocument } from '../../../../../api/endpoints/cms';
 import type { CmsDocument } from '../../../../../api/endpoints/cms';
+import { safeExternalUrl } from '../../../../../utils/safeUrl';
 
 const CATEGORIES = ['REGULATION', 'CIRCULAR', 'FORM', 'GUIDE', 'OTHER'].map((v) => ({
   value: v,
@@ -117,7 +118,7 @@ const RedSeaDocumentsPanel = () => {
       key: 'file',
       label: '',
       render: (r) => (
-        <Button size="small" startIcon={<DownloadIcon />} component="a" href={r.file} target="_blank" rel="noreferrer">
+        <Button size="small" startIcon={<DownloadIcon />} component="a" href={safeExternalUrl(r.file)} target="_blank" rel="noreferrer" disabled={!safeExternalUrl(r.file)}>
           تحميل
         </Button>
       ),

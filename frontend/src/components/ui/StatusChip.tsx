@@ -24,15 +24,15 @@ export interface StatusChipProps {
 const toneToken = (tone: StatusTone) => {
   switch (tone) {
     case 'success':
-      return { fg: 'success.main', bg: 'success.light' };
+      return { fg: 'success.dark', bg: 'success.light' };
     case 'warning':
-      return { fg: 'warning.main', bg: 'warning.light' };
+      return { fg: 'warning.dark', bg: 'warning.light' };
     case 'error':
-      return { fg: 'error.main', bg: 'error.light' };
+      return { fg: 'error.dark', bg: 'error.light' };
     case 'info':
-      return { fg: 'info.main', bg: 'info.light' };
+      return { fg: 'info.dark', bg: 'info.light' };
     case 'primary':
-      return { fg: 'primary.main', bg: 'primary.light' };
+      return { fg: 'primary.dark', bg: 'primary.light' };
     case 'neutral':
       return { fg: 'text.secondary', bg: 'grey.100' };
   }

@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
+import { useOfflineSync } from '../../../hooks/useOfflineSync';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
@@ -40,6 +41,9 @@ export interface Props {
 export const Dashboard = ({ nav }: Props) => {
   const [live, setLive] = React.useState<AirportDashboardData | null>(null);
   const [offline, setOffline] = React.useState(false);
+  const { status } = useOfflineSync();
+  const offlineConn = status === 'OFFLINE';
+  const pillState = offlineConn ? 'OFFLINE' : status === 'SYNC_PENDING' ? 'SYNCING' : 'ONLINE';
 
   React.useEffect(() => {
     let mounted = true;
@@ -73,7 +77,7 @@ export const Dashboard = ({ nav }: Props) => {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" sx={{ mb: 2, gap: 1 }}>
         <PageTitle title="مركز قيادة صحة المطارات" subtitle={offline ? 'بيانات مباشرة غير متاحة — تعذر الاتصال بالخادم' : 'مطار بورتسودان الدولي — بيانات مباشرة من النظام'} />
-        <OfflinePill state={offline ? 'OFFLINE' : 'ONLINE'} />
+        <OfflinePill state={pillState} />
       </Stack>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>

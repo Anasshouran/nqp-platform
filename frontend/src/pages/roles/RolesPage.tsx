@@ -211,14 +211,16 @@ const RolesPage = () => {
               </IconButton>
             </Tooltip>
             <Tooltip title="حذف">
-              <IconButton aria-label="حذف"
-                size="small"
-                color="error"
-                onClick={() => setDeletingRole(r)}
-                disabled={(r.user_count ?? 0) > 0}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              <Box component="span" sx={{ display: 'inline-flex' }}>
+                <IconButton aria-label="حذف"
+                  size="small"
+                  color="error"
+                  onClick={() => setDeletingRole(r)}
+                  disabled={(r.user_count ?? 0) > 0}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Tooltip>
           </>
         )}

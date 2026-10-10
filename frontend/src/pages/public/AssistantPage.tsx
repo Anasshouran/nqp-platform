@@ -76,8 +76,9 @@ const AssistantPage = () => {
             height: 88,
             mx: 'auto',
             mb: 2,
-            background: 'linear-gradient(135deg,#0c7f6a,#0a6b58)',
-            boxShadow: '0 16px 40px rgba(14,138,114,0.35)',
+            background: (t) =>
+              `linear-gradient(135deg, ${t.palette.primary.main}, ${t.palette.primary.dark})`,
+            boxShadow: (t) => `0 16px 40px ${t.palette.primary.main}59`,
           }}
         >
           <SmartToyIcon sx={{ fontSize: 44 }} />

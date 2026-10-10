@@ -16,17 +16,12 @@ import { PageHeader } from '../../components/common';
 import apiClient from '../../api/client';
 import type { CertificateVerifyResult } from '../../types/clinic';
 import { formatDateTime } from '../../utils/formatters';
+import { maskIdentity } from '../../utils/maskIdentity';
 
 const certTypeLabels: Record<string, string> = {
   CLEARANCE: 'شهادة خلو من الأمراض',
   NEGATIVE: 'شهادة نتيجة سلبية',
   MEDICAL: 'تقرير طبي',
-};
-
-const verdictLabels: Record<string, string> = {
-  RELEASE: 'خروج/إجازة',
-  HOSPITAL: 'تحويل للمستشفى',
-  ISOLATION: 'عزل/حجر صحي',
 };
 
 const CertificateVerifyPage = () => {
@@ -104,7 +99,7 @@ const CertificateVerifyPage = () => {
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 220 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {result.traveler_name || '—'}
+                    {maskIdentity(result.traveler_name)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {certTypeLabels[result.certificate_type] || result.certificate_type}
@@ -120,10 +115,6 @@ const CertificateVerifyPage = () => {
                 <Typography variant="body2">
                   الجهة المصدرة: <b>{result.clinic_name || '—'}</b>
                 </Typography>
-                <Typography variant="body2">
-                  التوصية النهائية: <b>{verdictLabels[result.verdict] || result.verdict}</b>
-                </Typography>
-                {result.decision && <Typography variant="body2">مضمون الشهادة: {result.decision}</Typography>}
                 <Typography variant="body2">
                   تاريخ الإصدار: <b>{formatDateTime(result.issued_at)}</b>
                 </Typography>

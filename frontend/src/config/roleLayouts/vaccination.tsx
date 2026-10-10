@@ -13,7 +13,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'إدارة التطعيم الدولي',
     subtitle: 'International Vaccination Manager',
     brand: 'وزارة الصحة الاتحادية – التطعيم الدولي',
-    color: '#0c7f6a',
+    color: 'primary.main',
     overline: 'بوابة التطعيم الدولي',
     nav: [
       { label: 'لوحة التطعيم', target: '/app/vaccination', icon: <DashboardIcon /> },
@@ -30,7 +30,7 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     title: 'مسؤول التطعيم',
     subtitle: 'Vaccination Officer',
     brand: 'وزارة الصحة الاتحادية – التطعيم الدولي',
-    color: '#2f6dd0',
+    color: 'info.main',
     overline: 'بوابة التطعيم الدولي',
     nav: [
       { label: 'تسجيل جرعة', target: '/app/vaccination/register', icon: <PersonAddIcon /> },

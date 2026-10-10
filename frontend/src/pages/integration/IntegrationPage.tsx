@@ -115,9 +115,10 @@ const EntitiesTab = () => {
   return (
     <DataTable<ExternalEntity>
       columns={[
-        { key: 'name', label: 'الاسم', sortable: true, render: (e) => <Typography sx={{ fontWeight: 700 }}>{e.name}</Typography> },
-        { key: 'api_key', label: 'مفتاح API', render: (e) => (e.api_key ? <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{e.api_key.slice(0, 8)}••••</Typography> : '—'), hideOnMobile: true },
-        { key: 'is_active', label: 'الحالة', render: (e) => (e.is_active ? <StatusChip label="نشط" tone="success" /> : <StatusChip label="معطل" tone="neutral" />) },
+        { key: 'name_ar', label: 'الاسم', sortable: true, render: (e) => <Typography sx={{ fontWeight: 700 }}>{e.name_ar || e.name_en}</Typography> },
+        { key: 'code', label: 'الكود', render: (e) => <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{e.code}</Typography>, hideOnMobile: true },
+        { key: 'org_type', label: 'النوع', render: (e) => <StatusChip label={e.org_type} tone="neutral" />, hideOnMobile: true },
+        { key: 'status', label: 'الحالة', render: (e) => (e.is_active ? <StatusChip label={e.status} tone="success" /> : <StatusChip label="معطل" tone="neutral" />) },
       ]}
       rows={rows}
       rowKey={(e) => e.id}

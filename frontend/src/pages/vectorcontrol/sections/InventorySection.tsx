@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -41,7 +42,7 @@ const NewChemicalForm = ({ onSaved }: { onSaved: () => void }) => {
       setForm((f) => ({ ...f, name_ar: '', active_ingredient: '', concentration: '', notes: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ المبيد');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ المبيد');
     } finally {
       setSaving(false);
     }
@@ -87,7 +88,7 @@ const InventorySection = () => {
   const [lowStock, setLowStock] = useState<VectorInventoryItem[]>([]);
   const lk = useVectorLookups();
 
-  const act = (p: Promise<unknown>) => p.then(() => { t.refresh(); mt.refresh(); lk.reload(); }).catch((err) => { if (!(err instanceof OfflineQueuedError)) window.alert('فشلت العملية'); });
+  const act = (p: Promise<unknown>) => p.then(() => { t.refresh(); mt.refresh(); lk.reload(); }).catch((err) => { if (!(err instanceof OfflineQueuedError)) notifyError('فشلت العملية'); });
 
   const checkLowStock = () => lowStockInventory().then((r) => setLowStock(r.data.data)).then(lk.reload).catch(() => undefined);
 
@@ -191,7 +192,7 @@ const AdjustDialog = ({ item, onClose, onSaved }: { item: VectorInventoryItem; o
       onSaved();
       onClose();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر تسوية الرصيد');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر تسوية الرصيد');
     } finally {
       setSaving(false);
     }

@@ -1,3 +1,4 @@
+import { labelOf, toneOf } from '../../utils/labels';
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -263,7 +264,7 @@ const SectorManagerPage = () => {
             <ExportButton
               filename="sector-dashboard"
               headers={['المحطة', 'النوع', 'الفحوصات', 'المشتبهة', 'الجاهزية%', 'الحالة']}
-              rows={stations.map((s) => [s.name, portTypeLabels[s.type], s.screens, s.suspected, s.readiness, stationMeta[s.status].label])}
+              rows={stations.map((s) => [s.name, labelOf(portTypeLabels as Record<string, string>, s.type), s.screens, s.suspected, s.readiness, labelOf(stationMeta, s.status)])}
               disabled={loading}
             />
           </Stack>
@@ -438,7 +439,7 @@ const SectorManagerPage = () => {
               { key: 'screens', label: 'فحوصات', align: 'center' },
               { key: 'suspected', label: 'مشتبهة', align: 'center', hideOnMobile: true },
               { key: 'readiness', label: 'الجاهزية%', align: 'center', render: (r: SectorStation) => <StatusChip label={`${r.readiness}%`} tone={r.readiness >= 90 ? 'success' : r.readiness >= 75 ? 'warning' : 'error'} /> },
-              { key: 'status', label: 'الحالة', render: (r: SectorStation) => <StatusChip label={stationMeta[r.status].label} tone={stationMeta[r.status].tone} /> },
+              { key: 'status', label: 'الحالة', render: (r: SectorStation) => <StatusChip label={labelOf(stationMeta, r.status)} tone={toneOf(stationMeta, r.status)} /> },
             ]}
             rows={stations}
             rowKey={(r: SectorStation) => r.id}

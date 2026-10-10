@@ -21,22 +21,9 @@ import GridOnIcon from '@mui/icons-material/GridOn';
 import ArticleIcon from '@mui/icons-material/Article';
 import { getDocuments, type CmsDocument } from '../../api/endpoints/public';
 import { SectorPageShell, SectorHomeLink, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
-
-const categoryLabels: Record<string, string> = {
-  LAW: 'قانون',
-  REGULATION: 'لائحة',
-  FORM: 'نموذج',
-  GUIDE: 'دليل',
-  OTHER: 'أخرى',
-};
-
-const categoryColors: Record<string, string> = {
-  LAW: '#0e8a72',
-  REGULATION: '#2f6f9f',
-  FORM: '#c8a13a',
-  GUIDE: '#7a5c9e',
-  OTHER: '#4f6f8f',
-};
+import { CategoryChip } from '../../components/common/CategoryChip';
+import { DOC_CATEGORY_LABELS, DOC_CATEGORY_FILLS, DOC_CATEGORY_STYLES } from '../../components/common/categoryMaps';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const fileTypeIcons: Record<string, React.ReactNode> = {
   PDF: <PictureAsPdfIcon />,
@@ -99,7 +86,7 @@ const SectorCmsDocuments = () => {
     { value: 'ALL', label: 'الكل', count: documents.length },
     ...(['LAW', 'REGULATION', 'FORM', 'GUIDE', 'OTHER'] as const).map((key) => ({
       value: key,
-      label: categoryLabels[key] || key,
+      label: DOC_CATEGORY_LABELS[key] || key,
       count: stats[key] || 0,
     })),
   ];
@@ -208,19 +195,14 @@ const SectorCmsDocuments = () => {
                         placeItems: 'center',
                         flexShrink: 0,
                         color: '#fff',
-                        background: categoryColors[document.category] || '#0e8a72',
+                        background: DOC_CATEGORY_FILLS[document.category] || DOC_CATEGORY_FILLS.OTHER,
                       }}
                     >
                       {fileIcon}
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip
-                          label={categoryLabels[document.category] || document.category}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
+                        <CategoryChip category={document.category} labels={DOC_CATEGORY_LABELS} styles={DOC_CATEGORY_STYLES} />
                         <Chip
                           label={fileType}
                           size="small"
@@ -249,9 +231,9 @@ const SectorCmsDocuments = () => {
                       variant="contained"
                       size="medium"
                       startIcon={<DownloadIcon />}
-                      href={document.file}
-                      target="_blank"
-                      rel="noreferrer"
+                      {...(safeExternalUrl(document.file)
+                        ? { href: safeExternalUrl(document.file), target: '_blank', rel: 'noreferrer' }
+                        : { disabled: true })}
                       sx={{ flexShrink: 0 }}
                     >
                       تحميل

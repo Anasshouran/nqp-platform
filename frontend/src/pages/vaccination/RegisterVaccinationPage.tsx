@@ -37,13 +37,7 @@ import type {
 } from '../../types/vaccination';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
-
-const DOSE_TYPES = [
-  { value: 'FIRST', label: 'الجرعة الأولى' },
-  { value: 'SECOND', label: 'الجرعة الثانية' },
-  { value: 'THIRD', label: 'الجرعة الثالثة' },
-  { value: 'BOOSTER', label: 'جرعة تنشيطية' },
-];
+import { DOSE_TYPE_OPTIONS, doseTypeLabel, validateDoseForm } from '../../utils/vaccinationForm';
 
 const assessmentTone: Record<string, 'success' | 'warning' | 'error'> = {
   COMPLETE: 'success',
@@ -60,6 +54,7 @@ const assessmentLabel: Record<string, string> = {
 const RegisterVaccinationPage = () => {
   const { user } = useAuth();
   const [passport, setPassport] = useState('');
+  const [destination, setDestination] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [traveler, setTraveler] = useState<TravelerBrief | null>(null);
@@ -110,7 +105,7 @@ const RegisterVaccinationPage = () => {
     setSearched(false);
     setSavedRecordId(null);
     setCertificate(null);
-    searchTraveler(q)
+    searchTraveler(q, destination.trim())
       .then((res) => {
         const d = res.data.data;
         if (!d.traveler) {
@@ -142,8 +137,15 @@ const RegisterVaccinationPage = () => {
 
   const handleSubmit = async () => {
     if (!traveler || saving) return;
-    if (!form.vaccine) {
-      notifyError('اختر اللقاح');
+    const err = validateDoseForm({
+      vaccine: form.vaccine,
+      batch: form.batch,
+      dose_number: form.dose_number,
+      administered_at: form.administered_at,
+      eligibleBatchIds: eligibleBatches.map((b) => b.id),
+    });
+    if (err) {
+      notifyError(err);
       return;
     }
     setSaving(true);
@@ -192,7 +194,7 @@ const RegisterVaccinationPage = () => {
 
       <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mb: 3 }}>
         <Stack spacing={2}>
-          <Typography sx={{ fontWeight: 800 }}>البحث عن المسافر</Typography>
+          <Typography sx={{ fontWeight: 700 }}>البحث عن المسافر</Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
             <TextField
               fullWidth
@@ -206,6 +208,16 @@ const RegisterVaccinationPage = () => {
               }}
               dir="ltr"
               sx={{ '& input': { fontFamily: 'monospace' } }}
+            />
+            <TextField
+              label="وجهة السفر"
+              placeholder="مثال: السعودية"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') doSearch();
+              }}
+              sx={{ minWidth: 180 }}
             />
             <Button
               variant="contained"
@@ -243,7 +255,7 @@ const RegisterVaccinationPage = () => {
                     <PersonIcon />
                   </Box>
                   <Box>
-                    <Typography sx={{ fontWeight: 800 }}>{traveler.full_name}</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{traveler.full_name}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
                       {traveler.passport_number}
                     </Typography>
@@ -262,7 +274,7 @@ const RegisterVaccinationPage = () => {
                   </Typography>
                 )}
 
-                <Typography sx={{ fontWeight: 800, mt: 1 }}>تقييم احتياج التطعيم</Typography>
+                <Typography sx={{ fontWeight: 700, mt: 1 }}>تقييم احتياج التطعيم</Typography>
                 <Stack spacing={1}>
                   {assessment.length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
@@ -270,10 +282,25 @@ const RegisterVaccinationPage = () => {
                     </Typography>
                   ) : (
                     assessment.map((a) => (
-                      <Stack key={a.vaccine_id} direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {a.vaccine_name_ar}
-                        </Typography>
+                      <Stack
+                        key={`${a.vaccine_id}-${a.destination_region || 'any'}`}
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        spacing={1}
+                      >
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {a.vaccine_name_ar}
+                          </Typography>
+                          {a.destination_region && (
+                            <Typography variant="caption" color="text.secondary">
+                              {a.destination_confirmed
+                                ? `لوجهة: ${a.destination_region}`
+                                : `قد يلزم لوجهة: ${a.destination_region}`}
+                            </Typography>
+                          )}
+                        </Box>
                         <Chip
                           size="small"
                           label={`${assessmentLabel[a.status] || a.status} · ${a.doses_given}/${a.doses_required}`}
@@ -292,7 +319,7 @@ const RegisterVaccinationPage = () => {
             <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mb: 3 }}>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
                 <VaccinesIcon color="primary" />
-                <Typography sx={{ fontWeight: 800 }}>بيانات الجرعة</Typography>
+                <Typography sx={{ fontWeight: 700 }}>بيانات الجرعة</Typography>
               </Stack>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
@@ -317,7 +344,7 @@ const RegisterVaccinationPage = () => {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <TextField select fullWidth label="نوع الجرعة" value={form.dose_type} onChange={update('dose_type')}>
-                    {DOSE_TYPES.map((d) => (
+                    {DOSE_TYPE_OPTIONS.map((d) => (
                       <MenuItem key={d.value} value={d.value}>{d.label}</MenuItem>
                     ))}
                   </TextField>
@@ -408,17 +435,17 @@ const RegisterVaccinationPage = () => {
 
             {summary && summary.records.length > 0 && (
               <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mt: 3 }}>
-                <Typography sx={{ fontWeight: 800, mb: 1.5 }}>سجل الجرعات السابقة</Typography>
+                <Typography sx={{ fontWeight: 700, mb: 1.5 }}>سجل الجرعات السابقة</Typography>
                 <Stack spacing={1}>
                   {summary.records.map((r) => (
                     <Stack key={r.id} direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>{r.vaccine_name_ar}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          جرعة {r.dose_number} · {r.dose_type} · {formatDate(r.administered_at)}
+                          جرعة {r.dose_number} · {doseTypeLabel(r.dose_type)} · {formatDate(r.administered_at)}
                         </Typography>
                       </Box>
-                      <Chip size="small" label={r.lot_number || 'بدون LOT'} variant="outlined" />
+                      <Chip size="small" label={r.lot_number || 'بدون تشغيلة'} variant="outlined" />
                     </Stack>
                   ))}
                 </Stack>
@@ -427,7 +454,7 @@ const RegisterVaccinationPage = () => {
 
             {summary && summary.certificates.length > 0 && (
               <Card sx={{ borderRadius: 4, border: '1px solid rgba(16,40,34,0.07)', p: { xs: 2, md: 3 }, mt: 3 }}>
-                <Typography sx={{ fontWeight: 800, mb: 1.5 }}>شهادات سارية</Typography>
+                <Typography sx={{ fontWeight: 700, mb: 1.5 }}>شهادات سارية</Typography>
                 <Stack spacing={1}>
                   {summary.certificates.map((c) => (
                     <Stack key={c.id} direction="row" alignItems="center" justifyContent="space-between" spacing={1}>

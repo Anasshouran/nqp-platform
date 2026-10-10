@@ -1,3 +1,4 @@
+import { notifyError } from '../../../utils/toast';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -32,7 +33,7 @@ const NewFollowupForm = ({ onSaved }: { onSaved: () => void }) => {
       setForm((f) => ({ ...f, focus: '', team: '', visit_datetime: '', findings: '' }));
       onSaved();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر حفظ زيارة المتابعة');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر حفظ زيارة المتابعة');
     } finally {
       setSaving(false);
     }
@@ -74,7 +75,7 @@ const CloseDialog = ({ fu, onClose, onSaved }: { fu: VectorFollowUp; onClose: ()
       onSaved();
       onClose();
     } catch (err) {
-      if (!(err instanceof OfflineQueuedError)) window.alert('تعذر إغلاق الزيارة');
+      if (!(err instanceof OfflineQueuedError)) notifyError('تعذر إغلاق الزيارة');
     } finally {
       setSaving(false);
     }

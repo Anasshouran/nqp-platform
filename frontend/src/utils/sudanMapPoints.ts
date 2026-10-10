@@ -10,6 +10,7 @@ export const SUDAN_MAP_POINTS: Record<string, SudanMapPoint> = {
   KHARTOUM: { x: 66, y: 53 },
   NORTHERN: { x: 53, y: 23 },
   EL_OBEID: { x: 67, y: 73 },
+  KORDOFAN: { x: 48, y: 48 },
 };
 
 export const regionForSector = (region: string, nameAr: string): string => {
@@ -21,5 +22,6 @@ export const regionForSector = (region: string, nameAr: string): string => {
   if (nameAr.includes('الخرطوم')) return 'KHARTOUM';
   if (nameAr.includes('الشمال')) return 'NORTHERN';
   if (nameAr.includes('الأبيض')) return 'EL_OBEID';
+  if (nameAr.includes('كردفان')) return 'KORDOFAN';
   return 'KHARTOUM';
 };
