@@ -21,6 +21,7 @@ Shares `postgres` and `redis` containers with the dev stack; isolates:
    - `JWT_SECRET_KEY`
    - `POSTGRES_PASSWORD` (matches staging_afyatna role)
    - `REDIS_PASSWORD` (matches redis container AUTH)
+   - `STAGING_CSRF_TRUSTED_ORIGINS=https://staging.afyatna.com`
 5. Role + DB exist:
    ```sql
    CREATE ROLE staging_afyatna LOGIN PASSWORD '...' NOSUPERUSER NOCREATEDB NOCREATEROLE;

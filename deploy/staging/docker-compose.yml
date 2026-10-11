@@ -21,6 +21,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       ALLOWED_HOSTS: staging.afyatna.com,localhost,127.0.0.1,staging-backend
+      CSRF_TRUSTED_ORIGINS: ${STAGING_CSRF_TRUSTED_ORIGINS}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_DB: staging_afyatna
