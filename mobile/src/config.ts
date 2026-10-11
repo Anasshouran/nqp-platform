@@ -40,7 +40,7 @@ export function resolveApiUrl(explicit?: string | null, isDev: boolean = __DEV__
 
   if (isDev) {
     if (!value) {
-      return `${DEFAULT_HOST}/api/v1`;
+      return DEFAULT_HOST;
     }
     if (isLocalUri(value) || value.startsWith('http://')) {
       console.warn('[config] EXPO_PUBLIC_API_URL هو عنوان تطوير محلي/غير آمن — وهو مقبول في dev فقط');

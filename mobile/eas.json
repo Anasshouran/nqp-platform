@@ -1,12 +1,12 @@
 {
   "cli": { "version": ">= 3.0.0", "appVersionSource": "remote" },
   "build": {
-    "development": { "distribution": "internal", "env": { "EXPO_PUBLIC_API_URL": "http://localhost:8000/api/v1" } },
+    "development": { "distribution": "internal", "env": { "EXPO_PUBLIC_API_URL": "http://localhost:8000" } },
     "staging": {
-      "env": { "EXPO_PUBLIC_API_URL": "https://staging.afyatna.com/api/v1" },
+      "env": { "EXPO_PUBLIC_API_URL": "https://staging.afyatna.com" },
       "distribution": "internal",
       "autoIncrement": true
     },
-    "production": { "env": { "EXPO_PUBLIC_API_URL": "https://afyatna.com/api/v1" } }
+    "production": { "env": { "EXPO_PUBLIC_API_URL": "https://afyatna.com" } }
   }
 }
