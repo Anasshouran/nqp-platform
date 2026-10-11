@@ -71,6 +71,6 @@ export function resolveApiUrl(explicit?: string | null, isDev: boolean = __DEV__
   return value;
 }
 
-export const API_BASE_URL: string = resolveApiUrl();
+export const API_BASE_URL: string = resolveApiUrl(process.env.EXPO_PUBLIC_API_URL);
 
 export const REQUEST_TIMEOUT_MS = 15_000;
