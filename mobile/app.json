@@ -25,6 +25,12 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b25f8396-8f1f-4db4-b13e-1b9edec90101"
+      }
+    },
+    "owner": "anasshouran"
   }
 }
