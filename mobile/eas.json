@@ -1,5 +1,5 @@
 {
-  "cli": { "version": ">= 3.0.0" },
+  "cli": { "version": ">= 3.0.0", "appVersionSource": "remote" },
   "build": {
     "development": { "distribution": "internal", "env": { "EXPO_PUBLIC_API_URL": "http://localhost:8000/api/v1" } },
     "staging": {
