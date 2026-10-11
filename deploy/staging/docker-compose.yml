@@ -1,0 +1,86 @@
+# Staging stack — shares postgres + redis with dev, isolates:
+#   DB (staging_afyatna), Redis DB index 1, secrets (/etc/nqp/staging.env)
+#
+# Bring up:
+#   docker compose --env-file /etc/nqp/staging.env \
+#     -f deploy/staging/docker-compose.yml up -d
+#
+# Migrations (once, after first up):
+#   docker exec nqp-staging-backend python manage.py migrate
+services:
+  staging-backend:
+    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    container_name: nqp-staging-backend
+    restart: unless-stopped
+    command: gunicorn --bind 0.0.0.0:8000 --timeout 300 nqp_backend.wsgi:application
+    ports:
+      - "127.0.0.1:9001:8000"
+    environment:
+      DJANGO_ENV: staging
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ALLOWED_HOSTS: staging.afyatna.com,localhost,127.0.0.1,staging-backend
+      CSRF_TRUSTED_ORIGINS: ${STAGING_CSRF_TRUSTED_ORIGINS}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: staging_afyatna
+      POSTGRES_USER: staging_afyatna
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
+      USE_S3: "False"
+    networks:
+      - deploy_nqp_internal
+  staging-celery:
+    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    container_name: nqp-staging-celery
+    restart: unless-stopped
+    command: celery -A nqp_backend worker --loglevel=info --concurrency=2
+    environment:
+      DJANGO_ENV: staging
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ALLOWED_HOSTS: staging.afyatna.com,localhost,127.0.0.1,staging-backend
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: staging_afyatna
+      POSTGRES_USER: staging_afyatna
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
+    networks:
+      - deploy_nqp_internal
+  staging-celery-beat:
+    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    container_name: nqp-staging-celery-beat
+    restart: unless-stopped
+    command: celery -A nqp_backend beat --loglevel=info
+    environment:
+      DJANGO_ENV: staging
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ALLOWED_HOSTS: staging.afyatna.com,localhost,127.0.0.1,staging-backend
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: staging_afyatna
+      POSTGRES_USER: staging_afyatna
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
+    networks:
+      - deploy_nqp_internal
+networks:
+  deploy_nqp_internal:
+    external: true
