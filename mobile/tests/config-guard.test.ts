@@ -15,15 +15,28 @@ describe('API URL guard — development mode (allow + warn only)', () => {
   });
 
   it('allows http://localhost in dev', () => {
-    expect(resolveApiUrl('http://localhost:8000/api/v1', true)).toBe('http://localhost:8000/api/v1');
+    expect(resolveApiUrl('http://localhost:8000', true)).toBe('http://localhost:8000');
   });
 
   it('allows http://10.0.2.2 in dev', () => {
-    expect(resolveApiUrl('http://10.0.2.2:8000/api/v1', true)).toBe('http://10.0.2.2:8000/api/v1');
+    expect(resolveApiUrl('http://10.0.2.2:8000', true)).toBe('http://10.0.2.2:8000');
   });
 
   it('keeps dev fallback when unset', () => {
-    expect(resolveApiUrl(undefined, true)).toBe('http://localhost:8000/api/v1');
+    expect(resolveApiUrl(undefined, true)).toBe('http://localhost:8000');
+  });
+});
+
+describe('API URL guard — base is host-only (paths carry /api/v1)', () => {
+  it('does not double the /api/v1 prefix when composing a request URL', () => {
+    const base = resolveApiUrl(undefined, true).replace(/\/$/, '');
+    const url = `${base}/api/v1/auth/login/`;
+    expect(url).toBe('http://localhost:8000/api/v1/auth/login/');
+    expect(url).not.toContain('/api/v1/api/v1');
+  });
+
+  it('release base stays host-only for the staging host', () => {
+    expect(resolveApiUrl('https://staging.afyatna.com', false)).toBe('https://staging.afyatna.com');
   });
 });
 
