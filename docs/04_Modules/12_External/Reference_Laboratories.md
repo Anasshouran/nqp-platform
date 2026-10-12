@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Reference_Laboratories.md` (المختبرات المرجعية)
-
-```markdown
 # المختبرات المرجعية - Reference Laboratories
 
 ## 1. الهدف

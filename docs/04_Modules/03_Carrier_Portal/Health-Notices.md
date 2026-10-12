@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Health-Notices.md` (الإشعارات الصحية)
-
-```markdown
 # الإشعارات الصحية (Health Notices)
 
 ## 1. الهدف

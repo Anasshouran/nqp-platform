@@ -1,11 +1,3 @@
-
----
-
-## 📂 تحديث `04_Modules/01_Public_Website/Public-Website-Users/`
-
-### إضافة ملف `Sectors-Ports.md` (صفحة القطاعات والمنافذ للمستخدمين)
-
-```markdown
 # صفحة القطاعات والمنافذ (Sectors & Ports) - للمستخدمين
 
 ## 1. الهدف

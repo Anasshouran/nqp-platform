@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. `Monitoring/Monitoring.md` (المراقبة والأداء)
-
-```markdown
 # Monitoring - المراقبة والأداء (Monitoring & Performance)
 
 ## 1. الهدف

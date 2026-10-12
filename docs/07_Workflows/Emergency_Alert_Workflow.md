@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. `Emergency_Alert_Workflow.md` (مسار الإنذار من الكشف إلى الإغلاق)
-
-```markdown
 # WF-16: مسار الإنذار من الكشف إلى الإغلاق (Alert Lifecycle)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `04_Vaccination_Workflow.md` (سير عمل نظام التطعيم)
-
-```markdown
 # 04_Vaccination_Workflow - سير عمل التطعيمات
 
 ## 1. الممثلون (Actors)

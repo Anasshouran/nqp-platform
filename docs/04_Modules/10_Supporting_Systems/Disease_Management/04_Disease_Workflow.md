@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `04_Disease_Workflow.md` (سير عمل نظام الأمراض)
-
-```markdown
 # 04_Disease_Workflow - سير عمل نظام إدارة الأمراض
 
 ## 1. الممثلون (Actors)

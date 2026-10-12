@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `API-Gateway/API-Gateway.md` (بوابة API)
-
-```markdown
 # API Gateway - بوابة API
 
 ## 1. الهدف

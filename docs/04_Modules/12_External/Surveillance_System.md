@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Surveillance_System.md` (نظام الترصد الوبائي الوطني)
-
-```markdown
 # نظام الترصد الوبائي الوطني - National Surveillance System
 
 ## 1. الهدف

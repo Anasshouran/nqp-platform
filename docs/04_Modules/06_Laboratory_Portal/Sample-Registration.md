@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Sample-Registration.md` (تسجيل العينات)
-
-```markdown
 # تسجيل العينات (Sample Registration)
 
 ## 1. الهدف

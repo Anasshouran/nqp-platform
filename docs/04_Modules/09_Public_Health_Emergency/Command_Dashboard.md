@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Command_Dashboard.md` (لوحة الإنذار الفوري)
-
-```markdown
 # لوحة الإنذار الفوري (Command Dashboard)
 
 ## 1. الهدف

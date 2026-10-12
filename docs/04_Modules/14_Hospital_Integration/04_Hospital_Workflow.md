@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `04_Hospital_Workflow.md` (سير عمل نظام المستشفيات)
-
-```markdown
 # 04_Hospital_Workflow - سير عمل الإحالات والتقارير الطبية
 
 ## 1. الممثلون (Actors)

@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Traveler_Journey.md` (رحلة المسافر الكاملة)
-
-```markdown
 # WF-01: رحلة المسافر الكاملة (Traveler Journey)
 
 ## 1. الهدف

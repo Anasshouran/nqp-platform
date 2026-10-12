@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Discharge_Certificate_Workflow.md` (إصدار شهادة التعافي)
-
-```markdown
 # WF-11: إصدار شهادة التعافي والإفراج (Discharge Certificate)
 
 ## 1. الهدف

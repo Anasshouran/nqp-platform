@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Contact_Tracing_Workflow.md` (تتبع المخالطين)
-
-```markdown
 # WF-13: تتبع المخالطين وعزلهم (Contact Tracing)
 
 ## 1. الهدف

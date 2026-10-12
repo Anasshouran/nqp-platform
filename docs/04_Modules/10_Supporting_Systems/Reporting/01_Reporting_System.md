@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Reporting/01_Reporting_System.md` (التقارير ولوحات المعلومات)
-
-```markdown
 # 01_Reporting_System - نظام التقارير ولوحات المعلومات
 
 ## 1. أنواع التقارير

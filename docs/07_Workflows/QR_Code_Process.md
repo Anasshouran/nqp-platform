@@ -1,7 +1,3 @@
-
-### 📄 `QR_Code_Process.md` (دورة حياة رمز QR - WF-04)
-
-```markdown
 # WF-04: دورة حياة رمز QR (QR Code Lifecycle)
 
 ## 1. الهدف

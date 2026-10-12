@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Health_Screening.md` (الفحص الصحي عند الوصول)
-
-```markdown
 # WF-02: الفحص الصحي وتقييم المخاطر (Health Screening)
 
 ## 1. الهدف

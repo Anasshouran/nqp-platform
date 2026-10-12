@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `FHIR.md` (معيار FHIR لتبادل البيانات الصحية)
-
-```markdown
 # FHIR - Fast Healthcare Interoperability Resources
 
 ## 1. نظرة عامة

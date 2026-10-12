@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Audit-Log/Audit-Log.md` (سجل التدقيق)
-
-```markdown
 # Audit Log - سجل التدقيق
 
 ## 1. الهدف

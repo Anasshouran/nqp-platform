@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `Clinic_Workflow.md` (إدارة العيادات)
-
-```markdown
 # WF-05: إدارة العيادات والسجلات الطبية (Clinic Workflow)
 
 ## 1. الهدف
