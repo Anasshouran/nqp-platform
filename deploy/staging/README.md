@@ -9,7 +9,9 @@ Shares `postgres` and `redis` containers with the dev stack; isolates:
 | Redis DB index | `1` (via CELERY_BROKER_URL / CELERY_RESULT_BACKEND) |
 | Secrets | `/etc/nqp/staging.env` (mode 600) |
 | Backend host port | `127.0.0.1:9001` |
-| Public endpoint | https://staging.afyatna.com/api/ (nginx → 9001) |
+| Frontend host port | `127.0.0.1:9080` |
+| Public API endpoint | https://staging.afyatna.com/api/ (nginx → 9001) |
+| Public frontend | https://staging.afyatna.com/ (nginx → 9080) |
 
 ## Prereqs
 
@@ -60,9 +62,9 @@ A mode-700 wrapper exists at `/root/nqp-staging-compose`:
 `staging.afyatna.com`:
 
 - `location /api/` → `proxy_pass http://127.0.0.1:9001;`
-- `location /` → `proxy_pass http://127.0.0.1:8080;` (frontend, shared with dev)
+- `location /` → `proxy_pass http://127.0.0.1:9080;` (dedicated `nqp-staging-frontend`, not the dev frontend)
 
-Switch /api/ back to dev (8001) if the staging stack is taken down.
+Switch /api/ back to dev (8001) and / to dev (8080) if the staging stack is taken down.
 
 ## Notes / isolation
 
