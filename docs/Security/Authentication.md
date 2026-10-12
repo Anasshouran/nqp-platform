@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Authentication.md` (المصادقة)
-
-```markdown
 # المصادقة (Authentication) - NQP
 
 ## 1. الهدف

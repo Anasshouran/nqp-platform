@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Backend_Architecture.md` (عمارة Django)
-
-```markdown
 # عمارة الخادم الخلفي (Backend Architecture - Django)
 
 ## 1. الإطار المستخدم

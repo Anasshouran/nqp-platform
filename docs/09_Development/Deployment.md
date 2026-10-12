@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. `Deployment.md` (النشر)
-
-```markdown
 # استراتيجية النشر (Deployment Strategy)
 
 ## 1. بيئات النشر

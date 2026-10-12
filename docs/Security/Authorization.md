@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Authorization.md` (التفويض والصلاحيات)
-
-```markdown
 # التفويض والصلاحيات (Authorization) - NQP
 
 ## 1. الهدف

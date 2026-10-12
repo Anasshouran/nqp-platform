@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Airport_Codes.md` (رموز المطارات - IATA)
-
-```markdown
 # رموز المطارات (Airport Codes) - IATA
 
 ## 1. نظرة عامة

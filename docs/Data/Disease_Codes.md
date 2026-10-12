@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Disease_Codes.md` (رموز الأمراض - ICD-11)
-
-```markdown
 # رموز الأمراض (Disease Codes) - ICD-11
 
 ## 1. نظرة عامة

@@ -1,9 +1,3 @@
-
----
-
-## 📄 `06_UI_UX/02_Traveler_Portal/PreRegistration.md`
-
-```markdown
 # شاشة التسجيل المسبق للمسافر (Traveler Pre-Registration)
 
 ## 1. نظرة عامة

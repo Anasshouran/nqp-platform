@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Database_Design.md` (تصميم قاعدة البيانات - ERD)
-
-```markdown
 # تصميم قاعدة البيانات (Database Design) - مخطط ERD
 
 ## 1. مخطط العلاقات بين الكيانات (ERD) باستخدام Mermaid

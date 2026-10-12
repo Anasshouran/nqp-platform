@@ -1,6 +1,3 @@
-### 📄 2. Business_Requirements.md (متطلبات الأعمال)
-
-```markdown
 # متطلبات الأعمال (Business Requirements - BR)
 
 ## 1. المبرر الاستراتيجي (Business Need)

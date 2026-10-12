@@ -1,9 +1,3 @@
-
----
-
-## 📄 `06_UI_UX/01_Public_Website/AdminDashboard/CMS-Dashboard.md`
-
-```markdown
 # لوحة تحكم مدير المحتوى (CMS Dashboard)
 
 ## 1. نظرة عامة

@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. Authentication_API.md (واجهات المصادقة)
-
-```markdown
 # واجهات مصادقة المستخدمين (Authentication API)
 
 ## 1. نظرة عامة

@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. Laboratory_API.md (واجهات المختبرات)
-
-```markdown
 # واجهات بوابة المختبرات (Laboratory Portal API)
 
 ## 1. نظرة عامة

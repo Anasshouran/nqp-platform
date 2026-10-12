@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Integration_Testing.md` (اختبارات التكامل)
-
-```markdown
 # اختبارات التكامل (Integration Testing) - NQP
 
 ## 1. الهدف

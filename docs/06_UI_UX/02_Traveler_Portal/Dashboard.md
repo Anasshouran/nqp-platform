@@ -1,10 +1,3 @@
-بالتأكيد! سأقوم بتصميم لوحة التحكم (Dashboard) الخاصة بالمسافر في بوابة المسافرين (Traveler Portal)، والتي تظهر بعد تسجيل الدخول مباشرة.
-
----
-
-## 📄 `06_UI_UX/02_Traveler_Portal/Dashboard.md`
-
-```markdown
 # لوحة تحكم المسافر (Traveler Dashboard)
 
 ## 1. نظرة عامة

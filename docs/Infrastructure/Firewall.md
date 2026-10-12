@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Firewall.md` (إدارة الجدران النارية)
-
-```markdown
 # إدارة الجدران النارية (Firewall Management) - NQP
 
 ## 1. نظرة عامة
