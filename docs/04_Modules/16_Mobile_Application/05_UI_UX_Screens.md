@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `05_UI_UX_Screens.md` (شاشات التطبيق الجوال)
-
-```markdown
 # 05_UI_UX_Screens - شاشات تطبيق NQP الجوال
 
 ## 1. شاشة تسجيل الدخول (Login Screen)

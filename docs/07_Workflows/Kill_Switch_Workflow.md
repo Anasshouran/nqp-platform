@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Kill_Switch_Workflow.md` (آلية تفعيل Kill Switch)
-
-```markdown
 # WF-12: آلية تفعيل Kill Switch (Emergency Shutdown)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 9. `Standards.md` (هيئة المواصفات والمقاييس)
-
-```markdown
 # هيئة المواصفات والمقاييس - Standards & Metrology Authority
 
 ## 1. الهدف

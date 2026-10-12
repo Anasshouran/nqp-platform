@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `User_Account_Lifecycle.md` (دورة حياة حساب المستخدم)
-
-```markdown
 # WF-15: دورة حياة حساب المستخدم (User Account Lifecycle)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `03_Hospital_API.md` (واجهات برمجة نظام المستشفيات)
-
-```markdown
 # 03_Hospital_API - واجهات نظام المستشفيات (Django REST Framework)
 
 ## 1. نظرة عامة (Base URL)

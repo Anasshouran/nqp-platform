@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Integration-Services/Integration-Services.md` (خدمات التكامل)
-
-```markdown
 # Integration Services - خدمات التكامل مع الأنظمة الخارجية
 
 ## 1. الهدف

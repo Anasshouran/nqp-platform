@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Referrals-Reception.md` (استقبال الإحالات)
-
-```markdown
 # استقبال الإحالات (Referrals Reception)
 
 ## 1. الهدف

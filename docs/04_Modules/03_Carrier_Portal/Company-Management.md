@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Company-Management.md` (إدارة الشركات)
-
-```markdown
 # إدارة الشركات (Company Management)
 
 ## 1. الهدف

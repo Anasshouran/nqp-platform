@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Laboratory_Workflow.md` (دورة العينة المخبرية)
-
-```markdown
 # WF-06: دورة العينة المخبرية (Laboratory Workflow)
 
 ## 1. الهدف

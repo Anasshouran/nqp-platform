@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Surveillance/01_Surveillance_System.md` (الترصد الوبائي)
-
-```markdown
 # 01_Surveillance_System - نظام الترصد الوبائي والتكامل الوطني
 
 ## 1. المبدأ الأساسي

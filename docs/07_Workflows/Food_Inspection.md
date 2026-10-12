@@ -1,9 +1,3 @@
-
----
-
-### 📄 8. `Food_Inspection.md` (التفتيش والإفراج الغذائي)
-
-```markdown
 # WF-08: التفتيش والإفراج الغذائي (Food Quarantine Inspection)
 
 ## 1. الهدف

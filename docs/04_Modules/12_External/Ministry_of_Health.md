@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Ministry_of_Health.md` (وزارة الصحة)
-
-```markdown
 # وزارة الصحة - Ministry of Health (MoH)
 
 ## 1. الهدف

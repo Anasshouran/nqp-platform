@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `Message-Queue/Message-Queue.md` (طابور الرسائل)
-
-```markdown
 # Message Queue - طابور الرسائل (Redis + Celery)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Authentication-Service-JWT/Authentication-Service-JWT.md` (خدمة المصادقة)
-
-```markdown
 # Authentication Service - خدمة المصادقة (JWT)
 
 ## 1. الهدف

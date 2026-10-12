@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `04_Emergency_Workflow.md` (سير عمل إدارة الطوارئ)
-
-```markdown
 # 04_Emergency_Workflow - سير عمل إدارة الطوارئ والأزمات
 
 ## 1. الممثلون (Actors)

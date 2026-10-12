@@ -1,9 +1,3 @@
-
----
-
-### 📄 9. `Emergency_Response.md` (استجابة الطوارئ - EOC)
-
-```markdown
 # WF-09: الاستجابة للطوارئ (Emergency Response - EOC)
 
 ## 1. الهدف

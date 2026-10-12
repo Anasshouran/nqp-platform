@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `03_Disease_API.md` (واجهات برمجة نظام الأمراض)
-
-```markdown
 # 03_Disease_API - واجهات نظام إدارة الأمراض (Django REST Framework)
 
 ## 1. نظرة عامة (Base URL)

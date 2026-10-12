@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `Integration_Sync_Workflow.md` (مزامنة البيانات الخارجية)
-
-```markdown
 # WF-14: مزامنة البيانات مع الأنظمة الخارجية (Integration Sync)
 
 ## 1. الهدف

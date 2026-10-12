@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Pre-registration/` (التسجيل المسبق)
-
-```markdown
 # التسجيل المسبق للمسافرين (Pre-Registration)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Immigration.md` (الجوازات والهجرة)
-
-```markdown
 # الجوازات والهجرة - Immigration & Passport Authority
 
 ## 1. الهدف

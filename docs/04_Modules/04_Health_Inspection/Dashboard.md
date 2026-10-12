@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Dashboard.md` (لوحة تحكم موظف الحجر)
-
-```markdown
 # لوحة تحكم موظف الحجر الصحي (Port Health Dashboard)
 
 ## 1. الهدف
