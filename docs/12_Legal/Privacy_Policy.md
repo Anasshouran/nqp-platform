@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Privacy_Policy.md` (سياسة الخصوصية)
-
-```markdown
 # سياسة الخصوصية (Privacy Policy) - NQP
 
 ## 1. مقدمة

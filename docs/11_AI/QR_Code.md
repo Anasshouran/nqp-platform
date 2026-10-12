@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `QR_Code.md` (تحليل وتوليد QR Codes)
-
-```markdown
 # تحليل وتوليد رمز QR (QR Code Generation & Analysis)
 
 ## 1. الهدف

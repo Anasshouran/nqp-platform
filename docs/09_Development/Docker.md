@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `Docker.md` (Docker)
-
-```markdown
 # أفضل ممارسات Docker
 
 ## 1. Dockerfile لـ Backend (Django + Gunicorn)

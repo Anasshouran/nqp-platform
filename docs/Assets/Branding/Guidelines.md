@@ -1,9 +1,3 @@
-
----
-
-### 📄 2. `Branding/Guidelines.md` (دليل استخدام العلامة التجارية)
-
-```markdown
 # دليل استخدام العلامة التجارية (Branding Guidelines) - NQP
 
 ## 1. هوية المنصة (Platform Identity)

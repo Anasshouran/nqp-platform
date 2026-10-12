@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `Prometheus.md` (جمع المقاييس)
-
-```markdown
 # جمع المقاييس (Prometheus) - NQP
 
 ## 1. نظرة عامة

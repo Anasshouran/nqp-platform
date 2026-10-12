@@ -1,9 +1,3 @@
-
----
-
-### 📄 9. `Disaster_Recovery.md` (التعافي من الكوارث)
-
-```markdown
 # التعافي من الكوارث (Disaster Recovery) - NQP
 
 ## 1. الهدف

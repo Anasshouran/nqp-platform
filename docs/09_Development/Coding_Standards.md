@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Coding_Standards.md` (معايير الكتابة)
-
-```markdown
 # معايير كتابة الكود (Coding Standards)
 
 ## 1. Backend (Python + Django)

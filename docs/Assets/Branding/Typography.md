@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Branding/Typography.md` (الخطوط والأحجام)
-
-```markdown
 # الخطوط والأحجام (Typography) - NQP
 
 ## 1. الخطوط المستخدمة (Fonts)

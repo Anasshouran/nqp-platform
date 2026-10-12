@@ -1,9 +1,3 @@
-
----
-
-### 📄 8. `CI_CD.md` (GitHub Actions)
-
-```markdown
 # CI/CD Pipeline (GitHub Actions)
 
 ## 1. اختبار Backend (Django)
@@ -75,7 +69,3 @@ deploy:
 | **إشعارات** | React Toastify | - |
 | **PWA** | Vite PWA Plugin | - |
 | **اختبار** | Vitest + React Testing Library | - |
-
----
-
-**هل ترغب في تحديث أي ملف آخر (مثل `Technology_Stack.md` في `02_Architecture` أو `PROJECT_TREE.md`) ليتوافق مع هذه التقنيات الجديدة؟** أخبرني.

@@ -1,9 +1,3 @@
-
----
-
-### 📄 8. `Naming_Convention.md` (اصطلاحات التسمية)
-
-```markdown
 # اصطلاحات التسمية (Naming Convention) - NQP
 
 ## 1. الهدف

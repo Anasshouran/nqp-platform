@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. `Server.md` (مواصفات الخوادم)
-
-```markdown
 # مواصفات الخوادم (Server Specifications) - NQP
 
 ## 1. نظرة عامة

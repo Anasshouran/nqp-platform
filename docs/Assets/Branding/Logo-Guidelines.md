@@ -1,9 +1,3 @@
-
----
-
-### 📄 9. `Branding/Logo-Guidelines.md` (إرشادات استخدام الشعار)
-
-```markdown
 # إرشادات استخدام الشعار (Logo Guidelines) - NQP
 
 ## 1. مقدمة

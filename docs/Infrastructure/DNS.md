@@ -1,9 +1,3 @@
-
----
-
-### 📄 5. `DNS.md` (إدارة DNS)
-
-```markdown
 # إدارة DNS (DNS Management) - NQP
 
 ## 1. نظرة عامة

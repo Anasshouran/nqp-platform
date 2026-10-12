@@ -1,9 +1,3 @@
-
----
-
-### 📄 9. `Validation_Rules.md` (قواعد التحقق من صحة البيانات)
-
-```markdown
 # قواعد التحقق من صحة البيانات (Validation Rules) - NQP
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `GitHub_Actions.md` (CI/CD باستخدام GitHub Actions)
-
-```markdown
 # CI/CD باستخدام GitHub Actions (Continuous Integration & Deployment) - NQP
 
 ## 1. نظرة عامة

@@ -1,9 +1,3 @@
-
----
-
-### 📄 3. `Prediction.md` (النماذج التنبؤية)
-
-```markdown
 # النماذج التنبؤية (Prediction Models)
 
 ## 1. الهدف

@@ -1,9 +1,3 @@
-
----
-
-### 📄 7. `Encryption.md` (التشفير)
-
-```markdown
 # التشفير (Encryption) - NQP
 
 ## 1. الهدف

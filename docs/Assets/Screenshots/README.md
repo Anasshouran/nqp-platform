@@ -1,9 +1,3 @@
-
----
-
-### 📄 8. `Screenshots/README.md` (لقطات الشاشة)
-
-```markdown
 # لقطات الشاشة (Screenshots) - NQP
 
 ## 1. نظرة عامة

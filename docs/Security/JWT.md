@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `JWT.md` (JSON Web Tokens)
-
-```markdown
 # JSON Web Tokens (JWT) - NQP
 
 ## 1. نظرة عامة

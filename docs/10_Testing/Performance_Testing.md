@@ -1,9 +1,3 @@
-
----
-
-### 📄 4. `Performance_Testing.md` (اختبارات الأداء)
-
-```markdown
 # اختبارات الأداء (Performance Testing) - NQP
 
 ## 1. الهدف
