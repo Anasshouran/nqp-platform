@@ -1,9 +1,3 @@
-
----
-
-## 📄 `Architecture_Layers.md` (طبقات العمارة - المُحدّثة)
-
-```markdown
 # طبقات العمارة (Architecture Layers) - NQP
 
 ## 1. مقدمة
@@ -217,9 +211,3 @@ sequenceDiagram
 | البيانات والتخزين (Data & Storage) | PostgreSQL 16+, Redis 7+, MinIO / Amazon S3. |
 | التكامل الخارجي (External) | REST APIs, Webhooks, SFTP, JWT, API Keys. |
 | الشاملة (Cross-Cutting) | Prometheus, Grafana, ELK Stack, Sentry. |
-
----
-
-تم تحديث ملف `Architecture_Layers.md` بنجاح ليتوافق تماماً مع التقنيات الجديدة ويقدم نظرة متكاملة لطبقات النظام.
-
-هل ترغب في تحديث ملف `System_Overview.md` أو `Security_Architecture.md` أيضاً؟ أخبرني.

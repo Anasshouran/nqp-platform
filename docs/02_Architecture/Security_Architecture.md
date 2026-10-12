@@ -1,9 +1,3 @@
-
----
-
-## 📄 `Security_Architecture.md` (عمارة الأمن السيبراني - المُحدّثة)
-
-```markdown
 # عمارة الأمن السيبراني (Security Architecture) - NQP
 
 ## 1. مقدمة
