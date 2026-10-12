@@ -81,6 +81,19 @@ services:
       CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/1
     networks:
       - deploy_nqp_internal
+  staging-frontend:
+    image: ghcr.io/anasshouran/afyatna-frontend@sha256:16ea25f6dba0a603d242f4505ec37b80f91c10b4893a1989ad48800c0dd533b0
+    container_name: nqp-staging-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - deploy_nqp_internal
 networks:
   deploy_nqp_internal:
     external: true
