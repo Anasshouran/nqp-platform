@@ -1,10 +1,3 @@
-بالتأكيد! سأقوم بتحديث ملف **`Integration_Architecture.md`** ليعكس عمارة التكامل المتقدمة والمحدثة للمنصة مع مجموعة التقنيات الجديدة، مع التركيز على كيفية تبادل البيانات بين المكونات الداخلية والأنظمة الخارجية بشكل آمن وفعال.
-
----
-
-## 📄 `Integration_Architecture.md` (عمارة التكامل - المُحدّثة)
-
-```markdown
 # عمارة التكامل (Integration Architecture) - NQP
 
 ## 1. مقدمة
@@ -407,9 +400,3 @@ flowchart LR
 | **مراقبة التكامل** | Prometheus + Grafana + Celery Flower |
 | **سجلات التكامل** | PostgreSQL (جدول external_integration_logs) |
 | **التوثيق** | OpenAPI (Swagger) عبر drf-spectacular |
-
----
-
-**تم تحديث ملف `Integration_Architecture.md` بنجاح ليعكس عمارة التكامل المتكاملة والمحدثة للمنصة.**
-
-**هل ترغب في تحديث ملف `Network_Diagram.drawio` أو `Deployment_Diagram.drawio` أيضاً؟** أخبرني.
