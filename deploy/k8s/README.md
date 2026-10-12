@@ -1,97 +1,37 @@
-# مجلد النشر (Deploy) - NQP
+# Kubernetes Manifests — Aspirational / Dormant
 
-## 1. الهدف
-يحتوي هذا المجلد على جميع ملفات النشر والتوزيع اللازمة لتشغيل منصة NQP في بيئات مختلفة (التطوير، الاختبار، الإنتاج).
+> ⚠️ **STATUS: NOT IN USE.**
+> These manifests describe an aspirational production-k8s topology
+> (last touched 2026-09-22, commit 3be318c). They are not applied anywhere.
+> The actual deploy targets are Docker Compose files:
+> - `deploy/docker-compose.dev-vps.yml` — dev stack
+> - `deploy/staging/docker-compose.yml` — staging stack
 
-## 2. هيكل المجلدات
+## Known gaps before any use
 
-```text
-deploy/
-├── README.md                    # هذا الملف
-├── docker-compose.yml           # تشغيل جميع الخدمات (Development/Staging)
-├── docker-compose.db.yml        # تشغيل قاعدة البيانات فقط
-├── nginx/
-│   └── nginx.conf               # تكوين Nginx
-├── ssl/
-│   ├── fullchain.pem            # شهادة SSL (الإنتاج)
-│   ├── privkey.pem              # المفتاح الخاص (الإنتاج)
-│   └── README.md                # إرشادات SSL
-├── init-scripts/
-│   └── 01-init-db.sql           # تهيئة قاعدة البيانات
-└── k8s/                         # Kubernetes (الإنتاج)
-    ├── namespace.yaml
-    ├── secrets.yaml
-    ├── persistent-volume-claims.yaml
-    ├── backend-deployment.yaml
-    ├── backend-service.yaml
-    ├── frontend-deployment.yaml
-    ├── frontend-service.yaml
-    ├── postgres-statefulset.yaml
-    ├── postgres-service.yaml
-    ├── redis-deployment.yaml
-    ├── redis-service.yaml
-    ├── minio-deployment.yaml
-    ├── minio-service.yaml
-    ├── celery-deployment.yaml
-    ├── celery-beat-deployment.yaml
-    ├── ingress.yaml
-    └── create-tls-secret.sh
+1. **Images** point to `ghcr.io/nqp/*` (nonexistent org) and use `:latest` tags.
+   - Correct org: `ghcr.io/anasshouran/*`
+   - Pin by digest, not tag.
+2. **Secrets** — almost all values are `REPLACE_ME_BASE64` placeholders.
+   - One stale literal exists: `db-name: bnFwX2Ri` (decodes to `nqp_db`, a DB name
+     that does not exist on any current environment).
+3. **Database name** — the manifest declares `nqp_db`; real environments use
+   `afyatna` (dev) and `staging_afyatna` (staging).
+4. **Ingress** targets `nqp.gov.sd` / `api.nqp.gov.sd` — not provisioned.
+5. **Persistence** — Postgres uses a StatefulSet + PVC; a real deployment would
+   need a decision (StatefulSet vs managed DB).
+6. **CI/CD** — no workflow references this directory; there is no apply pipeline.
 
+## What this directory *is* good for
 
-3. بيئات التشغيل
-البيئة	الأداة	الملفات
-التطوير (Development)	Docker Compose	docker-compose.yml
-الاختبار (Staging)	Docker Compose / Kubernetes	docker-compose.yml / k8s/
-الإنتاج (Production)	Kubernetes	k8s/
-4. بدء التشغيل
-4.1. التطوير (Docker Compose)
-bash
+A record of the intended production topology (ingress hostnames, service layout,
+namespace `nqp`, TLS approach). Useful when planning production-k8s later.
+Treat it as a design sketch, not deployable config.
 
-# تشغيل جميع الخدمات
-docker-compose -f deploy/docker-compose.yml up -d
+## If you intend to use these manifests
 
-# تشغيل قاعدة البيانات فقط
-docker-compose -f deploy/docker-compose.db.yml up -d
-
-# إيقاف الخدمات
-docker-compose -f deploy/docker-compose.yml down
-
-# عرض السجلات
-docker-compose -f deploy/docker-compose.yml logs -f
-
-4.2. الإنتاج (Kubernetes)
-bash
-
-# إنشاء Namespace
-kubectl apply -f deploy/k8s/namespace.yaml
-
-# إنشاء Secrets
-kubectl apply -f deploy/k8s/secrets.yaml
-
-# نشر الخدمات
-kubectl apply -f deploy/k8s/
-
-# إنشاء Secret شهادة TLS قبل Ingress
-./deploy/k8s/create-tls-secret.sh
-
-# مراقبة النشر
-kubectl get pods -n nqp -w
-
-# عرض السجلات
-kubectl logs -f deployment/backend-deployment -n nqp
-
-5. متغيرات البيئة
-
-    قم بإنشاء ملف .env في جذر المشروع لتخصيص المتغيرات.
-
-    انظر ملف .env.example للحصول على قائمة المتغيرات المطلوبة.
-
-6. مراجع
-
-    Docker Compose: https://docs.docker.com/compose/
-
-    Kubernetes: https://kubernetes.io/docs/
-
-    Nginx: https://nginx.org/en/docs/
-
-    Let's Encrypt: https://letsencrypt.org/
+1. Fix the gaps above.
+2. Wire into a CI/CD workflow with explicit approval.
+3. Provision ingress hosts and TLS.
+4. Decide persistence model.
+5. Test in a throwaway cluster first.
