@@ -72,3 +72,17 @@ coverage/
 # Testing
 .pytest_cache/
 .mypy_cache/
+
+# Local runtime / dev artifacts (do not commit)
+dump.rdb
+appendonlydir/
+backend/nqp_db.sqlite3
+backend/nqp_db/
+backend/afyatna
+frontend/dist/
+.backups/
+.dev-run/
+.dev-logs/
+logs/
+.pytest_cache/
+deploy/local/
