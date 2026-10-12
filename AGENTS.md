@@ -12,31 +12,34 @@ National Quarantine Platform (NQP) — full-stack web application for managing q
 
 | Layer | Technology |
 |-------|------------|
-| Backend | Python 3.13+ / Django 5.0 / DRF |
+| Backend | Python 3.13+ / Django 5.2 (>=5.2.17) / DRF |
 | Frontend | React 19 / TypeScript 5.5 / Vite 5 |
-| Database | PostgreSQL 16 + PostGIS |
+| Mobile | Expo 57 / React Native 0.86 |
+| Database | PostgreSQL 16 (+ PostGIS when `DB_ENGINE=…postgis`, production) |
 | Cache | Redis 7 |
 | Queue | Celery 5.4 |
 | Storage | MinIO (S3-compatible) |
-| Deploy | Docker Compose / Kubernetes |
+| Deploy | Docker Compose (dev + staging); k8s manifests are aspirational/dormant |
 
 ## Project Structure
 
 ```
 backend/
   nqp_backend/    # Django project (settings, urls, celery)
-  apps/           # 26 domain modules
+  apps/           # 34 domain modules
   core/           # Shared: BaseModel, pagination, permissions, renderers
 frontend/
   src/
-    api/          # Axios client + 33 endpoint modules
+    api/          # Axios client + 40 endpoint modules
     components/   # Shared UI components
-    pages/        # 56 page directories
+    pages/        # 59 page directories (335 files)
     store/        # Redux Toolkit (auth + ui slices)
-    types/        # 23 TypeScript type files
-    hooks/        # 8 custom hooks
-deploy/           # Docker Compose + Kubernetes manifests
-docs/             # 21 documentation directories
+    types/        # 30 TypeScript type files
+    hooks/        # 12 custom hooks
+mobile/           # Expo/React Native app (14 modules, 19 test files) — see mobile/AGENTS.md
+contracts/        # Shared TS/Zod schemas (12 files) consumed by mobile + web + CI
+deploy/           # Docker Compose (dev + staging); k8s manifests aspirational
+docs/             # 20 documentation directories
 ```
 
 ## Key Commands
@@ -61,12 +64,16 @@ npm run lint                        # ESLint
 npm test -- --run                   # Run tests (Vitest)
 ```
 
-### Full Stack
+### Mobile
 ```bash
-make up                             # docker-compose up -d
-make down                           # docker-compose down
-make test                           # Run all tests
+cd mobile
+npm install                         # Install deps
+npx expo start                      # Dev server
+npx tsc --noEmit                    # TypeScript check
+npx expo lint                       # ESLint
+npx jest --runInBand                # Run tests (Jest)
 ```
+
 
 ## Conventions
 
@@ -103,4 +110,6 @@ Required in production:
 GitHub Actions pipeline:
 1. **Backend:** pytest against PostgreSQL
 2. **Frontend:** lint + test + build (tsc + vite)
-3. **Docker:** Build and push to GHCR (on main branch)
+3. **Mobile:** typecheck + lint + jest (path-filtered on `mobile/**` + `contracts/**`)
+4. **Docker:** Build and push backend/frontend images to GHCR (on main branch)
+5. **Mirroring:** `mirror-infra-images.yml`, `mirror-postgres-image.yml` keep base images mirrored to GHCR
