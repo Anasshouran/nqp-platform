@@ -1,8 +1,3 @@
-
----
-
-### 📄 7. Functional_Requirements.md (المتطلبات الوظيفية)
-
 # المتطلبات الوظيفية (Functional Requirements - FR)
 
 ## 1. مقدمة
