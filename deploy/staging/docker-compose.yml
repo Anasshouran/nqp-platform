@@ -11,6 +11,11 @@ services:
   staging-backend:
     image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
     container_name: nqp-staging-backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
     command: gunicorn --bind 0.0.0.0:8000 --timeout 300 nqp_backend.wsgi:application
     ports:
@@ -38,6 +43,11 @@ services:
   staging-celery:
     image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
     container_name: nqp-staging-celery
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
     command: celery -A nqp_backend worker --loglevel=info --concurrency=2
     environment:
@@ -61,6 +71,11 @@ services:
   staging-celery-beat:
     image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
     container_name: nqp-staging-celery-beat
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
     command: celery -A nqp_backend beat --loglevel=info
     environment:
@@ -84,6 +99,11 @@ services:
   staging-frontend:
     image: ghcr.io/anasshouran/afyatna-frontend@sha256:16ea25f6dba0a603d242f4505ec37b80f91c10b4893a1989ad48800c0dd533b0
     container_name: nqp-staging-frontend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
     ports:
       - "127.0.0.1:9080:80"
