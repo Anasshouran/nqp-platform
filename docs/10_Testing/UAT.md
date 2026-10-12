@@ -1,9 +1,3 @@
-
----
-
-### 📄 6. `UAT.md` (اختبار قبول المستخدم)
-
-```markdown
 # اختبار قبول المستخدم (User Acceptance Testing - UAT) - NQP
 
 ## 1. الهدف
