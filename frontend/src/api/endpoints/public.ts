@@ -220,8 +220,34 @@ export const getContactSettings = async (sector?: string): Promise<ContactInfo> 
   };
 };
 
-export const getDiseases = () =>
-  apiClient.get<ApiResponse<PublicDisease[]>>('/public/diseases/');
+export interface GetDiseasesParams {
+  search?: string;
+  ordering?: string;
+  page?: number;
+  page_size?: number;
+}
+
+// Backward compatible: the no-arg call keeps the legacy plain-array shape
+// (unwrapped from the paginated envelope) so existing callers are unaffected.
+export function getDiseases(): Promise<AxiosResponse<ApiResponse<PublicDisease[]>>>;
+export function getDiseases(
+  params: GetDiseasesParams,
+): Promise<AxiosResponse<ApiResponse<PaginatedResponse<PublicDisease>>>>;
+export function getDiseases(params?: GetDiseasesParams) {
+  const request = apiClient.get<ApiResponse<PaginatedResponse<PublicDisease>>>(
+    '/public/diseases/',
+    { params },
+  );
+  return request.then((response) => {
+    if (params !== undefined) {
+      return response;
+    }
+    return {
+      ...response,
+      data: { ...response.data, data: response.data.data.results },
+    };
+  });
+}
 
 let noticesPromise: Promise<AxiosResponse<ApiResponse<HealthNotice[]>>> | null = null;
 

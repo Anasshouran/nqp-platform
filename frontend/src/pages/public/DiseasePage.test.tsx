@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PublicDisease } from '../../api/endpoints/public';
 
 const useApi = vi.fn();
+const retry = vi.fn();
 
 vi.mock('../../hooks/useApi', () => ({
   useApi: (...args: unknown[]) => useApi(...args),
@@ -23,12 +24,18 @@ const base: PublicDisease = {
   ihr_category: 'SURVEILLANCE_ONLY',
 };
 
-const respond = (diseases: PublicDisease[]) =>
-  useApi.mockReturnValue({ data: diseases, loading: false, error: null, retry: vi.fn() });
+const respond = (diseases: PublicDisease[], total = diseases.length) =>
+  useApi.mockReturnValue({
+    data: { count: total, next: null, previous: null, results: diseases },
+    loading: false,
+    error: null,
+    retry,
+  });
 
 describe('DiseasePage', () => {
   beforeEach(() => {
     useApi.mockReset();
+    retry.mockReset();
   });
 
   it('does not render an empty description paragraph', () => {
@@ -114,5 +121,56 @@ describe('DiseasePage', () => {
     expect(en).not.toBeNull();
     expect(en?.getAttribute('dir')).toBe('ltr');
     expect(within(en as HTMLElement).getByText('Cholera')).toBeTruthy();
+  });
+
+  it('shows the search-specific empty state when a query returns nothing', () => {
+    respond([], 0);
+    render(<DiseasePage />);
+
+    expect(screen.getByText('لا توجد أمراض مسجلة')).toBeTruthy();
+  });
+
+  it('refetches with the debounced query after typing', async () => {
+    vi.useFakeTimers();
+    try {
+      respond([base]);
+      render(<DiseasePage />);
+
+      const input = screen.getByLabelText('ابحث عن مرض');
+      fireEvent.change(input, { target: { value: 'كوليرا' } });
+
+      // Debounce window has not elapsed yet.
+      expect(retry).not.toHaveBeenCalled();
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(retry).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('renders a pagination control when there is more than one page', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({
+      ...base,
+      id: `d${i}`,
+      icd_11_code: `C${i}`,
+    }));
+    respond(many, 45);
+    render(<DiseasePage />);
+
+    const nav = screen.getByRole('navigation', { name: 'التنقل بين صفحات الأمراض' });
+    expect(within(nav).getByText('1')).toBeTruthy();
+    expect(within(nav).getByText('2')).toBeTruthy();
+    expect(within(nav).getByText('3')).toBeTruthy();
+  });
+
+  it('hides pagination when everything fits on one page', () => {
+    respond([base], 1);
+    render(<DiseasePage />);
+
+    expect(screen.queryByRole('navigation', { name: 'التنقل بين صفحات الأمراض' })).toBeNull();
   });
 });
