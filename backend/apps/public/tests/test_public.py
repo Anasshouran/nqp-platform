@@ -114,10 +114,107 @@ def test_diseases_public_list(api_client):
     response = api_client.get('/api/v1/public/diseases/')
     assert response.status_code == 200
     data = response.json()['data']
-    assert any(item['icd_11_code'] == '1A00' for item in data)
-    assert not any(item['icd_11_code'] == '1C1Z' for item in data)
-    active = next(item for item in data if item['icd_11_code'] == '1A00')
+    # Paginated response: data is {count, next, previous, results}
+    results = data['results']
+    assert any(item['icd_11_code'] == '1A00' for item in results)
+    assert not any(item['icd_11_code'] == '1C1Z' for item in results)
+    active = next(item for item in results if item['icd_11_code'] == '1A00')
     assert 'إسهال مائي' in active['symptoms']
+
+
+def test_diseases_public_search_by_name_ar(api_client):
+    Disease.objects.create(icd_11_code='SEARCH-01', name_ar='الكوليرا الوبائية', name_en='Epidemic Cholera', is_active=True)
+    Disease.objects.create(icd_11_code='SEARCH-02', name_ar='الملاريا', name_en='Malaria', is_active=True)
+    Disease.objects.create(icd_11_code='SEARCH-03', name_ar='حمى الضنك', name_en='Dengue Fever', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?search=كوليرا')
+    assert response.status_code == 200
+    data = response.json()['data']
+    results = data['results']
+    assert len(results) == 1
+    assert results[0]['icd_11_code'] == 'SEARCH-01'
+
+
+def test_diseases_public_search_by_name_en(api_client):
+    Disease.objects.create(icd_11_code='SEARCH-04', name_ar='مرض', name_en='Cholera Disease', is_active=True)
+    Disease.objects.create(icd_11_code='SEARCH-05', name_ar='مرض آخر', name_en='Other Disease', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?search=Cholera')
+    assert response.status_code == 200
+    data = response.json()['data']
+    results = data['results']
+    assert len(results) == 1
+    assert results[0]['icd_11_code'] == 'SEARCH-04'
+
+
+def test_diseases_public_search_by_icd_code(api_client):
+    Disease.objects.create(icd_11_code='ICD-TEST-001', name_ar='مرض ICD', name_en='ICD Disease', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?search=ICD-TEST')
+    assert response.status_code == 200
+    data = response.json()['data']
+    results = data['results']
+    assert len(results) == 1
+    assert results[0]['icd_11_code'] == 'ICD-TEST-001'
+
+
+def test_diseases_public_ordering_by_name_ar(api_client):
+    Disease.objects.create(icd_11_code='ORD-01', name_ar='ألف', name_en='A', is_active=True)
+    Disease.objects.create(icd_11_code='ORD-02', name_ar='باء', name_en='B', is_active=True)
+    Disease.objects.create(icd_11_code='ORD-03', name_ar='جيم', name_en='C', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?ordering=name_ar')
+    assert response.status_code == 200
+    data = response.json()['data']
+    results = data['results']
+    assert results[0]['icd_11_code'] == 'ORD-01'  # 'ألف' comes first alphabetically
+
+
+def test_diseases_public_ordering_desc(api_client):
+    Disease.objects.create(icd_11_code='ORD-04', name_ar='ألف', name_en='A', is_active=True)
+    Disease.objects.create(icd_11_code='ORD-05', name_ar='باء', name_en='B', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?ordering=-name_ar')
+    assert response.status_code == 200
+    data = response.json()['data']
+    results = data['results']
+    assert results[0]['icd_11_code'] == 'ORD-05'  # 'باء' comes first in descending
+
+
+def test_diseases_public_pagination_page_size(api_client):
+    for i in range(25):
+        Disease.objects.create(icd_11_code=f'PAGE-{i:02d}', name_ar=f'مرض {i}', name_en=f'Disease {i}', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?page_size=10')
+    assert response.status_code == 200
+    data = response.json()['data']
+    assert data['count'] == 25
+    assert len(data['results']) == 10
+    assert data['next'] is not None
+    assert data['previous'] is None
+
+
+def test_diseases_public_pagination_page_2(api_client):
+    for i in range(25):
+        Disease.objects.create(icd_11_code=f'PAGE2-{i:02d}', name_ar=f'مرض {i}', name_en=f'Disease {i}', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?page_size=10&page=2')
+    assert response.status_code == 200
+    data = response.json()['data']
+    assert data['count'] == 25
+    assert len(data['results']) == 10
+    assert data['previous'] is not None
+
+
+def test_diseases_public_max_page_size_limit(api_client):
+    for i in range(105):
+        Disease.objects.create(icd_11_code=f'MAX-{i:03d}', name_ar=f'مرض {i}', name_en=f'Disease {i}', is_active=True)
+
+    response = api_client.get('/api/v1/public/diseases/?page_size=200')
+    assert response.status_code == 200
+    data = response.json()['data']
+    # max_page_size is 100
+    assert len(data['results']) == 100
 
 
 def test_countries_public_list(api_client):

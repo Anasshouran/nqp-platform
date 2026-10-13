@@ -2,6 +2,8 @@ import logging
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -422,28 +424,23 @@ class PublicPortViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(success_response(data))
 
 
-class PublicDiseaseViewSet(viewsets.ViewSet):
+class DiseasePagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class PublicDiseaseViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = PublicDiseaseSerializer
+    pagination_class = DiseasePagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name_ar", "name_en", "icd_11_code", "description"]
+    ordering_fields = ["name_ar", "name_en", "icd_11_code", "created_at"]
+    ordering = ["name_ar"]
 
-    def list(self, request):
-        diseases = Disease.objects.filter(is_active=True)
-        data = [
-            {
-                'id': str(d.id),
-                'icd_11_code': d.icd_11_code,
-                'name_ar': d.name_ar,
-                'name_en': d.name_en,
-                'description': d.description,
-                'symptoms': d.symptoms,
-                'incubation_period_min': d.incubation_period_min,
-                'incubation_period_max': d.incubation_period_max,
-                'transmission_methods': d.transmission_methods,
-                'ihr_category': d.ihr_category,
-            }
-            for d in diseases
-        ]
-        return Response(success_response(data))
+    def get_queryset(self):
+        return Disease.objects.filter(is_active=True)
 
 
 class PublicStatisticsView(APIView):
