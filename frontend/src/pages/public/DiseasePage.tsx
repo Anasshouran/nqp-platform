@@ -1,5 +1,5 @@
 import En from '../../components/uikit/En';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -9,16 +9,20 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Button from '@mui/material/Button';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Pagination from '@mui/material/Pagination';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import SearchIcon from '@mui/icons-material/Search';
 import { getDiseases } from '../../api/endpoints/public';
 import type { PublicDisease } from '../../api/endpoints/public';
+import type { PaginatedResponse } from '../../types/api';
 import { PageHeader, EmptyState, CardsGridSkeleton, ErrorState } from '../../components/common';
 import { useApi } from '../../hooks/useApi';
+import { useDebounce } from '../../hooks/useDebounce';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 20;
 
 /* IHR classification doubles as a severity signal, so each level gets its own
    semantic colour: red = public-health emergency, amber = targeted eradication,
@@ -55,12 +59,36 @@ const DetailChips = ({
 );
 
 const DiseasePage = () => {
-  const { data, loading, error, retry } = useApi<PublicDisease[]>(() =>
-    getDiseases().then((response) => response.data.data),
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+
+  const { data, loading, error, retry } = useApi<PaginatedResponse<PublicDisease>>(() =>
+    getDiseases({
+      search: debouncedSearch.trim() || undefined,
+      page,
+      page_size: PAGE_SIZE,
+    }).then((response) => response.data.data),
   );
-  const diseases = data ?? [];
-  const [visible, setVisible] = useState(PAGE_SIZE);
-  const shown = diseases.slice(0, visible);
+
+  const diseases = data?.results ?? [];
+  const total = data?.count ?? 0;
+
+  // Refetch when the debounced query or the page changes. The first render is
+  // skipped because useApi already performs the initial fetch on mount.
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    retry();
+  }, [debouncedSearch, page, retry]);
+
+  // A new query always starts from the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -69,6 +97,21 @@ const DiseasePage = () => {
         subtitle="معلومات توعوية حول الأمراض الوبائية ذات الاهتمام الصحي العام وإرشادات الوقاية"
         eyebrow="المرجع الصحي"
       />
+      <TextField
+        fullWidth
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="ابحث عن مرض..."
+        inputProps={{ 'aria-label': 'ابحث عن مرض' }}
+        sx={{ maxWidth: 560, mb: 4, mx: 'auto', display: 'flex' }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon color="action" />
+            </InputAdornment>
+          ),
+        }}
+      />
       {loading ? (
         <CardsGridSkeleton count={6} />
       ) : error ? (
@@ -76,13 +119,15 @@ const DiseasePage = () => {
       ) : diseases.length === 0 ? (
         <EmptyState
           icon={<BiotechIcon />}
-          title="لا توجد أمراض مسجلة"
-          description="سيتم إضافة المعلومات التوعوية قريباً."
+          title={debouncedSearch ? 'لا توجد نتائج مطابقة' : 'لا توجد أمراض مسجلة'}
+          description={
+            debouncedSearch ? 'جرّب كلمات بحث أخرى.' : 'سيتم إضافة المعلومات التوعوية قريباً.'
+          }
         />
       ) : (
         <>
           <Grid container spacing={3}>
-            {shown.map((disease) => {
+            {diseases.map((disease) => {
               const ihr = ihrMeta(disease.ihr_category);
               return (
             <Grid item xs={12} md={6} lg={4} key={disease.id}>
@@ -164,21 +209,16 @@ const DiseasePage = () => {
               );
             })}
           </Grid>
-          {visible < diseases.length && (
-            <Box sx={{ mt: 5, textAlign: 'center' }}>
-              <Button
-                variant="outlined"
+          {total > PAGE_SIZE && (
+            <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={Math.ceil(total / PAGE_SIZE)}
+                page={page}
+                onChange={(_event, value) => setPage(value)}
                 color="primary"
-                size="large"
-                endIcon={<KeyboardArrowDownIcon />}
-                onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                sx={{ px: 4 }}
-              >
-                عرض المزيد من الأمراض
-              </Button>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                تم عرض {visible} من {diseases.length} مرض
-              </Typography>
+                shape="rounded"
+                aria-label="التنقل بين صفحات الأمراض"
+              />
             </Box>
           )}
         </>
