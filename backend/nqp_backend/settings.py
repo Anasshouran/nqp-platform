@@ -201,6 +201,9 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'core.exceptions.handlers.api_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardPagination',
     'PAGE_SIZE': 10,
+    # نثق بقفزة وكيل واحدة (nginx). بهذا يستخرج DRF عنوان العميل الصحيح من
+    # `X-Forwarded-For` (آخر عنصر) بدل استخدام الرأس كاملاً — وهو قابل للتسميم.
+    'NUM_PROXIES': 1,
 'DEFAULT_THROTTLE_CLASSES': (
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
@@ -209,6 +212,12 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         # `anon` يحمي محاولات تسجيل الدخول من القوة الغاشمة؛ المفتاح هو الـIP.
         'anon': '100/min',
+        # سقفان مخصّصان لتسجيل الدخول، مستقلّان عن `anon` العام كي لا ينازعهما
+        # أي مسار مجهول آخر. `login` مفتاحه عنوان الـIP و`login_user` مفتاحه
+        # معرّف الدخول (بريد/جوال/رقم قومي) — فالهجوم الموزَّع من IP واحد على
+        # حسابات كثيرة، أو على حساب واحد من IPات كثيرة، يبقى محدوداً بالسقف الآخر.
+        'login': '10/min',
+        'login_user': '20/hour',
         # `user` مفتاحه معرّف المستخدم لا الـIP. لا بد أن يسع لوحة معلومات
         # تفتح عدة طلبات في الصفحة الواحدة: بـ`200/hour` كان يُقفل مستخدم واحد
         # بحلول عشر صفحات، وهو سلوك لا يُطاق. الخدمة الداخلية لكل موظف
@@ -226,6 +235,28 @@ REST_FRAMEWORK = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Cache backends
+# ---------------------------------------------------------------------------
+# `default` يبقى LocMemCache كما كان (لم نغيّر سلوك أي مستهلك قائم للكاش).
+# `throttle` كاش Redis مخصّص كي تُشارَك عدّادات DRF عبر عمّال gunicorn.
+# قاعدة Redis رقم 1 (وسيط Celery يستخدم القاعدة 0).
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'nqp-default',
+    },
+    'throttle': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': (
+            f"redis://:{os.environ.get('REDIS_PASSWORD', '')}"
+            f"@{os.environ.get('REDIS_HOST', 'redis')}"
+            f":{os.environ.get('REDIS_PORT', '6379')}/1"
+        ),
+        'KEY_PREFIX': 'nqp:throttle:',
+    },
+}
+
 if DEBUG and not _IS_TEST_RUN:
     # في التطوير: التخزين هو `LocMemCache` داخل عملية واحدة، وإعادة تشغيل
     # الخادم تمسح السجل. سقف الإنتاج هنا يوقف التطوير بلا فائدة. نرفع السقف
@@ -239,7 +270,16 @@ if _IS_TEST_RUN:
     # `ImproperlyConfigured` عند غياب النطاق. نرفع السقف بدل تعطيله كي
     # تبقى الاختبارات غير هشّة.
     REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
-        k: '1000/min' for k in ('anon', 'user', 'traveler_lookup', 'public_verify', 'assistant_chat', 'assistant_feedback')
+        k: '1000/min' for k in (
+            'anon', 'user', 'traveler_lookup', 'public_verify',
+            'assistant_chat', 'assistant_feedback', 'login', 'login_user',
+        )
+    }
+    # الكاش المخصّص للتقييد يعود LocMem في الاختبارات (بلا اعتماد على Redis)؛
+    # يُفرَّغ بين الاختبارات عبر fixture لتفادي تسرّب العدّادات.
+    CACHES['throttle'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'nqp-throttle-test',
     }
 
 # JWT

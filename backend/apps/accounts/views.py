@@ -35,6 +35,7 @@ from .serializers import (
     UserSerializer,
     UserWriteSerializer,
 )
+from .throttles import LoginIPThrottle, LoginUserThrottle
 
 
 class AuthViewSet(ViewSet):
@@ -44,6 +45,15 @@ class AuthViewSet(ViewSet):
         if self.action in self.PUBLIC_ACTIONS:
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    # تقييد تسجيل الدخول بنطاقين مخصّصين (IP + معرّف الدخول) بدل السقف
+    # العام للمجهول؛ بقية الإجراءات تبقى على المقيّدات الافتراضية.
+    throttle_classes = [LoginIPThrottle, LoginUserThrottle]
+
+    def get_throttles(self):
+        if self.action == 'login':
+            return [cls() for cls in self.throttle_classes]
+        return super().get_throttles()
 
     @extend_schema(
         request=LoginSerializer,
