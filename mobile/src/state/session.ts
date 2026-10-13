@@ -5,7 +5,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { getRepos } from '../services/provider';
 import { getTokenStorage } from './tokenStorage';
-import { cancelRetries, purgeProtectedCache } from '../offline/engine';
+import { cancelRetries, purgeProtectedCache } from '../offline/control';
 import type { Repositories } from '../services/repositories';
 
 export type SessionStatus = 'signed_out' | 'restoring' | 'signing_in' | 'signed_in' | 'session_expired';

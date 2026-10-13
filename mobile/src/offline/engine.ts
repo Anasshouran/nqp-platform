@@ -9,8 +9,8 @@
  */
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../state/store';
+import { restoreSession } from '../state/session';
 import {
-  restoreSession,
   profileCached,
   certificatesCached,
   declarationsCached,
@@ -21,13 +21,27 @@ import {
   declarationsServer,
   notificationsServer,
   requirementsServer,
-  setConnectivity,
-  setSyncState,
-} from '../state';
+} from '../state/data';
+import { setConnectivity, setSyncState } from '../state/ui';
+import {
+  cancelRetries,
+  resetRetries,
+  isRetryCancelled,
+  purgeProtectedCache,
+  establishScopeFromProfile,
+} from './control';
 import { getRepos } from '../services/provider';
 import { getPersistentCache, getScopeMarker } from '../services/cacheProvider';
 import { CACHE_POLICY, NEVER_CACHED_DATASETS, type DatasetKey } from './persist/policies';
 import { BoundedRetrier, isTransientNetwork } from './retrier';
+
+export {
+  cancelRetries,
+  resetRetries,
+  isRetryCancelled,
+  purgeProtectedCache,
+  establishScopeFromProfile,
+};
 
 export type ReconcileStatus =
   | 'SKIPPED_NO_SESSION'
@@ -35,31 +49,6 @@ export type ReconcileStatus =
   | 'RECONCILED_ONLINE'
   | 'PARTIAL_STALE'
   | 'SYNC_FAILED';
-
-let retriesCancelled = false;
-
-export function cancelRetries(): void {
-  retriesCancelled = true;
-}
-
-export function resetRetries(): void {
-  retriesCancelled = false;
-}
-
-function isRetryCancelled(): boolean {
-  return retriesCancelled;
-}
-
-export async function establishScopeFromProfile(profile: { id: string } | null): Promise<void> {
-  if (profile && profile.id) {
-    await getScopeMarker().set(String(profile.id));
-  }
-}
-
-export async function purgeProtectedCache(): Promise<void> {
-  await getPersistentCache().purgeAll();
-  await getScopeMarker().clear();
-}
 
 async function persistDataset(dataset: DatasetKey, data: unknown): Promise<void> {
   const policy = CACHE_POLICY[dataset];
