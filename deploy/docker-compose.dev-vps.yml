@@ -103,7 +103,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: gunicorn --bind 0.0.0.0:8000 nqp_backend.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 --timeout 180 nqp_backend.wsgi:application
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health/', timeout=5).status == 200 else 1)"]
       interval: 15s
