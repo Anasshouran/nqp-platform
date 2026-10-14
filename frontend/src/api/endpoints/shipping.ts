@@ -77,3 +77,56 @@ export const departVessel = (vesselVisitId: string, notes?: string) =>
     `/shipping/vessel-visits/${vesselVisitId}/depart/`,
     { notes },
   );
+
+/* -------------------------------------------------------------------------- */
+/* Agents — الوكلاء الملاحيون                                                 */
+/* -------------------------------------------------------------------------- */
+
+export type ShippingAgentType =
+  | 'PORT_AGENT'
+  | 'SHIP_AGENT'
+  | 'CARGO_AGENT'
+  | 'MANNING_AGENT'
+  | 'PROTECTING_AGENT';
+
+export type ShippingAgentStatus =
+  | 'PENDING'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'REVOKED'
+  | 'EXPIRED';
+
+export interface ShippingAgent {
+  id: string;
+  company: string;
+  company_id: string;
+  company_name: string;
+  name: string;
+  name_en: string;
+  agent_type: ShippingAgentType;
+  license_number: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  status: ShippingAgentStatus;
+  valid_from: string | null;
+  valid_until: string | null;
+  ports: string[];
+  ports_count: number;
+  user: string | null;
+  user_email: string | null;
+  is_active: boolean;
+  is_valid: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+const AGENTS_BASE = '/shipping/agents';
+
+/** Paginated registry of shipping agents (`?search=`, `?status=`, `?agent_type=`, `?is_active=`). */
+export const getAgents = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<ShippingAgent>>>(`${AGENTS_BASE}/`, { params });
+
+export const getAgent = (id: string) =>
+  apiClient.get<ApiResponse<ShippingAgent>>(`${AGENTS_BASE}/${id}/`);
