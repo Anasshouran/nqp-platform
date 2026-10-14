@@ -6,7 +6,7 @@ import apiClient from '../../../api/client';
 export const AgentManagement = () => {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/shipping/agents/').then(r => setItems(r.data.results || r.data || []));
+    apiClient.get('/shipping/agents/').then(r => setItems(r.data.results || r.data || []));
   }, []);
   return (
     <Box>

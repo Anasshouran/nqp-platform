@@ -6,7 +6,7 @@ import apiClient from '../../../api/client';
 export const NotificationList = () => {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/notifications/').then(r => setItems(r.data.results || r.data || [])).catch(() => setItems([]));
+    apiClient.get('/notifications/').then(r => setItems(r.data.results || r.data || [])).catch(() => setItems([]));
   }, []);
   return (
     <Box>
