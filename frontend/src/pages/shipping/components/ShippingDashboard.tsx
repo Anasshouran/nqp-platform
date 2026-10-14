@@ -16,9 +16,9 @@ export const ShippingDashboard = () => {
 
   useEffect(() => {
     Promise.all([
-      apiClient.get('/api/v1/carriers/vessels/?page_size=1'),
-      apiClient.get('/api/v1/port-health/visits/?page_size=1'),
-      apiClient.get('/api/v1/borders-health/arrivals/?page_size=1'),
+      apiClient.get('/carriers/vessels/?page_size=1'),
+      apiClient.get('/port-health/visits/?page_size=1'),
+      apiClient.get('/borders-health/arrivals/?page_size=1'),
     ])
       .then(([v, s, a]) => setStats({ vessels: v.data.count || 0, visits: s.data.count || 0, arrivals: a.data.count || 0 }))
       .catch(() => setError('Failed to load stats'));

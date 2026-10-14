@@ -6,7 +6,7 @@ import apiClient from '../../../api/client';
 export const DocumentList = () => {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/carriers/documents/').then(r => setItems(r.data.results || r.data || []));
+    apiClient.get('/carriers/documents/').then(r => setItems(r.data.results || r.data || []));
   }, []);
   return (
     <Box>

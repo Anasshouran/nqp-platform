@@ -6,7 +6,7 @@ import apiClient from '../../../api/client';
 export const CompanyProfile = () => {
   const [profile, setProfile] = useState<any>(null);
   useEffect(() => {
-    apiClient.get('/api/v1/carriers/company/profile/').then(r => setProfile(r.data.data || r.data));
+    apiClient.get('/carriers/company/profile/').then(r => setProfile(r.data.data || r.data));
   }, []);
   return (
     <Box>

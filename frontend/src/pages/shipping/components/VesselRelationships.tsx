@@ -6,7 +6,7 @@ import apiClient from '../../../api/client';
 export const VesselRelationships = () => {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/shipping/vessel-relationships/').then(r => setItems(r.data.results || r.data || []));
+    apiClient.get('/shipping/vessel-relationships/').then(r => setItems(r.data.results || r.data || []));
   }, []);
   return (
     <Box>

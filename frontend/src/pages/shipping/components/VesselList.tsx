@@ -15,7 +15,7 @@ export const VesselList = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiClient.get('/api/v1/carriers/vessels/').then(r => setVessels(r.data.results || r.data || [])).catch(() => setError('Failed to load vessels'));
+    apiClient.get('/carriers/vessels/').then(r => setVessels(r.data.results || r.data || [])).catch(() => setError('Failed to load vessels'));
   }, []);
 
   return (

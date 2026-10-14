@@ -11,7 +11,7 @@ import apiClient from '../../../api/client';
 export const DepartureList = () => {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/port-health/visits/?status=DEPARTED').then(r => setItems(r.data.results || r.data || []));
+    apiClient.get('/port-health/visits/?status=DEPARTED').then(r => setItems(r.data.results || r.data || []));
   }, []);
   return (
     <Box>

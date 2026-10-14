@@ -11,7 +11,7 @@ import apiClient from '../../../api/client';
 export const VesselVisitList = () => {
   const [visits, setVisits] = useState<any[]>([]);
   useEffect(() => {
-    apiClient.get('/api/v1/port-health/visits/').then(r => setVisits(r.data.results || r.data || []));
+    apiClient.get('/port-health/visits/').then(r => setVisits(r.data.results || r.data || []));
   }, []);
   return (
     <Box>
