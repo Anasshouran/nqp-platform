@@ -5,9 +5,19 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// GET reads of public content don't require a token. Sending a stale token
+// there causes 401 → refresh → retry churn (DRF's JWTAuthentication runs
+// before AllowAny). Writes and authenticated endpoints still get the header.
+const PUBLIC_READ_PREFIXES = ['/public/', '/cms/'];
+
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
-  if (token) {
+  const method = (config.method ?? 'get').toLowerCase();
+  const isPublicRead =
+    method === 'get' &&
+    PUBLIC_READ_PREFIXES.some((p) => config.url?.startsWith(p));
+
+  if (token && !isPublicRead) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
