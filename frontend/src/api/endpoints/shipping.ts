@@ -130,3 +130,36 @@ export const getAgents = (params?: Record<string, unknown>) =>
 
 export const getAgent = (id: string) =>
   apiClient.get<ApiResponse<ShippingAgent>>(`${AGENTS_BASE}/${id}/`);
+
+/* -------------------------------------------------------------------------- */
+/* Vessel relationships — علاقات الشركات بالسفن                               */
+/* -------------------------------------------------------------------------- */
+
+export type VesselCompanyRole = 'OWNER' | 'OPERATOR' | 'MANAGER' | 'CHARTERER';
+
+export interface VesselRelationship {
+  id: string;
+  vessel: string;
+  vessel_name: string;
+  vessel_imo: string;
+  company: string;
+  company_name: string;
+  company_id: string;
+  role: VesselCompanyRole;
+  valid_from: string | null;
+  valid_until: string | null;
+  is_primary: boolean;
+  notes: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+const VESSEL_RELATIONSHIPS_BASE = '/shipping/vessel-relationships';
+
+/** Paginated vessel↔company relationships (`?role=`, `?is_active=`, `?vessel=`, `?company=`). */
+export const getVesselRelationships = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<VesselRelationship>>>(`${VESSEL_RELATIONSHIPS_BASE}/`, { params });
+
+export const getVesselRelationship = (id: string) =>
+  apiClient.get<ApiResponse<VesselRelationship>>(`${VESSEL_RELATIONSHIPS_BASE}/${id}/`);
