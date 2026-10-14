@@ -12,7 +12,8 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import PaidIcon from '@mui/icons-material/Paid';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import DonutLargeIcon from '@mui/icons-material/DonutLarge';
-import { PageHeader, SectionCard, EmptyState } from '../../../../components/uikit';
+import { SectionCard, EmptyState } from '../../../../components/uikit';
+import { ReportsPageShell } from '../../../../components/reports/ReportsPageShell';
 import { getSectorDashboard } from '../../../../api/endpoints/reports';
 import type { DashboardWindow, SectorDashboard } from '../../../../api/endpoints/reports';
 
@@ -48,28 +49,24 @@ const RedSeaReportsPage = () => {
   ];
 
   return (
-    <Box>
-      <PageHeader
-        eyebrow="التقارير"
-        title="تقارير وأداء — قطاع البحر الأحمر"
-        subtitle="مؤشرات الأداء والإيرادات للقطاع ضمن النطاق الزمني المحدد."
-        action={
-          <TextField
-            select
-            size="small"
-            value={windowKey}
-            onChange={(e) => setWindowKey(e.target.value as DashboardWindow)}
-            sx={{ minWidth: 120 }}
-          >
-            {WINDOWS.map((w) => (
-              <MenuItem key={w.value} value={w.value}>{w.label}</MenuItem>
-            ))}
-          </TextField>
-        }
-      />
-
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {kpis.map((k) => (
+    <ReportsPageShell
+      eyebrow="التقارير"
+      title="تقارير وأداء — قطاع البحر الأحمر"
+      subtitle="مؤشرات الأداء والإيرادات للقطاع ضمن النطاق الزمني المحدد."
+      action={
+        <TextField
+          select
+          size="small"
+          value={windowKey}
+          onChange={(e) => setWindowKey(e.target.value as DashboardWindow)}
+          sx={{ minWidth: 120 }}
+        >
+          {WINDOWS.map((w) => (
+            <MenuItem key={w.value} value={w.value}>{w.label}</MenuItem>
+          ))}
+        </TextField>
+      }
+      kpis={kpis.map((k) => (
           <Grid item xs={6} sm={3} key={k.label}>
             {loading ? (
               <Skeleton variant="rounded" height={110} />
@@ -89,12 +86,10 @@ const RedSeaReportsPage = () => {
               </Card>
             )}
           </Grid>
-        ))}
-      </Grid>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={7}>
-          <SectionCard title="مؤشرات الأداء" subtitle="القيم المسجلة عند نهاية الفترة">
+      ))}
+    >
+      <Grid item xs={12} lg={7}>
+        <SectionCard title="مؤشرات الأداء" subtitle="القيم المسجلة عند نهاية الفترة">
             {loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : performance.length === 0 ? (
@@ -138,8 +133,7 @@ const RedSeaReportsPage = () => {
             )}
           </SectionCard>
         </Grid>
-      </Grid>
-    </Box>
+    </ReportsPageShell>
   );
 };
 

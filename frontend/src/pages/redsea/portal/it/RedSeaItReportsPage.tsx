@@ -15,7 +15,8 @@ import MemoryIcon from '@mui/icons-material/Memory';
 import DnsIcon from '@mui/icons-material/Dns';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import NetworkCheckIcon from '@mui/icons-material/NetworkCheck';
-import { PageHeader, SectionCard, StatusChip } from '../../../../components/uikit';
+import { SectionCard, StatusChip } from '../../../../components/uikit';
+import { ReportsPageShell } from '../../../../components/reports/ReportsPageShell';
 import { getItReports } from '../../../../api/endpoints/it';
 import type { ItReport } from '../../../../types/it';
 
@@ -52,21 +53,19 @@ const RedSeaItReportsPage = () => {
   ];
 
   return (
-    <Box>
-      <PageHeader
-        eyebrow="قسم تقنية المعلومات"
-        title="التقارير الفنية"
-        subtitle="تجميع شامل لحالة الأنظمة والأصول والتذاكر والشبكات ضمن القطاع."
-        action={<Chip label="قطاع البحر الأحمر" color="primary" variant="outlined" />}
-      />
-      <Box sx={{ mb: 2 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dashboard/sector/red-sea/it')} color="inherit">
-          لوحة تقنية المعلومات
-        </Button>
-      </Box>
-
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {summaryCards.map((k) => (
+    <ReportsPageShell
+      eyebrow="قسم تقنية المعلومات"
+      title="التقارير الفنية"
+      subtitle="تجميع شامل لحالة الأنظمة والأصول والتذاكر والشبكات ضمن القطاع."
+      action={<Chip label="قطاع البحر الأحمر" color="primary" variant="outlined" />}
+      headerExtra={
+        <Box sx={{ mb: 2 }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dashboard/sector/red-sea/it')} color="inherit">
+            لوحة تقنية المعلومات
+          </Button>
+        </Box>
+      }
+      kpis={summaryCards.map((k) => (
           <Grid item xs={6} sm={3} key={k.label}>
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent sx={{ p: 2.5 }}>
@@ -82,11 +81,9 @@ const RedSeaItReportsPage = () => {
               </CardContent>
             </Card>
           </Grid>
-        ))}
-      </Grid>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
+      ))}
+    >
+      <Grid item xs={12} lg={6}>
           <SectionCard
             title="حالة الأنظمة"
             action={
@@ -148,8 +145,7 @@ const RedSeaItReportsPage = () => {
             )}
           </SectionCard>
         </Grid>
-      </Grid>
-    </Box>
+    </ReportsPageShell>
   );
 };
 
