@@ -664,7 +664,7 @@ def record_vessel_departure(*, vessel_visit, actor, notes=''):
         raise DepartureBlocked({'preconditions': reasons})
 
     now = timezone.now()
-    vessel_visit.departure_date = now.date()
+    vessel_visit.departure_date = timezone.localdate()
     vessel_visit.status = 'DEPARTED'
     vessel_visit.save(update_fields=['departure_date', 'status', 'updated_at'])
 

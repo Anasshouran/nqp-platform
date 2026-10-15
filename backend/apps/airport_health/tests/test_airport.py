@@ -211,7 +211,8 @@ def test_dashboard_kpis_upcoming_flights_and_suspected(api_client, officer, trav
 
     from django.utils import timezone as tz
 
-    # رحلة اليوم: منتصف ليل UTC دائمًا ضمن تاريخ اليوم وقبل وقت التشغيل (عدا ثوانٍ ما بعد منتصف الليل مباشرة)
+    # رحلة اليوم: منتصف ليل التوقيت المحلي (Africa/Khartoum) ليكون تاريخها
+    # دائمًا ضمن تاريخ اليوم المحلي بغضّ النظر عن الحدود مع UTC.
     today_flight = Flight.objects.create(
         flight_number='SD-202',
         carrier=flight.carrier,
@@ -219,7 +220,7 @@ def test_dashboard_kpis_upcoming_flights_and_suspected(api_client, officer, trav
         origin_country=Country.objects.get(code='SD'),
         origin_code='KRT',
         destination_port=flight.destination_port,
-        scheduled_arrival=tz.now().replace(hour=0, minute=5, second=0, microsecond=0),
+        scheduled_arrival=tz.localtime(tz.now()).replace(hour=0, minute=5, second=0, microsecond=0),
         status=Flight.FlightStatus.ARRIVED,
     )
     # رحلة الغد: مستقبلية دائمًا → تظهر أول قائمة الرحلات القادمة
@@ -230,7 +231,7 @@ def test_dashboard_kpis_upcoming_flights_and_suspected(api_client, officer, trav
         origin_country=Country.objects.get(code='SD'),
         origin_code='DXB',
         destination_port=flight.destination_port,
-        scheduled_arrival=tz.now().replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=1),
+        scheduled_arrival=tz.localtime(tz.now()).replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=1),
         status=Flight.FlightStatus.IN_TRANSIT,
     )
     AirportScreening.objects.create(

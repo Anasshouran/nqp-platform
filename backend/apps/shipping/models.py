@@ -99,9 +99,9 @@ class ShippingAgent(BaseModel):
         """تحقق من صلاحية الوكيل بناءً على الحالة والتواريخ."""
         if not self.is_active or self.status != ShippingAgentStatus.ACTIVE:
             return False
-        if self.valid_from and self.valid_from > timezone.now().date():
+        if self.valid_from and self.valid_from > timezone.localdate():
             return False
-        if self.valid_until and self.valid_until < timezone.now().date():
+        if self.valid_until and self.valid_until < timezone.localdate():
             return False
         return True
 

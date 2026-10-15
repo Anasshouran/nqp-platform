@@ -1255,7 +1255,7 @@ class LabUsersManagePermission(BasePermission):
 
 def _active_lab_filter(role_codes):
     """فلتر تعيينات الأدوار النشطة ضمن النافذة الزمنية (مصدر الحقيقة)."""
-    now = timezone.now()
+    now = timezone.localdate()
     return (
         Q(
             role_assignments__role__code__in=role_codes,

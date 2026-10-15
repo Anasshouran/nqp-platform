@@ -142,7 +142,7 @@ def test_expired_assignment_denies_lab_management(sector, red_manager):
 
     # انتهاء نافذة مدير البحر الأحمر يمنع الإدارة حتى مع بقاء الحقل القديم
     assignment = RoleAssignment.objects.get(user=red_manager, role__code='LAB_MANAGER')
-    assignment.end_date = timezone.now().date() - timedelta(days=1)
+    assignment.end_date = timezone.localdate() - timedelta(days=1)
     assignment.save(update_fields=['end_date'])
     red_manager.role = assignment.role
     red_manager.save(update_fields=['role'])
@@ -173,7 +173,7 @@ def test_future_dated_assignment_cannot_yet_manage(sector):
     mgr.save(update_fields=['role'])
     RoleAssignment.objects.create(
         user=mgr, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
-        start_date=timezone.now().date() + timedelta(days=1),
+        start_date=timezone.localdate() + timedelta(days=1),
     )
     Role.objects.get_or_create(
         code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
@@ -204,7 +204,7 @@ def test_lab_users_list_filters_by_date_window(sector):
     stale.save(update_fields=['role'])
     RoleAssignment.objects.create(
         user=stale, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
-        end_date=timezone.now().date() - timedelta(days=1),
+        end_date=timezone.localdate() - timedelta(days=1),
     )
     viewer = User.objects.create_user(email='view@nqp.gov.sd', password='x', full_name='مشاهِد')
     RoleAssignment.objects.create(user=viewer, role=role, scope_type=ScopeType.GLOBAL)
