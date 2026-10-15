@@ -493,19 +493,39 @@ def test_role_fk_ignored_when_assignment_inactive_or_out_of_window(db):
     assert _has_role(user, role.code) is False
 
     active.is_active = True
-    active.end_date = timezone.now().date() - timedelta(days=1)
+    active.end_date = timezone.localdate() - timedelta(days=1)
     active.save(update_fields=['is_active', 'end_date'])
     assert has_role(user, role.code) is False
 
     active.end_date = None
-    active.start_date = timezone.now().date() + timedelta(days=1)
+    active.start_date = timezone.localdate() + timedelta(days=1)
     active.save(update_fields=['end_date', 'start_date'])
     assert has_role(user, role.code) is False
 
-    active.start_date = timezone.now().date()
+    active.start_date = timezone.localdate()
     active.end_date = None
     active.save(update_fields=['start_date', 'end_date'])
     assert has_role(user, role.code) is True
+
+
+def test_role_assignment_window_uses_khartoum_day_at_utc_boundary(db):
+    """نافذة التعيين تُحسب بتاريخ الخرطوم لا UTC عند الحدود (22:00–00:00 UTC)."""
+    from datetime import date, datetime, timezone as dt_timezone
+    from unittest import mock
+
+    boundary = datetime(2026, 10, 14, 22, 30, tzinfo=dt_timezone.utc)
+    role = Role.objects.create(code='TZ_BOUNDARY_ROLE', name='R', name_ar='ر')
+    user = User.objects.create_user(
+        email='tz-boundary@nqp.gov.sd', password='StrongPass123!', full_name='حدود'
+    )
+    assignment = RoleAssignment.objects.create(
+        user=user, role=role, scope_type=ScopeType.GLOBAL,
+        start_date=date(2026, 10, 15), end_date=date(2026, 10, 15),
+    )
+    with mock.patch('django.utils.timezone.now', return_value=boundary):
+        # الخرطوم بالفعل 2026-10-15 بينما UTC لا يزال 2026-10-14.
+        assert timezone.localdate() == date(2026, 10, 15)
+        assert assignment.is_current is True
 
 
 def test_fk_without_assignment_grants_nothing(db):

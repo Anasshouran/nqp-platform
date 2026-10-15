@@ -182,7 +182,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         """
         from django.db.models import Case, IntegerField, Value, When
 
-        now = timezone.now()
+        now = timezone.localdate()
         assignment = (
             self.role_assignments.filter(is_active=True, start_date__lte=now)
             .filter(models.Q(end_date__isnull=True) | models.Q(end_date__gt=now))
@@ -220,7 +220,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
             return False
         if self.extra_permissions.filter(code__in=codes).count() == len(codes):
             return True
-        now = timezone.now()
+        now = timezone.localdate()
         assignments = self.role_assignments.filter(
             is_active=True,
             start_date__lte=now,
@@ -242,7 +242,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         if self.is_superuser:
             return list(Permission.objects.values_list('code', flat=True))
         codes = set(self.extra_permissions.values_list('code', flat=True))
-        now = timezone.now()
+        now = timezone.localdate()
         assignments = self.role_assignments.filter(
             is_active=True,
             start_date__lte=now,
@@ -257,7 +257,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return sorted(codes - blocked)
 
     def active_scopes(self, resource):
-        now = timezone.now()
+        now = timezone.localdate()
         assignments = self.role_assignments.filter(
             is_active=True,
             start_date__lte=now,
@@ -320,7 +320,7 @@ class RoleAssignment(BaseModel):
 
     @property
     def is_current(self):
-        now = timezone.now().date()
+        now = timezone.localdate()
         return (
             self.is_active
             and self.start_date <= now

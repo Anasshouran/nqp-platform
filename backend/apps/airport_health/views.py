@@ -265,7 +265,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
 
     def list(self, request):
         now = timezone.now()
-        today = now.date()
+        today = timezone.localdate()
         port_ids = self._port_scope()
         flights = self._scope_ports(self._flights(), port_ids, 'destination_port')
         screenings = self._scope_ports(

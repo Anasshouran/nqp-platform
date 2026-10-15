@@ -284,20 +284,33 @@ def test_national_overview_counts_open_emergencies(crossing, traveler):
 
 
 def test_daily_statistics_computes_average_processing(crossing, traveler):
-    """متوسط زمن المعالجة يُحسب من الفارق بين الدخول وإتمام الفحص."""
-    from datetime import timedelta
+    """متوسط زمن المعالجة يُحسب من الفارق بين الدخول وإتمام الفحص.
+
+    تُثبَّت الأوقات داخل اليوم المحلي (Africa/Khartoum) بدل افتراض «الآن ناقص
+    ساعتين»، وهو افتراض ينكسر عند حدود UTC/الخرطوم (22:00–00:00 UTC).
+    """
+    from datetime import datetime, time, timedelta
+
+    day = timezone.localdate()
+    start = timezone.make_aware(
+        datetime.combine(day, time.min), timezone.get_current_timezone()
+    )
+    entry_at = start + timedelta(hours=2)
 
     TravelerHealthRecord.objects.create(
         crossing=crossing, traveler=traveler, direction='INBOUND',
-        entry_at=timezone.now() - timedelta(hours=2),
+        entry_at=entry_at,
     )
-    BorderScreening.objects.create(
+    screening = BorderScreening.objects.create(
         crossing=crossing, traveler=traveler, document_verified=True,
         risk_level=TravelerHealthRecord.RiskLevel.GREEN,
         decision=BorderScreening.Decision.CLEARED,
-        screened_at=timezone.now() - timedelta(hours=1),
     )
-    stats = refresh_daily_statistics(crossing)
+    # screened_at = auto_now_add، فيُثبَّت يدويًا ليكون الفارق حتميًا (120 دقيقة).
+    BorderScreening.objects.filter(pk=screening.pk).update(
+        screened_at=entry_at + timedelta(hours=2)
+    )
+    stats = refresh_daily_statistics(crossing, stat_date=day)
     assert stats.average_processing_minutes is not None
     assert 100 <= stats.average_processing_minutes <= 130
 
