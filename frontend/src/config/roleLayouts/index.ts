@@ -1,7 +1,4 @@
 export * from './core';
-import { createElement } from 'react';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import PersonIcon from '@mui/icons-material/Person';
 import { ROLE_LAYOUT_CONFIG as ADMIN_ROLES } from './admin';
 import { ROLE_LAYOUT_CONFIG as LABORATORY_ROLES } from './laboratory';
 import { ROLE_LAYOUT_CONFIG as FOOD_ROLES } from './food';
@@ -10,37 +7,10 @@ import { ROLE_LAYOUT_CONFIG as IT_ROLES } from './it';
 import { ROLE_LAYOUT_CONFIG as VACCINATION_ROLES } from './vaccination';
 import { ROLE_LAYOUT_CONFIG as BORDERS_ROLES } from './borders';
 import { ROLE_LAYOUT_CONFIG as HR_ROLES } from './hr';
+import { ROLE_LAYOUT_CONFIG as SHIPPING_ROLES } from './shipping';
 import { type RoleLayoutConfig } from './core';
 
 export type RoleLayoutSource = [owner: string, roles: Partial<Record<string, RoleLayoutConfig>>];
-
-/**
- * بوابة الشحن البحري: الأدوار التي تملك صلاحيات `shipping_*` الخلفية.
- * مُعرَّفة هنا (لا ملف .tsx منفصل) لأن `index.ts` هو نقطة الدمج المسموح بها،
- * والأيقونات تُبنى بـ`createElement` لتفادي JSX في ملف `.ts`.
- */
-const SHIPPING_ROLES: Partial<Record<string, RoleLayoutConfig>> = {
-  SHIPPING_COMPANY: {
-    title: 'بوابة شركات الشحن',
-    subtitle: 'Shipping Company Portal',
-    brand: 'وزارة الصحة الاتحادية',
-    color: '#0B5ED7',
-    nav: [
-      { label: 'بوابة الشحن', target: '/app/shipping', icon: createElement(DirectionsBoatIcon) },
-      { label: 'حسابي', target: '/app/account', icon: createElement(PersonIcon) },
-    ],
-  },
-  SHIPPING_AGENT: {
-    title: 'بوابة وكلاء الشحن',
-    subtitle: 'Shipping Agent Portal',
-    brand: 'وزارة الصحة الاتحادية',
-    color: '#0B5ED7',
-    nav: [
-      { label: 'بوابة الشحن', target: '/app/shipping', icon: createElement(DirectionsBoatIcon) },
-      { label: 'حسابي', target: '/app/account', icon: createElement(PersonIcon) },
-    ],
-  },
-};
 
 /** كل ملف تخطيط مع اسمه لرسائل التصادم الموضّحة. */
 export const ROLE_LAYOUT_SOURCES: RoleLayoutSource[] = [
