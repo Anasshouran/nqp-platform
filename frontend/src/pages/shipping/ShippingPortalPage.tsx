@@ -8,7 +8,6 @@ import { VesselVisitList } from './components/VesselVisitList';
 import { PreArrivalList } from './components/PreArrivalList';
 import { ClearanceList } from './components/ClearanceList';
 import { DepartureList } from './components/DepartureList';
-import { DocumentList } from './components/DocumentList';
 import { NotificationList } from './components/NotificationList';
 import { AgentManagement } from './components/AgentManagement';
 import { VesselRelationships } from './components/VesselRelationships';
@@ -20,7 +19,6 @@ const sections = [
   { key: 'pre-arrivals', label: 'Pre-Arrivals', icon: <Assignment /> },
   { key: 'clearance', label: 'Clearance', icon: <Description /> },
   { key: 'departures', label: 'Departures', icon: <DirectionsBoat /> },
-  { key: 'documents', label: 'Documents', icon: <Description /> },
   { key: 'notifications', label: 'Notifications', icon: <Notifications /> },
   { key: 'agents', label: 'Agents', icon: <Person /> },
   { key: 'relationships', label: 'Relationships', icon: <Assignment /> },
@@ -39,7 +37,6 @@ const ShippingPortalPage = () => {
       case 'pre-arrivals': return <PreArrivalList />;
       case 'clearance': return <ClearanceList />;
       case 'departures': return <DepartureList />;
-      case 'documents': return <DocumentList />;
       case 'notifications': return <NotificationList />;
       case 'agents': return <AgentManagement />;
       case 'relationships': return <VesselRelationships />;
