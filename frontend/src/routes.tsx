@@ -466,7 +466,10 @@ const AppRoutes = () => (
         <Route element={<ProtectedRoute roles={['ADMIN', 'DG_MANAGER', 'CARRIER', 'POE_HEALTH_OFFICER', 'QUARANTINE_INSPECTOR', 'NATIONAL_SURVEILLANCE_OFFICER', 'SECTOR_IHR_OFFICER']} />}>
           <Route path="/app/carriers" element={withSuspense(<CarriersPage />)} />
         </Route>
-        <Route element={<ProtectedRoute roles={['CARRIER', 'POE_HEALTH_OFFICER']} />}>
+        {/* بوابة الشحن: الأدوار المالكة لصلاحيات `shipping_*` هي
+            SHIPPING_COMPANY/SHIPPING_AGENT. كان الحارس يسمح لـ
+            CARRIER/POE_HEALTH_OFFICER (بلا صلاحيات الشحن → 403 على كل تبويب). */}
+        <Route element={<ProtectedRoute roles={['SHIPPING_COMPANY', 'SHIPPING_AGENT']} />}>
           <Route path="/app/shipping" element={withSuspense(<ShippingPortalPage />)} />
         </Route>
         <Route path="/app/risk" element={withSuspense(<RiskPage />)} />

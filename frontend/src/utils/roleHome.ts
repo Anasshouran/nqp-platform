@@ -66,7 +66,9 @@ export type RoleCode =
   | 'HR_MANAGER'
   | 'HR_SPECIALIST'
   | 'HR_APPROVER'
-  | 'NATIONAL_LAB_ADMIN';
+  | 'NATIONAL_LAB_ADMIN'
+  | 'SHIPPING_COMPANY'
+  | 'SHIPPING_AGENT';
 
 export const ROLE_HOME: Record<RoleCode, string> = {
   ADMIN: '/app',
@@ -136,6 +138,8 @@ export const ROLE_HOME: Record<RoleCode, string> = {
   HR_SPECIALIST: '/app/hr',
   HR_APPROVER: '/app/hr',
   NATIONAL_LAB_ADMIN: '/app/laboratory/national',
+  SHIPPING_COMPANY: '/app/shipping',
+  SHIPPING_AGENT: '/app/shipping',
 };
 
 export const roleHomePath = (role?: string | null): string =>

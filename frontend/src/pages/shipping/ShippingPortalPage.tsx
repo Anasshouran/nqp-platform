@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Box, Grid, Typography, Paper, IconButton, Menu, MenuItem, Tooltip, Stack, Tabs, Tab } from '@mui/material';
-import { Dashboard, DirectionsBoat, LocalShipping, Business, Assignment, Description, Notifications, Settings, Person, Logout } from '@mui/icons-material';
+import { Dashboard, DirectionsBoat, LocalShipping, Assignment, Description, Notifications, Settings, Person, Logout } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import { ShippingDashboard } from './components/ShippingDashboard';
 import { VesselList } from './components/VesselList';
@@ -10,7 +10,6 @@ import { ClearanceList } from './components/ClearanceList';
 import { DepartureList } from './components/DepartureList';
 import { DocumentList } from './components/DocumentList';
 import { NotificationList } from './components/NotificationList';
-import { CompanyProfile } from './components/CompanyProfile';
 import { AgentManagement } from './components/AgentManagement';
 import { VesselRelationships } from './components/VesselRelationships';
 
@@ -23,7 +22,6 @@ const sections = [
   { key: 'departures', label: 'Departures', icon: <DirectionsBoat /> },
   { key: 'documents', label: 'Documents', icon: <Description /> },
   { key: 'notifications', label: 'Notifications', icon: <Notifications /> },
-  { key: 'company', label: 'Company', icon: <Business /> },
   { key: 'agents', label: 'Agents', icon: <Person /> },
   { key: 'relationships', label: 'Relationships', icon: <Assignment /> },
 ];
@@ -43,7 +41,6 @@ const ShippingPortalPage = () => {
       case 'departures': return <DepartureList />;
       case 'documents': return <DocumentList />;
       case 'notifications': return <NotificationList />;
-      case 'company': return <CompanyProfile />;
       case 'agents': return <AgentManagement />;
       case 'relationships': return <VesselRelationships />;
       default: return <ShippingDashboard />;
