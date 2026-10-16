@@ -353,7 +353,7 @@ describe('ProfilePage — الحالات الحدّية', () => {
     rejectAll();
     renderPage();
 
-    expect((await screen.findAllByText('أحمد محمد علي')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('—')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('نشط').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'تعديل الملف' })).toBeTruthy();
     // المسار يتراجع إلى «حسابي» بلا سلسلة تنظيمية.
@@ -370,6 +370,19 @@ describe('ProfilePage — الحالات الحدّية', () => {
 
     await screen.findAllByText('أحمد محمد الشحن');
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+
+  it('يعرض «—» بدل الاسم الوهمي عند غياب الاسم الكامل', async () => {
+    respond({
+      profile: makeProfile({
+        user: { ...baseUser, full_name: '' },
+        profile: { ...baseEmployee, full_name_ar: '' },
+      }),
+    });
+    renderPage();
+
+    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThan(0));
+    expect(screen.queryByText('أحمد محمد علي')).toBeNull();
   });
 });
 
