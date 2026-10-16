@@ -137,7 +137,7 @@ export default function AccountPage() {
   const user = profile?.user;
   const emp = profile?.profile;
   const org = profile?.organization?.[0];
-  const userName = emp?.full_name_ar || user?.full_name || 'أحمد محمد علي';
+  const userName = emp?.full_name_ar || user?.full_name || '—';
 
   // سياق المعمل يُكتشف من البيانات المتاحة فقط؛ لا نفترض سياق الكيمياء/المختبر
   // افتراضياً لكل المستخدمين (مثل مستخدمي الشحن بلا ارتباط تنظيمي).

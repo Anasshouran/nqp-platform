@@ -779,7 +779,7 @@ const ChemistryAnalystPage = () => {
           </Avatar>
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              {user?.full_name || 'محلل كيمياء'}
+              {user?.full_name || '—'}
             </Typography>
             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main', fontWeight: 700 }}>
               <CircleIcon sx={{ fontSize: 10 }} /> متصل
