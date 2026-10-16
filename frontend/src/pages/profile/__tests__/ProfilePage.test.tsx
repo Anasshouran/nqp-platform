@@ -11,7 +11,7 @@
  * API-driven data sections, the role-aware breadcrumb (lab vs non-lab), the
  * graceful failure path, and one smoke test per tab.
  */
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ProfileData } from '../../../api/endpoints/auth';
@@ -108,12 +108,18 @@ const respond = (opts: RespondOptions = {}) => {
   vi.mocked(meActivity).mockResolvedValue({ data: { data: opts.activity ?? [] } } as never);
 };
 
-/** كل الطلبات تفشل — يختبر مسار التدهور الآمن (لا واجهة خطأ مخصّصة). */
+/** كل الطلبات تفشل — الطلب الأساسي يُفعّل واجهة الخطأ والثانوية تتدهور بأمان. */
 const rejectAll = () => {
   vi.mocked(getProfile).mockRejectedValue(new Error('boom'));
   vi.mocked(meOrganization).mockRejectedValue(new Error('boom'));
   vi.mocked(meSessions).mockRejectedValue(new Error('boom'));
   vi.mocked(meActivity).mockRejectedValue(new Error('boom'));
+};
+
+/** الطلب الأساسي فقط يفشل — بقية الطلبات الثانوية تنجح. */
+const respondWithProfileFailure = () => {
+  respond();
+  vi.mocked(getProfile).mockRejectedValue(new Error('boom'));
 };
 
 const renderPage = () => render(<ProfilePage />);
@@ -364,5 +370,47 @@ describe('ProfilePage — الحالات الحدّية', () => {
 
     await screen.findAllByText('أحمد محمد الشحن');
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+});
+
+describe('ProfilePage — واجهة الخطأ', () => {
+  it('يعرض واجهة الخطأ ويخفي التبويبات عند فشل الطلب الأساسي', async () => {
+    respondWithProfileFailure();
+    renderPage();
+
+    expect(
+      await screen.findByText('تعذّر تحميل بيانات الملف الشخصي'),
+    ).toBeTruthy();
+    expect(screen.getByRole('alert')).toBeTruthy();
+    // التبويبات لا تُعرض ضمن واجهة الخطأ.
+    expect(screen.queryByRole('tab')).toBeNull();
+  });
+
+  it('زر «إعادة المحاولة» يعيد استدعاء الطلب الأساسي ويعرض البيانات عند النجاح', async () => {
+    respondWithProfileFailure();
+    renderPage();
+
+    await screen.findByText('تعذّر تحميل بيانات الملف الشخصي');
+    expect(getProfile).toHaveBeenCalledTimes(1);
+
+    vi.mocked(getProfile).mockResolvedValue({ data: { data: makeProfile() } } as never);
+    fireEvent.click(screen.getByRole('button', { name: 'إعادة المحاولة' }));
+
+    await waitFor(() => expect(getProfile).toHaveBeenCalledTimes(2));
+    expect((await screen.findAllByText('أحمد محمد الشحن')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('تعذّر تحميل بيانات الملف الشخصي')).toBeNull();
+    expect(screen.getAllByRole('tab').length).toBe(7);
+  });
+
+  it('يحافظ على التدهور الآمن عند فشل الطلبات الثانوية دون واجهة خطأ', async () => {
+    respond();
+    vi.mocked(meOrganization).mockRejectedValue(new Error('boom'));
+    vi.mocked(meSessions).mockRejectedValue(new Error('boom'));
+    vi.mocked(meActivity).mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    expect((await screen.findAllByText('أحمد محمد الشحن')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('تعذّر تحميل بيانات الملف الشخصي')).toBeNull();
+    expect(screen.getAllByRole('tab').length).toBe(7);
   });
 });
