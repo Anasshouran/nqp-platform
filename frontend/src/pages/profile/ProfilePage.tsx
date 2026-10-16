@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -53,6 +53,7 @@ import {
 import { getProfile, type ProfileData } from '../../api/endpoints/auth';
 import { meOrganization, meSessions, meActivity } from '../../api/endpoints/account';
 import { OrganizationEntry, SessionInfo, ActivityLogEntry } from '../../types/account';
+import { ErrorState } from '../../components/common';
 
 const chemTheme = {
   primary: '#0B5ED7',
@@ -97,13 +98,19 @@ export default function AccountPage() {
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [activity, setActivity] = useState<ActivityLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     Promise.all([
       getProfile().then((res) => {
         const payload = res.data?.data ?? res.data;
         setProfile(payload);
-      }).catch(() => setProfile(null)),
+      }).catch(() => {
+        setProfile(null);
+        setLoadError(true);
+      }),
       meOrganization().then((res) => {
         const payload = res.data?.data ?? res.data;
         setOrganization(payload);
@@ -118,6 +125,10 @@ export default function AccountPage() {
       }).catch(() => setActivity([])),
     ]).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -342,6 +353,9 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
+      {loadError ? (
+        <ErrorState message="تعذّر تحميل بيانات الملف الشخصي" onRetry={loadProfile} />
+      ) : (
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(16,24,40,0.08)', mb: 3, overflow: 'hidden' }}>
         <Tabs
           value={tabValue}
@@ -1197,6 +1211,7 @@ export default function AccountPage() {
           </Box>
         </TabPanel>
       </Card>
+      )}
     </Box>
   );
 }
