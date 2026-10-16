@@ -2,7 +2,7 @@
  * DocumentList — render / empty / search / filter / detail (read-only).
  * Mocks the typed carriers API module.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const carriers = vi.hoisted(() => ({ getCarrierDocuments: vi.fn() }));
@@ -103,5 +103,106 @@ describe('DocumentList', () => {
     expect(await screen.findByText('تفاصيل المستند')).toBeTruthy();
     expect(screen.getByText('application/pdf')).toBeTruthy();
     expect(screen.getAllByText('health.pdf').length).toBeGreaterThan(0);
+  });
+
+  it('requests the filtered page when a document type is selected', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(paged([]));
+    render(<DocumentList />);
+
+    const typeFilter = (await screen.findAllByRole('combobox')).find(
+      (el) => el.textContent === 'النوع',
+    );
+    fireEvent.mouseDown(typeFilter as HTMLElement);
+    fireEvent.click(await screen.findByRole('option', { name: 'رخصة' }));
+
+    await waitFor(() =>
+      expect(carriers.getCarrierDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({ document_type: 'LICENSE' }),
+      ),
+    );
+  });
+
+  it('sends a debounced search request', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(paged([]));
+    render(<DocumentList />);
+
+    const search = await screen.findByPlaceholderText('ابحث بالعنوان أو الشركة أو رقم الرحلة...');
+    fireEvent.change(search, { target: { value: 'health' } });
+
+    await waitFor(() =>
+      expect(carriers.getCarrierDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'health' }),
+      ),
+    );
+  });
+
+  it('refetches on refresh', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(paged([]));
+    render(<DocumentList />);
+
+    await screen.findByText('لا توجد مستندات');
+    fireEvent.click(screen.getByRole('button', { name: 'تحديث' }));
+
+    await waitFor(() => expect(carriers.getCarrierDocuments).toHaveBeenCalledTimes(2));
+  });
+
+  it('renders file sizes in human-readable units', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(
+      paged([
+        row({ id: 'd1', title: 'بايت', file_size: 500 }),
+        row({ id: 'd2', title: 'كيلوبايت', file_size: 2048 }),
+        row({ id: 'd3', title: 'ميجابايت', file_size: 3 * 1024 * 1024 }),
+      ]),
+    );
+    render(<DocumentList />);
+
+    expect(await screen.findByText('500 B')).toBeTruthy();
+    expect(screen.getByText('2.0 KB')).toBeTruthy();
+    expect(screen.getByText('3.0 MB')).toBeTruthy();
+  });
+
+  it('falls back to the original filename when the title is missing', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(paged([row({ title: '', original_filename: 'doc.pdf' })]));
+    render(<DocumentList />);
+
+    await waitFor(() => expect(screen.getAllByText('doc.pdf').length).toBeGreaterThan(0));
+  });
+
+  it('falls back to the mapped then raw document type label', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(
+      paged([
+        row({ id: 'd1', title: 'أول مستند', document_type: 'LICENSE', document_type_label: '' }),
+        row({ id: 'd2', title: 'غريب', document_type: 'ZZZ', document_type_label: '' }),
+      ]),
+    );
+    render(<DocumentList />);
+
+    expect(await screen.findByText('رخصة')).toBeTruthy();
+    expect(screen.getByText('ZZZ')).toBeTruthy();
+  });
+
+  it('renders — placeholders for missing optional fields and invalid dates', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(
+      paged([row({ carrier_name: '', flight_number: '', file_size: 0, created_at: 'not-a-date' })]),
+    );
+    render(<DocumentList />);
+
+    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThan(0));
+  });
+
+  it('shows full document details and closes the dialog', async () => {
+    carriers.getCarrierDocuments.mockResolvedValue(paged([row()]));
+    render(<DocumentList />);
+
+    await screen.findByText('تقرير صحي');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('AA123')).toBeTruthy();
+    expect(dialog.getByText('مستند صحي')).toBeTruthy();
+    expect(dialog.getByText('2.0 KB')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'إغلاق' }));
+    await waitFor(() => expect(screen.queryByText('تفاصيل المستند')).toBeNull());
   });
 });

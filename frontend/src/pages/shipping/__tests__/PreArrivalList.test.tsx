@@ -2,7 +2,7 @@
  * PreArrivalList — render / empty / error-free actions / create.
  * Mocks the typed shipping + portHealth API modules and the toast helper.
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const shipping = vi.hoisted(() => ({
@@ -119,6 +119,126 @@ describe('PreArrivalList', () => {
 
     await waitFor(() =>
       expect(shipping.createPreArrival).toHaveBeenCalledWith('v1', { remarks: undefined }),
+    );
+  });
+
+  it('creates a notification with the entered remarks', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([]));
+    portHealth.getVesselVisits.mockResolvedValue(
+      paged([{ id: 'v1', vessel: 'vessel-1', vessel_name: 'MV Visit', port_name: 'الميناء', arrival_date: '2026-10-25' }]),
+    );
+    shipping.createPreArrival.mockResolvedValue({});
+    render(<PreArrivalList />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'إشعار جديد' }));
+    fireEvent.mouseDown(await screen.findByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: /MV Visit/ }));
+    fireEvent.change(screen.getByLabelText('ملاحظات'), { target: { value: 'عاجل' } });
+    fireEvent.click(screen.getByRole('button', { name: 'إنشاء' }));
+
+    await waitFor(() =>
+      expect(shipping.createPreArrival).toHaveBeenCalledWith('v1', { remarks: 'عاجل' }),
+    );
+  });
+
+  it('shows an error toast when submit fails', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'DRAFT' })]));
+    shipping.submitPreArrival.mockRejectedValue(new Error('boom'));
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    fireEvent.click(screen.getByRole('button', { name: 'إرسال' }));
+
+    await waitFor(() => expect(toast.notifyError).toHaveBeenCalled());
+    expect(toast.notifySuccess).not.toHaveBeenCalled();
+  });
+
+  it('accepts an UNDER_REVIEW notification', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'UNDER_REVIEW' })]));
+    shipping.acceptPreArrival.mockResolvedValue({});
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    fireEvent.click(screen.getByRole('button', { name: 'قبول' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'قبول' }));
+
+    await waitFor(() => expect(shipping.acceptPreArrival).toHaveBeenCalledWith('a1', undefined));
+  });
+
+  it('rejects an UNDER_REVIEW notification', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'UNDER_REVIEW' })]));
+    shipping.rejectPreArrival.mockResolvedValue({});
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    fireEvent.click(screen.getByRole('button', { name: 'رفض' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'رفض' }));
+
+    await waitFor(() => expect(shipping.rejectPreArrival).toHaveBeenCalledWith('a1', undefined));
+  });
+
+  it('cancels a SUBMITTED notification', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'SUBMITTED' })]));
+    shipping.cancelPreArrival.mockResolvedValue({});
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    fireEvent.click(screen.getByRole('button', { name: 'إلغاء' }));
+    const dialog = within(await screen.findByRole('dialog'));
+    const cancelButtons = dialog.getAllByRole('button', { name: 'إلغاء' });
+    fireEvent.click(cancelButtons[cancelButtons.length - 1]);
+
+    await waitFor(() => expect(shipping.cancelPreArrival).toHaveBeenCalledWith('a1', undefined));
+  });
+
+  it('offers submit and cancel only for a draft', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'DRAFT' })]));
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    expect(screen.getByRole('button', { name: 'إرسال' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'إلغاء' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'مراجعة' })).toBeNull();
+  });
+
+  it('offers no workflow actions for an accepted notification', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'ACCEPTED' })]));
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    expect(screen.getByRole('button', { name: 'عرض' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'إرسال' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'قبول' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'إلغاء' })).toBeNull();
+  });
+
+  it('shows notification details in the dialog', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([row({ status: 'SUBMITTED' })]));
+    render(<PreArrivalList />);
+
+    await screen.findByText('MV A');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('IMO-1')).toBeTruthy();
+    expect(dialog.getByText('مُقدَّم من')).toBeTruthy();
+    expect(dialog.getByText('ملاحظات المراجعة')).toBeTruthy();
+  });
+
+  it('requests the filtered page when a status is selected', async () => {
+    shipping.getPreArrivals.mockResolvedValue(paged([]));
+    render(<PreArrivalList />);
+
+    const statusFilter = (await screen.findAllByRole('combobox')).find(
+      (el) => el.textContent === 'الحالة',
+    );
+    fireEvent.mouseDown(statusFilter as HTMLElement);
+    fireEvent.click(await screen.findByRole('option', { name: 'مقبول' }));
+
+    await waitFor(() =>
+      expect(shipping.getPreArrivals).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'ACCEPTED' }),
+      ),
     );
   });
 });
