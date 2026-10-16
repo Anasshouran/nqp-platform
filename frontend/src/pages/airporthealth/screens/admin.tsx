@@ -21,67 +21,14 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SecurityIcon from '@mui/icons-material/Security';
 import { C, PageTitle, SurfaceCard, StateBox } from '../shared';
-import { USERS, AUDIT_LOGS } from '../data';
+import { EmptyState } from '../../../components/uikit';
 
 /* ============================== 16. المستخدمون ============================== */
 
 export const Users = () => (
   <Box>
     <PageTitle title="المستخدمون والأدوار" subtitle="إدارة الوصول إلى نظام الصحة بمطار" />
-
-    <Grid container spacing={2} sx={{ mb: 3 }}>
-      {[
-        { icon: <GroupIcon />, v: '48', l: 'مستخدمون نشطون', c: C.primary },
-        { icon: <AdminPanelSettingsIcon />, v: '9', l: 'أدوار نظام', c: C.medicalBlue },
-        { icon: <SecurityIcon />, v: '24', l: 'وضعت أذونات', c: C.medicalGreen },
-        { icon: <PersonAddIcon />, v: '3', l: 'بانتظار الاعتماد', c: C.warning },
-      ].map(({ icon, v, l, c }) => (
-        <Grid item xs={12} sm={6} md={3} key={l}>
-          <Box sx={{ p: 2, borderRadius: 3, border: `1px solid ${C.border}`, bgcolor: C.surface, boxShadow: '0 1px 2px rgba(17,24,39,0.04), 0 8px 24px rgba(17,24,39,0.05)' }}>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Box sx={{ width: 40, height: 40, borderRadius: 2.5, display: 'grid', placeItems: 'center', bgcolor: `${c}1A`, color: c, flexShrink: 0 }}>{icon}</Box>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: c }}>{v}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{l}</Typography>
-              </Box>
-            </Stack>
-          </Box>
-        </Grid>
-      ))}
-    </Grid>
-
-    <SurfaceCard
-      title="فريق المحطة الصحية"
-      subtitle="مستخدمي النظام حسب الوحدات التشغيلية"
-      action={<Button startIcon={<PersonAddIcon />} variant="contained" size="small" sx={{ borderRadius: 2 }}>إضافة مستخدم</Button>}
-    >
-      <TableContainer sx={{ '& th': { fontWeight: 700, fontSize: 12.5 } }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>الاسم</TableCell>
-              <TableCell>الدور</TableCell>
-              <TableCell>الوحدة</TableCell>
-              <TableCell align="center">الحالة</TableCell>
-              <TableCell align="center">آخر نشاط</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {USERS.map((u) => (
-              <TableRow key={u.name} hover>
-                <TableCell sx={{ fontWeight: 700 }}>{u.name}</TableCell>
-                <TableCell>{u.role}</TableCell>
-                <TableCell><Chip label={u.area} size="small" sx={{ fontWeight: 700 }} variant="outlined" /></TableCell>
-                <TableCell align="center">
-                  <Chip label={u.status} size="small" sx={{ fontWeight: 700, borderRadius: 2, bgcolor: u.status === 'نشط' ? C.successBg : C.dangerBg, color: u.status === 'نشط' ? C.success : C.danger }} />
-                </TableCell>
-                <TableCell align="center" color="text.secondary">اليوم · {['12:48', '11:35', '11:10', '10:42', '09:15'][USERS.findIndex((x) => x.name === u.name)] || '—'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </SurfaceCard>
+    <EmptyState title="قيد الإعداد" description="بيانات المستخدمين تُحمل من نظام إدارة الوصول عند توفّرها." />
   </Box>
 );
 
@@ -133,33 +80,7 @@ export const Roles = () => {
 export const AuditLogs = () => (
   <Box>
     <PageTitle title="سجل التدقيق" subtitle="السجل غير القابل للتعديل لأحداث النظام الحساسة" />
-
-    <SurfaceCard title="أحداث النظام" subtitle="آخر العمليات وفق متطلبات مكافحة الفساد وأمن المعلومات">
-      <TableContainer sx={{ '& th': { fontWeight: 700, fontSize: 12.5 } }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>الوقت</TableCell>
-              <TableCell>المستخدم</TableCell>
-              <TableCell>الحدث</TableCell>
-              <TableCell>الوحدة</TableCell>
-              <TableCell align="center">الحالة</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {AUDIT_LOGS.map((a) => (
-              <TableRow key={`${a.time}-${a.action}`} hover>
-                <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{a.time}</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>{a.actor}</TableCell>
-                <TableCell>{a.action}</TableCell>
-                <TableCell><Chip label={a.module} size="small" variant="outlined" /></TableCell>
-                <TableCell align="center"><Chip label="مسجّل" size="small" sx={{ bgcolor: C.successBg, color: C.success, fontWeight: 700 }} /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </SurfaceCard>
+    <EmptyState title="قيد الإعداد" description="سجل الأحداث يُحمل من نظام التدقيق عند توفّرها." />
   </Box>
 );
 
