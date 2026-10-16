@@ -127,7 +127,16 @@ export default function AccountPage() {
   const emp = profile?.profile;
   const org = profile?.organization?.[0];
   const userName = emp?.full_name_ar || user?.full_name || 'أحمد محمد علي';
-  const roleName = org?.position || emp?.job_title || 'محلل كيمياء';
+
+  // سياق المعمل يُكتشف من البيانات المتاحة فقط؛ لا نفترض سياق الكيمياء/المختبر
+  // افتراضياً لكل المستخدمين (مثل مستخدمي الشحن بلا ارتباط تنظيمي).
+  const isLabUser = /(كيمياء|مختبر|laboratory|chemistry)/i.test(
+    [org?.sector, org?.lab, org?.department, emp?.office, emp?.job_title]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  const roleName = org?.position || emp?.job_title || (isLabUser ? 'محلل كيمياء' : '');
 
   const orgChain = [
     { label: 'القطاع', value: org?.sector || '—', icon: AccountBalanceIcon },
@@ -136,6 +145,19 @@ export default function AccountPage() {
     { label: 'القسم', value: org?.department || '—', icon: BusinessIcon },
     { label: 'المستخدم', value: userName, icon: PersonIcon },
   ];
+
+  // مقاطع سلسلة الجهة (قطاع/محطة/معمل/قسم) مع تجاهل القيم الفارغة.
+  const orgSegments = [org?.sector, org?.station, org?.lab, org?.department].filter(
+    (value): value is string => Boolean(value),
+  );
+
+  // عند غياب السلسلة التنظيمية نُقدّم مقطعاً قائماً على الحساب/الشركة
+  // بدل مسار معملي وهمي؛ ونحتفظ بشعار FCLIS للمستخدمين المعمليين فقط.
+  const leadingCrumb = isLabUser
+    ? '🧪 FCLIS'
+    : orgSegments.length === 0
+      ? user?.organization_name || 'حسابي'
+      : null;
 
   if (loading) {
     return (
@@ -160,15 +182,19 @@ export default function AccountPage() {
         }}
       >
         <Breadcrumbs separator="/" aria-label="breadcrumb" sx={{ fontSize: 13, color: 'text.secondary' }}>
-          <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 700, color: chemTheme.primary }}>
-            🧪 FCLIS
-          </Typography>
-          {orgChain.slice(0, 4).map((item) => (
-            <Typography key={item.label} sx={{ fontSize: 13, color: 'text.secondary' }}>
-              {item.value}
+          {leadingCrumb && (
+            <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 700, color: chemTheme.primary }}>
+              {leadingCrumb}
+            </Typography>
+          )}
+          {orgSegments.map((value) => (
+            <Typography key={value} sx={{ fontSize: 13, color: 'text.secondary' }}>
+              {value}
             </Typography>
           ))}
-          <Typography sx={{ fontSize: 13, color: 'text.primary', fontWeight: 600 }}>{roleName}</Typography>
+          {roleName && (
+            <Typography sx={{ fontSize: 13, color: 'text.primary', fontWeight: 600 }}>{roleName}</Typography>
+          )}
         </Breadcrumbs>
       </Box>
 
@@ -213,7 +239,7 @@ export default function AccountPage() {
                     {roleName}
                   </Typography>
                   <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
-                    {org?.department || 'قسم الكيمياء'}
+                    {org?.department || emp?.office || (isLabUser ? 'قسم الكيمياء' : '—')}
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
@@ -241,7 +267,7 @@ export default function AccountPage() {
                 </Stack>
               </Stack>
               <Typography sx={{ color: 'text.secondary', fontSize: 13, mt: 1.5 }}>
-                Employee ID: {emp?.employee_number || 'LAB-CH-0025'}
+                Employee ID: {emp?.employee_number || (isLabUser ? 'LAB-CH-0025' : '—')}
               </Typography>
             </Box>
           </Stack>
