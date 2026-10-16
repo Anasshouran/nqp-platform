@@ -28,9 +28,9 @@ import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutl
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import * as React from 'react';
 import { C, KpiCard, PageTitle, RiskBadge, StatusBadge, SurfaceCard, RiskGauge, OfflinePill, StateBox } from '../shared';
-import { FLIGHTS, PASSENGERS, ANALYTICS, NOTIFICATIONS, LAB_DASHBOARD, CREW, INSPECTION_AIRCRAFT, INSPECTION_CHECKLIST, CONTACT_TRACE, EMERGENCY } from '../data';
 import { getAirportDashboard } from '../../../api/endpoints/airport';
 import type { AirportDashboard as AirportDashboardData } from '../../../types/airport';
+import { EmptyState } from '../../../components/uikit';
 
 export interface Props {
   nav: (id: string) => void;
@@ -40,6 +40,7 @@ export interface Props {
 
 export const Dashboard = ({ nav }: Props) => {
   const [live, setLive] = React.useState<AirportDashboardData | null>(null);
+  const [loading, setLoading] = React.useState(true);
   const [offline, setOffline] = React.useState(false);
   const { status } = useOfflineSync();
   const offlineConn = status === 'OFFLINE';
@@ -47,16 +48,15 @@ export const Dashboard = ({ nav }: Props) => {
 
   React.useEffect(() => {
     let mounted = true;
+    setLoading(true);
     getAirportDashboard()
       .then((res) => {
-        if (mounted) setLive(res.data.data);
+        if (mounted) { setLive(res.data.data); setLoading(false); }
       })
       .catch(() => {
-        if (mounted) setOffline(true);
+        if (mounted) { setOffline(true); setLoading(false); }
       });
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const k = live?.kpis;
@@ -72,20 +72,27 @@ export const Dashboard = ({ nav }: Props) => {
   ];
   const upcoming = live?.upcoming_flights ?? [];
   const suspected = live?.suspected ?? [];
+  const alerts = live?.alerts ?? [];
 
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" sx={{ mb: 2, gap: 1 }}>
-        <PageTitle title="مركز قيادة صحة المطارات" subtitle={offline ? 'بيانات مباشرة غير متاحة — تعذر الاتصال بالخادم' : 'مطار بورتسودان الدولي — بيانات مباشرة من النظام'} />
+        <PageTitle title="مركز قيادة صحة المطارات" subtitle={offline ? 'بيانات مباشرة غير متاحة — تعذر الاتصال بالخادم' : loading ? 'جارٍ التحميل…' : 'مطار بورتسودان الدولي — بيانات مباشرة من النظام'} />
         <OfflinePill state={pillState} />
       </Stack>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {kpis.map((kpi) => (
-          <Grid item xs={12} sm={6} md={4} xl={3} key={kpi.label}>
-            <KpiCard {...kpi} />
+        {loading ? (
+          <Grid item xs={12}>
+            <EmptyState title="قيد الإعداد" description="يتم تحميل بيانات مركز القيادة من النظام." />
           </Grid>
-        ))}
+        ) : (
+          kpis.map((kpi) => (
+            <Grid item xs={12} sm={6} md={4} xl={3} key={kpi.label}>
+              <KpiCard {...kpi} />
+            </Grid>
+          ))
+        )}
       </Grid>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -107,24 +114,25 @@ export const Dashboard = ({ nav }: Props) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {upcoming.length === 0 && (
+                  {upcoming.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 3 }}>لا رحلات قادمة مسجّلة</TableCell>
                     </TableRow>
+                  ) : (
+                    upcoming.map((f) => (
+                      <TableRow key={f.id} hover onClick={() => nav('flight-details')} sx={{ cursor: 'pointer' }}>
+                        <TableCell sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{f.flight_number}</TableCell>
+                        <TableCell>{f.origin_country}</TableCell>
+                        <TableCell align="center">{new Date(f.scheduled_arrival).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</TableCell>
+                        <TableCell align="center"><Chip size="small" label={f.status} sx={{ fontWeight: 700, bgcolor: `${C.primary}10`, color: C.primary }} /></TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="تفاصيل الرحلة">
+                            <IconButton aria-label="رجوع" size="small" onClick={(e) => { e.stopPropagation(); nav('flight-details'); }}><ArrowBackIosNewIcon fontSize="small" sx={{ transform: 'rotate(180deg)' }} /></IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
-                  {upcoming.map((f) => (
-                    <TableRow key={f.id} hover onClick={() => nav('flight-details')} sx={{ cursor: 'pointer' }}>
-                      <TableCell sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{f.flight_number}</TableCell>
-                      <TableCell>{f.origin_country}</TableCell>
-                      <TableCell align="center">{new Date(f.scheduled_arrival).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</TableCell>
-                      <TableCell align="center"><Chip size="small" label={f.status} sx={{ fontWeight: 700, bgcolor: `${C.primary}10`, color: C.primary }} /></TableCell>
-                      <TableCell align="center">
-                        <Tooltip title="تفاصيل الرحلة">
-                          <IconButton aria-label="رجوع" size="small" onClick={(e) => { e.stopPropagation(); nav('flight-details'); }}><ArrowBackIosNewIcon fontSize="small" sx={{ transform: 'rotate(180deg)' }} /></IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -133,29 +141,10 @@ export const Dashboard = ({ nav }: Props) => {
         <Grid item xs={12} lg={5}>
           <Stack spacing={3}>
             <SurfaceCard title="حالة الطوارئ" subtitle="أعلى أولوية حالياً">
-              <Stack spacing={1.5}>
-                <Chip size="small" label={`${EMERGENCY.severity} — ${EMERGENCY.event}`} sx={{ bgcolor: C.dangerBg, color: C.danger, fontWeight: 700, alignSelf: 'flex-start' }} />
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>الحادث: {EMERGENCY.incidentId} · {EMERGENCY.flight}</Typography>
-                <Stack direction="row" spacing={1} sx={{ color: 'text.secondary' }}>
-                  <Typography variant="caption">المتأثرون: {EMERGENCY.affected}</Typography>
-                  <Typography variant="caption" sx={{ fontWeight: 700 }}>الفريق: {EMERGENCY.team}</Typography>
-                </Stack>
-                <Button size="small" variant="contained" sx={{ alignSelf: 'flex-start' }} onClick={() => nav('emergency')}>فتح شاشة الطوارئ</Button>
-              </Stack>
+              <EmptyState title="قيد الإعداد" description="بيانات حالات الطوارئ تُحمل من غرفة العمليات عند توفّرها من النظام." />
             </SurfaceCard>
             <SurfaceCard title="قائمة المختبر" subtitle="حالة أوامر التحاليل">
-              <Grid container spacing={1.5}>
-                {(
-                  [['بانتظار', LAB_DASHBOARD.pending, C.primary], ['عيّنات مجمعة', LAB_DASHBOARD.collected, C.medicalBlue], ['في المختبر', LAB_DASHBOARD.inLab, C.warning], ['نتائج جاهزة', LAB_DASHBOARD.resultsReady, C.success], ['موجبة', LAB_DASHBOARD.positive, C.danger], ['حرجة', LAB_DASHBOARD.critical, C.danger]] as const
-                ).map(([l, v, color]) => (
-                  <Grid item xs={4} key={l as string}>
-                    <Box sx={{ p: 1.25, borderRadius: 2.5, border: `1px solid ${C.border}`, bgcolor: '#FAFBFD', textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color }}>{v}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{l}</Typography>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
+              <EmptyState title="قيد الإعداد" description="إحصاءات المختبر تُحمل من نظام المعامل عند توفّرها." />
             </SurfaceCard>
           </Stack>
         </Grid>
@@ -164,77 +153,55 @@ export const Dashboard = ({ nav }: Props) => {
       <Grid container spacing={3}>
         <Grid item xs={12} lg={4}>
           <SurfaceCard title="توزيع المخاطر" subtitle="المسافرون المفحوصون اليوم">
-            <Box sx={{ height: 220, display: 'grid', placeItems: 'center' }}>
-              <DoughnutMini />
-            </Box>
+            <EmptyState title="قيد الإعداد" description="توزيع المخاطر يُحمل من نظام الترصد عند توفّره." />
           </SurfaceCard>
         </Grid>
         <Grid item xs={12} lg={4}>
           <SurfaceCard title="آخر التنبيهات" subtitle="إشعارات تستدعي النظر">
             <Stack spacing={1}>
-              {NOTIFICATIONS.slice(0, 3).map((n) => (
-                <Stack key={n.time} direction="row" spacing={1} sx={{ p: 1.1, borderRadius: 2.5, border: `1px solid ${C.border}`, bgcolor: '#FCFDFD' }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: n.tone === 'danger' ? C.danger : n.tone === 'warning' ? C.warning : C.success, mt: 0.5 }} />
-                  <Box>
-                    <Typography variant="caption" sx={{ fontWeight: 700 }}>{n.title} · {n.time}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{n.body}</Typography>
-                  </Box>
-                </Stack>
-              ))}
+              {alerts.length === 0 ? (
+                <EmptyState title="لا توجد تنبيهات" description="لا توجد تنبيهات نظامية مسجّلة حاليًا." />
+              ) : (
+                alerts.slice(0, 3).map((a) => (
+                  <Stack key={a.id} direction="row" spacing={1} sx={{ p: 1.1, borderRadius: 2.5, border: `1px solid ${C.border}`, bgcolor: '#FCFDFD' }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: C.danger, mt: 0.5 }} />
+                    <Box>
+                      <Typography variant="caption" sx={{ fontWeight: 700 }}>{a.subject} · {new Date(a.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{a.body}</Typography>
+                    </Box>
+                  </Stack>
+                ))
+              )}
             </Stack>
           </SurfaceCard>
         </Grid>
         <Grid item xs={12} lg={4}>
           <SurfaceCard title="حالات تستدعي الانتباه" subtitle="مشتبهة (RED) وإحالات عيادة — مباشر">
             <Stack spacing={1}>
-              {suspected.length === 0 && (
+              {suspected.length === 0 ? (
                 <Typography variant="caption" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>لا حالات مشتبهة أو إحالات حاليًا</Typography>
-              )}
-              {suspected.slice(0, 4).map((s, i) => (
-                <Stack key={`${s.kind}-${i}`} direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1, borderRadius: 2.5, border: `1px solid ${C.border}`, bgcolor: '#FCFDFD' }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    {s.kind === 'RED'
-                      ? <WarningAmberIcon sx={{ color: C.danger, fontSize: 18 }} />
-                      : <HealthAndSafetyOutlinedIcon sx={{ color: C.primary, fontSize: 18 }} />}
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{s.traveler_name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {s.flight_number ? `${s.flight_number} · ` : ''}{s.detail}
-                      </Typography>
-                    </Box>
+              ) : (
+                suspected.slice(0, 4).map((s, i) => (
+                  <Stack key={`${s.kind}-${i}`} direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1, borderRadius: 2.5, border: `1px solid ${C.border}`, bgcolor: '#FCFDFD' }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {s.kind === 'RED'
+                        ? <WarningAmberIcon sx={{ color: C.danger, fontSize: 18 }} />
+                        : <HealthAndSafetyOutlinedIcon sx={{ color: C.primary, fontSize: 18 }} />}
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{s.traveler_name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {s.flight_number ? `${s.flight_number} · ` : ''}{s.detail}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Chip size="small" label={s.kind === 'RED' ? 'مشتبه' : 'إحالة'} sx={{ bgcolor: s.kind === 'RED' ? C.dangerBg : `${C.primary}14`, color: s.kind === 'RED' ? C.danger : C.primary, fontWeight: 700 }} />
                   </Stack>
-                  <Chip size="small" label={s.kind === 'RED' ? 'مشتبه' : 'إحالة'} sx={{ bgcolor: s.kind === 'RED' ? C.dangerBg : `${C.primary}14`, color: s.kind === 'RED' ? C.danger : C.primary, fontWeight: 700 }} />
-                </Stack>
-              ))}
+                ))
+              )}
             </Stack>
           </SurfaceCard>
         </Grid>
       </Grid>
-    </Box>
-  );
-};
-
-const ScorePill = ({ score }: { score: number }) => (
-  <Chip label={`النقاط ${score}`} size="small" sx={{ fontWeight: 700, bgcolor: score >= 50 ? C.dangerBg : score >= 25 ? C.warningBg : C.successBg, color: score >= 50 ? C.danger : score >= 25 ? C.warning : C.success }} />
-);
-
-const DoughnutMini = () => {
-  const total = 7420 + 860 + 118 + 22;
-  const data = [7420, 860, 118, 22];
-  const colors = [C.success, C.warning, C.danger, C.medicalBlue];
-  let acc = 0;
-  const segs = data.map((v, i) => {
-    const offset = acc;
-    acc += (v / total) * 260;
-    return <circle key={i} cx="60" cy="60" r="48" fill="none" stroke={colors[i]} strokeWidth="18" strokeDasharray={`${(v / total) * 260} 260`} strokeDashoffset={-offset} transform="rotate(-90 60 60)" strokeLinecap="round" />;
-  });
-  return (
-    <Box sx={{ display: 'grid', placeItems: 'center', position: 'relative' }}>
-      <svg width={160} height={160} viewBox="0 0 120 120">{segs}</svg>
-      <Box sx={{ position: 'absolute', textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>8,420</Typography>
-        <Typography variant="caption" color="text.secondary">مفحوصون</Typography>
-      </Box>
     </Box>
   );
 };
@@ -244,151 +211,29 @@ const DoughnutMini = () => {
 export const Flights = ({ nav }: Props) => (
   <Box>
     <PageTitle title="إدارة الرحلات" subtitle="متابعة لحظية للرحلات والوضع الصحي لكل رحلة" />
-    <SurfaceCard title="قائمة الرحلات" subtitle={`${FLIGHTS.length} رحلة في نافذة المراقبة`}>
-      <TableContainer sx={{ '& th': { fontWeight: 700, fontSize: 12.5 } }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>الرحلة</TableCell>
-              <TableCell>شركة الطيران</TableCell>
-              <TableCell>من</TableCell>
-              <TableCell>إلى</TableCell>
-              <TableCell align="center">وصول</TableCell>
-              <TableCell align="center">مغادرة</TableCell>
-              <TableCell align="center">مسافرون</TableCell>
-              <TableCell align="center">مخاطر</TableCell>
-              <TableCell align="center">الحالة الصحية</TableCell>
-              <TableCell align="center">الطائرة</TableCell>
-              <TableCell align="center">إجراء</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {FLIGHTS.map((f) => (
-              <TableRow key={f.id} hover>
-                <TableCell sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{f.flightNo}</TableCell>
-                <TableCell>{f.airline}</TableCell>
-                <TableCell>{f.origin}</TableCell>
-                <TableCell>{f.destination}</TableCell>
-                <TableCell align="center">{f.arrival}</TableCell>
-                <TableCell align="center">{f.departs}</TableCell>
-                <TableCell align="center">{f.passengers}</TableCell>
-                <TableCell align="center"><RiskBadge risk={f.risk} /></TableCell>
-                <TableCell align="center"><StatusBadge status={f.status} /></TableCell>
-                <TableCell align="center" sx={{ fontFamily: 'monospace' }}>{f.aircraft}</TableCell>
-                <TableCell align="center">
-                  <Button size="small" variant="outlined" onClick={() => nav('flight-details')}>تفاصيل</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </SurfaceCard>
+    <EmptyState title="قيد الإعداد" description="بيانات الرحلات تُحمل من نظام العمليات الجوية عند توفّرها." />
   </Box>
 );
 
 /* ============================= 3. تفاصيل الرحلة ============================= */
 
-export const FlightDetails = ({ nav }: Props) => {
-  const f = FLIGHTS[3];
-  return (
-    <Box>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <IconButton aria-label="رجوع" size="small" onClick={() => nav('flights')} sx={{ border: `1px solid ${C.border}` }}><ArrowBackIosNewIcon sx={{ fontSize: 18, transform: 'rotate(180deg)' }} /></IconButton>
-        <Typography variant="body2" color="text.secondary">رجوع إلى الرحلات</Typography>
-      </Stack>
-      <PageTitle title={`تفاصيل الرحلة ${f.flightNo}`} subtitle={`${f.airline} · ${f.origin} → ${f.destination}`} />
+export const FlightDetails = ({ nav }: Props) => (
+  <Box>
+    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+      <IconButton aria-label="رجوع" size="small" onClick={() => nav('flights')} sx={{ border: `1px solid ${C.border}` }}><ArrowBackIosNewIcon sx={{ fontSize: 18, transform: 'rotate(180deg)' }} /></IconButton>
+      <Typography variant="body2" color="text.secondary">رجوع إلى الرحلات</Typography>
+    </Stack>
+    <PageTitle title="تفاصيل الرحلة" subtitle="تفاصيل الرحلة المحددة" />
+    <EmptyState title="قيد الإعداد" description="بيانات رحلة التفاصيل تُحمل من نظام العمليات عند اختيار رحلة." />
+  </Box>
+);
 
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6} lg={3}><InfoBox label="الطائرة" value={f.aircraft} /></Grid>
-        <Grid item xs={12} md={6} lg={3}><InfoBox label="الوصول" value={f.arrival} extra={`المغادرة ${f.departs}`} /></Grid>
-        <Grid item xs={12} md={6} lg={3}><InfoBox label="المسافرون" value={String(f.passengers)} extra={`طاقم ${f.crewCount}`} /></Grid>
-        <Grid item xs={12} md={6} lg={3}><InfoBox label="الحالة" value={<StatusBadge status={f.status} />} extra={<RiskBadge risk={f.risk} />} /></Grid>
-      </Grid>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={7}>
-          <SurfaceCard title="مسافرو الرحلة المفتاحيون" subtitle="أعلى المخاطر بين مسافري الرحلة">
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>المسافر</TableCell>
-                    <TableCell align="center">المقعد</TableCell>
-                    <TableCell align="center">الحرارة</TableCell>
-                    <TableCell align="center">النقاط</TableCell>
-                    <TableCell align="center">الحالة</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {PASSENGERS.filter((p) => p.flight === f.flightNo || true).slice(0, 4).map((p) => (
-                    <TableRow key={p.id} hover>
-                      <TableCell sx={{ fontWeight: 700 }}>{p.name}</TableCell>
-                      <TableCell align="center">{p.seat}</TableCell>
-                      <TableCell align="center">{p.temperature}</TableCell>
-                      <TableCell align="center"><ScorePill score={p.score} /></TableCell>
-                      <TableCell align="center"><StatusBadge status={p.status} /></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </SurfaceCard>
-        </Grid>
-        <Grid item xs={12} lg={5}>
-          <SurfaceCard title="الطاقم" subtitle="فحص الصحة لطاقم الرحلة">
-            <Stack spacing={1}>
-              {CREW.slice(0, 4).map((c) => (
-                <Stack key={c.name} direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1, borderRadius: 2.5, border: `1px solid ${C.border}` }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{c.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">{c.role}</Typography>
-                  </Box>
-                  <Chip label={c.status} size="small" sx={{ fontWeight: 700 }} color={c.status === 'تم الفحص' ? 'success' : 'warning'} variant="outlined" />
-                </Stack>
-              ))}
-            </Stack>
-          </SurfaceCard>
-          <Box sx={{ mt: 3 }}>
-            <StateBox type="empty" text="المزيد من تفاصيل الرحلة متاح عبر التكامل مع نظام العمليات الجوية" />
-          </Box>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-};
+/* ============================= 4. الطاقم ============================= */
 
 export const Crew = () => (
   <Box>
     <PageTitle title="إدارة الطاقم" subtitle="الفحص الصحي لأطقم الرحلات الواصلة والمغادرة" />
-    <SurfaceCard title="أطقم الرحلات">
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>الاسم</TableCell>
-              <TableCell>الدور</TableCell>
-              <TableCell align="center">الرحلة</TableCell>
-              <TableCell align="center">نتيجة الفحص</TableCell>
-              <TableCell align="center">الحالة</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {CREW.map((c) => (
-              <TableRow key={c.name} hover>
-                <TableCell sx={{ fontWeight: 700 }}>{c.name}</TableCell>
-                <TableCell>{c.role}</TableCell>
-                <TableCell align="center" sx={{ fontFamily: 'monospace' }}>{c.flight}</TableCell>
-                <TableCell align="center">
-                  <Chip label={c.checked} size="small" sx={{ fontWeight: 700 }} color={c.checked === 'سليم' ? 'success' : 'warning'} variant="outlined" />
-                </TableCell>
-                <TableCell align="center">{c.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </SurfaceCard>
+    <EmptyState title="قيد الإعداد" description="بيانات أطقم الرحلات تُحمل من سجلات الطاقم عند توفّرها." />
   </Box>
 );
 
