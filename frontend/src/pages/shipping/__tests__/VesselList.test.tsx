@@ -2,7 +2,7 @@
  * VesselList — render / empty / search / filter / detail (read-only).
  * Mocks the typed portHealth API module and the toast helper (not used but consistent).
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const portHealth = vi.hoisted(() => ({ getVessels: vi.fn() }));
@@ -106,5 +106,101 @@ describe('VesselList', () => {
     expect(screen.getByText('الشركة المالكة')).toBeTruthy();
     expect(screen.getAllByText('Panama').length).toBeGreaterThan(0);
     expect(screen.getAllByText('محجورة').length).toBeGreaterThan(0);
+  });
+
+  it('shows row values in the detail dialog', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([row({ status: 'ARRIVED' })]));
+    render(<VesselList />);
+
+    await screen.findByText('MV Atlas');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('IMO-1234567')).toBeTruthy();
+    expect(dialog.getByText('Alpha Shipping Co.')).toBeTruthy();
+    expect(dialog.getByText('تجارية')).toBeTruthy();
+    expect(dialog.getByText('جدة')).toBeTruthy();
+  });
+
+  it('translates the vessel type in the table', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([row({ vessel_type: 'TANKER' })]));
+    render(<VesselList />);
+
+    expect(await screen.findByText('ناقلة نفط')).toBeTruthy();
+  });
+
+  it('falls back to shipping_company when company_name is missing', async () => {
+    portHealth.getVessels.mockResolvedValue(
+      paged([row({ company_name: '', shipping_company: 'Beta Line' })]),
+    );
+    render(<VesselList />);
+
+    expect(await screen.findByText('Beta Line')).toBeTruthy();
+  });
+
+  it('requests the filtered page when a status is selected', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([]));
+    render(<VesselList />);
+
+    const statusFilter = (await screen.findAllByRole('combobox')).find(
+      (el) => el.textContent === 'الحالة',
+    );
+    fireEvent.mouseDown(statusFilter as HTMLElement);
+    fireEvent.click(await screen.findByRole('option', { name: 'محجورة' }));
+
+    await waitFor(() =>
+      expect(portHealth.getVessels).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'QUARANTINED' }),
+      ),
+    );
+  });
+
+  it('closes the detail dialog', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([row()]));
+    render(<VesselList />);
+
+    await screen.findByText('MV Atlas');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+    fireEvent.click(screen.getByRole('button', { name: 'إغلاق' }));
+
+    await waitFor(() => expect(screen.queryByText('تفاصيل السفينة')).toBeNull());
+  });
+
+  it('re-fetches when refresh is clicked', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([row()]));
+    render(<VesselList />);
+
+    await screen.findByText('MV Atlas');
+    expect(portHealth.getVessels).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'تحديث' }));
+    await waitFor(() => expect(portHealth.getVessels).toHaveBeenCalledTimes(2));
+  });
+
+  it('renders a fallback label for an unknown status', async () => {
+    portHealth.getVessels.mockResolvedValue(paged([row({ status: 'WEIRD' })]));
+    render(<VesselList />);
+
+    expect(await screen.findByText('غير معروف')).toBeTruthy();
+  });
+
+  it('renders — placeholders for missing fields', async () => {
+    portHealth.getVessels.mockResolvedValue(
+      paged([
+        row({
+          vessel_name: '',
+          imo_number: '',
+          company_name: '',
+          shipping_company: '',
+          flag_state: '',
+          last_port_of_call: '',
+          gross_tonnage: undefined,
+        }),
+      ]),
+    );
+    render(<VesselList />);
+
+    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThan(0));
+    expect(screen.queryByText('MV Atlas')).toBeNull();
   });
 });

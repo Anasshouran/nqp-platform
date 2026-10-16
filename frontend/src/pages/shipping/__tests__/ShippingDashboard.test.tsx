@@ -4,7 +4,7 @@
  * Mocks portHealth + shipping, asserts loading / KPIs / status breakdown /
  * error / empty / refresh, and that all three APIs fire on mount.
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const portHealth = vi.hoisted(() => ({
@@ -131,5 +131,67 @@ describe('ShippingDashboard', () => {
     await waitFor(() => expect(portHealth.getVessels).toHaveBeenCalledTimes(2));
     expect(portHealth.getVesselVisits).toHaveBeenCalledTimes(2);
     expect(shippingApi.getPreArrivals).toHaveBeenCalledTimes(2);
+  });
+
+  it('sorts the status breakdown by count descending', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(
+      page(5, [
+        { id: '1', status: 'EXPECTED' },
+        { id: '2', status: 'CLEARED' },
+        { id: '3', status: 'CLEARED' },
+        { id: '4', status: 'CLEARED' },
+        { id: '5', status: 'ARRIVED' },
+      ]),
+    );
+    render(<ShippingDashboard />);
+
+    await screen.findByText('توزيع الزيارات حسب الحالة');
+    const chips = screen.getAllByText(/·/).map((el) => el.textContent);
+    expect(chips[0]).toContain('· 3');
+    expect(chips[1]).toContain('· 1');
+  });
+
+  it('uses the raw status label for unknown statuses', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(
+      page(1, [{ id: '1', status: 'WEIRD' }]),
+    );
+    render(<ShippingDashboard />);
+
+    expect(await screen.findByText('WEIRD · 1')).toBeTruthy();
+  });
+
+  it('shows the no-visits note when only vessels exist', async () => {
+    portHealth.getVessels.mockResolvedValue(page(3, [{ id: 'v1' }]));
+    portHealth.getVesselVisits.mockResolvedValue(emptyPage);
+    shippingApi.getPreArrivals.mockResolvedValue(emptyPage);
+    render(<ShippingDashboard />);
+
+    expect(await screen.findByText('لا توجد زيارات مسجّلة.')).toBeTruthy();
+  });
+
+  it('counts only ARRIVED and INSPECTED as in-port', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(
+      page(4, [
+        { id: '1', status: 'ARRIVED' },
+        { id: '2', status: 'INSPECTED' },
+        { id: '3', status: 'CLEARED' },
+        { id: '4', status: 'DEPARTED' },
+      ]),
+    );
+    render(<ShippingDashboard />);
+
+    await screen.findByText('السفن في الميناء');
+    const card = screen.getByText('السفن في الميناء').closest('.MuiCard-root') as HTMLElement;
+    expect(within(card).getByText('2')).toBeTruthy();
+  });
+
+  it('recovers from the error state on retry', async () => {
+    portHealth.getVesselVisits.mockRejectedValueOnce(new Error('boom'));
+    render(<ShippingDashboard />);
+
+    expect(await screen.findByText('تعذّر تحميل البيانات الآن')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'إعادة المحاولة' }));
+
+    expect(await screen.findByText('إجمالي السفن')).toBeTruthy();
   });
 });

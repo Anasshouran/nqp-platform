@@ -2,7 +2,7 @@
  * DepartureList — render / empty / DEPARTED filter / search / detail.
  * Mocks the typed portHealth API module.
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const portHealth = vi.hoisted(() => ({ getVesselVisits: vi.fn() }));
@@ -97,5 +97,84 @@ describe('DepartureList', () => {
 
     expect(await screen.findByText('تفاصيل المغادرة')).toBeTruthy();
     expect(screen.getByText('تاريخ الوصول')).toBeTruthy();
+  });
+
+  it('shows row values in the detail dialog', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(paged([row()]));
+    render(<DepartureList />);
+
+    await screen.findByText('MV Depart');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('IMO-9')).toBeTruthy();
+    expect(dialog.getByText('بورتسودان')).toBeTruthy();
+    expect(dialog.getByText('2026-10-20')).toBeTruthy();
+    expect(dialog.getByText('غادرت')).toBeTruthy();
+  });
+
+  it('closes the detail dialog', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(paged([row()]));
+    render(<DepartureList />);
+
+    await screen.findByText('MV Depart');
+    fireEvent.click(screen.getByRole('button', { name: 'عرض' }));
+    fireEvent.click(screen.getByRole('button', { name: 'إغلاق' }));
+
+    await waitFor(() => expect(screen.queryByText('تفاصيل المغادرة')).toBeNull());
+  });
+
+  it('re-fetches when refresh is clicked', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(paged([row()]));
+    render(<DepartureList />);
+
+    await screen.findByText('MV Depart');
+    expect(portHealth.getVesselVisits).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'تحديث' }));
+    await waitFor(() => expect(portHealth.getVesselVisits).toHaveBeenCalledTimes(2));
+  });
+
+  it('sends the search term to the API', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(paged([]));
+    render(<DepartureList />);
+
+    const search = await screen.findByPlaceholderText('ابحث بالسفينة أو رقم IMO أو الميناء...');
+    fireEvent.change(search, { target: { value: 'depart' } });
+
+    await waitFor(
+      () =>
+        expect(portHealth.getVesselVisits).toHaveBeenCalledWith(
+          expect.objectContaining({ search: 'depart', status: 'DEPARTED' }),
+        ),
+      { timeout: 2000 },
+    );
+  });
+
+  it('renders a fallback label for an unknown status', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(paged([row({ status: 'WEIRD' })]));
+    render(<DepartureList />);
+
+    expect(await screen.findByText('غير معروف')).toBeTruthy();
+  });
+
+  it('renders — placeholders for missing vessel/port fields', async () => {
+    portHealth.getVesselVisits.mockResolvedValue(
+      paged([
+        row({
+          vessel_name: '',
+          vessel_imo: '',
+          port_name: undefined,
+          port: undefined,
+          berth_code: undefined,
+          departure_date: undefined,
+        }),
+      ]),
+    );
+    render(<DepartureList />);
+
+    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThan(0));
+    expect(screen.queryByText('بورتسودان')).toBeNull();
+    expect(screen.queryByText('2026-10-20')).toBeNull();
   });
 });
