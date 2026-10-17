@@ -1,4 +1,5 @@
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import DescriptionIcon from '@mui/icons-material/Description';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import AnchorIcon from '@mui/icons-material/Anchor';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -29,6 +30,7 @@ const SHIPPING_NAV: RoleNavItem[] = [
   { label: 'ما قبل الوصول', target: '/app/shipping#pre-arrivals', icon: <AssignmentIcon /> },
   { label: 'التخليص', target: '/app/shipping#clearance', icon: <FactCheckIcon /> },
   { label: 'الإشعارات', target: '/app/shipping#notifications', icon: <NotificationsActiveIcon /> },
+  { label: 'المستندات', target: '/app/shipping#documents', icon: <DescriptionIcon /> },
   { label: 'الوكلاء', target: '/app/shipping#agents', icon: <PeopleIcon /> },
   { label: 'العلاقات', target: '/app/shipping#relationships', icon: <AccountTreeIcon /> },
   { label: 'حسابي', target: '/app/account', icon: <PersonIcon /> },
