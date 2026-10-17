@@ -163,3 +163,87 @@ export const getVesselRelationships = (params?: Record<string, unknown>) =>
 
 export const getVesselRelationship = (id: string) =>
   apiClient.get<ApiResponse<VesselRelationship>>(`${VESSEL_RELATIONSHIPS_BASE}/${id}/`);
+
+/* -------------------------------------------------------------------------- */
+/* Vessel documents — مستندات السفن                                            */
+/* -------------------------------------------------------------------------- */
+
+export const VESSEL_DOCUMENT_TYPES = [
+  'BILL_OF_LADING',
+  'CARGO_MANIFEST',
+  'CREW_LIST',
+  'PASSENGER_LIST',
+  'HEALTH_CERTIFICATE',
+  'SANITATION_CERTIFICATE',
+  'AGENT_AUTHORISATION',
+  'OTHER',
+] as const;
+export type VesselDocumentType = typeof VESSEL_DOCUMENT_TYPES[number];
+
+export const VESSEL_DOCUMENT_TYPE_LABELS: Record<VesselDocumentType, string> = {
+  BILL_OF_LADING: 'بوليصة الشحن',
+  CARGO_MANIFEST: 'بيان الحمولة',
+  CREW_LIST: 'قائمة الطاقم',
+  PASSENGER_LIST: 'قائمة المسافرين',
+  HEALTH_CERTIFICATE: 'شهادة صحية',
+  SANITATION_CERTIFICATE: 'شهادة تعقيم',
+  AGENT_AUTHORISATION: 'تفويض الوكيل',
+  OTHER: 'أخرى',
+};
+
+export interface VesselDocument {
+  id: string;
+  vessel_visit: string;
+  vessel_name: string;
+  vessel_imo: string;
+  document_type: VesselDocumentType;
+  document_type_label: string;
+  title: string;
+  file: string;
+  original_filename: string;
+  mime_type: string;
+  file_size: number;
+  uploaded_by: string | null;
+  uploaded_by_name: string;
+  pre_arrival: string | null;
+  clearance_decision: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateVesselDocumentInput {
+  vessel_visit: string;
+  document_type: VesselDocumentType;
+  title: string;
+  file: File;
+  pre_arrival?: string | null;
+  clearance_decision?: string | null;
+}
+
+const VESSEL_DOCUMENTS_BASE = '/shipping/documents';
+
+/** Paginated vessel documents (`?search=`, `?document_type=`, `?ordering=`). */
+export const getVesselDocuments = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<VesselDocument>>>(`${VESSEL_DOCUMENTS_BASE}/`, { params });
+
+export const getVesselDocument = (id: string) =>
+  apiClient.get<ApiResponse<VesselDocument>>(`${VESSEL_DOCUMENTS_BASE}/${id}/`);
+
+/** Upload a document as multipart/form-data against a VesselVisit. */
+export const createVesselDocument = (input: CreateVesselDocumentInput) => {
+  const form = new FormData();
+  form.append('vessel_visit', input.vessel_visit);
+  form.append('document_type', input.document_type);
+  form.append('title', input.title);
+  form.append('file', input.file);
+  if (input.pre_arrival) form.append('pre_arrival', input.pre_arrival);
+  if (input.clearance_decision) form.append('clearance_decision', input.clearance_decision);
+  return apiClient.post<ApiResponse<VesselDocument>>(
+    `${VESSEL_DOCUMENTS_BASE}/`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+};
+
+export const deleteVesselDocument = (id: string) =>
+  apiClient.delete(`${VESSEL_DOCUMENTS_BASE}/${id}/`);
