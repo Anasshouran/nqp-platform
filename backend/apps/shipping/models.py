@@ -402,3 +402,77 @@ class ShippingAuditLog(BaseModel):
 
     def __str__(self):
         return f'{self.user} — {self.action} {self.object_type}'
+
+
+class VesselDocumentType(models.TextChoices):
+    """نوع مستند السفينة."""
+
+    BILL_OF_LADING = 'BILL_OF_LADING', 'بوليصة الشحن'
+    CARGO_MANIFEST = 'CARGO_MANIFEST', 'بيان الحمولة'
+    CREW_LIST = 'CREW_LIST', 'قائمة الطاقم'
+    PASSENGER_LIST = 'PASSENGER_LIST', 'قائمة المسافرين'
+    HEALTH_CERTIFICATE = 'HEALTH_CERTIFICATE', 'شهادة صحية'
+    SANITATION_CERTIFICATE = 'SANITATION_CERTIFICATE', 'شهادة تعقيم'
+    AGENT_AUTHORISATION = 'AGENT_AUTHORISATION', 'تفويض الوكيل'
+    OTHER = 'OTHER', 'أخرى'
+
+
+class VesselDocument(BaseModel):
+    """مستند ملاحي مرفق بزيارة سفينة.
+
+    يمثل مستندات العمليات البحرية: بوليصة الشحن، بيان الحمولة، قائمة الطاقم،
+    قائمة المسافرين، الشهادات الصحية وشهادات التعقيم، وتفويض الوكيل. يُربط
+    بزيارة السفينة (المحور القانوني لاستدعاء الميناء)، مع ارتباطات اختيارية
+    بالإخطار المسبق وقرار الإفراج الصحي.
+    """
+
+    vessel_visit = models.ForeignKey(
+        'port_health.VesselVisit',
+        on_delete=models.CASCADE,
+        related_name='documents',
+        verbose_name='زيارة السفينة',
+    )
+    document_type = models.CharField(
+        max_length=32, choices=VesselDocumentType.choices, verbose_name='نوع المستند',
+    )
+    title = models.CharField(max_length=255, verbose_name='العنوان')
+    file = models.FileField(upload_to='shipping_documents/%Y/%m/', verbose_name='الملف')
+    original_filename = models.CharField(max_length=255, verbose_name='اسم الملف الأصلي')
+    mime_type = models.CharField(max_length=100, verbose_name='نوع الملف')
+    file_size = models.PositiveIntegerField(verbose_name='حجم الملف')
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='uploaded_vessel_documents',
+        verbose_name='رفعها',
+    )
+    pre_arrival = models.ForeignKey(
+        'shipping.PreArrivalNotification',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='documents',
+        verbose_name='الإخطار المسبق',
+    )
+    clearance_decision = models.ForeignKey(
+        'shipping.PortClearanceDecision',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='documents',
+        verbose_name='قرار الإفراج',
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'مستند سفينة'
+        verbose_name_plural = 'مستندات السفن'
+        indexes = [
+            models.Index(fields=['vessel_visit', '-created_at']),
+            models.Index(fields=['document_type']),
+        ]
+
+    def __str__(self):
+        return f'{self.vessel_visit.vessel.vessel_name} — {self.title}'
