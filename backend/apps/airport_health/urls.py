@@ -5,6 +5,7 @@ from .views import (
     AircraftInspectionViewSet,
     AirportDashboardViewSet,
     AirportScreeningViewSet,
+    AirportStaffViewSet,
     CrewHealthRecordViewSet,
     PortViewSet,
     ScreeningPointViewSet,
@@ -18,6 +19,7 @@ router.register('screening-points', ScreeningPointViewSet, basename='screening-p
 router.register('screenings', AirportScreeningViewSet, basename='airport-screening')
 router.register('aircraft-inspections', AircraftInspectionViewSet, basename='aircraft-inspection')
 router.register('crew-records', CrewHealthRecordViewSet, basename='crew-record')
+router.register('staff', AirportStaffViewSet, basename='airport-staff')
 router.register('dashboard', AirportDashboardViewSet, basename='airport-dashboard')
 
 urlpatterns = [

@@ -23,6 +23,7 @@ RESOURCES = {
     'organization': 'الهيكل الإداري',
      'port_health': 'صحة الموانئ',
     'airport_health': 'صحة المطارات',
+    'airport_staff': 'كادر صحة المطارات',
     'borders_health': 'صحة المعابر البرية',
     'clinic': 'عيادات الحجر الصحي',
     'it': 'تقنية المعلومات',
@@ -355,6 +356,7 @@ ROLES = [
         'default_scope': ScopeType.GLOBAL,
         'resources': {
             'airport_health': ['view', 'add', 'edit', 'export'],
+            'airport_staff': ['view', 'add', 'edit', 'export'],
             'screening': ['view', 'export'],
             'surveillance': ['view', 'add', 'edit', 'export'],
             'travelers': ['view', 'review'],
@@ -759,6 +761,7 @@ ROLES = [
         'default_scope': ScopeType.STATION,
         'resources': {
             'airport_health': ['view', 'add', 'edit'],
+            'airport_staff': ['view', 'add', 'edit'],
             'screening': ['view', 'add', 'edit'],
             'travelers': ['view'],
             'reports': ['view'],

@@ -7,6 +7,7 @@ from apps.travelers.models import Traveler
 from .models import (
     AircraftInspection,
     AirportScreening,
+    AirportStaff,
     AirportTerminal,
     CrewHealthRecord,
     ScreeningPoint,
@@ -117,3 +118,21 @@ class CrewHealthRecordSerializer(serializers.ModelSerializer):
             'temperature', 'symptoms', 'medical_clearance_date', 'next_clearance_date', 'notes',
         ]
         read_only_fields = ['id']
+
+
+class AirportStaffSerializer(serializers.ModelSerializer):
+    role_label = serializers.CharField(source='get_role_display', read_only=True)
+    airport_name = serializers.CharField(source='airport.name_ar', read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True, default='')
+
+    class Meta:
+        model = AirportStaff
+        fields = [
+            'id', 'airport', 'airport_name',
+            'user', 'user_email',
+            'role', 'role_label',
+            'full_name', 'email', 'phone',
+            'shift', 'is_active', 'notes',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
