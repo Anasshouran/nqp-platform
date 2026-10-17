@@ -88,6 +88,10 @@ export interface AirportKpis {
   suspected_cases: number;
   vaccinations: number;
   completed_today: number;
+  inspections_today: number;
+  crew_records_today: number;
+  arrivals_today: number;
+  departures_today: number;
 }
 
 export interface UpcomingFlight {
@@ -129,6 +133,23 @@ export interface AirportDashboardReport {
   screenings_by_flight: Array<{ flight_number: string; count: number }>;
 }
 
+export interface RecentInspection {
+  id: string;
+  aircraft_registration: string;
+  flight_number: string;
+  overall_status: string;
+  certificate_issued: boolean;
+  inspection_date: string;
+}
+
+export interface RecentScreening {
+  id: string;
+  traveler_name: string;
+  risk_level: string;
+  status: string;
+  screened_at: string;
+}
+
 export interface AirportDashboard {
   kpis: AirportKpis;
   upcoming_flights: UpcomingFlight[];
@@ -136,5 +157,9 @@ export interface AirportDashboard {
   tasks: DashboardTask[];
   alerts: DashboardAlert[];
   report: AirportDashboardReport;
+  recent_inspections: RecentInspection[];
+  recent_screenings: RecentScreening[];
+  /** موظفو المطار — حجز لـ scope B (AirportStaff لم يُضف بعد)، لذا دائماً فارغ. */
+  staff: never[];
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -15,16 +15,56 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import AirplanemodeActiveIcon from '@mui/icons-material/AirplanemodeActive';
+import AirlineSeatReclineNormalIcon from '@mui/icons-material/AirlineSeatReclineNormal';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
+import FlightLandIcon from '@mui/icons-material/FlightLand';
+import GroupsIcon from '@mui/icons-material/Groups';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import VaccinesIcon from '@mui/icons-material/Vaccines';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
-import { SectionCard, PageTabs } from '../../components/uikit';
-import { EmptyState } from '../../components/uikit';
+import {
+  CardsGridSkeleton,
+  DataTable,
+  EmptyState,
+  ListSkeleton,
+  PageTabs,
+  SectionCard,
+  StatCard,
+  StatusChip,
+} from '../../components/uikit';
+import type { DataTableColumn, StatusTone } from '../../components/uikit';
+import { ErrorState } from '../../components/common';
+import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  getCrewHealthRecords,
+  getAirportDashboard,
+  getAirportTerminals,
+  getScreeningPoints,
+} from '../../api/endpoints/airport';
+import type {
+  AirportDashboard,
+  AirportDashboardReport,
+  AirportTerminal,
+  CrewHealthRecord,
+  RecentInspection,
+  RecentScreening,
+  ScreeningPoint,
+  UpcomingFlight,
+} from '../../types/airport';
 import { notifySuccess } from '../../utils/toast';
 
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 type Period = 'DAY' | 'WEEK' | 'MONTH';
+
+/** عيّنات لوحة مدير المطار — الحد الأقصى لكل قائمة حديثة. */
+const RECENT_LIMIT = 20;
+const REFERENCE_PAGE_SIZE = 100;
 
 const SECTIONS = [
   { id: 'overview', label: 'نظرة عامة', icon: <DashboardIcon fontSize="small" /> },
@@ -32,6 +72,8 @@ const SECTIONS = [
   { id: 'operations', label: 'العمليات', icon: <HealthAndSafetyIcon fontSize="small" /> },
   { id: 'flights', label: 'الرحلات', icon: <VerifiedUserIcon fontSize="small" /> },
   { id: 'screening', label: 'الفحص', icon: <BiotechIcon fontSize="small" /> },
+  { id: 'inspections', label: 'التفتيش', icon: <AirplanemodeActiveIcon fontSize="small" /> },
+  { id: 'crew', label: 'الطاقم', icon: <AirlineSeatReclineNormalIcon fontSize="small" /> },
   { id: 'terminals', label: 'المواقع', icon: <TableChartIcon fontSize="small" /> },
   { id: 'decision', label: 'دعم القرار', icon: <GavelIcon fontSize="small" /> },
   { id: 'reports', label: 'التقارير', icon: <PictureAsPdfIcon fontSize="small" /> },
@@ -39,10 +81,67 @@ const SECTIONS = [
   { id: 'permissions', label: 'الصلاحيات', icon: <GavelIcon fontSize="small" /> },
 ] as const;
 
+/** بيانات مرجعية تُجلب بشكل متوازٍ مع لوحة التحكم (طاقم + مواقع + نقاط فحص). */
+interface ReferenceData {
+  crew: CrewHealthRecord[];
+  terminals: AirportTerminal[];
+  points: ScreeningPoint[];
+}
+
 const AirportDirectorPage = () => {
   const { user } = useAuth();
   const [period, setPeriod] = useState<Period>('DAY');
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], []);
+
+  // لوحة القيادة الموسّعة (من /api/v1/airport/dashboard/ — #69)
+  const dashboardApi = useApi<AirportDashboard>(() =>
+    getAirportDashboard().then((res) => res.data.data)
+  );
+
+  // ثلاث نداءات متوازية للبيانات المرجعية (طاقم، صالات، نقاط الفحص)
+  const referenceApi = useApi<ReferenceData>(() =>
+    Promise.all([
+      getCrewHealthRecords({ page_size: RECENT_LIMIT }),
+      getAirportTerminals({ page_size: REFERENCE_PAGE_SIZE }),
+      getScreeningPoints({ page_size: REFERENCE_PAGE_SIZE }),
+    ]).then(([crew, terminals, points]) => ({
+      crew: crew.data.data.results ?? [],
+      terminals: terminals.data.data.results ?? [],
+      points: points.data.data.results ?? [],
+    }))
+  );
+
+  const dashboard = dashboardApi.data;
+  const k = dashboard?.kpis;
+  const alerts = dashboard?.alerts ?? [];
+  const report = dashboard?.report;
+
+  /** الصالات مع عدد نقاط الفحص لكل صالة (تجميع مخاطب). */
+  const terminalRows = useMemo<TerminalAggregate[]>(() => {
+    const terminals = referenceApi.data?.terminals ?? [];
+    const points = referenceApi.data?.points ?? [];
+    return terminals.map((t) => ({
+      id: t.id,
+      name_ar: t.name_ar,
+      terminal_code: t.terminal_code,
+      point_count: points.filter((p) => p.terminal === t.id).length,
+    }));
+  }, [referenceApi.data]);
+
+  const kpis: Array<{ label: string; value: number; accent: string; icon: ReactElement }> = [
+    { label: 'رحلات اليوم', value: k?.flights_today ?? 0, accent: 'primary.main', icon: <FlightLandIcon /> },
+    { label: 'مسافرون اليوم', value: k?.passengers_today ?? 0, accent: 'info.main', icon: <GroupsIcon /> },
+    { label: 'فحوصات وصول اليوم', value: k?.arrivals_today ?? 0, accent: 'success.main', icon: <FlightTakeoffIcon /> },
+    { label: 'فحوصات مغادرة اليوم', value: k?.departures_today ?? 0, accent: 'warning.main', icon: <FlightLandIcon /> },
+    { label: 'فُحصوا اليوم', value: k?.screened_today ?? 0, accent: 'primary.main', icon: <ManageSearchIcon /> },
+    { label: 'فحوصات معلّقة', value: k?.pending_screenings ?? 0, accent: 'warning.main', icon: <FactCheckIcon /> },
+    { label: 'حالات مشتبهة', value: k?.suspected_cases ?? 0, accent: 'error.main', icon: <WarningAmberIcon /> },
+    { label: 'إحالات العيادة', value: k?.clinic_referrals ?? 0, accent: 'error.light', icon: <HealthAndSafetyIcon /> },
+    { label: 'اكتملت اليوم', value: k?.completed_today ?? 0, accent: 'success.dark', icon: <CheckCircleIcon /> },
+    { label: 'تفتيش طائرات اليوم', value: k?.inspections_today ?? 0, accent: 'primary.dark', icon: <AirplanemodeActiveIcon /> },
+    { label: 'سجلات طاقم اليوم', value: k?.crew_records_today ?? 0, accent: 'info.dark', icon: <AirlineSeatReclineNormalIcon /> },
+    { label: 'تطعيمات', value: k?.vaccinations ?? 0, accent: 'success.main', icon: <VaccinesIcon /> },
+  ];
 
   return (
     <Box>
@@ -88,41 +187,164 @@ const AirportDirectorPage = () => {
         <Grid item xs={12} md={9.8} lg={10.2}>
           {/* KPI */}
           <Grid container ref={register('overview')} data-section="overview" spacing={1.5} sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <EmptyState title="قيد الإعداد" description="المؤشرات التشغيلية تُعرض عند ربط اللوحة بالنظام المصدر." />
+            {dashboardApi.error ? (
+              <Grid item xs={12}><ErrorState compact onRetry={dashboardApi.retry} /></Grid>
+            ) : dashboardApi.loading ? (
+              <Grid item xs={12}><CardsGridSkeleton count={6} /></Grid>
+            ) : (
+              kpis.map((kpi) => (
+                <Grid item key={kpi.label} xs={12} sm={6} md={4} xl={3} data-testid="kpi-card">
+                  <StatCard icon={kpi.icon} label={kpi.label} value={kpi.value} accent={kpi.accent} />
+                </Grid>
+              ))
+            )}
           </Grid>
 
           {/* ===== التنبيهات ===== */}
           <Box ref={register('alerts')} data-section="alerts" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <SectionCard title="🚨 مركز التنبيهات" subtitle="أحداث تستدعي النظر الفوري — الرحلة، الطاقم، الشحن">
-              <EmptyState title="قيد الإعداد" description="التنبيهات تُعرض عند توفر بيانات التنبيهات من النظام المصدر." />
+              {dashboardApi.error ? (
+                <ErrorState compact onRetry={dashboardApi.retry} />
+              ) : dashboardApi.loading ? (
+                <ListSkeleton count={3} />
+              ) : alerts.length === 0 ? (
+                <EmptyState title="لا توجد تنبيهات" description="لا توجد تنبيهات مسجّلة حالياً." />
+              ) : (
+                <Stack spacing={1}>
+                  {alerts.map((a) => (
+                    <Stack key={a.id} direction="row" spacing={1} sx={{ p: 1.25, borderRadius: 2.5, border: '1px solid rgba(16,40,34,0.07)', bgcolor: '#FCFDFD' }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'error.main', mt: 0.6, flexShrink: 0 }} />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                          {a.subject} · {new Date(a.created_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{a.body}</Typography>
+                      </Box>
+                    </Stack>
+                  ))}
+                </Stack>
+              )}
             </SectionCard>
           </Box>
 
           {/* ===== مؤشر العمليات + المختبر ===== */}
           <Box ref={register('operations')} data-section="operations" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="مؤشرات العمليات" subtitle="وصول / مغادرة / فحص / عينات / فسح — اتجاه عام لكل فترة">
-              <EmptyState title="قيد الإعداد" description="مؤشرات العمليات تُعرض عند توفر بيانات النظام المصدر." />
+            <SectionCard title="مؤشرات العمليات" subtitle="وصول / مغادرة / فحص — مؤشرات اليوم الفعلية">
+              {dashboardApi.error ? (
+                <ErrorState compact onRetry={dashboardApi.retry} />
+              ) : dashboardApi.loading ? (
+                <ListSkeleton count={1} />
+              ) : (
+                <Grid container spacing={1.5}>
+                  {[
+                    { label: 'فحوصات وصول اليوم', value: k?.arrivals_today ?? 0, accent: 'success.main' },
+                    { label: 'فحوصات مغادرة اليوم', value: k?.departures_today ?? 0, accent: 'warning.main' },
+                    { label: 'فُحصوا اليوم', value: k?.screened_today ?? 0, accent: 'primary.main' },
+                    { label: 'فحوصات معلّقة', value: k?.pending_screenings ?? 0, accent: 'error.main' },
+                    { label: 'تفتيش طائرات اليوم', value: k?.inspections_today ?? 0, accent: 'info.main' },
+                    { label: 'سجلات طاقم اليوم', value: k?.crew_records_today ?? 0, accent: 'info.dark' },
+                  ].map((op) => (
+                    <Grid item key={op.label} xs={12} sm={6} md={4} xl={2}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 3,
+                          border: '1px solid rgba(16,40,34,0.07)',
+                          bgcolor: '#FCFDFD',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: 'block' }}>
+                          {op.label}
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: op.accent, fontVariantNumeric: 'tabular-nums' }}>
+                          {op.value}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </SectionCard>
           </Box>
 
           {/* ===== لوحة الرحلات ===== */}
           <Box ref={register('flights')} data-section="flights" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <SectionCard title="✈️ لوحة الرحلات" subtitle="الواصلة والمغادرة قيد الفحص الصحي — الحالة الفورية">
-              <EmptyState title="قيد الإعداد" description="بيانات الرحلات تُعرض عند توفر بيانات نظام العمليات الجوية." />
+              <DirectorTable<UpcomingFlight>
+                columns={flightColumns}
+                rows={dashboard?.upcoming_flights ?? []}
+                rowKey={(f) => f.id}
+                loading={dashboardApi.loading}
+                error={dashboardApi.error}
+                onRetry={dashboardApi.retry}
+                emptyTitle="لا رحلات قادمة"
+                emptyDescription="لا توجد رحلات مسجّلة قادمة حالياً."
+              />
             </SectionCard>
           </Box>
 
           {/* ===== فحص المسافرين + بؤر ===== */}
           <Box ref={register('screening')} data-section="screening" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="فحص المسافرين" subtitle="الفحص الصحي بالحرارة وفحوصات الدخول — ورصد الحالات">
-              <EmptyState title="قيد الإعداد" description="بيانات فحص المسافرين تُعرض عند توفرها من النظام المصدر." />
+            <SectionCard title="فحص المسافرين" subtitle="آخر فحوص المسافرين — الحرارة ومستوى الخطر والحالة">
+              <DirectorTable<RecentScreening>
+                columns={screeningColumns}
+                rows={dashboard?.recent_screenings ?? []}
+                rowKey={(s) => s.id}
+                loading={dashboardApi.loading}
+                error={dashboardApi.error}
+                onRetry={dashboardApi.retry}
+                emptyTitle="لا توجد فحوص"
+                emptyDescription="ستظهر فحوصات المسافرين هنا عند تسجيلها."
+              />
+            </SectionCard>
+          </Box>
+
+          {/* ===== تفتيش الطائرات ===== */}
+          <Box ref={register('inspections')} data-section="inspections" sx={{ mb: 3, scrollMarginTop: '80px' }}>
+            <SectionCard title="✈️ تفتيش الطائرات" subtitle="آخر تفتيشات الطائرات — المطابقة والشهادة والتاريخ">
+              <DirectorTable<RecentInspection>
+                columns={inspectionColumns}
+                rows={dashboard?.recent_inspections ?? []}
+                rowKey={(i) => i.id}
+                loading={dashboardApi.loading}
+                error={dashboardApi.error}
+                onRetry={dashboardApi.retry}
+                emptyTitle="لا توجد تفتيشات"
+                emptyDescription="ستظهر تفتيشات الطائرات هنا عند تسجيلها."
+              />
+            </SectionCard>
+          </Box>
+
+          {/* ===== صحة الطاقم ===== */}
+          <Box ref={register('crew')} data-section="crew" sx={{ mb: 3, scrollMarginTop: '80px' }}>
+            <SectionCard title="👨‍✈️ صحة الطاقم" subtitle="آخر سجلات الفحص الصحي لأطقم الرحلات">
+              <DirectorTable<CrewHealthRecord>
+                columns={crewColumns}
+                rows={referenceApi.data?.crew ?? []}
+                rowKey={(c) => c.id}
+                loading={referenceApi.loading}
+                error={referenceApi.error}
+                onRetry={referenceApi.retry}
+                emptyTitle="لا توجد سجلات طاقم"
+                emptyDescription="ستظهر سجلات صحة الطاقم هنا عند تسجيلها."
+              />
             </SectionCard>
           </Box>
 
           {/* ===== أداء المواقع + الإيرادات ===== */}
           <Box ref={register('terminals')} data-section="terminals" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="أداء مواقع المطار" subtitle="المباني والشحن — الإشغال والالتزام بمعايير الفحص">
-              <EmptyState title="قيد الإعداد" description="أداء مواقع المطار يُعرض عند توفر بيانات النظام المصدر." />
+            <SectionCard title="أداء مواقع المطار" subtitle="الصالات — عدد نقاط الفحص لكل صالة">
+              <DirectorTable<TerminalAggregate>
+                columns={terminalColumns}
+                rows={terminalRows}
+                rowKey={(t) => t.id}
+                loading={referenceApi.loading}
+                error={referenceApi.error}
+                onRetry={referenceApi.retry}
+                emptyTitle="لا توجد صالات"
+                emptyDescription="ستظهر صالات المطار ونقاط الفحص هنا عند إضافتها."
+              />
             </SectionCard>
           </Box>
 
@@ -135,7 +357,12 @@ const AirportDirectorPage = () => {
 
           {/* ===== التقارير ===== */}
           <Box ref={register('reports')} data-section="reports" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <ReportsSection />
+            <ReportsSection
+              report={report}
+              loading={dashboardApi.loading}
+              error={dashboardApi.error}
+              onRetry={dashboardApi.retry}
+            />
           </Box>
 
           {/* ===== الموظفون ===== */}
@@ -174,15 +401,182 @@ const AirportDirectorPage = () => {
   );
 };
 
+/* ============================= تسميات الحالة ============================= */
+
+interface ChipMeta {
+  label: string;
+  tone: StatusTone;
+}
+
+const chipFor = (metas: Record<string, ChipMeta>, code: string) => {
+  const meta = metas[code];
+  return <StatusChip label={meta?.label ?? code} tone={meta?.tone ?? 'neutral'} />;
+};
+
+const RISK_META: Record<string, ChipMeta> = {
+  GREEN: { label: 'أخضر', tone: 'success' },
+  YELLOW: { label: 'أصفر', tone: 'warning' },
+  RED: { label: 'أحمر', tone: 'error' },
+};
+
+const SCREENING_STATUS_META: Record<string, ChipMeta> = {
+  PENDING: { label: 'قيد الانتظار', tone: 'warning' },
+  CLEARED: { label: 'مؤهل', tone: 'success' },
+  QUARANTINED: { label: 'محجور', tone: 'error' },
+  REFERRED: { label: 'مُحال', tone: 'info' },
+};
+
+const INSPECTION_STATUS_META: Record<string, ChipMeta> = {
+  PASSED: { label: 'نجح', tone: 'success' },
+  FAILED: { label: 'فشل', tone: 'error' },
+  CONDITIONAL: { label: 'مشروط', tone: 'warning' },
+};
+
+const HEALTH_STATUS_META: Record<string, ChipMeta> = {
+  FIT: { label: 'لائق', tone: 'success' },
+  UNFIT: { label: 'غير لائق', tone: 'error' },
+  UNDER_OBSERVATION: { label: 'قيد المراقبة', tone: 'warning' },
+};
+
+const dateTime = (iso: string) => new Date(iso).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+
+/* ============================= أعمدة الجداول ============================= */
+
+const flightColumns: DataTableColumn<UpcomingFlight>[] = [
+  {
+    key: 'flight_number',
+    label: 'الرحلة',
+    render: (f) => <Box sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{f.flight_number}</Box>,
+  },
+  { key: 'origin_country', label: 'المنشأ' },
+  { key: 'scheduled_arrival', label: 'موعد الوصول', render: (f) => dateTime(f.scheduled_arrival) },
+  { key: 'status', label: 'الحالة', render: (f) => <StatusChip label={f.status} tone="info" /> },
+];
+
+const screeningColumns: DataTableColumn<RecentScreening>[] = [
+  {
+    key: 'traveler_name',
+    label: 'المسافر',
+    render: (s) => <Box sx={{ fontWeight: 700 }}>{s.traveler_name}</Box>,
+  },
+  { key: 'risk_level', label: 'مستوى الخطر', render: (s) => chipFor(RISK_META, s.risk_level) },
+  { key: 'status', label: 'الحالة', render: (s) => chipFor(SCREENING_STATUS_META, s.status) },
+  { key: 'screened_at', label: 'وقت الفحص', render: (s) => dateTime(s.screened_at) },
+];
+
+const inspectionColumns: DataTableColumn<RecentInspection>[] = [
+  {
+    key: 'aircraft_registration',
+    label: 'تسجيل الطائرة',
+    render: (i) => <Box sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{i.aircraft_registration}</Box>,
+  },
+  { key: 'flight_number', label: 'الرحلة', render: (i) => <Box sx={{ fontFamily: 'monospace' }}>{i.flight_number}</Box> },
+  { key: 'overall_status', label: 'الحالة العامة', render: (i) => chipFor(INSPECTION_STATUS_META, i.overall_status) },
+  {
+    key: 'certificate_issued',
+    label: 'الشهادة',
+    render: (i) => (
+      <StatusChip label={i.certificate_issued ? 'صدرت' : 'لم تصدر'} tone={i.certificate_issued ? 'success' : 'neutral'} />
+    ),
+  },
+  { key: 'inspection_date', label: 'تاريخ التفتيش', render: (i) => dateTime(i.inspection_date) },
+];
+
+const crewColumns: DataTableColumn<CrewHealthRecord>[] = [
+  { key: 'crew_name', label: 'الطاقم', render: (c) => <Box sx={{ fontWeight: 700 }}>{c.crew_name || '—'}</Box> },
+  { key: 'flight_number', label: 'الرحلة', render: (c) => <Box sx={{ fontFamily: 'monospace' }}>{c.flight_number || '—'}</Box> },
+  { key: 'health_status', label: 'الحالة الصحية', render: (c) => chipFor(HEALTH_STATUS_META, c.health_status) },
+  { key: 'temperature', label: 'درجة الحرارة', align: 'center', render: (c) => (c.temperature ?? 0) > 0 ? `${c.temperature}°` : '—' },
+  { key: 'next_clearance_date', label: 'التصريح القادم', render: (c) => c.next_clearance_date || '—' },
+];
+
+interface TerminalAggregate {
+  id: string;
+  name_ar: string;
+  terminal_code: string;
+  point_count: number;
+}
+
+const terminalColumns: DataTableColumn<TerminalAggregate>[] = [
+  { key: 'name_ar', label: 'الصالة', render: (t) => <Box sx={{ fontWeight: 700 }}>{t.name_ar}</Box> },
+  { key: 'terminal_code', label: 'الرمز', render: (t) => <Box sx={{ fontFamily: 'monospace' }}>{t.terminal_code}</Box> },
+  {
+    key: 'point_count',
+    label: 'نقاط الفحص',
+    align: 'center',
+    render: (t) => <StatusChip label={String(t.point_count)} tone={t.point_count > 0 ? 'success' : 'neutral'} />,
+  },
+];
+
+/* ============================= جدول مساعد ============================= */
+
+interface DirectorTableProps<T> {
+  columns: DataTableColumn<T>[];
+  rows: T[];
+  rowKey: (row: T) => string;
+  loading?: boolean;
+  error?: unknown;
+  onRetry?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
+}
+
+const DirectorTable = <T,>({
+  columns,
+  rows,
+  rowKey,
+  loading = false,
+  error,
+  onRetry,
+  emptyTitle,
+  emptyDescription,
+}: DirectorTableProps<T>) => {
+  if (error) return <ErrorState compact onRetry={onRetry} />;
+  return (
+    <DataTable<T>
+      columns={columns}
+      rows={rows}
+      rowKey={rowKey}
+      count={rows.length}
+      page={1}
+      rowsPerPage={Math.max(rows.length, 10)}
+      hidePagination
+      loading={loading}
+      emptyTitle={emptyTitle}
+      emptyDescription={emptyDescription}
+    />
+  );
+};
+
 /* ============================= مكونات فرعية ============================= */
 
-const ReportsSection = () => {
+const ReportsSection = ({
+  report,
+  loading,
+  error,
+  onRetry,
+}: {
+  report?: AirportDashboardReport;
+  loading: boolean;
+  error: unknown;
+  onRetry: () => void;
+}) => {
   const [tab, setTab] = useState(0);
+
   const tabs = [
     { label: '📅 يومي', panel: <div>التقرير اليومي</div> },
     { label: '📆 أسبوعي', panel: <div>التقرير الأسبوعي</div> },
     { label: '📊 شهري', panel: <div>التقرير الشهري</div> },
   ];
+
+  const summary = [
+    { label: 'الرحلات', value: report?.flights ?? 0 },
+    { label: 'المسافرون', value: report?.travelers ?? 0 },
+    { label: 'فُحصوا', value: report?.screened ?? 0 },
+    { label: 'الإحالات', value: report?.referrals ?? 0 },
+    { label: 'مشتبه بها', value: report?.suspected ?? 0 },
+  ];
+
   return (
     <SectionCard
       title="مركز التقارير"
@@ -194,7 +588,39 @@ const ReportsSection = () => {
         </Stack>
       }
     >
-      <PageTabs value={tab} onChange={setTab} tabs={tabs} keepMounted />
+      {error ? (
+        <ErrorState compact onRetry={onRetry} />
+      ) : loading ? (
+        <ListSkeleton count={2} />
+      ) : (
+        <>
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            {summary.map((item) => (
+              <Grid item xs={6} sm={4} md={2.4} key={item.label}>
+                <Box sx={{ p: 1.5, borderRadius: 3, border: '1px solid rgba(16,40,34,0.07)', bgcolor: '#FCFDFD' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{item.label}</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{item.value}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
+            توزيع الفحوص حسب الرحلة
+          </Typography>
+          <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mb: 3 }}>
+            {(report?.screenings_by_flight ?? []).length === 0 ? (
+              <Typography variant="caption" color="text.secondary">لا توجد فحوص مسجّلة اليوم.</Typography>
+            ) : (
+              (report?.screenings_by_flight ?? []).map((r) => (
+                <StatusChip key={r.flight_number} label={`${r.flight_number} · ${r.count}`} tone="primary" />
+              ))
+            )}
+          </Stack>
+
+          <PageTabs value={tab} onChange={setTab} tabs={tabs} keepMounted />
+        </>
+      )}
     </SectionCard>
   );
 };
