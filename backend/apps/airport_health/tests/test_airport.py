@@ -7,6 +7,8 @@ from rest_framework.test import APIClient
 from apps.airport_health.models import (
     AircraftInspection,
     AirportScreening,
+    AirportStaff,
+    AirportStaffRole,
     AirportTerminal,
     CrewHealthRecord,
     ScreeningPoint,
@@ -14,6 +16,8 @@ from apps.airport_health.models import (
 from apps.airport_health.tests.conftest import (
     assign_airport_inspector,
     assign_carrier_rep,
+    assign_role,
+    ensure_role,
 )
 from apps.accounts.models import RoleAssignment
 from apps.carriers.models import Carrier, Flight
@@ -588,6 +592,123 @@ def test_dashboard_kpis_date_boundary_uses_local_date(api_client, officer, fligh
 
 
 def test_dashboard_staff_is_empty_array_in_mvp(api_client, officer):
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    assert data['staff'] == []
+
+
+# ---------------------------------------------------------------------------
+# PR-P1: كادر المطار — نموذج AirportStaff + واجهة CRUD + تعبئة dashboard.staff.
+# يعكس `borders_health.BorderStaff` بنطاق المنفذ الجوي.
+# ---------------------------------------------------------------------------
+
+
+def _ensure_airport_staff_manager_role():
+    return ensure_role(
+        'AIRPORT_STAFF_MANAGER',
+        [('airport_staff', action) for action in ('view', 'add', 'edit', 'delete')],
+    )
+
+
+@pytest.fixture
+def staff_manager(login_client):
+    def assign(user):
+        assign_role(user, _ensure_airport_staff_manager_role())
+
+    return login_client('staff-manager@nqp.gov.sd', assign=assign)
+
+
+@pytest.fixture
+def port_scoped_staff_manager(login_client, port):
+    def assign(user):
+        assign_role(
+            user,
+            _ensure_airport_staff_manager_role(),
+            scope_type=RoleAssignment.ScopeType.PORT,
+            scope_id=port.id,
+        )
+
+    return login_client('staff-port-scoped@nqp.gov.sd', assign=assign)
+
+
+def test_airport_staff_create_and_list(staff_manager, port):
+    client, _user = staff_manager
+    response = client.post(
+        '/api/v1/airport/staff/',
+        {
+            'airport': str(port.id),
+            'role': AirportStaffRole.DIRECTOR,
+            'full_name': 'د. عبد الله محمد',
+            'email': 'director@nqp.gov.sd',
+            'phone': '0912345678',
+            'shift': 'MORNING',
+        },
+        format='json',
+    )
+    assert response.status_code == 201, response.content
+    body = response.json()['data']
+    assert body['role'] == 'DIRECTOR'
+    assert body['role_label'] == 'مدير المطار'
+    assert body['airport_name'] == 'مطار الخرطوم'
+    assert body['is_active'] is True
+
+    listed = client.get('/api/v1/airport/staff/')
+    assert listed.status_code == 200
+    payload = listed.json()['data']
+    assert payload['count'] == 1
+    row = payload['results'][0]
+    assert row['full_name'] == 'د. عبد الله محمد'
+    assert row['role_label'] == 'مدير المطار'
+
+
+def test_airport_staff_scoped_by_port(port_scoped_staff_manager, port, other_port):
+    client, _user = port_scoped_staff_manager
+    own = AirportStaff.objects.create(
+        airport=port, role=AirportStaffRole.INSPECTOR, full_name='مفتش الخرطوم'
+    )
+    foreign = AirportStaff.objects.create(
+        airport=other_port, role=AirportStaffRole.INSPECTOR, full_name='مفتش بورتسودان'
+    )
+    response = client.get('/api/v1/airport/staff/')
+    assert response.status_code == 200
+    assert {row['id'] for row in response.json()['data']['results']} == {str(own.id)}
+    assert client.get(f'/api/v1/airport/staff/{foreign.id}/').status_code == 404
+
+
+def test_airport_staff_permission_denied_for_traveler(login_client):
+    client, _user = login_client('traveler-no-airport-role@nqp.gov.sd')
+    assert client.get('/api/v1/airport/staff/').status_code == 403
+    assert client.post('/api/v1/airport/staff/', {}, format='json').status_code == 403
+
+
+def test_dashboard_staff_returns_airport_staff(api_client, officer, port):
+    AirportStaff.objects.create(
+        airport=port,
+        role=AirportStaffRole.DIRECTOR,
+        full_name='د. سارة أحمد',
+        email='sara@nqp.gov.sd',
+        phone='0911000000',
+        shift='MORNING',
+    )
+    AirportStaff.objects.create(
+        airport=port,
+        role=AirportStaffRole.SCREENER,
+        full_name='أحمد علي',
+        is_active=False,
+    )
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    assert len(data['staff']) == 2
+    # الترتيب: النشط أولاً، ثم الدور تصاعدياً، ثم الاسم.
+    assert data['staff'][0]['full_name'] == 'د. سارة أحمد'
+    assert data['staff'][0]['role_label'] == 'مدير المطار'
+    assert data['staff'][0]['is_active'] is True
+    assert data['staff'][1]['full_name'] == 'أحمد علي'
+    assert data['staff'][1]['is_active'] is False
+    assert set(data['staff'][0]) == {
+        'id', 'full_name', 'role', 'role_label', 'email', 'phone', 'shift', 'is_active',
+    }
+
+
+def test_dashboard_staff_is_empty_when_no_staff(api_client, officer):
     data = api_client.get('/api/v1/airport/dashboard/').json()['data']
     assert data['staff'] == []
 

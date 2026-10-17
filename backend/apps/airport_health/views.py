@@ -23,6 +23,7 @@ from apps.travelers.models import Traveler
 from .models import (
     AircraftInspection,
     AirportScreening,
+    AirportStaff,
     AirportTerminal,
     CrewHealthRecord,
     ScreeningPoint,
@@ -31,6 +32,7 @@ from .serializers import (
     AircraftInspectionSerializer,
     AirportDashboardSerializer,
     AirportScreeningSerializer,
+    AirportStaffSerializer,
     AirportTerminalSerializer,
     CrewHealthRecordSerializer,
     PortSerializer,
@@ -239,6 +241,19 @@ class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     port_reference_field = 'flight'
 
 
+class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
+    queryset = AirportStaff.objects.select_related('airport', 'user').all()
+    serializer_class = AirportStaffSerializer
+    permission_resource = 'airport_staff'
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['full_name', 'email', 'phone', 'role']
+    filter_fields = ['airport', 'user', 'role', 'is_active']
+    ordering_fields = ['full_name', 'role', 'created_at']
+    port_field = 'airport'
+    port_reference_field = 'airport'
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
+
+
 class AirportDashboardViewSet(viewsets.ViewSet):
     """واجهة لوحة مفتش الحجر الصحي في المطار (تجميع عام لكل المنافذ الجوية)."""
 
@@ -278,6 +293,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
         crew_records = self._scope_ports(
             CrewHealthRecord.objects.all(), port_ids, 'flight__destination_port'
         )
+        staff = self._scope_ports(AirportStaff.objects.all(), port_ids, 'airport')
 
         flights_today = flights.filter(scheduled_arrival__date=today).count()
         passengers_today = Traveler.objects.filter(created_at__date=today).count()
@@ -431,7 +447,19 @@ class AirportDashboardViewSet(viewsets.ViewSet):
                 'report': report,
                 'recent_inspections': recent_inspections,
                 'recent_screenings': recent_screenings,
-                'staff': [],
+                'staff': [
+                    {
+                        'id': str(m.id),
+                        'full_name': m.full_name,
+                        'role': m.role,
+                        'role_label': m.get_role_display(),
+                        'email': m.email,
+                        'phone': m.phone,
+                        'shift': m.shift,
+                        'is_active': m.is_active,
+                    }
+                    for m in staff.order_by('-is_active', 'role', 'full_name')[:20]
+                ],
             })
         )
 

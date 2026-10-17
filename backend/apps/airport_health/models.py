@@ -162,3 +162,45 @@ class CrewHealthRecord(BaseModel):
 
     def __str__(self):
         return f'{self.crew_id} - {self.health_status}'
+
+
+class AirportStaffRole(models.TextChoices):
+    DIRECTOR = 'DIRECTOR', 'مدير المطار'
+    INSPECTOR = 'INSPECTOR', 'مفتش طائرات'
+    SCREENER = 'SCREENER', 'فاحص مسافرين'
+    LAB_TECH = 'LAB_TECH', 'فني مختبر'
+    CLINIC_DOCTOR = 'CLINIC_DOCTOR', 'طبيب عيادة'
+    ADMIN = 'ADMIN', 'إداري'
+    OTHER = 'OTHER', 'أخرى'
+
+
+class AirportStaff(BaseModel):
+    """كادر صحي بالمطار — يعكس `borders_health.BorderStaff` بنطاق المنفذ الجوي."""
+
+    airport = models.ForeignKey(
+        'masterdata.EntryPoint', on_delete=models.CASCADE,
+        related_name='airport_staff', verbose_name='المطار',
+    )
+    user = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='airport_staff_roles', verbose_name='المستخدم',
+    )
+    role = models.CharField(
+        max_length=32, choices=AirportStaffRole.choices, verbose_name='الدور',
+    )
+    full_name = models.CharField(max_length=200, verbose_name='الاسم الكامل')
+    email = models.EmailField(blank=True, verbose_name='البريد الإلكتروني')
+    phone = models.CharField(max_length=20, blank=True, verbose_name='الهاتف')
+    shift = models.CharField(max_length=32, blank=True, verbose_name='الوردية')
+    is_active = models.BooleanField(default=True, verbose_name='نشط')
+    notes = models.TextField(blank=True, verbose_name='ملاحظات')
+
+    class Meta:
+        ordering = ['airport', 'role', 'full_name']
+        unique_together = ['airport', 'user', 'role']
+        indexes = [models.Index(fields=['airport', 'role'])]
+        verbose_name = 'موظف مطار'
+        verbose_name_plural = 'موظفو المطارات'
+
+    def __str__(self):
+        return f'{self.airport.code} - {self.full_name} - {self.role}'
