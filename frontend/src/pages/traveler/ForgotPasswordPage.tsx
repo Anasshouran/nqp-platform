@@ -15,6 +15,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import BrandLogo from '../../components/common/BrandLogo';
 import { travelerForgotPassword } from '../../api/endpoints/travelers';
+import { extractErrorMessage, notifyError } from '../../utils/toast';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -31,8 +32,10 @@ const ForgotPasswordPage = () => {
       await travelerForgotPassword(email.trim());
       setSuccess(true);
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setSuccess(true);
+      const message = extractErrorMessage(err, 'تعذر إرسال رابط إعادة التعيين');
+      setSuccess(false);
+      setError(message);
+      notifyError(message);
     } finally {
       setSubmitting(false);
     }
