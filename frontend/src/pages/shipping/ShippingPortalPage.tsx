@@ -5,6 +5,7 @@ import { VesselVisitList } from './components/VesselVisitList';
 import { PreArrivalList } from './components/PreArrivalList';
 import { ClearanceList } from './components/ClearanceList';
 import { DepartureList } from './components/DepartureList';
+import { DocumentList } from './components/DocumentList';
 import { NotificationList } from './components/NotificationList';
 import { AgentManagement } from './components/AgentManagement';
 import { VesselRelationships } from './components/VesselRelationships';
@@ -26,6 +27,7 @@ const ShippingPortalPage = () => {
     case 'pre-arrivals': return <PreArrivalList />;
     case 'clearance': return <ClearanceList />;
     case 'departures': return <DepartureList />;
+    case 'documents': return <DocumentList />;
     case 'notifications': return <NotificationList />;
     case 'agents': return <AgentManagement />;
     case 'relationships': return <VesselRelationships />;

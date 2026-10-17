@@ -1,44 +1,63 @@
 /**
- * المستندات — typed carrier documents registry.
+ * المستندات — vessel documents registry for the shipping portal.
  *
- * Built on the typed `carriers.ts` layer (`getCarrierDocuments`).
- * `useServerTable` drives pagination, server-side search and the
- * `document_type` filter. Read-only.
+ * Built on the typed `shipping.ts` layer (`getVesselDocuments` /
+ * `createVesselDocument` / `deleteVesselDocument`). `useServerTable` drives
+ * pagination, server-side search and the `document_type` filter.
+ *
+ * Upload is a raw `<input type="file">` inside a `FormDialog` (no extra deps):
+ * the client enforces the same 10 MB cap and MIME allow-list as the backend.
  */
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   PageHeader,
   DataTable,
+  StatusChip,
+  FormDialog,
+  FormTextField,
+  FormSelect,
+  ConfirmDialog,
 } from '../../../components/uikit';
 import type { DataTableColumn, DataTableFilterDef } from '../../../components/uikit';
 import { useServerTable } from '../../../hooks/useServerTable';
-import { getCarrierDocuments } from '../../../api/endpoints/carriers';
-import type { CarrierDocument } from '../../../types/carrier';
+import {
+  getVesselDocuments,
+  createVesselDocument,
+  deleteVesselDocument,
+  VESSEL_DOCUMENT_TYPES,
+  VESSEL_DOCUMENT_TYPE_LABELS,
+} from '../../../api/endpoints/shipping';
+import type { VesselDocument, VesselDocumentType } from '../../../api/endpoints/shipping';
+import { getVesselVisits } from '../../../api/endpoints/portHealth';
+import { notifyError, notifySuccess } from '../../../utils/toast';
 
-const TYPE_META: Record<string, string> = {
-  AIRCRAFT_DOCUMENT: 'مستند طائرة',
-  FLIGHT_DOCUMENT: 'مستند رحلة',
-  MANIFEST_DOCUMENT: 'مستند كشف',
-  HEALTH_DOCUMENT: 'مستند صحي',
-  LICENSE: 'رخصة',
-  CERTIFICATE: 'شهادة',
-  OTHER: 'أخرى',
-};
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const ACCEPT = '.pdf,.png,.jpg,.jpeg,.csv,.xls,.xlsx';
+const ALLOWED_MIME = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
 
-const TYPE_OPTIONS = Object.keys(TYPE_META).map((value) => ({
+const TYPE_OPTIONS = VESSEL_DOCUMENT_TYPES.map((value) => ({
   value,
-  label: TYPE_META[value] ?? value,
+  label: VESSEL_DOCUMENT_TYPE_LABELS[value],
 }));
 
-const typeLabel = (d: CarrierDocument) => d.document_type_label || TYPE_META[d.document_type] || d.document_type;
+const typeLabel = (d: VesselDocument) =>
+  d.document_type_label || VESSEL_DOCUMENT_TYPE_LABELS[d.document_type] || d.document_type;
 
 const formatBytes = (bytes?: number) => {
   if (!bytes || bytes <= 0) return '—';
@@ -60,15 +79,13 @@ const formatDate = (iso?: string | null) => {
   });
 };
 
-const Row = ({ label, value }: { label: string; value: ReactNode }) => (
-  <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'space-between' }}>
-    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{label}</Typography>
-    <Typography variant="body2" sx={{ fontWeight: 700, textAlign: 'left' }}>{value || '—'}</Typography>
-  </Stack>
-);
+interface VesselOption {
+  value: string;
+  label: string;
+}
 
 export const DocumentList = () => {
-  const table = useServerTable<CarrierDocument>({ fetchData: getCarrierDocuments });
+  const table = useServerTable<VesselDocument>({ fetchData: getVesselDocuments });
   const {
     rows, count, loading, error, refresh,
     page, rowsPerPage, pageSizeOptions, setPage, setRowsPerPage,
@@ -76,9 +93,44 @@ export const DocumentList = () => {
   } = table;
 
   const [documentType, setDocumentType] = useState('');
-  const [detail, setDetail] = useState<CarrierDocument | null>(null);
 
-  const columns: DataTableColumn<CarrierDocument>[] = useMemo(
+  // Upload dialog state
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState('');
+  const [docType, setDocType] = useState<VesselDocumentType>('CARGO_MANIFEST');
+  const [vesselVisit, setVesselVisit] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState('');
+  const [vesselOptions, setVesselOptions] = useState<VesselOption[]>([]);
+
+  // Delete confirmation state
+  const [pendingDelete, setPendingDelete] = useState<VesselDocument | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!uploadOpen) return undefined;
+    let active = true;
+    getVesselVisits({ page_size: 100 })
+      .then((res) => {
+        if (!active) return;
+        const results = res.data.data.results ?? [];
+        setVesselOptions(
+          results.map((v) => {
+            const name = v.vessel_name || v.id;
+            return { value: v.id, label: v.vessel_imo ? `${name} (${v.vessel_imo})` : name };
+          }),
+        );
+      })
+      .catch(() => {
+        if (active) setVesselOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [uploadOpen]);
+
+  const columns: DataTableColumn<VesselDocument>[] = useMemo(
     () => [
       {
         key: 'title',
@@ -93,18 +145,25 @@ export const DocumentList = () => {
       {
         key: 'document_type',
         label: 'النوع',
-        render: (d) => typeLabel(d),
+        render: (d) => <StatusChip label={typeLabel(d)} tone="neutral" />,
       },
       {
-        key: 'carrier_name',
-        label: 'شركة النقل',
-        render: (d) => d.carrier_name || '—',
+        key: 'vessel',
+        label: 'السفينة',
+        render: (d) => (
+          <Box>
+            <Typography sx={{ fontWeight: 600 }}>{d.vessel_name || '—'}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+              {d.vessel_imo || '—'}
+            </Typography>
+          </Box>
+        ),
         hideOnMobile: true,
       },
       {
-        key: 'flight_number',
-        label: 'الرحلة',
-        render: (d) => d.flight_number || '—',
+        key: 'uploaded_by_name',
+        label: 'رفعها',
+        render: (d) => d.uploaded_by_name || '—',
         hideOnMobile: true,
       },
       {
@@ -136,20 +195,110 @@ export const DocumentList = () => {
     },
   ];
 
-  const renderActions = (d: CarrierDocument) => (
-    <Button size="small" variant="text" onClick={() => setDetail(d)}>
-      عرض
-    </Button>
+  const openUpload = () => {
+    setTitle('');
+    setDocType('CARGO_MANIFEST');
+    setVesselVisit('');
+    setFile(null);
+    setFileError('');
+    setUploadOpen(true);
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0] ?? null;
+    if (!selected) {
+      setFile(null);
+      setFileError('');
+      return;
+    }
+    if (selected.size > MAX_FILE_BYTES) {
+      setFile(null);
+      setFileError('حجم الملف يتجاوز 10MB');
+      return;
+    }
+    if (selected.type && !ALLOWED_MIME.has(selected.type)) {
+      setFile(null);
+      setFileError('صيغة الملف غير مدعومة');
+      return;
+    }
+    setFile(selected);
+    setFileError('');
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setFileError('الملف مطلوب');
+      return;
+    }
+    if (!vesselVisit || !title.trim()) return;
+    setSaving(true);
+    try {
+      await createVesselDocument({
+        vessel_visit: vesselVisit,
+        document_type: docType,
+        title: title.trim(),
+        file,
+      });
+      notifySuccess('تم رفع المستند');
+      setUploadOpen(false);
+      refresh();
+    } catch {
+      notifyError('تعذر رفع المستند');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      await deleteVesselDocument(pendingDelete.id);
+      notifySuccess('تم حذف المستند');
+      setPendingDelete(null);
+      refresh();
+    } catch {
+      notifyError('تعذر حذف المستند');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openFile = (d: VesselDocument) => {
+    if (!d.file) return;
+    window.open(d.file, '_blank', 'noopener,noreferrer');
+  };
+
+  const renderActions = (d: VesselDocument) => (
+    <>
+      <Tooltip title="عرض">
+        <IconButton size="small" aria-label="عرض" onClick={() => openFile(d)}>
+          <OpenInNewIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="حذف">
+        <IconButton size="small" color="error" aria-label="حذف" onClick={() => setPendingDelete(d)}>
+          <DeleteOutlineIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </>
   );
+
+  const canSubmit = Boolean(vesselVisit && title.trim() && file && !fileError);
 
   return (
     <Box>
       <PageHeader
         eyebrow="الشحن البحري"
         title="المستندات"
-        subtitle="مستندات شركات النقل والرحلات"
+        subtitle="مستندات السفن المرفقة بزيارات الموانئ"
+        action={(
+          <Button variant="contained" startIcon={<UploadFileIcon />} onClick={openUpload}>
+            تحميل مستند
+          </Button>
+        )}
       />
-      <DataTable<CarrierDocument>
+      <DataTable<VesselDocument>
         columns={columns}
         rows={rows}
         rowKey={(d) => d.id}
@@ -163,10 +312,10 @@ export const DocumentList = () => {
         subtitle={`${count} مستند`}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="ابحث بالعنوان أو الشركة أو رقم الرحلة..."
+        searchPlaceholder="ابحث بالعنوان أو اسم الملف..."
         filters={filters}
         actions={renderActions}
-        actionsLabel="عرض"
+        actionsLabel="إجراءات"
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
@@ -174,28 +323,75 @@ export const DocumentList = () => {
         emptyDescription="المستندات المرفوعة تظهر هنا"
       />
 
-      {/* Detail */}
-      <Dialog open={detail !== null} onClose={() => setDetail(null)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>تفاصيل المستند</DialogTitle>
-        <DialogContent dividers>
-          {detail && (
-            <Stack spacing={1.25}>
-              <Row label="العنوان" value={detail.title} />
-              <Row label="اسم الملف" value={detail.original_filename} />
-              <Row label="النوع" value={typeLabel(detail)} />
-              <Row label="شركة النقل" value={detail.carrier_name} />
-              <Row label="الرحلة" value={detail.flight_number} />
-              <Row label="نوع الملف" value={detail.mime_type} />
-              <Row label="الحجم" value={formatBytes(detail.file_size)} />
-              <Row label="تاريخ الرفع" value={formatDate(detail.created_at)} />
-              <Row label="آخر تحديث" value={formatDate(detail.updated_at)} />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetail(null)}>إغلاق</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Upload */}
+      <FormDialog
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onSubmit={handleUpload}
+        title="رفع مستند جديد"
+        subtitle="أرفق مستنداً بزيارة سفينة قائمة"
+        submitLabel="رفع المستند"
+        cancelLabel="إلغاء"
+        loading={saving}
+        submitDisabled={!canSubmit}
+      >
+        <Stack spacing={2}>
+          <FormTextField
+            label="العنوان"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            requiredMark
+            placeholder="مثال: بيان الحمولة — مايو"
+          />
+          <FormSelect
+            label="نوع المستند"
+            value={docType}
+            onChange={(value) => setDocType(value as VesselDocumentType)}
+            options={TYPE_OPTIONS}
+            requiredMark
+          />
+          <FormSelect
+            label="زيارة السفينة"
+            value={vesselVisit}
+            onChange={setVesselVisit}
+            options={vesselOptions}
+            requiredMark
+            placeholder={vesselOptions.length ? 'اختر الزيارة' : 'جارٍ التحميل...'}
+          />
+          <Box>
+            <Button variant="outlined" component="label" startIcon={<UploadFileIcon />} fullWidth>
+              اختر ملفاً
+              <input
+                type="file"
+                hidden
+                accept={ACCEPT}
+                aria-label="الملف"
+                onChange={handleFileChange}
+              />
+            </Button>
+            <Typography
+              variant="caption"
+              sx={{ display: 'block', mt: 0.75, color: fileError ? 'error.main' : 'text.secondary' }}
+            >
+              {fileError || file?.name || 'PDF أو صورة أو CSV/XLS — بحد أقصى 10MB'}
+            </Typography>
+          </Box>
+        </Stack>
+      </FormDialog>
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        tone="error"
+        title="حذف المستند"
+        message={pendingDelete ? `هل تريد حذف "${pendingDelete.title || pendingDelete.original_filename}"؟` : ''}
+        confirmLabel="تأكيد الحذف"
+        cancelLabel="إلغاء"
+      />
     </Box>
   );
 };
