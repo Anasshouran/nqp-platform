@@ -7,6 +7,7 @@ from apps.shipping.models import (
     PreArrivalNotification,
     ShippingAgent,
     VesselCompanyRelationship,
+    VesselDocument,
     ShippingAuditLog,
 )
 from apps.carriers.models import Carrier
@@ -276,3 +277,63 @@ class ShippingCompanyAdminWriteSerializer(serializers.ModelSerializer):
             'vessels_count', 'agents_count',
         ]
         read_only_fields = ['id', 'vessels_count', 'agents_count']
+
+
+class VesselDocumentSerializer(serializers.ModelSerializer):
+    """مستند سفينة — يُرسل الملف كمحتوى متعدد الأجزاء ويُثرى ببيانات مرجعية للعرض."""
+
+    vessel_name = serializers.CharField(source='vessel_visit.vessel.vessel_name', read_only=True)
+    vessel_imo = serializers.CharField(source='vessel_visit.vessel.imo_number', read_only=True)
+    document_type_label = serializers.CharField(source='get_document_type_display', read_only=True)
+    uploaded_by_name = serializers.CharField(source='uploaded_by.full_name', read_only=True, default='')
+
+    class Meta:
+        model = VesselDocument
+        fields = [
+            'id', 'vessel_visit', 'vessel_name', 'vessel_imo',
+            'document_type', 'document_type_label', 'title',
+            'file', 'original_filename', 'mime_type', 'file_size',
+            'uploaded_by', 'uploaded_by_name',
+            'pre_arrival', 'clearance_decision',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['original_filename', 'mime_type', 'file_size', 'uploaded_by']
+
+    def validate_file(self, value):
+        if not value:
+            raise serializers.ValidationError('الملف مطلوب')
+        if value.size > 10 * 1024 * 1024:
+            raise serializers.ValidationError('حجم الملف يتجاوز 10MB')
+        allowed = {
+            'application/pdf', 'image/jpeg', 'image/png', 'text/csv',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        }
+        if getattr(value, 'content_type', None) and value.content_type not in allowed:
+            raise serializers.ValidationError('صيغة الملف غير مدعومة')
+        return value
+
+    def validate_vessel_visit(self, visit):
+        """Reject visits the caller may not attach documents to.
+
+        Mirrors :class:`PreArrivalNotificationSerializer`: company/agent scope
+        and port operability are enforced server-side, so a client cannot attach
+        a document to another tenant's vessel by posting a foreign id.
+        """
+        from apps.shipping.views import assert_visit_filable
+
+        assert_visit_filable(
+            self.context['request'].user, visit, action='attach a vessel document',
+        )
+        return visit
+
+    def create(self, validated_data):
+        upload = validated_data.get('file')
+        if upload:
+            validated_data['original_filename'] = upload.name
+            validated_data['mime_type'] = getattr(upload, 'content_type', '') or ''
+            validated_data['file_size'] = upload.size
+        request = self.context.get('request')
+        if request is not None and request.user and request.user.is_authenticated:
+            validated_data['uploaded_by'] = request.user
+        return super().create(validated_data)

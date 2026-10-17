@@ -9,6 +9,7 @@ from .views import (
     PreArrivalNotificationViewSet,
     VesselCompanyRelationshipViewSet,
     VesselDepartureView,
+    VesselDocumentViewSet,
     VesselVisitRequestView,
     ShippingAuditLogViewSet,
 )
@@ -19,6 +20,7 @@ router.register(r'agents', ShippingAgentViewSet, basename='shipping-agent')
 router.register(r'pre-arrivals', PreArrivalNotificationViewSet, basename='pre-arrival-notification')
 router.register(r'clearance-decisions', PortClearanceDecisionViewSet, basename='port-clearance-decision')
 router.register(r'vessel-relationships', VesselCompanyRelationshipViewSet, basename='vessel-company-relationship')
+router.register(r'documents', VesselDocumentViewSet, basename='vessel-document')
 router.register(r'audit-logs', ShippingAuditLogViewSet, basename='shipping-audit-log')
 
 # Single write path for a clearance decision, always against an explicit port call.

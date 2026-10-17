@@ -4,6 +4,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
 from django.contrib.auth import get_user_model
@@ -23,6 +24,7 @@ from apps.shipping.models import (
     PreArrivalNotification,
     ShippingAgent,
     VesselCompanyRelationship,
+    VesselDocument,
     ShippingAuditLog,
 )
 from apps.shipping.serializers import (
@@ -32,6 +34,7 @@ from apps.shipping.serializers import (
     PortClearanceDecisionSerializer,
     VesselCompanyRelationshipSerializer,
     VesselCompanyRelationshipCreateSerializer,
+    VesselDocumentSerializer,
     ShippingAuditLogSerializer,
     ShippingCompanySerializer,
     ShippingCompanyDetailSerializer,
@@ -697,6 +700,43 @@ class ClearanceDecisionRecordView(viewsets.GenericViewSet):
         if page is not None:
             return self.get_paginated_response(serializer.data)
         return Response(success_response(serializer.data))
+
+
+class VesselDocumentViewSet(CompanyPortScopedMixin, viewsets.ModelViewSet):
+    """مستندات السفن — إرفاق/استعراض/حذف ضمن نطاق الشركة والمنفذ.
+
+    Scoping reuses the Phase 1A.1 combined PORT + COMPANY authorisation, the
+    same contract used by :class:`PreArrivalNotificationViewSet`: ownership
+    resolves through the visit's vessel, and geography through the visit's port
+    entry point.
+
+    Writes are limited to create/delete: documents are immutable once attached,
+    so PUT/PATCH are not exposed.
+    """
+
+    queryset = VesselDocument.objects.select_related(
+        'vessel_visit', 'vessel_visit__vessel', 'uploaded_by',
+    )
+    serializer_class = VesselDocumentSerializer
+    permission_classes = [permissions.IsAuthenticated, PermissionAction]
+    permission_resource = 'shipping_documents'
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['title', 'original_filename', 'document_type']
+    ordering_fields = ['created_at', 'title']
+
+    #: Company ownership resolves through the visit's vessel.
+    company_field = 'vessel_visit__vessel__company_id'
+    #: Geography resolves through the visit's port entry point.
+    port_field = 'vessel_visit__port__entry_point_id'
+
+    def get_permissions(self):
+        action = ACTION_TO_PERMISSION.get(self.action, 'view')
+        self.permission_action = action
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        serializer.save(uploaded_by=self.request.user)
 
 
 class ShippingAuditLogViewSet(viewsets.ReadOnlyModelViewSet):

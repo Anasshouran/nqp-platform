@@ -74,6 +74,7 @@ RESOURCES = {
     'clearance_decisions': 'قرارات الإفراج الصحي البحري',
     'vessels': 'السفن',
     'vessel_visits': 'زيارات السفن',
+    'shipping_documents': 'مستندات السفن',
     'carrier_members': 'أعضاء شركات النقل',
 }
 
@@ -1304,6 +1305,8 @@ ROLES = [
             'notifications': ['view'],
             # وصول اللقاء والإحوال عبر منفذ الدخول.
             'flights': ['view'],
+            # إرفاق/استعراض مستندات السفن عبر منفذ الدخول (عرض فقط).
+            'shipping_documents': ['view'],
         },
     },
     {
@@ -1388,6 +1391,7 @@ ROLES = [
             'vessel_company_relationships': ['view', 'add', 'edit'],
             'vessels': ['view', 'add', 'edit'],
             'vessel_visits': ['view', 'add', 'edit'],
+            'shipping_documents': ['view', 'add', 'delete'],
             'shipping_audit_logs': ['view'],
             'port_health': ['view'],
             'ports': ['view'],
@@ -1405,6 +1409,7 @@ ROLES = [
             'clearance_decisions': ['view'],
             'vessels': ['view'],
             'vessel_visits': ['view', 'add', 'edit'],
+            'shipping_documents': ['view', 'add', 'delete'],
             'port_health': ['view'],
             'ports': ['view'],
         },
