@@ -20,6 +20,9 @@ class AirportDashboardSerializer(serializers.Serializer):
     tasks = serializers.ListField(child=serializers.DictField())
     alerts = serializers.ListField(child=serializers.DictField())
     report = serializers.DictField()
+    recent_inspections = serializers.ListField(child=serializers.DictField())
+    recent_screenings = serializers.ListField(child=serializers.DictField())
+    staff = serializers.ListField(child=serializers.DictField())
 
 
 class PortSerializer(serializers.ModelSerializer):

@@ -272,6 +272,12 @@ class AirportDashboardViewSet(viewsets.ViewSet):
             AirportScreening.objects.all(), port_ids, 'screening_point__terminal__port'
         )
         referrals = self._scope_ports(ClinicReferral.objects.all(), port_ids, 'port')
+        inspections = self._scope_ports(
+            AircraftInspection.objects.all(), port_ids, 'flight__destination_port'
+        )
+        crew_records = self._scope_ports(
+            CrewHealthRecord.objects.all(), port_ids, 'flight__destination_port'
+        )
 
         flights_today = flights.filter(scheduled_arrival__date=today).count()
         passengers_today = Traveler.objects.filter(created_at__date=today).count()
@@ -289,6 +295,16 @@ class AirportDashboardViewSet(viewsets.ViewSet):
         completed_today = screenings.filter(
             status='CLEARED', created_at__date=today
         ).count()
+        inspections_today = inspections.filter(inspection_date__date=today).count()
+        crew_records_today = crew_records.filter(created_at__date=today).count()
+        arrivals_today = screenings.filter(
+            screening_point__point_type=ScreeningPoint.PointType.ARRIVAL,
+            created_at__date=today,
+        ).count()
+        departures_today = screenings.filter(
+            screening_point__point_type=ScreeningPoint.PointType.DEPARTURE,
+            created_at__date=today,
+        ).count()
 
         kpis = {
             'flights_today': flights_today,
@@ -299,6 +315,10 @@ class AirportDashboardViewSet(viewsets.ViewSet):
             'suspected_cases': suspected_today,
             'vaccinations': 0,
             'completed_today': completed_today,
+            'inspections_today': inspections_today,
+            'crew_records_today': crew_records_today,
+            'arrivals_today': arrivals_today,
+            'departures_today': departures_today,
         }
 
         upcoming_flights = [
@@ -379,6 +399,28 @@ class AirportDashboardViewSet(viewsets.ViewSet):
             ],
         }
 
+        recent_inspections = [
+            {
+                'id': str(i.id),
+                'aircraft_registration': i.aircraft_registration,
+                'flight_number': i.flight.flight_number,
+                'overall_status': i.overall_status,
+                'certificate_issued': i.certificate_issued,
+                'inspection_date': i.inspection_date.isoformat(),
+            }
+            for i in inspections.select_related('flight').order_by('-inspection_date')[:20]
+        ]
+        recent_screenings = [
+            {
+                'id': str(s.id),
+                'traveler_name': s.traveler.full_name,
+                'risk_level': s.risk_level,
+                'status': s.status,
+                'screened_at': s.screened_at.isoformat(),
+            }
+            for s in screenings.select_related('traveler').order_by('-screened_at')[:20]
+        ]
+
         return Response(
             success_response({
                 'kpis': kpis,
@@ -387,6 +429,9 @@ class AirportDashboardViewSet(viewsets.ViewSet):
                 'tasks': tasks,
                 'alerts': alerts,
                 'report': report,
+                'recent_inspections': recent_inspections,
+                'recent_screenings': recent_screenings,
+                'staff': [],
             })
         )
 

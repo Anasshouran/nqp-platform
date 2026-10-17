@@ -487,3 +487,107 @@ def test_scoped_dashboard_excludes_other_ports(
     assert data['kpis']['suspected_cases'] == 0
     assert data['upcoming_flights'] == []
 
+
+# ---------------------------------------------------------------------------
+# PR-O1: امتداد لوحة مدير المطار — مؤشرات التفتيش والطاقم + القوائم الحديثة.
+# إضافي فقط: لا نماذج جديدة ولا هجرات، والحقول القائمة لم يتغيّر شكلها.
+# ---------------------------------------------------------------------------
+
+
+def test_dashboard_kpis_include_inspections_and_crew_today(api_client, officer, flight):
+    from datetime import timedelta
+
+    from django.utils import timezone as tz
+
+    AircraftInspection.objects.create(
+        aircraft_registration='ST-TODAY', flight=flight, inspector=officer,
+    )
+    old_inspection = AircraftInspection.objects.create(
+        aircraft_registration='ST-OLD', flight=flight, inspector=officer,
+    )
+    # auto_now_add يتجاهل القيمة عند الإنشاء ⇒ نُرجعه يدوياً إلى الأمس.
+    AircraftInspection.objects.filter(pk=old_inspection.pk).update(
+        inspection_date=tz.now() - timedelta(days=1)
+    )
+
+    CrewHealthRecord.objects.create(
+        crew=officer, flight=flight, health_status=CrewHealthRecord.HealthStatus.FIT,
+    )
+    old_crew = CrewHealthRecord.objects.create(
+        crew=officer, flight=flight, health_status=CrewHealthRecord.HealthStatus.FIT,
+    )
+    CrewHealthRecord.objects.filter(pk=old_crew.pk).update(
+        created_at=tz.now() - timedelta(days=1)
+    )
+
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    assert data['kpis']['inspections_today'] == 1
+    assert data['kpis']['crew_records_today'] == 1
+
+
+def test_dashboard_recent_inspections_returns_last_20(api_client, officer, flight):
+    for n in range(25):
+        AircraftInspection.objects.create(
+            aircraft_registration=f'ST-{n:03d}', flight=flight, inspector=officer,
+        )
+
+    rows = api_client.get('/api/v1/airport/dashboard/').json()['data']['recent_inspections']
+    assert len(rows) == 20
+    dates = [row['inspection_date'] for row in rows]
+    assert dates == sorted(dates, reverse=True)
+    assert set(rows[0]) == {
+        'id', 'aircraft_registration', 'flight_number',
+        'overall_status', 'certificate_issued', 'inspection_date',
+    }
+
+
+def test_dashboard_recent_screenings_returns_last_20(api_client, officer, traveler, point, flight):
+    for _n in range(25):
+        AirportScreening.objects.create(
+            traveler=traveler,
+            screening_point=point,
+            flight=flight,
+            screening_type=AirportScreening.ScreeningType.ARRIVAL,
+            screened_by=officer,
+        )
+
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    rows = data['recent_screenings']
+    assert len(rows) == 20
+    stamps = [row['screened_at'] for row in rows]
+    assert stamps == sorted(stamps, reverse=True)
+    assert rows[0]['traveler_name'] == 'أحمد محمد'
+    assert set(rows[0]) == {'id', 'traveler_name', 'risk_level', 'status', 'screened_at'}
+    # مؤشرات الوصول/المغادرة مبنية على نوع نقطة الفحص — كل الفحوص هنا ARRIVAL.
+    assert data['kpis']['arrivals_today'] == 25
+    assert data['kpis']['departures_today'] == 0
+
+
+def test_dashboard_kpis_date_boundary_uses_local_date(api_client, officer, flight):
+    """حرس انحدار لحدود التاريخ في المنطقة الزمنية (#49).
+
+    سجل عند الساعة 01:00 من التوقيت المحلي (Africa/Khartoum = UTC+2) يقع في
+    اليوم المحلي الحالي بينما تاريخه في UTC هو اليوم السابق؛ لذا يجب أن
+    يُحتسب ضمن «اليوم». لو استُخدم `timezone.now().date()` (تاريخ UTC) لفشل
+    العدّ أثناء نافذة 22:00–24:00 UTC.
+    """
+    from django.utils import timezone as tz
+
+    inspection = AircraftInspection.objects.create(
+        aircraft_registration='ST-TZ', flight=flight, inspector=officer,
+    )
+    local_after_midnight = tz.localtime(tz.now()).replace(
+        hour=1, minute=0, second=0, microsecond=0
+    )
+    AircraftInspection.objects.filter(pk=inspection.pk).update(
+        inspection_date=local_after_midnight
+    )
+
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    assert data['kpis']['inspections_today'] == 1
+
+
+def test_dashboard_staff_is_empty_array_in_mvp(api_client, officer):
+    data = api_client.get('/api/v1/airport/dashboard/').json()['data']
+    assert data['staff'] == []
+
