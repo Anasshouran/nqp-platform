@@ -1,5 +1,6 @@
 import csv
 import io
+from datetime import datetime, time
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -14,6 +15,15 @@ from ..models import Carrier, CarrierMember, Flight, FlightHealthEvent, FlightSt
 pytestmark = pytest.mark.django_db
 
 User = get_user_model()
+
+
+def _later_today(hours=1):
+    """زمن قادم ضمن يوم الخرطوم المحلي، دون عبور منتصف الليل (تثبيت flake)."""
+    now = timezone.now()
+    end_of_today = timezone.make_aware(
+        datetime.combine(timezone.localdate() + timezone.timedelta(days=1), time.min)
+    )
+    return min(now + timezone.timedelta(hours=hours), end_of_today - timezone.timedelta(seconds=1))
 
 
 @pytest.fixture
@@ -408,7 +418,7 @@ def test_dashboard_stats(auth_client, carrier, world):
     Flight.objects.create(
         flight_number='SUD300', carrier=carrier, flight_type='AIR', origin_code='CAI',
         origin_country=world['egypt'], destination_port=world['port'],
-        scheduled_arrival=timezone.now() + timezone.timedelta(hours=1),
+        scheduled_arrival=_later_today(),
     )
     resp = auth_client.get('/api/v1/carriers/dashboard/stats/')
     assert resp.status_code == 200
@@ -417,6 +427,23 @@ def test_dashboard_stats(auth_client, carrier, world):
     assert data['notices']['active'] >= 0
     assert data['api']['configured'] is False
     assert 'pre_registration_rate' in data
+
+
+def test_dashboard_stats_today_uses_local_day(auth_client, carrier, world, monkeypatch):
+    """«اليوم» في إحصاءات اللوحة يُحسب بالتوقيت المحلي لا UTC."""
+    from datetime import timezone as dt_timezone
+
+    # 23:30 UTC = 01:30 بتوقيت الخرطوم (UTC+2) من اليوم التالي
+    fixed_utc = datetime(2026, 1, 2, 23, 30, tzinfo=dt_timezone.utc)
+    monkeypatch.setattr('apps.carriers.views.timezone.now', lambda: fixed_utc)
+    Flight.objects.create(
+        flight_number='SUD301', carrier=carrier, flight_type='AIR', origin_code='CAI',
+        origin_country=world['egypt'], destination_port=world['port'],
+        scheduled_arrival=datetime(2026, 1, 3, 2, 0, tzinfo=dt_timezone.utc),
+    )
+    resp = auth_client.get('/api/v1/carriers/dashboard/stats/')
+    assert resp.status_code == 200
+    assert resp.json()['data']['upcoming_today'] >= 1
 
 
 def test_dashboard_upcoming_and_notices_recent(auth_client, carrier, world):

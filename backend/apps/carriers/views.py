@@ -1,5 +1,6 @@
 import csv
 import io
+from datetime import datetime, time
 
 from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse
@@ -780,7 +781,10 @@ class CarrierDashboardViewSet(viewsets.ViewSet):
     def stats(self, request):
         carrier = self._carrier(request)
         now = timezone.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # «اليوم» يُحسب بالتوقيت المحلي لا UTC، وإلا استُثنيت رحلات اليوم
+        # القريبة من منتصف الليل المحلي (انظر قاعدة حدود التاريخ في المشروع).
+        today = timezone.localdate()
+        today_start = timezone.make_aware(datetime.combine(today, time.min))
         today_end = today_start + timezone.timedelta(days=1)
 
         upcoming = carrier.flights.filter(
@@ -814,7 +818,7 @@ class CarrierDashboardViewSet(viewsets.ViewSet):
                     manifest_missing += 1
 
         active_notices = HealthNotice.objects.filter(is_active=True).exclude(
-            expiry_date__lt=now.date(),
+            expiry_date__lt=today,
         )
         acknowledged_ids = set(
             NoticeAcknowledgement.objects.filter(carrier=carrier).values_list('notice_id', flat=True)

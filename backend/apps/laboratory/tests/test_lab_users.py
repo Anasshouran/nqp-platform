@@ -329,3 +329,37 @@ def test_clearing_lab_role_does_not_crash(sector, red_manager):
     assert not RoleAssignment.objects.filter(
         user=tech, role__isnull=True,
     ).exists()
+
+
+def test_lab_user_list_evaluates_window_at_request_time(sector):
+    """نافذة صلاحية التعيين تُحسب وقت الطلب لا وقت استيراد الوحدة (تثبيت flake)."""
+    from datetime import timedelta
+    from unittest import mock
+    from django.utils import timezone
+
+    role, _ = Role.objects.get_or_create(
+        code='LAB_TECHNICIAN', defaults={'name_ar': 'فني معمل', 'default_scope': ScopeType.SECTOR},
+    )
+    tomorrow = timezone.localdate() + timedelta(days=1)
+    future_tech = User.objects.create_user(
+        email='tech-tomorrow@nqp.gov.sd', password='x', full_name='مستقبلي',
+    )
+    RoleAssignment.objects.create(
+        user=future_tech, role=role, scope_type=ScopeType.SECTOR, scope_id=sector.pk,
+        start_date=tomorrow,
+    )
+    viewer = User.objects.create_user(email='view-reqtime@nqp.gov.sd', password='x', full_name='مشاهِد')
+    RoleAssignment.objects.create(user=viewer, role=role, scope_type=ScopeType.GLOBAL)
+    c = auth_client_for(viewer)
+
+    def listed_emails():
+        resp = c.get('/api/v1/laboratory/users/')
+        assert resp.status_code == 200
+        return [u['email'] for u in resp.json()['data']]
+
+    # قبل حلول الغد لا يظهر التعيين المستقبلي
+    assert 'tech-tomorrow@nqp.gov.sd' not in listed_emails()
+
+    # عند حلول الغد (وقت الطلب) يجب أن يظهر: أي أن النافذة تُبنى لكل طلب
+    with mock.patch('apps.laboratory.views.timezone.localdate', return_value=tomorrow):
+        assert 'tech-tomorrow@nqp.gov.sd' in listed_emails()
