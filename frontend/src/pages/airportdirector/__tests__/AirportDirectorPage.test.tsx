@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ReactElement } from 'react';
@@ -32,15 +32,25 @@ const airportApi = vi.hoisted(() => ({
   getCrewHealthRecords: vi.fn(),
   getAirportTerminals: vi.fn(),
   getScreeningPoints: vi.fn(),
+  getAirportStaff: vi.fn(),
+  createAirportStaff: vi.fn(),
+  updateAirportStaff: vi.fn(),
+  deleteAirportStaff: vi.fn(),
+  getAirportPorts: vi.fn(),
 }));
 vi.mock('../../../api/endpoints/airport', () => airportApi);
 
 import AirportDirectorPage from '../AirportDirectorPage';
 import {
+  createAirportStaff,
+  deleteAirportStaff,
   getAirportDashboard,
-  getCrewHealthRecords,
+  getAirportPorts,
+  getAirportStaff,
   getAirportTerminals,
+  getCrewHealthRecords,
   getScreeningPoints,
+  updateAirportStaff,
 } from '../../../api/endpoints/airport';
 
 /* ------------------------------- fixtures ------------------------------- */
@@ -167,6 +177,56 @@ const pointsFixture = [
   },
 ];
 
+const portsFixture = [
+  {
+    id: 'p1',
+    code: 'AP1',
+    name_ar: 'مطار الاختبار',
+    name_en: 'Test Airport',
+    type: 'AIRPORT',
+    country: 'السودان',
+    is_active: true,
+  },
+];
+
+/** صفوف AirportStaff الكاملة كما تعيدها /airport/staff/. */
+const staffFixture = [
+  {
+    id: 'st1',
+    full_name: 'موظف الاختبار الأول',
+    role: 'DIRECTOR',
+    role_label: 'مدير المطار',
+    email: 'staff-one@nqp-test.example',
+    phone: '0900000001',
+    shift: 'صباحي',
+    is_active: true,
+    airport: 'p1',
+    airport_name: 'مطار الاختبار',
+    user: null,
+    user_email: '',
+    notes: '',
+    created_at: '2026-10-17T00:00:00Z',
+    updated_at: '2026-10-17T00:00:00Z',
+  },
+  {
+    id: 'st2',
+    full_name: 'موظف الاختبار الثاني',
+    role: 'INSPECTOR',
+    role_label: 'مفتش طائرات',
+    email: 'staff-two@nqp-test.example',
+    phone: '0900000002',
+    shift: 'مسائي',
+    is_active: false,
+    airport: 'p1',
+    airport_name: 'مطار الاختبار',
+    user: null,
+    user_email: '',
+    notes: '',
+    created_at: '2026-10-17T00:00:00Z',
+    updated_at: '2026-10-17T00:00:00Z',
+  },
+];
+
 const page = (results: unknown[]) => ({
   data: { status: 'success', data: { count: results.length, next: null, previous: null, results } },
 });
@@ -187,6 +247,11 @@ const setupMocks = () => {
   vi.mocked(getCrewHealthRecords).mockResolvedValue(page(crewFixture) as never);
   vi.mocked(getAirportTerminals).mockResolvedValue(page(terminalsFixture) as never);
   vi.mocked(getScreeningPoints).mockResolvedValue(page(pointsFixture) as never);
+  vi.mocked(getAirportStaff).mockResolvedValue(page(staffFixture) as never);
+  vi.mocked(getAirportPorts).mockResolvedValue(page(portsFixture) as never);
+  vi.mocked(createAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
+  vi.mocked(updateAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
+  vi.mocked(deleteAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
 };
 
 beforeEach(() => {
@@ -267,7 +332,7 @@ describe('AirportDirectorPage', () => {
     expect(screen.getAllByText(/قيد الإعداد/).length).toBe(3);
   });
 
-  it('renders staff rows from dashboard.staff', async () => {
+  it('renders staff rows from getAirportStaff', async () => {
     wrap(<AirportDirectorPage />);
     expect(await screen.findByText('موظف الاختبار الأول')).toBeTruthy();
     expect(screen.getByText('موظف الاختبار الثاني')).toBeTruthy();
@@ -275,12 +340,99 @@ describe('AirportDirectorPage', () => {
     expect(screen.getAllByText('مفتش طائرات').length).toBeGreaterThan(0);
   });
 
-  it('shows the staff empty state when dashboard.staff is empty', async () => {
-    vi.mocked(getAirportDashboard).mockResolvedValue({
-      data: { status: 'success', data: { ...dashboardFixture, staff: [] } },
-    } as never);
+  it('shows the staff empty state when getAirportStaff returns no rows', async () => {
+    vi.mocked(getAirportStaff).mockResolvedValue(page([]) as never);
     wrap(<AirportDirectorPage />);
     expect(await screen.findByText('لا يوجد موظفون مسجلون')).toBeTruthy();
+  });
+
+  it('renders the "إضافة موظف" action in the staff section', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    expect(screen.getByRole('button', { name: 'إضافة موظف' })).toBeTruthy();
+  });
+
+  it('opens the create dialog with the required fields', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    fireEvent.click(screen.getByRole('button', { name: 'إضافة موظف' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('إضافة موظف')).toBeTruthy();
+    expect(within(dialog).getByLabelText(/الاسم الكامل/)).toBeTruthy();
+    expect(within(dialog).getByRole('combobox', { name: 'الدور' })).toBeTruthy();
+    expect(within(dialog).getByLabelText('البريد الإلكتروني')).toBeTruthy();
+    expect(within(dialog).getByLabelText('الهاتف')).toBeTruthy();
+    expect(within(dialog).getByLabelText('الوردية')).toBeTruthy();
+    expect(within(dialog).getByRole('combobox', { name: 'المطار' })).toBeTruthy();
+  });
+
+  it('creates a staff member and refreshes the table', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    fireEvent.click(screen.getByRole('button', { name: 'إضافة موظف' }));
+
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText(/الاسم الكامل/), {
+      target: { value: 'موظف جديد للاختبار' },
+    });
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'المطار' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'مطار الاختبار' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'إضافة' }));
+
+    await waitFor(() => expect(createAirportStaff).toHaveBeenCalledTimes(1));
+    expect(createAirportStaff).toHaveBeenCalledWith({
+      full_name: 'موظف جديد للاختبار',
+      role: 'INSPECTOR',
+      email: '',
+      phone: '',
+      shift: '',
+      airport: 'p1',
+      is_active: true,
+    });
+    await waitFor(() => expect(getAirportStaff).toHaveBeenCalledTimes(2));
+  });
+
+  it('opens the edit dialog prefilled with the row data', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    fireEvent.click(screen.getAllByRole('button', { name: 'تعديل' })[0]);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('تعديل بيانات الموظف')).toBeTruthy();
+    expect((within(dialog).getByLabelText(/الاسم الكامل/) as HTMLInputElement).value).toBe('موظف الاختبار الأول');
+    expect((within(dialog).getByLabelText('البريد الإلكتروني') as HTMLInputElement).value).toBe('staff-one@nqp-test.example');
+    expect((within(dialog).getByRole('combobox', { name: 'الدور' }) as HTMLElement).textContent).toContain('مدير المطار');
+  });
+
+  it('updates a staff member from the edit dialog', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    fireEvent.click(screen.getAllByRole('button', { name: 'تعديل' })[0]);
+
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText('الهاتف'), { target: { value: '0999999999' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'حفظ' }));
+
+    await waitFor(() => expect(updateAirportStaff).toHaveBeenCalledTimes(1));
+    expect(updateAirportStaff).toHaveBeenCalledWith(
+      'st1',
+      expect.objectContaining({ phone: '0999999999', full_name: 'موظف الاختبار الأول' }),
+    );
+    await waitFor(() => expect(getAirportStaff).toHaveBeenCalledTimes(2));
+  });
+
+  it('deletes a staff member after confirmation', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByText('موظف الاختبار الأول');
+    fireEvent.click(screen.getAllByRole('button', { name: 'حذف' })[0]);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/تأكيد حذف الموظف موظف الاختبار الأول/)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'حذف' }));
+
+    await waitFor(() => expect(deleteAirportStaff).toHaveBeenCalledWith('st1'));
+    await waitFor(() => expect(getAirportStaff).toHaveBeenCalledTimes(2));
   });
 
   it('fires all four API calls on mount', async () => {
