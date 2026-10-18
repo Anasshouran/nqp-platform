@@ -33,6 +33,7 @@ import FactCheckIcon from '@mui/icons-material/FactCheck';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import {
@@ -64,11 +65,13 @@ import {
   getCrewHealthRecords,
   getScreeningPoints,
   updateAirportStaff,
+  getAirportActivityLog,
 } from '../../api/endpoints/airport';
 import { getProfile, type ProfileData } from '../../api/endpoints/auth';
 import { getPermissionTree } from '../../api/endpoints/roles';
-import { AIRPORT_STAFF_ROLE_LABELS } from '../../types/airport';
+import { AIRPORT_ACTIVITY_ACTION_LABELS, AIRPORT_STAFF_ROLE_LABELS } from '../../types/airport';
 import type {
+  AirportActivityLog,
   AirportDashboard,
   AirportDashboardReport,
   AirportPort,
@@ -235,6 +238,33 @@ const AirportDirectorPage = () => {
   const alerts = dashboard?.alerts ?? [];
   const report = dashboard?.report;
   const recommendations = computeRecommendations(dashboard);
+
+  /** سجل الأنشطة الإدارية — استطلاع دوري كل 30 ثانية. */
+  const [activityLog, setActivityLog] = useState<AirportActivityLog[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState<unknown>(null);
+
+  const loadActivity = () => {
+    getAirportActivityLog({ page_size: 20 })
+      .then((res) => {
+        setActivityLog(res.data?.data?.results ?? []);
+        setActivityError(null);
+      })
+      .catch((err) => {
+        setActivityError(err);
+      })
+      .finally(() => {
+        setActivityLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadActivity();
+    const id = setInterval(loadActivity, 30_000);
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
 
   /** الصالات مع عدد نقاط الفحص لكل صالة (تجميع مخاطب). */
   const terminalRows = useMemo<TerminalAggregate[]>(() => {
@@ -546,8 +576,68 @@ const AirportDirectorPage = () => {
                 </SectionCard>
               </Grid>
               <Grid item xs={12} lg={6}>
-                <SectionCard title="📋 سجل الأنشطة" subtitle="آخر الإجراءات الإدارية" sx={{ height: '100%' }}>
-                  <EmptyState title="قيد الإعداد" description="سجل الأنشطة الإدارية يُعرض عند توفر بيانات النظام المصدر." />
+                <SectionCard
+                  title="📋 سجل الأنشطة"
+                  subtitle="آخر الإجراءات الإدارية"
+                  sx={{ height: '100%' }}
+                  action={
+                    <IconButton
+                      size="small"
+                      title="تحديث"
+                      onClick={loadActivity}
+                    >
+                      <RefreshIcon fontSize="small" />
+                    </IconButton>
+                  }
+                >
+                  {activityLoading ? (
+                    <ListSkeleton count={1} />
+                  ) : activityError ? (
+                    <ErrorState compact onRetry={loadActivity} />
+                  ) : activityLog.length === 0 ? (
+                    <EmptyState
+                      title="لا يوجد نشاط مسجّل"
+                      description="سيظهر هنا سجل الإجراءات الإدارية عند حدوثها."
+                    />
+                  ) : (
+                    <Stack direction="column" spacing={1} sx={{ height: '100%', overflowY: 'auto', p: 1 }}>
+                      {activityLog.map((entry) => (
+                        <Box
+                          key={entry.id}
+                          sx={{ p: 1, borderBottom: 1, borderColor: 'rgba(16,40,34,0.06)' }}
+                        >
+                          <Stack direction="row" spacing={1} alignItems="baseline" sx={{ flexWrap: 'wrap' }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ minWidth: 70, fontSize: 11 }}
+                            >
+                              {entry.created_at
+                                ? new Date(entry.created_at).toLocaleTimeString('ar-SA', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : ''}
+                            </Typography>
+                            <StatusChip
+                              label={
+                                entry.action_label ??
+                                AIRPORT_ACTIVITY_ACTION_LABELS[entry.action as keyof typeof AIRPORT_ACTIVITY_ACTION_LABELS]
+                              }
+                              tone="neutral"
+                              size="small"
+                            />
+                            <Typography variant="body2" sx={{ flex: 1, minWidth: 0 }}>
+                              {entry.description}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                              {entry.actor_display}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
                 </SectionCard>
               </Grid>
             </Grid>

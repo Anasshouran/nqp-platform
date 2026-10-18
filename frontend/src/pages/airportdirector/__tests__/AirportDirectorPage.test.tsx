@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ReactElement } from 'react';
@@ -37,6 +37,7 @@ const airportApi = vi.hoisted(() => ({
   updateAirportStaff: vi.fn(),
   deleteAirportStaff: vi.fn(),
   getAirportPorts: vi.fn(),
+  getAirportActivityLog: vi.fn(),
 }));
 vi.mock('../../../api/endpoints/airport', () => airportApi);
 
@@ -63,6 +64,7 @@ import {
   getCrewHealthRecords,
   getScreeningPoints,
   updateAirportStaff,
+  getAirportActivityLog,
 } from '../../../api/endpoints/airport';
 import { getProfile } from '../../../api/endpoints/auth';
 import { getPermissionTree } from '../../../api/endpoints/roles';
@@ -282,6 +284,9 @@ const setupMocks = () => {
   vi.mocked(getScreeningPoints).mockResolvedValue(page(pointsFixture) as never);
   vi.mocked(getAirportStaff).mockResolvedValue(page(staffFixture) as never);
   vi.mocked(getAirportPorts).mockResolvedValue(page(portsFixture) as never);
+  vi.mocked(getAirportActivityLog).mockResolvedValue({
+    data: { status: 'success', data: { count: 0, next: null, previous: null, results: [] } },
+  } as never);
   vi.mocked(createAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
   vi.mocked(updateAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
   vi.mocked(deleteAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
@@ -312,9 +317,9 @@ describe('AirportDirectorPage', () => {
     expect(screen.queryByText('خالد أحمد')).toBeNull();
   });
 
-  it('shows "قيد الإعداد" for data sections', () => {
+  it('no "قيد الإعداد" placeholders remain (all sections live)', async () => {
     wrap(<AirportDirectorPage />);
-    expect(screen.getAllByText(/قيد الإعداد/).length).toBeGreaterThan(0);
+    expect(screen.queryAllByText(/قيد الإعداد/).length).toBe(0);
   });
 
   it('does not crash and renders the heading', () => {
@@ -360,15 +365,6 @@ describe('AirportDirectorPage', () => {
     expect(await screen.findByText('طاقم الاختبار')).toBeTruthy();
   });
 
-  it('keeps exactly one "قيد الإعداد" placeholder (activity log only)', async () => {
-    wrap(<AirportDirectorPage />);
-    await screen.findAllByTestId('kpi-card');
-    expect(screen.getAllByText(/موظفو المطار/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/مصفوفة الصلاحيات/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/دعم اتخاذ القرار/).length).toBeGreaterThan(0);
-    // يبقى سجل الأنشطة وحده نائبًا؛ بطاقتا الصلاحيات ودعم القرار صارتا حيّتين.
-    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(1);
-  });
 
   it('renders staff rows from getAirportStaff', async () => {
     wrap(<AirportDirectorPage />);
@@ -585,5 +581,69 @@ describe('AirportDirectorPage', () => {
     wrap(<AirportDirectorPage />);
     expect(await screen.findByText('لا توجد توصيات حالية')).toBeTruthy();
     expect(screen.queryByText('تصعيد الفحص الحراري وتفعيل تتبع المخالطين')).toBeNull();
+  });
+
+  /* ------------------------------- سجل الأنشطة ------------------------------- */
+
+  it('renders activity-log entries from getAirportActivityLog', async () => {
+    vi.mocked(getAirportActivityLog).mockResolvedValue({
+      data: {
+        status: 'success',
+        data: {
+          count: 1,
+          next: null,
+          previous: null,
+          results: [
+            {
+              id: 'al-1',
+              created_at: '2026-10-18T10:00:00Z',
+              actor: 'u1',
+              actor_name: 'مديرة الاختبار',
+              actor_display: 'مديرة الاختبار',
+              action: 'STAFF_CREATED',
+              action_label: 'إضافة موظف',
+              description: 'إضافة موظف — د. سارة أحمد',
+              target_type: 'AirportStaff',
+              target_id: 'st-1',
+              target_label: 'د. سارة أحمد',
+              airport: 'p1',
+              airport_name: 'مطار الاختبار',
+              metadata: {},
+              ip_address: null,
+            },
+          ],
+        },
+      },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('إضافة موظف — د. سارة أحمد')).toBeTruthy();
+    expect(screen.getByText('مديرة الاختبار')).toBeTruthy();
+    expect(screen.getAllByText('إضافة موظف').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('shows the honest empty state when no activity-log entries exist', async () => {
+    vi.mocked(getAirportActivityLog).mockResolvedValue({
+      data: { status: 'success', data: { count: 0, next: null, previous: null, results: [] } },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('لا يوجد نشاط مسجّل')).toBeTruthy();
+  });
+
+  it('polls getAirportActivityLog every 30s', async () => {
+    vi.useFakeTimers();
+    vi.mocked(getAirportActivityLog).mockResolvedValue({
+      data: { status: 'success', data: { count: 0, next: null, previous: null, results: [] } },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(getAirportActivityLog).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(getAirportActivityLog).toHaveBeenCalledTimes(2);
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(getAirportActivityLog).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
   });
 });
