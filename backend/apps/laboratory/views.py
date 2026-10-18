@@ -1270,9 +1270,9 @@ def _active_lab_filter(role_codes):
 
 
 class LabUserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.select_related('role').filter(
-        _active_lab_filter(LAB_ROLE_CODES)
-    ).distinct().order_by('full_name')
+    # القاعدة بلا فلتر النافذة الزمنية: يجب أن يُبنى الفلتر عند كل طلب لا عند
+    # استيراد الوحدة، وإلا تجمّد تاريخ «اليوم» (flake عند منتصف الليل).
+    queryset = User.objects.select_related('role').distinct().order_by('full_name')
     permission_classes = [LabUsersManagePermission]
     pagination_class = None
     http_method_names = ['get', 'post', 'patch']
@@ -1282,7 +1282,7 @@ class LabUserViewSet(viewsets.ModelViewSet):
     filter_fields = ['is_active']
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().filter(_active_lab_filter(LAB_ROLE_CODES))
         role_code = self.request.query_params.get('role')
         if role_code:
             qs = qs.filter(_active_lab_filter([role_code]))
