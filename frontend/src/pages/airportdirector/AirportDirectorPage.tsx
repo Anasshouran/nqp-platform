@@ -4,8 +4,15 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -26,28 +33,42 @@ import VaccinesIcon from '@mui/icons-material/Vaccines';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import {
+  AppButton,
   CardsGridSkeleton,
+  ConfirmDialog,
   DataTable,
   EmptyState,
+  FormDialog,
+  FormSelect,
+  FormTextField,
   ListSkeleton,
   PageTabs,
   SectionCard,
   StatCard,
   StatusChip,
 } from '../../components/uikit';
-import type { DataTableColumn, StatusTone } from '../../components/uikit';
+import type { DataTableColumn, FormSelectOption, StatusTone } from '../../components/uikit';
 import { ErrorState } from '../../components/common';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import {
-  getCrewHealthRecords,
+  createAirportStaff,
+  deleteAirportStaff,
   getAirportDashboard,
+  getAirportPorts,
+  getAirportStaff,
   getAirportTerminals,
+  getCrewHealthRecords,
   getScreeningPoints,
+  updateAirportStaff,
 } from '../../api/endpoints/airport';
+import { AIRPORT_STAFF_ROLE_LABELS } from '../../types/airport';
 import type {
   AirportDashboard,
   AirportDashboardReport,
+  AirportPort,
+  AirportStaff,
+  AirportStaffRole,
   AirportStaffSummary,
   AirportTerminal,
   CrewHealthRecord,
@@ -56,7 +77,7 @@ import type {
   ScreeningPoint,
   UpcomingFlight,
 } from '../../types/airport';
-import { notifySuccess } from '../../utils/toast';
+import { notifyError, notifySuccess } from '../../utils/toast';
 
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -367,21 +388,12 @@ const AirportDirectorPage = () => {
 
           {/* ===== الموظفون ===== */}
           <Box ref={register('staff')} data-section="staff" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard
-              title="موظفو المطار"
-              subtitle="مفتشون، فنيو مختبر، كتّاب إدخال — الموظفون المسجّلون"
-            >
-              <DirectorTable<AirportStaffSummary>
-                columns={staffColumns}
-                rows={dashboard?.staff ?? []}
-                rowKey={(s) => s.id}
-                loading={dashboardApi.loading}
-                error={dashboardApi.error}
-                onRetry={dashboardApi.retry}
-                emptyTitle="لا يوجد موظفون مسجلون"
-                emptyDescription="ستظهر بيانات موظفي المطار هنا عند تسجيلهم."
-              />
-            </SectionCard>
+            <StaffSection
+              fallbackRows={dashboard?.staff ?? []}
+              fallbackLoading={dashboardApi.loading}
+              fallbackError={dashboardApi.error}
+              fallbackRetry={dashboardApi.retry}
+            />
           </Box>
 
           {/* ===== الصلاحيات + النشاط ===== */}
@@ -498,21 +510,21 @@ const crewColumns: DataTableColumn<CrewHealthRecord>[] = [
   { key: 'next_clearance_date', label: 'التصريح القادم', render: (c) => c.next_clearance_date || '—' },
 ];
 
-const staffColumns: DataTableColumn<AirportStaffSummary>[] = [
-  { key: 'full_name', label: 'الاسم', render: (s) => <Box sx={{ fontWeight: 700 }}>{s.full_name || '—'}</Box> },
-  { key: 'role_label', label: 'الدور', render: (s) => <StatusChip label={s.role_label || s.role} tone="info" /> },
-  { key: 'email', label: 'البريد', render: (s) => s.email || '—' },
-  { key: 'phone', label: 'الهاتف', render: (s) => s.phone || '—' },
-  { key: 'shift', label: 'الوردية', render: (s) => s.shift || '—' },
-  {
-    key: 'is_active',
-    label: 'نشط',
-    align: 'center',
-    render: (s) => (
-      <StatusChip label={s.is_active ? 'نشط' : 'غير نشط'} tone={s.is_active ? 'success' : 'neutral'} />
-    ),
-  },
-];
+const staffRoleOptions: FormSelectOption[] = (
+  Object.keys(AIRPORT_STAFF_ROLE_LABELS) as AirportStaffRole[]
+).map((value) => ({ value, label: AIRPORT_STAFF_ROLE_LABELS[value] }));
+
+/** تحويل صف لوحة القيادة المختصر إلى موظف كامل (للاستخدام كبيانات احتياطية). */
+const toFullStaff = (s: AirportStaffSummary): AirportStaff => ({
+  ...s,
+  airport: '',
+  airport_name: '',
+  user: null,
+  user_email: '',
+  notes: '',
+  created_at: '',
+  updated_at: '',
+});
 
 interface TerminalAggregate {
   id: string;
@@ -543,6 +555,8 @@ interface DirectorTableProps<T> {
   onRetry?: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  actions?: (row: T) => ReactElement;
+  actionsLabel?: string;
 }
 
 const DirectorTable = <T,>({
@@ -554,6 +568,8 @@ const DirectorTable = <T,>({
   onRetry,
   emptyTitle,
   emptyDescription,
+  actions,
+  actionsLabel,
 }: DirectorTableProps<T>) => {
   if (error) return <ErrorState compact onRetry={onRetry} />;
   return (
@@ -568,11 +584,337 @@ const DirectorTable = <T,>({
       loading={loading}
       emptyTitle={emptyTitle}
       emptyDescription={emptyDescription}
+      actions={actions}
+      actionsLabel={actionsLabel}
     />
   );
 };
 
 /* ============================= مكونات فرعية ============================= */
+
+interface StaffFormValues {
+  full_name: string;
+  role: AirportStaffRole;
+  email: string;
+  phone: string;
+  shift: string;
+  airport: string;
+  is_active: boolean;
+}
+
+const emptyStaffForm: StaffFormValues = {
+  full_name: '',
+  role: 'INSPECTOR',
+  email: '',
+  phone: '',
+  shift: '',
+  airport: '',
+  is_active: true,
+};
+
+/** حقول نموذج الموظف — تُستخدم في الإضافة والتعديل. */
+const StaffFormFields = ({
+  value,
+  onChange,
+  portOptions,
+}: {
+  value: StaffFormValues;
+  onChange: (next: StaffFormValues) => void;
+  portOptions: FormSelectOption[];
+}) => (
+  <Stack spacing={2} sx={{ pt: 1 }}>
+    <FormTextField
+      label="الاسم الكامل"
+      requiredMark
+      value={value.full_name}
+      onChange={(e) => onChange({ ...value, full_name: e.target.value })}
+    />
+    <FormSelect
+      label="الدور"
+      requiredMark
+      value={value.role}
+      onChange={(next) => onChange({ ...value, role: next as AirportStaffRole })}
+      options={staffRoleOptions}
+      SelectDisplayProps={{ 'aria-label': 'الدور' }}
+    />
+    <FormTextField
+      label="البريد الإلكتروني"
+      type="email"
+      value={value.email}
+      onChange={(e) => onChange({ ...value, email: e.target.value })}
+    />
+    <FormTextField
+      label="الهاتف"
+      value={value.phone}
+      onChange={(e) => onChange({ ...value, phone: e.target.value })}
+    />
+    <FormTextField
+      label="الوردية"
+      value={value.shift}
+      onChange={(e) => onChange({ ...value, shift: e.target.value })}
+      placeholder="صباحية / مسائية / ليلية"
+    />
+    <FormSelect
+      label="المطار"
+      requiredMark
+      value={value.airport}
+      onChange={(next) => onChange({ ...value, airport: next })}
+      options={portOptions}
+      placeholder="اختر المطار"
+      SelectDisplayProps={{ 'aria-label': 'المطار' }}
+    />
+    <FormControlLabel
+      control={
+        <Switch
+          checked={value.is_active}
+          onChange={(e) => onChange({ ...value, is_active: e.target.checked })}
+        />
+      }
+      label="نشط"
+    />
+  </Stack>
+);
+
+/**
+ * قسم موظفي المطار — قراءة من `getAirportStaff` (لدعم التحديث بعد التعديل)
+ * مع بيانات اللوحة كاحتياط أثناء التحميل/الخطأ، وإضافة/تعديل/حذف.
+ */
+const StaffSection = ({
+  fallbackRows,
+  fallbackLoading,
+  fallbackError,
+  fallbackRetry,
+}: {
+  fallbackRows: AirportStaffSummary[];
+  fallbackLoading: boolean;
+  fallbackError: unknown;
+  fallbackRetry: () => void;
+}) => {
+  const staffApi = useApi<AirportStaff[]>(() =>
+    getAirportStaff({ page_size: 100 }).then((res) => res.data.data.results ?? [])
+  );
+  const portsApi = useApi<AirportPort[]>(() =>
+    getAirportPorts({ page_size: 100 }).then((res) => res.data.data.results ?? [])
+  );
+
+  const ports = useMemo<AirportPort[]>(() => portsApi.data ?? [], [portsApi.data]);
+  const portOptions = useMemo<FormSelectOption[]>(
+    () => ports.map((p) => ({ value: p.id, label: p.name_ar || p.code })),
+    [ports]
+  );
+
+  // القراءة من الـAPI الحي؛ واللوحة احتياط أثناء التحميل/الخطأ.
+  const rows = useMemo<AirportStaff[]>(
+    () => staffApi.data ?? fallbackRows.map(toFullStaff),
+    [staffApi.data, fallbackRows]
+  );
+  const loading = rows.length === 0 && (staffApi.loading || fallbackLoading);
+  const error =
+    staffApi.data === null && rows.length === 0 ? staffApi.error ?? fallbackError : null;
+
+  // إضافة
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState<StaffFormValues>(emptyStaffForm);
+
+  // تعديل
+  const [editTarget, setEditTarget] = useState<AirportStaff | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState<StaffFormValues>(emptyStaffForm);
+
+  // حذف
+  const [deleteTarget, setDeleteTarget] = useState<AirportStaff | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const refresh = () => {
+    staffApi.retry();
+    fallbackRetry();
+  };
+
+  const openCreate = () => {
+    setCreateForm({ ...emptyStaffForm, airport: ports.length === 1 ? ports[0].id : '' });
+    setCreateOpen(true);
+  };
+
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      await createAirportStaff({
+        full_name: createForm.full_name.trim(),
+        role: createForm.role,
+        email: createForm.email.trim(),
+        phone: createForm.phone.trim(),
+        shift: createForm.shift.trim(),
+        airport: createForm.airport,
+        is_active: createForm.is_active,
+      });
+      notifySuccess('تمت إضافة الموظف');
+      setCreateOpen(false);
+      refresh();
+    } catch {
+      notifyError('تعذر إضافة الموظف');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const openEdit = (row: AirportStaff) => {
+    setEditTarget(row);
+    setEditForm({
+      full_name: row.full_name ?? '',
+      role: (row.role as AirportStaffRole) || 'OTHER',
+      email: row.email ?? '',
+      phone: row.phone ?? '',
+      shift: row.shift ?? '',
+      airport: row.airport ?? '',
+      is_active: row.is_active,
+    });
+  };
+
+  const handleUpdate = async () => {
+    if (!editTarget) return;
+    setSaving(true);
+    try {
+      await updateAirportStaff(editTarget.id, {
+        full_name: editForm.full_name.trim(),
+        role: editForm.role,
+        email: editForm.email.trim(),
+        phone: editForm.phone.trim(),
+        shift: editForm.shift.trim(),
+        airport: editForm.airport,
+        is_active: editForm.is_active,
+      });
+      notifySuccess('تم تحديث بيانات الموظف');
+      setEditTarget(null);
+      refresh();
+    } catch {
+      notifyError('تعذر تحديث بيانات الموظف');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteAirportStaff(deleteTarget.id);
+      notifySuccess('تم حذف الموظف');
+      setDeleteTarget(null);
+      refresh();
+    } catch {
+      notifyError('تعذر حذف الموظف');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const columns = useMemo<DataTableColumn<AirportStaff>[]>(
+    () => [
+      { key: 'full_name', label: 'الاسم', render: (s) => <Box sx={{ fontWeight: 700 }}>{s.full_name || '—'}</Box> },
+      { key: 'role_label', label: 'الدور', render: (s) => <StatusChip label={s.role_label || s.role} tone="info" /> },
+      { key: 'email', label: 'البريد', render: (s) => s.email || '—' },
+      { key: 'phone', label: 'الهاتف', render: (s) => s.phone || '—' },
+      { key: 'shift', label: 'الوردية', render: (s) => s.shift || '—' },
+      {
+        key: 'is_active',
+        label: 'نشط',
+        align: 'center',
+        render: (s) => (
+          <StatusChip label={s.is_active ? 'نشط' : 'غير نشط'} tone={s.is_active ? 'success' : 'neutral'} />
+        ),
+      },
+    ],
+    []
+  );
+
+  const renderActions = (row: AirportStaff) => (
+    <>
+      <Tooltip title="تعديل">
+        <IconButton size="small" aria-label="تعديل" onClick={() => openEdit(row)}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="حذف">
+        <IconButton size="small" color="error" aria-label="حذف" onClick={() => setDeleteTarget(row)}>
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </>
+  );
+
+  const createDisabled = !createForm.full_name.trim() || !createForm.airport;
+  const editDisabled = !editForm.full_name.trim() || !editForm.airport;
+
+  return (
+    <>
+      <SectionCard
+        title="موظفو المطار"
+        subtitle="مفتشون، فنيو مختبر، كتّاب إدخال — الموظفون المسجّلون"
+        action={
+          <AppButton variant="primary" size="small" startIcon={<AddIcon />} onClick={openCreate}>
+            إضافة موظف
+          </AppButton>
+        }
+      >
+        <DirectorTable<AirportStaff>
+          columns={columns}
+          rows={rows}
+          rowKey={(s) => s.id}
+          loading={loading}
+          error={error}
+          onRetry={refresh}
+          actions={renderActions}
+          actionsLabel="إجراءات"
+          emptyTitle="لا يوجد موظفون مسجلون"
+          emptyDescription="ستظهر بيانات موظفي المطار هنا عند تسجيلهم."
+        />
+      </SectionCard>
+
+      {/* إضافة موظف */}
+      <FormDialog
+        open={createOpen}
+        title="إضافة موظف"
+        subtitle="سجّل موظفاً جديداً في مطار المنفذ"
+        icon={<AddIcon />}
+        onClose={() => setCreateOpen(false)}
+        onSubmit={handleCreate}
+        submitLabel="إضافة"
+        loading={creating}
+        submitDisabled={createDisabled}
+      >
+        <StaffFormFields value={createForm} onChange={setCreateForm} portOptions={portOptions} />
+      </FormDialog>
+
+      {/* تعديل موظف */}
+      <FormDialog
+        open={editTarget !== null}
+        title="تعديل بيانات الموظف"
+        subtitle={editTarget?.full_name ?? ''}
+        icon={<EditIcon />}
+        onClose={() => setEditTarget(null)}
+        onSubmit={handleUpdate}
+        submitLabel="حفظ"
+        loading={saving}
+        submitDisabled={editDisabled}
+      >
+        <StaffFormFields value={editForm} onChange={setEditForm} portOptions={portOptions} />
+      </FormDialog>
+
+      {/* حذف موظف */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="حذف الموظف"
+        message={deleteTarget ? `تأكيد حذف الموظف ${deleteTarget.full_name}؟` : ''}
+        confirmLabel="حذف"
+        loading={deleting}
+        tone="error"
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
+    </>
+  );
+};
 
 const ReportsSection = ({
   report,
