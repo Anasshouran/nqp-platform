@@ -10,6 +10,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -30,6 +32,7 @@ import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import {
@@ -148,6 +151,62 @@ interface ReferenceData {
   points: ScreeningPoint[];
 }
 
+/** توصية تشغيلية مشتقة من بيانات اللوحة الحقيقية (لا محتوى مُصطنع). */
+interface Recommendation {
+  topic: string;
+  finding: string;
+  cause: string;
+  recommendation: string;
+}
+
+/**
+ * دعم القرار — ثلاث قواعد بسيطة وشفافة فوق حمولة `/airport/dashboard/` فقط:
+ * A) وجود حالات مشتبهة (> 0) — تصعيد الفحص الحراري.
+ * B) تفتيشات بحالة FAILED/CONDITIONAL في آخر التفتيشات — إجراءات تصحيحية.
+ * C) تراكم الفحوصات المعلّقة (معلّق > منجز × 1.5) — تعزيز الموارد.
+ * لا نداءات جديدة ولا نماذج جديدة؛ تُحسب في الواجهة من نفس الحمولة.
+ */
+const computeRecommendations = (dashboard: AirportDashboard | null): Recommendation[] => {
+  if (!dashboard) return [];
+  const k = dashboard.kpis;
+  const recs: Recommendation[] = [];
+
+  // A) حالات مشتبهة
+  if (k.suspected_cases > 0) {
+    recs.push({
+      topic: 'حالات مشتبهة',
+      finding: `${k.suspected_cases} حالة مشتبهة اليوم`,
+      cause: 'ارتفاع مؤشرات الفحص الأولي',
+      recommendation: 'تصعيد الفحص الحراري وتفعيل تتبع المخالطين',
+    });
+  }
+
+  // B) تفتيشات غير مطابقة أو مشروطة
+  const failed = dashboard.recent_inspections.filter(
+    (i) => i.overall_status === 'FAILED' || i.overall_status === 'CONDITIONAL'
+  ).length;
+  if (failed > 0) {
+    recs.push({
+      topic: 'تفتيش الطائرات',
+      finding: `${failed} تفتيش بحالة غير مطابقة`,
+      cause: 'بنود غير مطابقة في آخر التفتيشات',
+      recommendation: 'إجراءات تصحيحية وإعادة تفتيش الطائرات المعنية',
+    });
+  }
+
+  // C) تراكم الفحوصات المعلّقة مقابل المنجزة
+  if (k.screened_today > 0 && k.pending_screenings > k.screened_today * 1.5) {
+    recs.push({
+      topic: 'ضغط الفحص',
+      finding: `${k.pending_screenings} فحص معلّق مقابل ${k.screened_today} منجز`,
+      cause: 'تراكم الفحوصات المعلّقة',
+      recommendation: 'تعزيز الموارد في نقاط الفحص',
+    });
+  }
+
+  return recs;
+};
+
 const AirportDirectorPage = () => {
   const { user } = useAuth();
   const [period, setPeriod] = useState<Period>('DAY');
@@ -175,6 +234,7 @@ const AirportDirectorPage = () => {
   const k = dashboard?.kpis;
   const alerts = dashboard?.alerts ?? [];
   const report = dashboard?.report;
+  const recommendations = computeRecommendations(dashboard);
 
   /** الصالات مع عدد نقاط الفحص لكل صالة (تجميع مخاطب). */
   const terminalRows = useMemo<TerminalAggregate[]>(() => {
@@ -411,7 +471,49 @@ const AirportDirectorPage = () => {
           {/* ===== دعم القرار ===== */}
           <Box ref={register('decision')} data-section="decision" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <SectionCard title="💡 دعم اتخاذ القرار" subtitle="النظام يوصي — والمديرة تقرر">
-              <EmptyState title="قيد الإعداد" description="توصيات دعم القرار تُعرض عند توفر بيانات النظام المصدر." />
+              {dashboardApi.loading && !dashboard ? (
+                <ListSkeleton count={1} />
+              ) : dashboardApi.error && !dashboard ? (
+                <ErrorState compact onRetry={dashboardApi.retry} />
+              ) : recommendations.length === 0 ? (
+                <EmptyState
+                  title="لا توجد توصيات حالية"
+                  description="سيظهر هنا أي تنبيه عند ارتفاع مؤشرات تستدعي التصعيد."
+                />
+              ) : (
+                <Grid container spacing={2}>
+                  {recommendations.map((r) => (
+                    <Grid item xs={12} md={4} key={r.topic}>
+                      <Card
+                        sx={{
+                          height: '100%',
+                          borderRadius: 3,
+                          border: '1px solid rgba(47,109,208,0.15)',
+                          bgcolor: 'rgba(47,109,208,0.035)',
+                        }}
+                      >
+                        <CardContent>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <LightbulbIcon color="warning" />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                              {r.topic}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            {r.finding}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                            السبب المحتمل: {r.cause}
+                          </Typography>
+                          <Typography variant="body2" color="success.main" sx={{ mt: 1, fontWeight: 700 }}>
+                            {r.recommendation}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </SectionCard>
           </Box>
 

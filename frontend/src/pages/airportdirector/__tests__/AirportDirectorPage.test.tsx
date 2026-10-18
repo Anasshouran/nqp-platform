@@ -360,14 +360,14 @@ describe('AirportDirectorPage', () => {
     expect(await screen.findByText('طاقم الاختبار')).toBeTruthy();
   });
 
-  it('keeps exactly two "قيد الإعداد" placeholders (decision + activity log)', async () => {
+  it('keeps exactly one "قيد الإعداد" placeholder (activity log only)', async () => {
     wrap(<AirportDirectorPage />);
     await screen.findAllByTestId('kpi-card');
     expect(screen.getAllByText(/موظفو المطار/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/مصفوفة الصلاحيات/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/دعم اتخاذ القرار/).length).toBeGreaterThan(0);
-    // دعم القرار + سجل الأنشطة نائبان؛ بطاقة الصلاحيات صارت حيّة.
-    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(2);
+    // يبقى سجل الأنشطة وحده نائبًا؛ بطاقتا الصلاحيات ودعم القرار صارتا حيّتين.
+    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(1);
   });
 
   it('renders staff rows from getAirportStaff', async () => {
@@ -534,5 +534,56 @@ describe('AirportDirectorPage', () => {
     } as never);
     wrap(<AirportDirectorPage />);
     expect(await screen.findByText(/لا توجد صلاحيات قابلة للعرض/)).toBeTruthy();
+  });
+
+  it('recommends thermal-screening escalation when suspected cases exist', async () => {
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('تصعيد الفحص الحراري وتفعيل تتبع المخالطين')).toBeTruthy();
+    expect(screen.getAllByText('حالات مشتبهة').length).toBeGreaterThan(0);
+  });
+
+  it('recommends corrective actions when recent inspections are non-compliant', async () => {
+    vi.mocked(getAirportDashboard).mockResolvedValue({
+      data: {
+        status: 'success',
+        data: {
+          ...dashboardFixture,
+          recent_inspections: [{ ...dashboardFixture.recent_inspections[0], overall_status: 'FAILED' }],
+        },
+      },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('تفتيش الطائرات')).toBeTruthy();
+    expect(screen.getByText('إجراءات تصحيحية وإعادة تفتيش الطائرات المعنية')).toBeTruthy();
+  });
+
+  it('recommends resource reinforcement when pending screenings pile up', async () => {
+    vi.mocked(getAirportDashboard).mockResolvedValue({
+      data: {
+        status: 'success',
+        data: {
+          ...dashboardFixture,
+          kpis: { ...dashboardFixture.kpis, suspected_cases: 0, pending_screenings: 100, screened_today: 40 },
+        },
+      },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('ضغط الفحص')).toBeTruthy();
+    expect(screen.getByText('تعزيز الموارد في نقاط الفحص')).toBeTruthy();
+  });
+
+  it('shows the honest empty state when no heuristic fires', async () => {
+    vi.mocked(getAirportDashboard).mockResolvedValue({
+      data: {
+        status: 'success',
+        data: {
+          ...dashboardFixture,
+          kpis: { ...dashboardFixture.kpis, suspected_cases: 0, pending_screenings: 1, screened_today: 40 },
+        },
+      },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('لا توجد توصيات حالية')).toBeTruthy();
+    expect(screen.queryByText('تصعيد الفحص الحراري وتفعيل تتبع المخالطين')).toBeNull();
   });
 });
