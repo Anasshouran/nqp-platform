@@ -237,6 +237,14 @@ class AirportActivityLog(BaseModel):
     target_type = models.CharField(max_length=60, verbose_name='نوع الهدف')
     target_id = models.CharField(max_length=80, verbose_name='معرف الهدف')
     target_label = models.CharField(max_length=255, blank=True, verbose_name='تسمية الهدف')
+    airport = models.ForeignKey(
+        'masterdata.EntryPoint',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='airport_activity_entries',
+        verbose_name='المطار',
+    )
     metadata = models.JSONField(default=dict, blank=True, verbose_name='بيانات وصفية')
     ip_address = models.GenericIPAddressField(
         null=True, blank=True, verbose_name='عنوان IP'
@@ -248,6 +256,7 @@ class AirportActivityLog(BaseModel):
             models.Index(fields=['-created_at']),
             models.Index(fields=['action']),
             models.Index(fields=['target_type', 'target_id']),
+            models.Index(fields=['airport', '-created_at']),
         ]
         verbose_name = 'سجل نشاط مطار'
         verbose_name_plural = 'سجلات نشاط المطارات'
