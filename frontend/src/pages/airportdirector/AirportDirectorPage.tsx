@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -62,6 +62,8 @@ import {
   getScreeningPoints,
   updateAirportStaff,
 } from '../../api/endpoints/airport';
+import { getProfile, type ProfileData } from '../../api/endpoints/auth';
+import { getPermissionTree } from '../../api/endpoints/roles';
 import { AIRPORT_STAFF_ROLE_LABELS } from '../../types/airport';
 import type {
   AirportDashboard,
@@ -86,6 +88,43 @@ type Period = 'DAY' | 'WEEK' | 'MONTH';
 /** عيّنات لوحة مدير المطار — الحد الأقصى لكل قائمة حديثة. */
 const RECENT_LIMIT = 20;
 const REFERENCE_PAGE_SIZE = 100;
+
+/**
+ * كتالوج مصفوفة الصلاحيات لمدير المطار.
+ *
+ * `AIRPORT_RESOURCES` = الموارد التي تهمّ هذه اللوحة. يُفضّل جلب أكوادها من
+ * `/auth/permissions/tree/`؛ وعند تعذّر ذلك (دور غير موظّف بلا `permissions:view`)
+ * نسقط إلى `AIRPORT_PERMISSION_CATALOG` المحلي بنفس الأكواد القياسية.
+ */
+const AIRPORT_RESOURCES = ['airport_health', 'airport_staff', 'screening'] as const;
+
+const RESOURCE_LABELS: Record<(typeof AIRPORT_RESOURCES)[number], string> = {
+  airport_health: 'صحة المطارات',
+  airport_staff: 'كادر صحة المطارات',
+  screening: 'الفحوصات',
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  view: 'عرض',
+  add: 'إضافة',
+  edit: 'تعديل',
+  delete: 'حذف',
+  export: 'تصدير',
+};
+
+const AIRPORT_PERMISSION_CATALOG = [
+  'airport_health:view', 'airport_health:add', 'airport_health:edit', 'airport_health:export',
+  'airport_staff:view', 'airport_staff:add', 'airport_staff:edit', 'airport_staff:export',
+  'screening:view', 'screening:add', 'screening:edit', 'screening:delete', 'screening:export',
+] as const;
+
+/** تسمية عربية مقروءة لكود صلاحية (`resource:action`). */
+const permissionLabel = (code: string): string => {
+  const [resource, action] = code.split(':');
+  const resourceLabel = RESOURCE_LABELS[resource as keyof typeof RESOURCE_LABELS];
+  const actionLabel = ACTION_LABELS[action];
+  return resourceLabel && actionLabel ? `${resourceLabel} · ${actionLabel}` : code;
+};
 
 const SECTIONS = [
   { id: 'overview', label: 'نظرة عامة', icon: <DashboardIcon fontSize="small" /> },
@@ -400,8 +439,8 @@ const AirportDirectorPage = () => {
           <Box ref={register('permissions')} data-section="permissions" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <Grid container spacing={3}>
               <Grid item xs={12} lg={6}>
-                <SectionCard title="مصفوفة الصلاحيات" subtitle="متاح للمديرة / مستبعد تشغيليًا">
-                  <EmptyState title="قيد الإعداد" description="مصفوفة الصلاحيات تُعرض عند توفر بيانات النظام المصدر." />
+                <SectionCard title="مصفوفة الصلاحيات" subtitle="متاح لدورك / مستبعد تشغيليًا">
+                  <PermissionsSection />
                 </SectionCard>
               </Grid>
               <Grid item xs={12} lg={6}>
@@ -988,6 +1027,102 @@ const ReportsSection = ({
         </>
       )}
     </SectionCard>
+  );
+};
+
+/**
+ * قسم مصفوفة الصلاحيات — يُركّب من بيانات حقيقية:
+ * - `/auth/profile/` (متاح لأي مستخدم مُصادَق) → `effective_permissions`.
+ * - `/auth/permissions/tree/` بأفضل جهد؛ دور مدير المطار لا يملك
+ *   `permissions:view` فيُرفض النداء (403) ونسقط بصمت إلى الكتالوج المحلي.
+ *
+ * المتاح = الكتالوج ∩ الصلاحيات الفعلية · المستبعد = الكتالوج − الصلاحيات الفعلية.
+ */
+const PermissionsSection = () => {
+  const profileApi = useApi<ProfileData>(() => getProfile().then((res) => res.data.data));
+  const [treeCodes, setTreeCodes] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPermissionTree()
+      .then((res) => {
+        if (cancelled) return;
+        const tree = res.data?.data ?? {};
+        const codes: string[] = [];
+        Object.values(tree).forEach((perms) => {
+          perms.forEach((perm) => {
+            if ((AIRPORT_RESOURCES as readonly string[]).includes(perm.resource)) {
+              codes.push(`${perm.resource}:${perm.action}`);
+            }
+          });
+        });
+        setTreeCodes(codes);
+      })
+      .catch(() => {
+        // سقوط صامت: أدوار المطار غير الموظفين لا تملك `permissions:view`.
+        if (!cancelled) setTreeCodes(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const catalog = useMemo<string[]>(
+    () => treeCodes ?? [...AIRPORT_PERMISSION_CATALOG],
+    [treeCodes]
+  );
+
+  const effective = useMemo(
+    () => new Set(profileApi.data?.effective_permissions ?? []),
+    [profileApi.data]
+  );
+
+  const allowed = useMemo(() => catalog.filter((code) => effective.has(code)), [catalog, effective]);
+  const denied = useMemo(() => catalog.filter((code) => !effective.has(code)), [catalog, effective]);
+
+  if (profileApi.error && !profileApi.data) {
+    return <ErrorState compact onRetry={profileApi.retry} />;
+  }
+  if (profileApi.loading && !profileApi.data) {
+    return <ListSkeleton count={2} />;
+  }
+  if (allowed.length === 0 && denied.length === 0) {
+    return (
+      <EmptyState
+        title="لا توجد صلاحيات قابلة للعرض لهذا الدور."
+        description="لم تُرجع خدمات الصلاحيات أي صلاحيات مطار مطابقة."
+      />
+    );
+  }
+
+  return (
+    <>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
+            المتاح
+          </Typography>
+          <Stack data-testid="rbac-allowed" direction="row" flexWrap="wrap" useFlexGap gap={1}>
+            {allowed.map((code) => (
+              <StatusChip key={code} label={permissionLabel(code)} tone="success" />
+            ))}
+          </Stack>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
+            المستبعد
+          </Typography>
+          <Stack data-testid="rbac-denied" direction="row" flexWrap="wrap" useFlexGap gap={1}>
+            {denied.map((code) => (
+              <StatusChip key={code} label={permissionLabel(code)} tone="neutral" />
+            ))}
+          </Stack>
+        </Grid>
+      </Grid>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+        يُحدَّث تلقائيًا حسب صلاحيات دورك.
+      </Typography>
+    </>
   );
 };
 

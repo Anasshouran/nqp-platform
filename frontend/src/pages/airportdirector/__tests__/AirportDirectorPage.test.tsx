@@ -40,6 +40,18 @@ const airportApi = vi.hoisted(() => ({
 }));
 vi.mock('../../../api/endpoints/airport', () => airportApi);
 
+const authApi = vi.hoisted(() => ({ getProfile: vi.fn() }));
+vi.mock('../../../api/endpoints/auth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/endpoints/auth')>();
+  return { ...actual, getProfile: authApi.getProfile };
+});
+
+const rolesApi = vi.hoisted(() => ({ getPermissionTree: vi.fn() }));
+vi.mock('../../../api/endpoints/roles', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/endpoints/roles')>();
+  return { ...actual, getPermissionTree: rolesApi.getPermissionTree };
+});
+
 import AirportDirectorPage from '../AirportDirectorPage';
 import {
   createAirportStaff,
@@ -52,6 +64,8 @@ import {
   getScreeningPoints,
   updateAirportStaff,
 } from '../../../api/endpoints/airport';
+import { getProfile } from '../../../api/endpoints/auth';
+import { getPermissionTree } from '../../../api/endpoints/roles';
 
 /* ------------------------------- fixtures ------------------------------- */
 
@@ -231,6 +245,25 @@ const page = (results: unknown[]) => ({
   data: { status: 'success', data: { count: results.length, next: null, previous: null, results } },
 });
 
+/** ملف المستخدم الحالي — التركيز على الصلاحيات الفعلية فقط. */
+const profileFixture = {
+  user: { full_name: 'مديرة الاختبار' },
+  profile: {},
+  security: { id: 'u1', is_active: true, is_staff: false, is_mfa_enabled: false },
+  roles: [],
+  organization: [],
+  effective_permissions: ['airport_health:view', 'airport_health:edit', 'airport_staff:view'],
+  scopes: [],
+};
+
+/** شجرة صلاحيات مصغّرة (مسار الموظفين/المشرفين عبر /auth/permissions/tree/). */
+const permissionTreeFixture = {
+  airport_health: [
+    { id: 'p1', code: 'airport_health:view', name: 'view', resource: 'airport_health', action: 'view' },
+    { id: 'p2', code: 'airport_health:add', name: 'add', resource: 'airport_health', action: 'add' },
+  ],
+};
+
 /* ------------------------------- helpers ------------------------------- */
 
 const wrap = (ui: ReactElement) =>
@@ -252,6 +285,11 @@ const setupMocks = () => {
   vi.mocked(createAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
   vi.mocked(updateAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
   vi.mocked(deleteAirportStaff).mockResolvedValue({ data: { status: 'success', data: {} } } as never);
+  vi.mocked(getProfile).mockResolvedValue({
+    data: { status: 'success', data: profileFixture },
+  } as never);
+  // دور مدير المطار لا يملك permissions:view → الشجرة تُرفض بـ 403 ويُستخدم الكتالوج المحلي.
+  vi.mocked(getPermissionTree).mockRejectedValue({ response: { status: 403 } });
 };
 
 beforeEach(() => {
@@ -322,14 +360,14 @@ describe('AirportDirectorPage', () => {
     expect(await screen.findByText('طاقم الاختبار')).toBeTruthy();
   });
 
-  it('keeps only permissions / decision as "قيد الإعداد" (staff is now live)', async () => {
+  it('keeps exactly two "قيد الإعداد" placeholders (decision + activity log)', async () => {
     wrap(<AirportDirectorPage />);
     await screen.findAllByTestId('kpi-card');
     expect(screen.getAllByText(/موظفو المطار/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/مصفوفة الصلاحيات/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/دعم اتخاذ القرار/).length).toBeGreaterThan(0);
-    // بطاقتا الصلاحيات + دعم القرار = 3 عناصر نائبة؛ قسم الموظفين لم يعد منها.
-    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(3);
+    // دعم القرار + سجل الأنشطة نائبان؛ بطاقة الصلاحيات صارت حيّة.
+    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(2);
   });
 
   it('renders staff rows from getAirportStaff', async () => {
@@ -442,5 +480,59 @@ describe('AirportDirectorPage', () => {
     expect(getCrewHealthRecords).toHaveBeenCalledTimes(1);
     expect(getAirportTerminals).toHaveBeenCalledTimes(1);
     expect(getScreeningPoints).toHaveBeenCalledTimes(1);
+  });
+
+  it('builds the RBAC card from effective_permissions + local catalog when the tree 403s', async () => {
+    wrap(<AirportDirectorPage />);
+    const allowed = await screen.findByTestId('rbac-allowed');
+    const denied = screen.getByTestId('rbac-denied');
+
+    // 3 صلاحيات فعلية من الكتالوج = متاح.
+    expect(allowed.querySelectorAll('.MuiChip-root')).toHaveLength(3);
+    expect(within(allowed).getByText('صحة المطارات · عرض')).toBeTruthy();
+    expect(within(allowed).getByText('صحة المطارات · تعديل')).toBeTruthy();
+    expect(within(allowed).getByText('كادر صحة المطارات · عرض')).toBeTruthy();
+
+    // بقية الكتالوج (13 − 3) = مستبعد.
+    expect(denied.querySelectorAll('.MuiChip-root')).toHaveLength(10);
+    expect(within(denied).getByText('الفحوصات · حذف')).toBeTruthy();
+    expect(within(denied).getByText('كادر صحة المطارات · تعديل')).toBeTruthy();
+  });
+
+  it('never renders the fabricated PERMISSIONS fixture strings', async () => {
+    wrap(<AirportDirectorPage />);
+    await screen.findByTestId('rbac-allowed');
+    expect(screen.queryByText('عرض التقارير اليومية / الأسبوعية / الشهرية')).toBeNull();
+    expect(screen.queryByText('أخذ العينات الشخصية للمسافرين')).toBeNull();
+    expect(screen.queryByText('إصدار أوامر تفتيش رحلات')).toBeNull();
+  });
+
+  it('prefers /auth/permissions/tree/ codes when the call succeeds', async () => {
+    vi.mocked(getPermissionTree).mockResolvedValue({
+      data: { status: 'success', data: permissionTreeFixture },
+    } as never);
+    wrap(<AirportDirectorPage />);
+
+    const allowed = await screen.findByTestId('rbac-allowed');
+    const denied = screen.getByTestId('rbac-denied');
+
+    // الكتالوج من الشجرة فقط: عرض/إضافة لصحة المطارات.
+    expect(allowed.querySelectorAll('.MuiChip-root')).toHaveLength(1);
+    expect(within(allowed).getByText('صحة المطارات · عرض')).toBeTruthy();
+    expect(denied.querySelectorAll('.MuiChip-root')).toHaveLength(1);
+    expect(within(denied).getByText('صحة المطارات · إضافة')).toBeTruthy();
+    // مورد غير موجود في الشجرة — يثبت أن الكتالوج المحلي لم يُستخدم.
+    expect(screen.queryByText('كادر صحة المطارات · عرض')).toBeNull();
+  });
+
+  it('shows the permissions empty state only when no codes are available', async () => {
+    vi.mocked(getProfile).mockResolvedValue({
+      data: { status: 'success', data: { ...profileFixture, effective_permissions: [] } },
+    } as never);
+    vi.mocked(getPermissionTree).mockResolvedValue({
+      data: { status: 'success', data: {} },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText(/لا توجد صلاحيات قابلة للعرض/)).toBeTruthy();
   });
 });
