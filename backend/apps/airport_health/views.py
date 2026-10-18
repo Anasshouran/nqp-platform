@@ -348,3 +348,157 @@ class AirportActivityLogViewSet(AirportHealthRBACMixin, viewsets.ReadOnlyModelVi
         if port_ids is not None:
             qs = qs.filter(airport_id__in=port_ids)
         return qs
+
+
+class AirportDashboardViewSet(viewsets.ViewSet):
+    """واجهة لوحة مفتش الحجر الصحي في المطار (تجميع عام لكل المنافذ الجوية)."""
+
+    serializer_class = AirportDashboardSerializer
+    permission_resource = 'airport_health'
+    permission_classes = [AdminOrPermissionAction]
+
+    AIRPORT = Port.Kind.AIRPORT
+
+    def _flights(self):
+        return Flight.objects.filter(destination_port__kind=self.AIRPORT)
+
+    def _port_scope(self):
+        """منافذ نطاق المستخدم: None لغير المقيدين (وطني)، [] عند غياب النطاق (فشل آمن)."""
+        user = self.request.user
+        if not user or not user.is_authenticated or user.is_superuser:
+            return None
+        return resolve_user_port_ids(user)
+
+    def _scope_ports(self, queryset, port_ids, path):
+        if port_ids is None:
+            return queryset
+        return queryset.filter(**{f'{path}__in': port_ids})
+
+    def list(self, request):
+        now = timezone.now()
+        today = now.date()
+        port_ids = self._port_scope()
+        flights = self._scope_ports(self._flights(), port_ids, 'destination_port')
+        screenings = self._scope_ports(
+            AirportScreening.objects.all(), port_ids, 'screening_point__terminal__port'
+        )
+        referrals = self._scope_ports(ClinicReferral.objects.all(), port_ids, 'port')
+
+        flights_today = flights.filter(scheduled_arrival__date=today).count()
+        passengers_today = Traveler.objects.filter(created_at__date=today).count()
+        pending_screenings = screenings.filter(
+            status=AirportScreening.ScreeningStatus.PENDING
+        ).count()
+        screened_today = screenings.filter(created_at__date=today).count()
+        referrals_today = referrals.filter(created_at__date=today).count()
+        red_today = screenings.filter(
+            risk_level=AirportScreening.RiskLevel.RED, created_at__date=today
+        ).count()
+        suspected_today = red_today + referrals.filter(
+            status=ClinicReferral.ReferralStatus.PENDING, created_at__date=today
+        ).count()
+        completed_today = screenings.filter(
+            status='CLEARED', created_at__date=today
+        ).count()
+
+        kpis = {
+            'flights_today': flights_today,
+            'passengers_today': passengers_today,
+            'pending_screenings': pending_screenings,
+            'screened_today': screened_today,
+            'clinic_referrals': referrals_today,
+            'suspected_cases': suspected_today,
+            'vaccinations': 0,
+            'completed_today': completed_today,
+        }
+
+        upcoming_flights = [
+            {
+                'id': str(f.id),
+                'flight_number': f.flight_number,
+                'origin_country': f.origin_country.name_ar or f.origin_country.name,
+                'scheduled_arrival': f.scheduled_arrival.isoformat(),
+                'status': f.status,
+            }
+            for f in flights.filter(scheduled_arrival__gte=now)
+            .exclude(status=Flight.FlightStatus.CANCELLED)
+            .select_related('origin_country')
+            .order_by('scheduled_arrival')[:8]
+        ]
+
+        suspected = []
+        red_screenings = (
+            screenings.filter(risk_level=AirportScreening.RiskLevel.RED, created_at__date=today)
+            .select_related('traveler', 'flight')
+            .order_by('-created_at')[:8]
+        )
+        for s in red_screenings:
+            suspected.append({
+                'kind': 'RED',
+                'traveler_name': s.traveler.full_name,
+                'flight_number': s.flight.flight_number if s.flight else None,
+                'detail': '، '.join(s.symptoms or []) or 'حالة شديدة الخطورة',
+                'at': s.created_at.isoformat(),
+            })
+        pending_referrals = (
+            referrals.filter(status='PENDING')
+            .select_related('traveler', 'port')
+            .order_by('-created_at')[:8]
+        )
+        for r in pending_referrals:
+            suspected.append({
+                'kind': 'REFERRAL',
+                'traveler_name': r.traveler.full_name,
+                'flight_number': None,
+                'detail': r.notes or f'إحالة إلى عيادة {r.port.name_ar}',
+                'at': r.created_at.isoformat(),
+            })
+
+        tasks = []
+        for f in flights.filter(scheduled_arrival__date=today, status__in=['ARRIVED', 'IN_TRANSIT'])[:8]:
+            tasks.append({'kind': 'flight', 'title': f'فحص رحلة {f.flight_number}', 'priority': 'medium'})
+        for s in screenings.filter(status='PENDING', risk_level='RED').select_related('traveler')[:6]:
+            tasks.append({'kind': 'refer', 'title': f'مراجعة حالة {s.traveler.full_name}', 'priority': 'high'})
+        for f in flights.filter(status='IN_TRANSIT')[:4]:
+            tasks.append({'kind': 'declare', 'title': f'مراجعة الإقرار الصحي لرحلة {f.flight_number}', 'priority': 'low'})
+
+        alerts = [
+            {
+                'id': str(n.id),
+                'subject': n.subject or 'تنبيه',
+                'body': n.body,
+                'created_at': n.created_at.isoformat(),
+                'status': n.status,
+            }
+            for n in NotificationLog.objects.order_by('-created_at')[:6]
+        ]
+
+        by_flight = list(
+            screenings.filter(created_at__date=today)
+            .values('flight__flight_number')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:5]
+        )
+        report = {
+            'flights': flights_today,
+            'travelers': passengers_today,
+            'screened': screened_today,
+            'referrals': referrals_today,
+            'suspected': red_today,
+            'screenings_by_flight': [
+                {'flight_number': r['flight__flight_number'] or '—', 'count': r['count']} for r in by_flight
+            ],
+        }
+
+        return Response(
+            success_response({
+                'kpis': kpis,
+                'upcoming_flights': upcoming_flights,
+                'suspected': suspected,
+                'tasks': tasks,
+                'alerts': alerts,
+                'report': report,
+            })
+        )
+
+
