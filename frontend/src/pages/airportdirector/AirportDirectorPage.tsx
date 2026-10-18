@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import AddIcon from '@mui/icons-material/Add';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -49,6 +48,7 @@ import {
 import type {
   AirportDashboard,
   AirportDashboardReport,
+  AirportStaffSummary,
   AirportTerminal,
   CrewHealthRecord,
   RecentInspection,
@@ -369,10 +369,18 @@ const AirportDirectorPage = () => {
           <Box ref={register('staff')} data-section="staff" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <SectionCard
               title="موظفو المطار"
-              subtitle="مفتشون، فنيو مختبر، كتّاب إدخال — إدارة المواقع"
-              action={<Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => notifySuccess('فتح إضافة موظف')}>إضافة موظف</Button>}
+              subtitle="مفتشون، فنيو مختبر، كتّاب إدخال — الموظفون المسجّلون"
             >
-              <EmptyState title="قيد الإعداد" description="بيانات موظفي المطار تُعرض عند توفرها من النظام المصدر." />
+              <DirectorTable<AirportStaffSummary>
+                columns={staffColumns}
+                rows={dashboard?.staff ?? []}
+                rowKey={(s) => s.id}
+                loading={dashboardApi.loading}
+                error={dashboardApi.error}
+                onRetry={dashboardApi.retry}
+                emptyTitle="لا يوجد موظفون مسجلون"
+                emptyDescription="ستظهر بيانات موظفي المطار هنا عند تسجيلهم."
+              />
             </SectionCard>
           </Box>
 
@@ -488,6 +496,22 @@ const crewColumns: DataTableColumn<CrewHealthRecord>[] = [
   { key: 'health_status', label: 'الحالة الصحية', render: (c) => chipFor(HEALTH_STATUS_META, c.health_status) },
   { key: 'temperature', label: 'درجة الحرارة', align: 'center', render: (c) => (c.temperature ?? 0) > 0 ? `${c.temperature}°` : '—' },
   { key: 'next_clearance_date', label: 'التصريح القادم', render: (c) => c.next_clearance_date || '—' },
+];
+
+const staffColumns: DataTableColumn<AirportStaffSummary>[] = [
+  { key: 'full_name', label: 'الاسم', render: (s) => <Box sx={{ fontWeight: 700 }}>{s.full_name || '—'}</Box> },
+  { key: 'role_label', label: 'الدور', render: (s) => <StatusChip label={s.role_label || s.role} tone="info" /> },
+  { key: 'email', label: 'البريد', render: (s) => s.email || '—' },
+  { key: 'phone', label: 'الهاتف', render: (s) => s.phone || '—' },
+  { key: 'shift', label: 'الوردية', render: (s) => s.shift || '—' },
+  {
+    key: 'is_active',
+    label: 'نشط',
+    align: 'center',
+    render: (s) => (
+      <StatusChip label={s.is_active ? 'نشط' : 'غير نشط'} tone={s.is_active ? 'success' : 'neutral'} />
+    ),
+  },
 ];
 
 interface TerminalAggregate {

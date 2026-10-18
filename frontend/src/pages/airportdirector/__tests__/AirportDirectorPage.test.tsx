@@ -107,7 +107,28 @@ const dashboardFixture = {
       screened_at: '2026-10-17T08:00:00Z',
     },
   ],
-  staff: [],
+  staff: [
+    {
+      id: 'st1',
+      full_name: 'موظف الاختبار الأول',
+      role: 'DIRECTOR',
+      role_label: 'مدير المطار',
+      email: 'staff-one@nqp-test.example',
+      phone: '0900000001',
+      shift: 'صباحي',
+      is_active: true,
+    },
+    {
+      id: 'st2',
+      full_name: 'موظف الاختبار الثاني',
+      role: 'INSPECTOR',
+      role_label: 'مفتش طائرات',
+      email: 'staff-two@nqp-test.example',
+      phone: '0900000002',
+      shift: 'مسائي',
+      is_active: false,
+    },
+  ],
 };
 
 const crewFixture = [
@@ -236,13 +257,30 @@ describe('AirportDirectorPage', () => {
     expect(await screen.findByText('طاقم الاختبار')).toBeTruthy();
   });
 
-  it('keeps staff / permissions / decision as "قيد الإعداد"', async () => {
+  it('keeps only permissions / decision as "قيد الإعداد" (staff is now live)', async () => {
     wrap(<AirportDirectorPage />);
     await screen.findAllByTestId('kpi-card');
     expect(screen.getAllByText(/موظفو المطار/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/مصفوفة الصلاحيات/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/دعم اتخاذ القرار/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/قيد الإعداد/).length).toBeGreaterThanOrEqual(3);
+    // بطاقتا الصلاحيات + دعم القرار = 3 عناصر نائبة؛ قسم الموظفين لم يعد منها.
+    expect(screen.getAllByText(/قيد الإعداد/).length).toBe(3);
+  });
+
+  it('renders staff rows from dashboard.staff', async () => {
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('موظف الاختبار الأول')).toBeTruthy();
+    expect(screen.getByText('موظف الاختبار الثاني')).toBeTruthy();
+    expect(screen.getAllByText('مدير المطار').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('مفتش طائرات').length).toBeGreaterThan(0);
+  });
+
+  it('shows the staff empty state when dashboard.staff is empty', async () => {
+    vi.mocked(getAirportDashboard).mockResolvedValue({
+      data: { status: 'success', data: { ...dashboardFixture, staff: [] } },
+    } as never);
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText('لا يوجد موظفون مسجلون')).toBeTruthy();
   });
 
   it('fires all four API calls on mount', async () => {
