@@ -2,6 +2,7 @@ import apiClient from '../client';
 import type { ApiResponse, PaginatedResponse } from '../../types/api';
 import type {
   AircraftInspection,
+  AirportActivityLog,
   AirportDashboard,
   AirportPort,
   AirportScreening,
@@ -45,3 +46,10 @@ export const updateAirportStaff = (id: string, input: Partial<AirportStaff>) =>
 
 export const deleteAirportStaff = (id: string) =>
   apiClient.delete(`/airport/staff/${id}/`);
+
+// سجل النشاط الإداري للمطار (قراءة فقط — #78).
+export const getAirportActivityLog = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<AirportActivityLog>>>(
+    '/airport/activity-log/',
+    { params },
+  );
