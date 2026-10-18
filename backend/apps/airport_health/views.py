@@ -1,3 +1,4 @@
+import logging
 import os
 
 from rest_framework import status, viewsets
@@ -21,6 +22,8 @@ from apps.masterdata.models import EntryPoint as Port
 from apps.travelers.models import Traveler
 
 from .models import (
+    AirportActivityAction,
+    AirportActivityLog,
     AircraftInspection,
     AirportScreening,
     AirportStaff,
@@ -100,6 +103,41 @@ class AirportHealthRBACMixin(SectorScopedMixin):
             raise PermissionDenied('تعذّر تحديد منفذ السجل — تُرفض العملية')
         if str(port.pk) not in {str(pid) for pid in allowed}:
             raise PermissionDenied('السجل خارج نطاق منافذك — تُرفض العملية')
+
+
+def _log_airport_activity(
+    request,
+    action: str,
+    description: str,
+    target_type: str,
+    target_id,
+    target_label: str = '',
+    metadata: dict | None = None,
+) -> None:
+    """أفضل جهد — never raises so it never breaks the mutation path."""
+    logger = logging.getLogger(__name__)
+    try:
+        user = getattr(request, 'user', None)
+        actor_name = ''
+        if user and getattr(user, 'is_authenticated', False):
+            actor_name = getattr(user, 'full_name', '') or getattr(user, 'email', '') or ''
+        ip = None
+        if request and hasattr(request, 'META'):
+            xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+            ip = xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')
+        AirportActivityLog.objects.create(
+            actor=user if (user and user.is_authenticated) else None,
+            actor_name=actor_name[:200],
+            action=action,
+            description=description[:255],
+            target_type=target_type,
+            target_id=str(target_id),
+            target_label=(target_label or '')[:255],
+            metadata=metadata or {},
+            ip_address=ip,
+        )
+    except Exception:
+        logger.exception('airport activity log emit failed')
 
 
 class PortViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
@@ -190,6 +228,19 @@ class AirportScreeningViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
         }
         return Response(success_response(data), status=status.HTTP_201_CREATED)
 
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        screening = serializer.instance
+        traveler_name = getattr(screening.traveler, 'full_name', '') or ''
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.SCREENING_CREATED,
+            f'فحص مسافر جديد — {traveler_name}',
+            target_type='AirportScreening',
+            target_id=screening.id,
+            target_label=traveler_name,
+        )
+
     def _score(self, screening):
         score = 0.0
         if screening.body_temperature and screening.body_temperature > 37.5:
@@ -229,6 +280,18 @@ class AircraftInspectionViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     port_field = 'flight__destination_port'
     port_reference_field = 'flight'
 
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        inspection = serializer.instance
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.INSPECTION_CREATED,
+            f'تفتيش طائرة — {inspection.aircraft_registration}',
+            target_type='AircraftInspection',
+            target_id=inspection.id,
+            target_label=inspection.aircraft_registration,
+        )
+
 
 class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     queryset = CrewHealthRecord.objects.select_related('crew', 'flight').all()
@@ -239,6 +302,19 @@ class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     ordering_fields = ['created_at']
     port_field = 'flight__destination_port'
     port_reference_field = 'flight'
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        record = serializer.instance
+        crew_name = getattr(record.crew, 'full_name', '') if record.crew else ''
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.CREW_RECORD_CREATED,
+            f'سجل طاقم — {crew_name}',
+            target_type='CrewHealthRecord',
+            target_id=record.id,
+            target_label=crew_name,
+        )
 
 
 class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
@@ -252,6 +328,42 @@ class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     port_field = 'airport'
     port_reference_field = 'airport'
     http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        staff = serializer.instance
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.STAFF_CREATED,
+            f'إضافة موظف — {staff.full_name} ({staff.get_role_display()})',
+            target_type='AirportStaff',
+            target_id=staff.id,
+            target_label=staff.full_name,
+        )
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        staff = serializer.instance
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.STAFF_UPDATED,
+            f'تعديل موظف — {staff.full_name}',
+            target_type='AirportStaff',
+            target_id=staff.id,
+            target_label=staff.full_name,
+        )
+
+    def perform_destroy(self, instance):
+        # Log before delete so we still have id/name
+        _log_airport_activity(
+            self.request,
+            AirportActivityAction.STAFF_DELETED,
+            f'حذف موظف — {instance.full_name}',
+            target_type='AirportStaff',
+            target_id=instance.id,
+            target_label=instance.full_name,
+        )
+        super().perform_destroy(instance)
 
 
 class AirportDashboardViewSet(viewsets.ViewSet):
