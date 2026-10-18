@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     AircraftInspectionViewSet,
+    AirportActivityLogViewSet,
     AirportDashboardViewSet,
     AirportScreeningViewSet,
     AirportStaffViewSet,
@@ -20,6 +21,7 @@ router.register('screenings', AirportScreeningViewSet, basename='airport-screeni
 router.register('aircraft-inspections', AircraftInspectionViewSet, basename='aircraft-inspection')
 router.register('crew-records', CrewHealthRecordViewSet, basename='crew-record')
 router.register('staff', AirportStaffViewSet, basename='airport-staff')
+router.register('activity-log', AirportActivityLogViewSet, basename='airport-activity-log')
 router.register('dashboard', AirportDashboardViewSet, basename='airport-dashboard')
 
 urlpatterns = [

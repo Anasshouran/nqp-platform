@@ -1,4 +1,4 @@
-"""إصدار سجلات النشاط للمطارات عند نقاط الطفرة الأربع.
+"""إصدار سجلات النشاط للمطارات عند نقاط الطفرة الأربع + نقطة النهاية.
 
 يختبر أن إجراءات AirportActivityLog تُصدر عند:
 - إنشاء فحص مسافر (AirportScreening)
@@ -6,7 +6,8 @@
 - إنشاء سجل طاقم (CrewHealthRecord)
 - إضافة/تعديل/حذف موظف مطار (AirportStaff)
 
-لا تُختبر نقطة النهاية (S2) — فقط الإصدار عبر perform_* overrides في الـ viewsets.
+وأن نقطة النهاية GET /api/v1/airport/activity-log/ تعمل (المصادقة، التفويض،
+النطاق المنفذ، حمل حقل المطار في الاستجابة).
 """
 import pytest
 from django.contrib.auth import get_user_model
@@ -150,11 +151,15 @@ def inspector_client(api_client, port):
 
 @pytest.fixture
 def staff_manager_client(api_client, port):
-    """مدير كادر مطار بصلاحيات airport_staff: view/add/edit/delete."""
+    """مدير كادر مطار بصلاحيات airport_staff + airport_health:view."""
     user = User.objects.create_user(
         email='staff-manager@nqp.gov.sd', password=PASSWORD, full_name='مدير الكادر'
     )
-    role = _ensure_role('AIRPORT_STAFF_MANAGER_TEST', [('airport_staff', a) for a in ('view', 'add', 'edit', 'delete')])
+    role = _ensure_role(
+        'AIRPORT_STAFF_MANAGER_TEST',
+        [('airport_staff', a) for a in ('view', 'add', 'edit', 'delete')]
+        + [('airport_health', 'view')],
+    )
     _assign(user, role)
     resp = api_client.post('/api/v1/auth/login/', {'email': user.email, 'password': PASSWORD}, format='json')
     assert resp.status_code == 200, resp.content
@@ -295,3 +300,144 @@ class TestActivityLogEmission:
         log.refresh_from_db()
         assert log.actor is None
         assert log.actor_name == 'مدير الكادر'
+
+
+@pytest.mark.django_db
+class TestActivityLogAPI:
+    def test_endpoint_requires_auth(self, api_client):
+        r = api_client.get('/api/v1/airport/activity-log/')
+        assert r.status_code == 401
+
+    def test_user_without_airport_health_perm_cannot_access(self, api_client):
+        user = User.objects.create_user(
+            email='traveler@nqp.gov.sd', password=PASSWORD, full_name='مسافر'
+        )
+        _assign(user, _ensure_role('TRAVELER_TEST', []))
+        resp = api_client.post(
+            '/api/v1/auth/login/', {'email': user.email, 'password': PASSWORD}, format='json'
+        )
+        assert resp.status_code == 200, resp.content
+        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {resp.data["data"]["access_token"]}')
+        r = api_client.get('/api/v1/airport/activity-log/')
+        assert r.status_code == 403, r.content
+
+    def test_staff_manager_lists_scoped_entries(self, api_client, port):
+        """مدير بم_scope_PORT يرى فقط Entrées لمطار نطاقه."""
+        # مدير كادر بصلاحيات airport_staff + airport_health:view، range_PORT على المطار الأول
+        user = User.objects.create_user(
+            email='staff-manager-scoped@nqp.gov.sd', password=PASSWORD, full_name='مدير الكادر المحدد'
+        )
+        role = _ensure_role(
+            'AIRPORT_STAFF_MANAGER_SCOPED_TEST',
+            [('airport_staff', a) for a in ('view', 'add', 'edit', 'delete')]
+            + [('airport_health', 'view')],
+        )
+        _assign(
+            user, role,
+            scope_type=RoleAssignment.ScopeType.PORT,
+            scope_id=port.id,
+        )
+        resp = api_client.post(
+            '/api/v1/auth/login/', {'email': user.email, 'password': PASSWORD}, format='json'
+        )
+        assert resp.status_code == 200, resp.content
+        api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {resp.data["data"]["access_token"]}')
+
+        # مطار ثاني خارج نطاق المدير
+        from apps.masterdata.models import Sector as MSector, State as MState
+
+        sector_b, _ = MSector.objects.get_or_create(
+            code='SEC_T2', defaults={'name_ar': 'قطاع الاختبار 2'}
+        )
+        state_b, _ = MState.objects.get_or_create(
+            code='ST_T2',
+            defaults={'name_ar': 'ولاية الاختبار 2', 'sector': sector_b},
+        )
+        port_b = Port.objects.create(
+            state=state_b,
+            code='SDKRT2',
+            name_ar='مطار ب',
+            name_en='Airport B',
+            kind=Port.Kind.AIRPORT,
+        )
+
+        # Entrées مباشرة على المطارين
+        AirportActivityLog.objects.create(
+            actor=user,
+            actor_name='مدير الكادر المحدد',
+            action=AirportActivityAction.STAFF_CREATED,
+            description='إضافة موظف — اختبار أ',
+            target_type='AirportStaff',
+            target_id='00000000-0000-0000-0000-000000000001',
+            target_label='اختبار أ',
+            airport=port,
+        )
+        AirportActivityLog.objects.create(
+            actor=user,
+            actor_name='مدير الكادر المحدد',
+            action=AirportActivityAction.STAFF_CREATED,
+            description='إضافة موظف — اختبار ب',
+            target_type='AirportStaff',
+            target_id='00000000-0000-0000-0000-000000000002',
+            target_label='اختبار ب',
+            airport=port_b,
+        )
+
+        r = api_client.get('/api/v1/airport/activity-log/')
+        assert r.status_code == 200, r.content
+        results = r.json()['data']['results']
+        assert len(results) == 1
+        assert results[0]['airport'] == str(port.id)
+        assert results[0]['airport_name'] == 'مطار الخرطوم'
+
+    def test_emitted_log_carries_airport(self, staff_manager_client, port):
+        client, _user = staff_manager_client
+        resp = client.post(
+            '/api/v1/airport/staff/',
+            {
+                'airport': str(port.id),
+                'role': AirportStaffRole.DIRECTOR,
+                'full_name': 'د. سارة أحمد',
+                'email': 'sara@nqp.gov.sd',
+                'phone': '0911000000',
+                'shift': 'MORNING',
+            },
+            format='json',
+        )
+        assert resp.status_code == 201, resp.content
+        staff_id = resp.json()['data']['id']
+
+        r = client.get('/api/v1/airport/activity-log/')
+        assert r.status_code == 200, r.content
+        results = r.json()['data']['results']
+        entry = next((e for e in results if e['target_id'] == staff_id), None)
+        assert entry is not None, 'المدخل المنبعث غير موجود'
+        assert entry['airport'] == str(port.id)
+        assert entry['airport_name'] == 'مطار الخرطوم'
+
+    def test_screening_log_airport_resolved_via_terminal(
+        self, inspector_client, port, traveler, flight, point
+    ):
+        client, _user = inspector_client
+        resp = client.post(
+            '/api/v1/airport/screenings/',
+            {
+                'traveler': str(traveler.passport_number),
+                'screening_point': 'P-ARR-1',
+                'flight': str(flight.flight_number),
+                'screening_type': 'ARRIVAL',
+                'body_temperature': 39.5,
+                'oxygen_saturation': 90,
+                'symptoms': ['fever', 'cough'],
+            },
+            format='json',
+        )
+        assert resp.status_code == 201, resp.content
+        log = (
+            AirportActivityLog.objects.filter(action=AirportActivityAction.SCREENING_CREATED)
+            .order_by('-created_at')
+            .first()
+        )
+        assert log is not None
+        assert log.airport_id == point.terminal.port.id
+        assert log.airport_id == port.id

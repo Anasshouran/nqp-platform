@@ -33,6 +33,7 @@ from .models import (
 )
 from .serializers import (
     AircraftInspectionSerializer,
+    AirportActivityLogSerializer,
     AirportDashboardSerializer,
     AirportScreeningSerializer,
     AirportStaffSerializer,
@@ -112,6 +113,7 @@ def _log_airport_activity(
     target_type: str,
     target_id,
     target_label: str = '',
+    airport=None,
     metadata: dict | None = None,
 ) -> None:
     """أفضل جهد — never raises so it never breaks the mutation path."""
@@ -133,6 +135,7 @@ def _log_airport_activity(
             target_type=target_type,
             target_id=str(target_id),
             target_label=(target_label or '')[:255],
+            airport=airport,
             metadata=metadata or {},
             ip_address=ip,
         )
@@ -232,6 +235,11 @@ class AirportScreeningViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
         super().perform_create(serializer)
         screening = serializer.instance
         traveler_name = getattr(screening.traveler, 'full_name', '') or ''
+        airport = (
+            screening.screening_point.terminal.port
+            if screening.screening_point and screening.screening_point.terminal
+            else None
+        )
         _log_airport_activity(
             self.request,
             AirportActivityAction.SCREENING_CREATED,
@@ -239,6 +247,7 @@ class AirportScreeningViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='AirportScreening',
             target_id=screening.id,
             target_label=traveler_name,
+            airport=airport,
         )
 
     def _score(self, screening):
@@ -283,6 +292,7 @@ class AircraftInspectionViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         super().perform_create(serializer)
         inspection = serializer.instance
+        airport = inspection.flight.destination_port if inspection.flight else None
         _log_airport_activity(
             self.request,
             AirportActivityAction.INSPECTION_CREATED,
@@ -290,6 +300,7 @@ class AircraftInspectionViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='AircraftInspection',
             target_id=inspection.id,
             target_label=inspection.aircraft_registration,
+            airport=airport,
         )
 
 
@@ -307,6 +318,7 @@ class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
         super().perform_create(serializer)
         record = serializer.instance
         crew_name = getattr(record.crew, 'full_name', '') if record.crew else ''
+        airport = record.flight.destination_port if record.flight else None
         _log_airport_activity(
             self.request,
             AirportActivityAction.CREW_RECORD_CREATED,
@@ -314,6 +326,7 @@ class CrewHealthRecordViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='CrewHealthRecord',
             target_id=record.id,
             target_label=crew_name,
+            airport=airport,
         )
 
 
@@ -339,6 +352,7 @@ class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='AirportStaff',
             target_id=staff.id,
             target_label=staff.full_name,
+            airport=staff.airport,
         )
 
     def perform_update(self, serializer):
@@ -351,6 +365,7 @@ class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='AirportStaff',
             target_id=staff.id,
             target_label=staff.full_name,
+            airport=staff.airport,
         )
 
     def perform_destroy(self, instance):
@@ -362,8 +377,31 @@ class AirportStaffViewSet(AirportHealthRBACMixin, viewsets.ModelViewSet):
             target_type='AirportStaff',
             target_id=instance.id,
             target_label=instance.full_name,
+            airport=instance.airport,
         )
         super().perform_destroy(instance)
+
+
+class AirportActivityLogViewSet(AirportHealthRBACMixin, viewsets.ReadOnlyModelViewSet):
+    """سجل نشاط المطار — قراءة فقط، مقيد بنطاق منافذ المستخدم."""
+    queryset = AirportActivityLog.objects.select_related('actor', 'airport').all()
+    serializer_class = AirportActivityLogSerializer
+    permission_resource = 'airport_health'
+    http_method_names = ['get', 'head', 'options']
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['description', 'target_label', 'actor_name']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        qs = AirportActivityLog.objects.select_related('actor', 'airport').all()
+        user = self.request.user
+        port_ids = None
+        if user and user.is_authenticated and not user.is_superuser:
+            port_ids = resolve_user_port_ids(user)
+        if port_ids is not None:
+            qs = qs.filter(airport_id__in=port_ids)
+        return qs
 
 
 class AirportDashboardViewSet(viewsets.ViewSet):

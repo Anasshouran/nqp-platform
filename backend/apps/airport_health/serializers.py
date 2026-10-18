@@ -6,6 +6,7 @@ from apps.travelers.models import Traveler
 
 from .models import (
     AircraftInspection,
+    AirportActivityLog,
     AirportScreening,
     AirportStaff,
     AirportTerminal,
@@ -136,3 +137,29 @@ class AirportStaffSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
+class AirportActivityLogSerializer(serializers.ModelSerializer):
+    """قراءة فقط — سجل نشاط المطار."""
+    action_label = serializers.CharField(source='get_action_display', read_only=True)
+    actor_display = serializers.SerializerMethodField()
+    airport_name = serializers.CharField(source='airport.name_ar', read_only=True, default='')
+
+    class Meta:
+        model = AirportActivityLog
+        fields = [
+            'id', 'created_at',
+            'actor', 'actor_name', 'actor_display',
+            'action', 'action_label',
+            'description',
+            'target_type', 'target_id', 'target_label',
+            'airport', 'airport_name',
+            'metadata',
+            'ip_address',
+        ]
+        read_only_fields = fields
+
+    def get_actor_display(self, obj) -> str:
+        if obj.actor_id and obj.actor:
+            return obj.actor.full_name or obj.actor.email or obj.actor_name
+        return obj.actor_name or ''
