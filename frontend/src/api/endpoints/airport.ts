@@ -2,6 +2,7 @@ import apiClient from '../client';
 import type { ApiResponse, PaginatedResponse } from '../../types/api';
 import type {
   AircraftInspection,
+  AirportActivityLog,
   AirportDashboard,
   AirportPort,
   AirportScreening,
@@ -30,3 +31,10 @@ export const getAircraftInspections = (params?: Record<string, unknown>) =>
 
 export const getCrewHealthRecords = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<CrewHealthRecord>>>('/airport/crew-records/', { params });
+
+// سجل النشاط الإداري للمطار (قراءة فقط — #78).
+export const getAirportActivityLog = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<AirportActivityLog>>>(
+    '/airport/activity-log/',
+    { params },
+  );

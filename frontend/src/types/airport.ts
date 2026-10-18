@@ -138,3 +138,40 @@ export interface AirportDashboard {
   report: AirportDashboardReport;
 }
 
+/** سجل نشاط المطار — نقطة /airport/activity-log/ (#78). */
+export type AirportActivityAction =
+  | 'SCREENING_CREATED'
+  | 'INSPECTION_CREATED'
+  | 'CREW_RECORD_CREATED'
+  | 'STAFF_CREATED'
+  | 'STAFF_UPDATED'
+  | 'STAFF_DELETED';
+
+export const AIRPORT_ACTIVITY_ACTION_LABELS: Record<AirportActivityAction, string> = {
+  SCREENING_CREATED: 'فحص مسافر',
+  INSPECTION_CREATED: 'تفتيش طائرة',
+  CREW_RECORD_CREATED: 'سجل طاقم',
+  STAFF_CREATED: 'إضافة موظف',
+  STAFF_UPDATED: 'تعديل موظف',
+  STAFF_DELETED: 'حذف موظف',
+};
+
+/** سجل نشاط واحد — مطابق للمسلسل الخلفي AirportActivityLogSerializer. */
+export interface AirportActivityLog {
+  id: string;
+  created_at: string;
+  actor: string | null;
+  actor_name: string;
+  actor_display: string;
+  action: AirportActivityAction;
+  action_label: string;
+  description: string;
+  target_type: string;
+  target_id: string;
+  target_label: string;
+  airport: string | null;
+  airport_name: string;
+  metadata: Record<string, unknown>;
+  ip_address: string | null;
+}
+

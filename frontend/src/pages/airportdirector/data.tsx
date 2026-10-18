@@ -190,15 +190,6 @@ export const AIRPORT_USERS: AirportUser[] = [
   { name: 'خالد أحمد', role: 'رئيس مناوبة', area: 'المبنى الدولي', status: 'موقوف', lastActive: '—' },
 ];
 
-/* سجل الأنشطة */
-export const ACTIVITY_LOG = [
-  { time: '13:40', action: 'اعتماد فسح رحلة الشحن الجوي', actor: 'مديرة الحجر الصحي بالمطار', tone: 'success' },
-  { time: '12:55', action: 'رفع حالة العزل للحجر الصحي', actor: 'مديرة الحجر الصحي بالمطار', tone: 'info' },
-  { time: '12:10', action: 'تصدير التقرير اليومي (PDF)', actor: 'مديرة الحجر الصحي بالمطار', tone: 'primary' },
-  { time: '11:32', action: 'تعديل مناوبة مفتشي المبنى الدولي', actor: 'مديرة الحجر الصحي بالمطار', tone: 'warning' },
-  { time: '10:05', action: 'متابعة نتائج عينات الأغذية', actor: 'مديرة الحجر الصحي بالمطار', tone: 'success' },
-];
-
 /* المصفوفة */
 export const PERMISSIONS = {
   allowed: [

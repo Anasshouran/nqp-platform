@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -29,10 +29,10 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import LoginIcon from '@mui/icons-material/Login';
-import LogoutIcon from '@mui/icons-material/Logout';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BiotechIcon from '@mui/icons-material/Biotech';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import {
   Chart as ChartJS,
@@ -50,9 +50,13 @@ import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import KpiCard from '../../components/dashboard/KpiCard';
-import { SectionCard, PageTabs, StatusChip } from '../../components/uikit';
+import { EmptyState, ListSkeleton, SectionCard, PageTabs, StatusChip } from '../../components/uikit';
+import { ErrorState } from '../../components/common';
 import { useAuth } from '../../hooks/useAuth';
 import { notifySuccess } from '../../utils/toast';
+import { getAirportActivityLog } from '../../api/endpoints/airport';
+import { AIRPORT_ACTIVITY_ACTION_LABELS } from '../../types/airport';
+import type { AirportActivityLog } from '../../types/airport';
 import {
   PERIOD_KPIS,
   OPERATIONS_LABELS,
@@ -66,7 +70,6 @@ import {
   DECISIONS,
   TERMINALS,
   AIRPORT_USERS,
-  ACTIVITY_LOG,
   PERMISSIONS,
   REVENUE_BY_AREA,
   REVENUE_TREND,
@@ -123,6 +126,33 @@ const AirportDirectorPage = () => {
   const { user } = useAuth();
   const [period, setPeriod] = useState<Period>('DAY');
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], []);
+
+  /** سجل الأنشطة الإدارية — استطلاع دوري كل 30 ثانية. */
+  const [activityLog, setActivityLog] = useState<AirportActivityLog[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState<unknown>(null);
+
+  const loadActivity = () => {
+    getAirportActivityLog({ page_size: 20 })
+      .then((res) => {
+        setActivityLog(res.data?.data?.results ?? []);
+        setActivityError(null);
+      })
+      .catch((err) => {
+        setActivityError(err);
+      })
+      .finally(() => {
+        setActivityLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadActivity();
+    const id = setInterval(loadActivity, 30_000);
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
 
   return (
     <Box>
@@ -491,27 +521,68 @@ const AirportDirectorPage = () => {
                 </SectionCard>
               </Grid>
               <Grid item xs={12} lg={6}>
-                <SectionCard title="📋 سجل الأنشطة" subtitle="آخر الإجراءات الإدارية" sx={{ height: '100%' }}>
-                  <Stack spacing={0.75}>
-                    {ACTIVITY_LOG.map((a) => (
-                      <Stack
-                        key={`${a.time}-${a.action}`}
-                        direction="row"
-                        alignItems="center"
-                        spacing={1.5}
-                        sx={{ p: 1.1, borderRadius: 2.5, border: '1px solid rgba(16,40,34,0.06)', bgcolor: 'rgba(255,255,255,0.5)' }}
-                      >
-                        <Box sx={{ width: 30, height: 30, borderRadius: 2, display: 'grid', placeItems: 'center', color: a.tone === 'success' ? 'success.main' : a.tone === 'info' ? 'info.main' : a.tone === 'warning' ? 'warning.main' : 'primary.main', bgcolor: 'rgba(16,40,34,0.04)', flexShrink: 0 }}>
-                          {a.tone === 'warning' ? <BlockIcon sx={{ fontSize: 16 }} /> : a.tone === 'info' ? <LoginIcon sx={{ fontSize: 16 }} /> : a.tone === 'primary' ? <LogoutIcon sx={{ fontSize: 16 }} /> : <VerifiedIcon sx={{ fontSize: 16 }} />}
+                <SectionCard
+                  title="📋 سجل الأنشطة"
+                  subtitle="آخر الإجراءات الإدارية"
+                  sx={{ height: '100%' }}
+                  action={
+                    <IconButton
+                      size="small"
+                      title="تحديث"
+                      onClick={loadActivity}
+                    >
+                      <RefreshIcon fontSize="small" />
+                    </IconButton>
+                  }
+                >
+                  {activityLoading ? (
+                    <ListSkeleton count={1} />
+                  ) : activityError ? (
+                    <ErrorState compact onRetry={loadActivity} />
+                  ) : activityLog.length === 0 ? (
+                    <EmptyState
+                      title="لا يوجد نشاط مسجّل"
+                      description="سيظهر هنا سجل الإجراءات الإدارية عند حدوثها."
+                    />
+                  ) : (
+                    <Stack direction="column" spacing={1} sx={{ height: '100%', overflowY: 'auto', p: 1 }}>
+                      {activityLog.map((entry) => (
+                        <Box
+                          key={entry.id}
+                          sx={{ p: 1, borderBottom: 1, borderColor: 'rgba(16,40,34,0.06)' }}
+                        >
+                          <Stack direction="row" spacing={1} alignItems="baseline" sx={{ flexWrap: 'wrap' }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ minWidth: 70, fontSize: 11 }}
+                            >
+                              {entry.created_at
+                                ? new Date(entry.created_at).toLocaleTimeString('ar-SA', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : ''}
+                            </Typography>
+                            <StatusChip
+                              label={
+                                entry.action_label ??
+                                AIRPORT_ACTIVITY_ACTION_LABELS[entry.action as keyof typeof AIRPORT_ACTIVITY_ACTION_LABELS]
+                              }
+                              tone="neutral"
+                              size="small"
+                            />
+                            <Typography variant="body2" sx={{ flex: 1, minWidth: 0 }}>
+                              {entry.description}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                              {entry.actor_display}
+                            </Typography>
+                          </Stack>
                         </Box>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 13.5 }}>{a.action}</Typography>
-                          <Typography variant="caption" color="text.secondary">{a.actor}</Typography>
-                        </Box>
-                        <Chip label={a.time} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
-                      </Stack>
-                    ))}
-                  </Stack>
+                      ))}
+                    </Stack>
+                  )}
                 </SectionCard>
               </Grid>
             </Grid>
