@@ -150,6 +150,49 @@ export interface RecentScreening {
   screened_at: string;
 }
 
+/** صف موظف مختصر كما يعيده dashboard.staff (بلا حقول النقطة الكاملة). */
+export interface AirportStaffSummary {
+  id: string;
+  full_name: string;
+  role: string;
+  role_label: string;
+  email: string;
+  phone: string;
+  shift: string;
+  is_active: boolean;
+}
+
+/** أدوار موظفي المطار — مطابقة لـ AirportStaffRole في الـ backend. */
+export type AirportStaffRole =
+  | 'DIRECTOR'
+  | 'INSPECTOR'
+  | 'SCREENER'
+  | 'LAB_TECH'
+  | 'CLINIC_DOCTOR'
+  | 'ADMIN'
+  | 'OTHER';
+
+export const AIRPORT_STAFF_ROLE_LABELS: Record<AirportStaffRole, string> = {
+  DIRECTOR: 'مدير المطار',
+  INSPECTOR: 'مفتش طائرات',
+  SCREENER: 'فاحص مسافرين',
+  LAB_TECH: 'فني مختبر',
+  CLINIC_DOCTOR: 'طبيب عيادة',
+  ADMIN: 'إداري',
+  OTHER: 'أخرى',
+};
+
+/** موظف مطار كامل (نقطة /airport/staff/) — لعميل CRUD المطبوع. */
+export interface AirportStaff extends AirportStaffSummary {
+  airport: string; // UUID of EntryPoint
+  airport_name: string;
+  user: string | null;
+  user_email: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AirportDashboard {
   kpis: AirportKpis;
   upcoming_flights: UpcomingFlight[];
@@ -159,7 +202,7 @@ export interface AirportDashboard {
   report: AirportDashboardReport;
   recent_inspections: RecentInspection[];
   recent_screenings: RecentScreening[];
-  /** موظفو المطار — حجز لـ scope B (AirportStaff لم يُضف بعد)، لذا دائماً فارغ. */
-  staff: never[];
+  /** موظفو المطار — مختصر من AirportStaff (#71) لعرض اللوحة. */
+  staff: AirportStaffSummary[];
 }
 

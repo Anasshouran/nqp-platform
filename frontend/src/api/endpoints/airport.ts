@@ -5,6 +5,7 @@ import type {
   AirportDashboard,
   AirportPort,
   AirportScreening,
+  AirportStaff,
   AirportTerminal,
   CrewHealthRecord,
   ScreeningPoint,
@@ -30,3 +31,17 @@ export const getAircraftInspections = (params?: Record<string, unknown>) =>
 
 export const getCrewHealthRecords = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<CrewHealthRecord>>>('/airport/crew-records/', { params });
+
+// موظفو المطار (AirportStaff — #71). الواجهة الحالية تقرأ dashboard.staff،
+// وهذه العميل الكامل مُهيّأ لصفحة CRUD لاحقة.
+export const getAirportStaff = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<AirportStaff>>>('/airport/staff/', { params });
+
+export const createAirportStaff = (input: Partial<AirportStaff>) =>
+  apiClient.post<ApiResponse<AirportStaff>>('/airport/staff/', input);
+
+export const updateAirportStaff = (id: string, input: Partial<AirportStaff>) =>
+  apiClient.patch<ApiResponse<AirportStaff>>(`/airport/staff/${id}/`, input);
+
+export const deleteAirportStaff = (id: string) =>
+  apiClient.delete(`/airport/staff/${id}/`);
