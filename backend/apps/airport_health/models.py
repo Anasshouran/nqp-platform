@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from core.models import BaseModel
@@ -204,3 +205,52 @@ class AirportStaff(BaseModel):
 
     def __str__(self):
         return f'{self.airport.code} - {self.full_name} - {self.role}'
+
+
+class AirportActivityAction(models.TextChoices):
+    SCREENING_CREATED = 'SCREENING_CREATED', 'فحص مسافر جديد'
+    INSPECTION_CREATED = 'INSPECTION_CREATED', 'تفتيش طائرة جديد'
+    CREW_RECORD_CREATED = 'CREW_RECORD_CREATED', 'سجل طاقم جديد'
+    STAFF_CREATED = 'STAFF_CREATED', 'إضافة موظف'
+    STAFF_UPDATED = 'STAFF_UPDATED', 'تعديل موظف'
+    STAFF_DELETED = 'STAFF_DELETED', 'حذف موظف'
+
+
+class AirportActivityLog(BaseModel):
+    """سجل نشاط صحي للمطار — يرصد الإجراءات على كواشف ودفتر flying crew وكادر المطار."""
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='airport_activity_entries',
+        verbose_name='الفاعل',
+    )
+    actor_name = models.CharField(max_length=200, blank=True, verbose_name='اسم الفاعل (مجمَّد)')
+    action = models.CharField(
+        max_length=32,
+        choices=AirportActivityAction.choices,
+        verbose_name='الفعل',
+    )
+    description = models.CharField(max_length=255, verbose_name='الوصف')
+    target_type = models.CharField(max_length=60, verbose_name='نوع الهدف')
+    target_id = models.CharField(max_length=80, verbose_name='معرف الهدف')
+    target_label = models.CharField(max_length=255, blank=True, verbose_name='تسمية الهدف')
+    metadata = models.JSONField(default=dict, blank=True, verbose_name='بيانات وصفية')
+    ip_address = models.GenericIPAddressField(
+        null=True, blank=True, verbose_name='عنوان IP'
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['action']),
+            models.Index(fields=['target_type', 'target_id']),
+        ]
+        verbose_name = 'سجل نشاط مطار'
+        verbose_name_plural = 'سجلات نشاط المطارات'
+
+    def __str__(self):
+        return f'{self.action} — {self.target_type} ({self.created_at:%Y-%m-%d %H:%M})'
