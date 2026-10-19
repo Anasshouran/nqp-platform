@@ -15,6 +15,7 @@ import baseTheme from '../../styles/theme';
 import { ROLE_LAYOUT_CONFIG, rewriteSectorNav, type RoleNavItem } from '../../config/roleLayouts';
 import { getUserSectorCode } from '../../utils/scopes';
 import { sectorDashboardRoute } from '../../config/cmsSectors';
+import { DensityProvider } from '../uikit';
 import LayoutChrome from './LayoutChrome';
 import RoleNavMenu from './RoleNavMenu';
 import WorkspaceUnavailable from './WorkspaceUnavailable';
@@ -240,65 +241,67 @@ const GenericRoleLayout = ({ role }: { role: string }) => {
   );
 
   return (
-    <ThemeProvider theme={theme}>
-      <a href="#main-content" className="skip-link">
-        تخطَّ إلى المحتوى الرئيسي
-      </a>
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F4F6F9' }}>
-        <LayoutChrome
-          drawerWidth={drawerWidth}
-          accent={config.color}
-          onOpenMobile={() => setMobileOpen(true)}
-          title={config.title}
-          subtitle={config.subtitle}
-          brandTile={
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 2.5,
-                display: 'grid',
-                placeItems: 'center',
-                color: '#fff',
-                background: `linear-gradient(135deg, ${config.color}, ${config.color}99)`,
-              }}
-            >
-              <AccountCircleIcon fontSize="small" />
-            </Box>
-          }
-          overline={config.overline}
-          logo={config.logo}
-          collapse={{ collapsed: isCollapsed, onToggle: () => setCollapsed((c) => !c) }}
-        />
+    <DensityProvider density="compact">
+      <ThemeProvider theme={theme}>
+        <a href="#main-content" className="skip-link">
+          تخطَّ إلى المحتوى الرئيسي
+        </a>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F4F6F9' }}>
+          <LayoutChrome
+            drawerWidth={drawerWidth}
+            accent={config.color}
+            onOpenMobile={() => setMobileOpen(true)}
+            title={config.title}
+            subtitle={config.subtitle}
+            brandTile={
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 2.5,
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: '#fff',
+                  background: `linear-gradient(135deg, ${config.color}, ${config.color}99)`,
+                }}
+              >
+                <AccountCircleIcon fontSize="small" />
+              </Box>
+            }
+            overline={config.overline}
+            logo={config.logo}
+            collapse={{ collapsed: isCollapsed, onToggle: () => setCollapsed((c) => !c) }}
+          />
 
-        {drawer}
+          {drawer}
 
-        <Box
-          component="main"
-          id="main-content"
-          tabIndex={-1}
-          sx={{
-            flexGrow: 1,
-            p: { xs: 2, md: 3 },
-            pt: { xs: 2, md: 3 },
-            mt: { xs: 22, md: 14 },
-            width: { md: `calc(100% - ${drawerWidth}px)` },
-            maxWidth: 1760,
-            mx: 'auto',
-            /* Focused programmatically by the skip link — the ring would be
-               noise here, and the landmark already announced the jump. */
-            outline: 'none',
-            transition: (t) =>
-              t.transitions.create('width', {
-                easing: t.transitions.easing.sharp,
-                duration: t.transitions.duration.enteringScreen,
-              }),
-          }}
-        >
-          <Outlet />
+          <Box
+            component="main"
+            id="main-content"
+            tabIndex={-1}
+            sx={{
+              flexGrow: 1,
+              p: { xs: 2, md: 3 },
+              pt: { xs: 2, md: 3 },
+              mt: { xs: 22, md: 14 },
+              width: { md: `calc(100% - ${drawerWidth}px)` },
+              maxWidth: 1760,
+              mx: 'auto',
+              /* Focused programmatically by the skip link — the ring would be
+                 noise here, and the landmark already announced the jump. */
+              outline: 'none',
+              transition: (t) =>
+                t.transitions.create('width', {
+                  easing: t.transitions.easing.sharp,
+                  duration: t.transitions.duration.enteringScreen,
+                }),
+            }}
+          >
+            <Outlet />
+          </Box>
         </Box>
-      </Box>
-    </ThemeProvider>
+      </ThemeProvider>
+    </DensityProvider>
   );
 };
 
