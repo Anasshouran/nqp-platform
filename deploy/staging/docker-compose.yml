@@ -9,7 +9,7 @@
 #   docker exec nqp-staging-backend python manage.py migrate
 services:
   staging-backend:
-    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    image: ghcr.io/anasshouran/nqp-backend@sha256:6d218d74b9b2e5929394ba0861e4e5c202209cdb6d618f61b193955d52dda64e
     container_name: nqp-staging-backend
     logging:
       driver: json-file
@@ -41,7 +41,7 @@ services:
     networks:
       - deploy_nqp_internal
   staging-celery:
-    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    image: ghcr.io/anasshouran/nqp-backend@sha256:6d218d74b9b2e5929394ba0861e4e5c202209cdb6d618f61b193955d52dda64e
     container_name: nqp-staging-celery
     logging:
       driver: json-file
@@ -69,7 +69,7 @@ services:
     networks:
       - deploy_nqp_internal
   staging-celery-beat:
-    image: ghcr.io/anasshouran/nqp-backend@sha256:922a868daf28148ed945ba2836bd24e68795bcd9ec668c8825dffce073403b22
+    image: ghcr.io/anasshouran/nqp-backend@sha256:6d218d74b9b2e5929394ba0861e4e5c202209cdb6d618f61b193955d52dda64e
     container_name: nqp-staging-celery-beat
     logging:
       driver: json-file
@@ -97,7 +97,7 @@ services:
     networks:
       - deploy_nqp_internal
   staging-frontend:
-    image: ghcr.io/anasshouran/afyatna-frontend@sha256:16ea25f6dba0a603d242f4505ec37b80f91c10b4893a1989ad48800c0dd533b0
+    image: ghcr.io/anasshouran/afyatna-frontend@sha256:ee060466b60e65b3c180655be0d9ee907a0658c8fcc4318a34764d8076da4e62
     container_name: nqp-staging-frontend
     logging:
       driver: json-file
