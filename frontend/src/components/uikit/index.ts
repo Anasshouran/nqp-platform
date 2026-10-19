@@ -39,6 +39,10 @@ export { default as AppButton } from '../ui/AppButton';
 export { default as En } from './En';
 export type { EnProps } from './En';
 
+// Layout density
+export { default as DensityProvider } from './DensityProvider';
+export type { Density, DensityProviderProps } from './DensityProvider';
+
 // Navigation
 export { default as PageTabs } from './PageTabs';
 export type { PageTab, PageTabsProps } from './PageTabs';
