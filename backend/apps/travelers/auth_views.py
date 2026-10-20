@@ -71,7 +71,7 @@ class TravelerAuthViewSet(viewsets.GenericViewSet):
             uid = base64.urlsafe_b64encode(force_bytes(user.pk)).decode()
             token = default_token_generator.make_token(user)
             origin = request.headers.get('Origin') or request.build_absolute_uri('/')
-            reset_url = f"{origin.rstrip('/')}/traveler/reset-password?uid={uid}&token={token}"
+            reset_url = f"{origin.rstrip('/')}/traveler/reset-password?uidb64={uid}&token={token}"
             try:
                 send_mail(
                     subject='إعادة تعيين كلمة المرور — بوابة المسافرين',
