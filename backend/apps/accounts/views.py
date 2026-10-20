@@ -195,7 +195,7 @@ class AuthViewSet(ViewSet):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             base = getattr(settings, 'PASSWORD_RESET_BASE_URL', '') or request.build_absolute_uri('/').rstrip('/')
-            reset_url = f"{base}/reset-password?uid={uid}&token={token}"
+            reset_url = f"{base}/reset-password?uidb64={uid}&token={token}"
             try:
                 send_mail(
                     subject='إعادة تعيين كلمة المرور — نظام الرقابة القومية',
