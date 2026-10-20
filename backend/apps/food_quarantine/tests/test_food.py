@@ -108,8 +108,9 @@ def test_full_ops_cycle(auth_client, port, sampling_policy):
     assert invoice.status_code == 201
     inv = invoice.json()['data']
     assert inv['status'] == 'PENDING_PAYMENT'
-    # التعريفة الجسّمية: وارد 2 طن = وزن 45,000 + إنزال 55,000 + دعم شهادة 10,000
-    expected_total = 45000 + 55000 + 10000
+    # التعريفة الجسّمية: وارد 2 طن = وزن 45,000 + إنزال 40,000 + دعم شهادة 10,000
+    # Updated per م ت 1/1 (2024/09/02) — approved fees 2025
+    expected_total = 45000 + 40000 + 10000
     assert float(inv['total_amount']) == pytest.approx(expected_total)
 
     # 5) الدفع وإصدار الإيصال

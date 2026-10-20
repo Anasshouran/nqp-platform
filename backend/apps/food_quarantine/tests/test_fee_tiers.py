@@ -52,25 +52,25 @@ def line(breakdown, name):
 # ---------- جداول الشرائح ----------
 
 @pytest.mark.parametrize('tons,expected', [
-    (Decimal('1'), Decimal('15000')),
-    (Decimal('25'), Decimal('15000')),
-    (Decimal('26'), Decimal('20000')),
-    (Decimal('50'), Decimal('20000')),
-    (Decimal('51'), Decimal('25000')),
-    (Decimal('75'), Decimal('25000')),
-    (Decimal('76'), Decimal('30000')),
-    (Decimal('100'), Decimal('30000')),
+    (Decimal('1'), Decimal('40000')),
+    (Decimal('25'), Decimal('40000')),
+    (Decimal('26'), Decimal('100000')),
+    (Decimal('50'), Decimal('100000')),
+    (Decimal('51'), Decimal('140000')),
+    (Decimal('75'), Decimal('140000')),
+    (Decimal('76'), Decimal('170000')),
+    (Decimal('100'), Decimal('170000')),
 ])
 def test_export_tier_boundaries(tons, expected):
     assert _export_weight_fee(tons) == expected
 
 
 @pytest.mark.parametrize('tons,expected', [
-    (Decimal('101'), Decimal('30000')),
-    (Decimal('199.9'), Decimal('30000')),
-    (Decimal('200'), Decimal('50000')),
-    (Decimal('300'), Decimal('70000')),
-    (Decimal('1000'), Decimal('210000')),
+    (Decimal('101'), Decimal('170000')),
+    (Decimal('199.9'), Decimal('170000')),
+    (Decimal('200'), Decimal('190000')),
+    (Decimal('300'), Decimal('210000')),
+    (Decimal('1000'), Decimal('350000')),
 ])
 def test_export_over_100_rule(tons, expected):
     assert _export_weight_fee(tons) == expected
@@ -104,31 +104,52 @@ def test_import_over_100_rule(tons, expected):
 
 
 @pytest.mark.parametrize('tons,expected', [
-    (Decimal('1'), Decimal('55000')),
-    (Decimal('100'), Decimal('55000')),
-    (Decimal('101'), Decimal('65000')),
-    (Decimal('500'), Decimal('65000')),
-    (Decimal('501'), Decimal('100000')),
-    (Decimal('1000'), Decimal('100000')),
-    (Decimal('1001'), Decimal('150000')),
-    (Decimal('5000'), Decimal('150000')),
+    (Decimal('1'), Decimal('40000')),
+    (Decimal('100'), Decimal('40000')),
+    (Decimal('101'), Decimal('50000')),
+    (Decimal('500'), Decimal('50000')),
+    (Decimal('501'), Decimal('60000')),
+    (Decimal('1000'), Decimal('60000')),
+    (Decimal('1001'), Decimal('90000')),
+    (Decimal('5000'), Decimal('90000')),
 ])
 def test_unloading_tier_boundaries(tons, expected):
     assert _unloading_fee(tons) == expected
 
 
 @pytest.mark.parametrize('tons,expected', [
-    (Decimal('5000.1'), Decimal('150000')),
-    (Decimal('6000'), Decimal('210000')),
-    (Decimal('10000'), Decimal('450000')),
+    (Decimal('5000.1'), Decimal('120000')),
+    (Decimal('6000'), Decimal('180000')),
+    (Decimal('10000'), Decimal('420000')),
 ])
 def test_unloading_over_5000_rule(tons, expected):
     assert _unloading_fee(tons) == expected
 
 
 def test_tier_fee_selects_highest_eligible():
-    assert _tier_fee(Decimal('60'), EXPORT_TIERS) == Decimal('25000')
-    assert _tier_fee(Decimal('0'), EXPORT_TIERS) == Decimal('15000')
+    assert _tier_fee(Decimal('60'), EXPORT_TIERS) == Decimal('140000')
+    assert _tier_fee(Decimal('0'), EXPORT_TIERS) == Decimal('40000')
+
+
+def test_export_tiers_match_quarantine_fee_lower_bound():
+    # EXPORT_TIERS aligned to lower bound of QuarantineFee FOOD_EXPORT brackets
+    # 1-25 ton -> 40000 (F59: 1-5 ton), 26-50 -> 100000 (F62), 51-75 -> 140000 (F63), 76-100 -> 170000 (F64)
+    assert EXPORT_TIERS == [
+        (1, 25, Decimal('40000')),
+        (26, 50, Decimal('100000')),
+        (51, 75, Decimal('140000')),
+        (76, 100, Decimal('170000')),
+    ]
+
+
+def test_unloading_tiers_match_quarantine_fee():
+    # UNLOADING_TIERS match QuarantineFee UNLOADING (F65-F68)
+    assert UNLOADING_TIERS == [
+        (1, 100, Decimal('40000')),
+        (101, 500, Decimal('50000')),
+        (501, 1000, Decimal('60000')),
+        (1001, 5000, Decimal('90000')),
+    ]
 
 
 # ---------- كسر الرسوم الكامل ----------
@@ -140,8 +161,8 @@ def test_import_commercial_breakdown_lines_and_total():
     assert 'رسوم الوزن' in names
     assert 'رسوم الإنزال' in names
     assert 'دعم الشهادة الصحية' in names
-    # 60 طن: وزن 170000 (شريحة 51-75)، إنزال 55000 (شريحة 1-100)، شهادة 10000
-    expected = Decimal('170000') + Decimal('55000') + Decimal('10000')
+    # 60 طن: وزن 170000 (شريحة 51-75)، إنزال 40000 (شريحة 1-100)، شهادة 10000
+    expected = Decimal('170000') + Decimal('40000') + Decimal('10000')
     assert total(b) == expected
     assert b['samples'] == 4
 
@@ -150,8 +171,8 @@ def test_export_commercial_breakdown_lines_and_total():
     b = compute_fee_breakdown(shipment(
         shipment_type=EXPORT, total_weight_kg=Decimal('30000')
     ))
-    # 30 طن: وزن 20000، مراقبة 12000، شهادة 7000
-    assert total(b) == Decimal('20000') + Decimal('12000') + Decimal('7000')
+    # 30 طن: وزن 100000، مراقبة 12000، شهادة 7000
+    assert total(b) == Decimal('100000') + Decimal('12000') + Decimal('7000')
     names = [l['name'] for l in b['lines']]
     assert 'رسوم المراقبة' in names
 
@@ -161,9 +182,9 @@ def test_import_over_100_uses_law_and_addons():
         total_weight_kg=Decimal('300000'),
         final_decision=FoodShipment.FinalDecision.DESTROY,
     ))
-    # 300 طن: وزن = 190000 + 2*60000 = 310000، إنزال 65000 (شريحة 101-500)، شهادة 10000، إبادة 10000
+    # 300 طن: وزن = 190000 + 2*60000 = 310000، إنزال 50000 (شريحة 101-500)، شهادة 10000، إبادة 10000
     assert line(b, 'رسوم الوزن')['fee'] == '310000'
-    assert total(b) == Decimal('310000') + Decimal('65000') + Decimal('10000') + Decimal('10000')
+    assert total(b) == Decimal('310000') + Decimal('50000') + Decimal('10000') + Decimal('10000')
 
 
 def test_relief_exempts_everything():
@@ -175,8 +196,8 @@ def test_relief_exempts_everything():
 def test_exempt_drops_certificate_fee_only():
     b = compute_fee_breakdown(shipment(message_type=EXEMPT, total_weight_kg=Decimal('20000')))
     assert line(b, 'دعم الشهادة الصحية') is None
-    # 20 طن وارد: وزن 100000 + إنزال 55000 (شريحة 1-100)
-    assert total(b) == Decimal('100000') + Decimal('55000')
+    # 20 طن وارد: وزن 100000 + إنزال 40000 (شريحة 1-100)
+    assert total(b) == Decimal('100000') + Decimal('40000')
 
 
 @pytest.mark.parametrize('decision,expected_fee,fee_type', [

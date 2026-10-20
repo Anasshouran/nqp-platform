@@ -5,12 +5,19 @@ from decimal import ROUND_CEILING, Decimal
 
 from .models import FoodSample, FoodShipment, SamplingPolicy
 
+# Fee amounts aligned with MoF approval م ت 1/1 (2024/09/02) — national quarantine fees 2025.
+# IMPORT_TIERS: matches QuarantineFee FOOD_IMPORT exactly.
+# EXPORT_TIERS: aligned to lower bound of QuarantineFee FOOD_EXPORT brackets.
+# UNLOADING_TIERS: matches QuarantineFee UNLOADING.
+# Certificate/Monitoring/Decision addons/Admin: hardcoded SDG, no QuarantineFee equivalent (documented gap).
+# Over-100-ton and over-5000-ton formulas: preserved with adjusted base (see decisions).
+
 # تعرفة الرسوم الجسّمية حسب الكمية (بالطن) — «رسوم-الصادر-وارد.md»
 EXPORT_TIERS = [
-    (1, 25, Decimal('15000')),
-    (26, 50, Decimal('20000')),
-    (51, 75, Decimal('25000')),
-    (76, 100, Decimal('30000')),
+    (1, 25, Decimal('40000')),
+    (26, 50, Decimal('100000')),
+    (51, 75, Decimal('140000')),
+    (76, 100, Decimal('170000')),
 ]
 IMPORT_TIERS = [
     (1, 5, Decimal('45000')),
@@ -21,10 +28,10 @@ IMPORT_TIERS = [
     (76, 100, Decimal('190000')),
 ]
 UNLOADING_TIERS = [
-    (1, 100, Decimal('55000')),
-    (101, 500, Decimal('65000')),
-    (501, 1000, Decimal('100000')),
-    (1001, 5000, Decimal('150000')),
+    (1, 100, Decimal('40000')),
+    (101, 500, Decimal('50000')),
+    (501, 1000, Decimal('60000')),
+    (1001, 5000, Decimal('90000')),
 ]
 
 
@@ -198,10 +205,10 @@ def compute_fee_breakdown(shipment) -> dict:
 
 
 def _export_weight_fee(tons: Decimal) -> Decimal:
-    """رسوم الوزن (صادر): شرائح ≤100 طن، وفوقها قانون 30,000 + (مئات إضافية × 20,000)."""
+    """رسوم الوزن (صادر): شرائح ≤100 طن، وفوقها قانون 170,000 + (مئات إضافية × 20,000)."""
     if tons <= 100:
         return _tier_fee(tons, EXPORT_TIERS)
-    return Decimal('30000') + Decimal(int(tons // 100) - 1) * Decimal('20000')
+    return Decimal('170000') + Decimal(int(tons // 100) - 1) * Decimal('20000')
 
 
 def _import_weight_fee(tons: Decimal) -> Decimal:
@@ -212,10 +219,10 @@ def _import_weight_fee(tons: Decimal) -> Decimal:
 
 
 def _unloading_fee(tons: Decimal) -> Decimal:
-    """رسوم الإنزال (وارد): شرائح ≤5000 طن، وفوقها قانون 150,000 + (ألفيات إضافية × 60,000)."""
+    """رسوم الإنزال (وارد): شرائح ≤5000 طن، وفوقها قانون 120,000 + (ألفيات إضافية × 60,000)."""
     if tons <= 5000:
         return _tier_fee(tons, UNLOADING_TIERS)
-    return Decimal('150000') + Decimal(int(tons // 1000) - 5) * Decimal('60000')
+    return Decimal('120000') + Decimal(int(tons // 1000) - 5) * Decimal('60000')
 
 
 def _tier_fee(value: Decimal, tiers) -> Decimal:
