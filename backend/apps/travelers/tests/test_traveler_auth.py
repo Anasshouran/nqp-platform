@@ -4,10 +4,12 @@
 استعادة كلمة المرور، واجهة /me، والربط التلقائي بالتسجيلات.
 """
 import base64
+import re
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from rest_framework import status
@@ -162,6 +164,55 @@ class TestPasswordRecovery:
     def test_forgot_always_returns_200(self):
         resp = APIClient().post(f'{API}/forgot-password/', {'email': 'nonexistent@test.com'}, format='json')
         assert resp.status_code == status.HTTP_200_OK
+
+    def test_forgot_password_link_contains_uidb64(self, settings):
+        """SIVS-INTEG-002: الواجهة تقرأ uidb64، فيجب أن يبنيه الباكند."""
+        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+        mail.outbox.clear()
+        _register(APIClient())
+
+        resp = APIClient().post(
+            f'{API}/forgot-password/', {'email': 'test.traveler@example.com'}, format='json'
+        )
+
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(mail.outbox) == 1
+        body = mail.outbox[0].body
+        assert '?uidb64=' in body
+        assert '?uid=' not in body, 'الرابط ما زال يستخدم uid بدل uidb64'
+        assert re.search(
+            r'/traveler/reset-password\?uidb64=[^&\s]+&token=[^&\s]+', body
+        ), body
+        mail.outbox.clear()
+
+    def test_forgot_password_flow_end_to_end(self, settings):
+        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+        mail.outbox.clear()
+        _register(APIClient())
+
+        APIClient().post(
+            f'{API}/forgot-password/', {'email': 'test.traveler@example.com'}, format='json'
+        )
+        assert len(mail.outbox) == 1
+
+        match = re.search(
+            r'/traveler/reset-password\?uidb64=(?P<uidb64>[^&\s]+)&token=(?P<token>[^&\s]+)',
+            mail.outbox[0].body,
+        )
+        assert match, mail.outbox[0].body
+
+        new_pw = 'NewP4ss!2025'
+        resp = APIClient().post(f'{API}/reset-password/', {
+            'uidb64': match.group('uidb64'),
+            'token': match.group('token'),
+            'password': new_pw,
+            'confirm_password': new_pw,
+        }, format='json')
+        assert resp.status_code == status.HTTP_200_OK
+
+        user = User.objects.get(email='test.traveler@example.com')
+        assert user.check_password(new_pw)
+        mail.outbox.clear()
 
     def test_reset_valid_token(self):
         _register(APIClient())
