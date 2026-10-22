@@ -12,6 +12,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# QR signing key — separated from SECRET_KEY (SEC-PLAT-001 / DEC-SEC-001).
+# Falls back to SECRET_KEY during migration window; set explicitly in production.
+QR_SIGNING_KEY = os.environ.get('QR_SIGNING_KEY') or SECRET_KEY
+# Retired key retained for dual-key verification during rotation window
+# (DEC-SEC-002/003). Unset ⇒ only current key accepted.
+QR_SIGNING_KEY_OLD = os.environ.get('QR_SIGNING_KEY_OLD') or None
+# Key identifier embedded in new QR payloads (DEC-SEC-005).
+QR_KEY_ID = os.environ.get('QR_KEY_ID', 'v1')
+
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
