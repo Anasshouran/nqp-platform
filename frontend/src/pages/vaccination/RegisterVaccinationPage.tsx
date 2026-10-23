@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -45,13 +46,13 @@ const assessmentTone: Record<string, 'success' | 'warning' | 'error'> = {
   MISSING: 'error',
 };
 
-const assessmentLabel: Record<string, string> = {
-  COMPLETE: 'مكتمل',
-  PARTIAL: 'ناقص',
-  MISSING: 'مطلوب',
-};
-
 const RegisterVaccinationPage = () => {
+  const { t } = useTranslation();
+  const assessmentLabel: Record<string, string> = useMemo(() => ({
+    COMPLETE: t('vaccination.مكتمل'),
+    PARTIAL: t('vaccination.ناقص'),
+    MISSING: t('vaccination.مطلوب'),
+  }), [t]);
   const { user } = useAuth();
   const [passport, setPassport] = useState('');
   const [destination, setDestination] = useState('');
@@ -112,7 +113,7 @@ const RegisterVaccinationPage = () => {
           setTraveler(null);
           setSummary(null);
           setAssessment([]);
-          setLookupError(d.message || 'لم يتم العثور على مسافر بهذا الجواز');
+          setLookupError(d.message || t('vaccination.لم يتم العثور على مسافر بهذا الجواز'));
           return;
         }
         setTraveler(d.traveler);
@@ -124,7 +125,7 @@ const RegisterVaccinationPage = () => {
         setTraveler(null);
         setSummary(null);
         setAssessment([]);
-        setLookupError(extractErrorMessage(err, 'تعذر البحث عن المسافر'));
+        setLookupError(extractErrorMessage(err, t('vaccination.تعذر البحث عن المسافر')));
       })
       .finally(() => {
         setSearched(true);
@@ -162,9 +163,9 @@ const RegisterVaccinationPage = () => {
         notes: form.notes,
       });
       setSavedRecordId(res.data.data.id);
-      notifySuccess('تم تسجيل الجرعة');
+      notifySuccess(t('vaccination.تم تسجيل الجرعة'));
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تسجيل الجرعة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر تسجيل الجرعة')));
     } finally {
       setSaving(false);
     }
@@ -176,9 +177,9 @@ const RegisterVaccinationPage = () => {
     try {
       const res = await issueCertificate(savedRecordId);
       setCertificate(res.data.data);
-      notifySuccess('صدرت الشهادة بنجاح');
+      notifySuccess(t('vaccination.صدرت الشهادة بنجاح'));
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إصدار الشهادة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر إصدار الشهادة')));
     } finally {
       setIssuing(false);
     }
@@ -323,7 +324,7 @@ const RegisterVaccinationPage = () => {
               </Stack>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <TextField select fullWidth label="اللقاح" value={form.vaccine} onChange={update('vaccine')}>
+                  <TextField select fullWidth label={t("vaccination.اللقاح")} value={form.vaccine} onChange={update('vaccine')}>
                     <MenuItem value="">— اختر اللقاح —</MenuItem>
                     {vaccines.map((v) => (
                       <MenuItem key={v.id} value={v.id}>
@@ -343,7 +344,7 @@ const RegisterVaccinationPage = () => {
                   </TextField>
                 </Grid>
                 <Grid item xs={6} sm={3}>
-                  <TextField select fullWidth label="نوع الجرعة" value={form.dose_type} onChange={update('dose_type')}>
+                  <TextField select fullWidth label={t("vaccination.نوع الجرعة")} value={form.dose_type} onChange={update('dose_type')}>
                     {DOSE_TYPE_OPTIONS.map((d) => (
                       <MenuItem key={d.value} value={d.value}>{d.label}</MenuItem>
                     ))}
@@ -352,7 +353,7 @@ const RegisterVaccinationPage = () => {
                 <Grid item xs={6} sm={3}>
                   <TextField
                     fullWidth
-                    label="رقم الجرعة"
+                    label={t("vaccination.رقم الجرعة")}
                     type="number"
                     inputProps={{ min: 1, max: 20 }}
                     value={form.dose_number}
@@ -362,7 +363,7 @@ const RegisterVaccinationPage = () => {
                 <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
-                    label="تاريخ التطعيم"
+                    label={t("vaccination.تاريخ التطعيم")}
                     type="date"
                     value={form.administered_at}
                     onChange={update('administered_at')}
@@ -381,7 +382,7 @@ const RegisterVaccinationPage = () => {
                     fullWidth
                     multiline
                     minRows={2}
-                    label="ملاحظات"
+                    label={t("vaccination.ملاحظات")}
                     value={form.notes}
                     onChange={update('notes')}
                   />
@@ -445,7 +446,7 @@ const RegisterVaccinationPage = () => {
                           جرعة {r.dose_number} · {doseTypeLabel(r.dose_type)} · {formatDate(r.administered_at)}
                         </Typography>
                       </Box>
-                      <Chip size="small" label={r.lot_number || 'بدون تشغيلة'} variant="outlined" />
+                      <Chip size="small" label={r.lot_number || t('vaccination.بدون تشغيلة')} variant="outlined" />
                     </Stack>
                   ))}
                 </Stack>

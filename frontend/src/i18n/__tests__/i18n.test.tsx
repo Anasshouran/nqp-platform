@@ -31,4 +31,12 @@ describe('i18n Phase 0', () => {
     );
     expect(screen.getByText('اللغة')).toBeTruthy();
   });
+
+  it('vaccination namespace has translations', () => {
+    i18n.changeLanguage('ar');
+    expect(i18n.t('vaccination.اللقاح')).toBe('اللقاح');
+    i18n.changeLanguage('en');
+    expect(i18n.t('vaccination.اللقاح')).toBe('Vaccine');
+    i18n.changeLanguage('ar');
+  });
 });

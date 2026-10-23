@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -32,13 +33,6 @@ import {
 } from '../../api/endpoints/vaccination';
 import type { Vaccine, VaccinationRule } from '../../types/vaccination';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
-
-const routeLabels: Record<string, string> = {
-  ORAL: 'فموي',
-  INJECTION: 'حقن',
-  INTRANASAL: 'بخاخ أنفي',
-  OTHER: 'أخرى',
-};
 
 const routeTone: Record<string, 'info' | 'primary' | 'neutral'> = {
   ORAL: 'info',
@@ -76,6 +70,13 @@ const emptyRule: Partial<VaccinationRule> = {
 };
 
 const VaccinesPage = () => {
+  const { t } = useTranslation();
+  const routeLabels: Record<string, string> = useMemo(() => ({
+    ORAL: t('vaccination.فموي'),
+    INJECTION: t('vaccination.حقن'),
+    INTRANASAL: t('vaccination.بخاخ أنفي'),
+    OTHER: t('vaccination.أخرى'),
+  }), [t]);
   const [tab, setTab] = useState(0);
 
   const vaccineTable = useServerTable<Vaccine>({ fetchData: getVaccines });
@@ -101,23 +102,23 @@ const VaccinesPage = () => {
 
   const saveVaccine = async () => {
     if (!vaccineForm.code?.trim() || !vaccineForm.name_ar?.trim()) {
-      notifyError('الكود والاسم بالعربية مطلوبان');
+      notifyError(t('vaccination.الكود والاسم بالعربية مطلوبان'));
       return;
     }
     setSavingVaccine(true);
     try {
       if (vaccineDialog.editing) {
         await updateVaccine(vaccineDialog.editing.id, payloadOf(vaccineForm));
-        notifySuccess('تم تحديث اللقاح');
+        notifySuccess(t('vaccination.تم تحديث اللقاح'));
       } else {
         await createVaccine(payloadOf(vaccineForm));
-        notifySuccess('تمت إضافة اللقاح');
+        notifySuccess(t('vaccination.تمت إضافة اللقاح'));
       }
       setVaccineDialog({ open: false, editing: null });
       vaccineTable.refresh();
       getVaccines({ page_size: 200, ordering: 'order' }).then((res) => setVaccines(res.data.data.results ?? []));
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر حفظ اللقاح'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر حفظ اللقاح')));
     } finally {
       setSavingVaccine(false);
     }
@@ -130,7 +131,7 @@ const VaccinesPage = () => {
 
   const saveRule = async () => {
     if (!ruleForm.vaccine || !ruleForm.title_ar?.trim()) {
-      notifyError('اللقاح والعنوان مطلوبان');
+      notifyError(t('vaccination.اللقاح والعنوان مطلوبان'));
       return;
     }
     setSavingRule(true);
@@ -147,7 +148,7 @@ const VaccinesPage = () => {
           validity_days: ruleForm.validity_days || undefined,
           note: ruleForm.note,
         });
-        notifySuccess('تم تحديث القاعدة');
+        notifySuccess(t('vaccination.تم تحديث القاعدة'));
       } else {
         await createRule({
           vaccine: ruleForm.vaccine,
@@ -160,12 +161,12 @@ const VaccinesPage = () => {
           validity_days: ruleForm.validity_days || undefined,
           note: ruleForm.note,
         });
-        notifySuccess('تمت إضافة القاعدة');
+        notifySuccess(t('vaccination.تمت إضافة القاعدة'));
       }
       setRuleDialog({ open: false, editing: null });
       ruleTable.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر حفظ القاعدة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر حفظ القاعدة')));
     } finally {
       setSavingRule(false);
     }
@@ -199,36 +200,36 @@ const VaccinesPage = () => {
           columns={[
             {
               key: 'code',
-              label: 'الكود',
+              label: t('vaccination.الكود'),
               render: (v) => <Chip size="small" label={v.code} color="primary" variant="outlined" sx={{ fontWeight: 700 }} />,
             },
-            { key: 'name_ar', label: 'الاسم', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
+            { key: 'name_ar', label: t('vaccination.الاسم'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
             {
               key: 'name_en',
-              label: 'الاسم بالإنجليزية',
+              label: t('vaccination.الاسم بالإنجليزية'),
               hideOnMobile: true,
               render: (v) => v.name_en || '—',
             },
             {
               key: 'route',
-              label: 'طريق الإعطاء',
+              label: t('vaccination.طريق الإعطاء'),
               hideOnMobile: true,
               render: (v) => <StatusChip label={routeLabels[v.route] || v.route} tone={routeTone[v.route] || 'neutral'} />,
             },
-            { key: 'series', label: 'الجرعات', render: (v) => v.series },
+            { key: 'series', label: t('vaccination.الجرعات'), render: (v) => v.series },
             {
               key: 'validity_days',
-              label: 'الصلاحية (يوم)',
+              label: t('vaccination.الصلاحية (يوم)'),
               hideOnMobile: true,
               render: (v) => v.validity_days ?? '—',
             },
             {
               key: 'required',
-              label: 'إلزامي',
+              label: t('vaccination.إلزامي'),
               render: (v) => (
                 <Chip
                   size="small"
-                  label={v.required ? 'إلزامي' : 'اختياري'}
+                  label={v.required ? t('vaccination.إلزامي') : t('vaccination.اختياري')}
                   color={v.required ? 'error' : 'default'}
                   sx={{ fontWeight: 700 }}
                 />
@@ -236,9 +237,9 @@ const VaccinesPage = () => {
             },
             {
               key: 'is_active',
-              label: 'الحالة',
+              label: t('vaccination.الحالة'),
               render: (v) => (
-                <StatusChip label={v.is_active ? 'نشط' : 'موقوف'} tone={v.is_active ? 'success' : 'neutral'} />
+                <StatusChip label={v.is_active ? t('vaccination.نشط') : t('vaccination.موقوف')} tone={v.is_active ? 'success' : 'neutral'} />
               ),
             },
           ]}
@@ -263,7 +264,7 @@ const VaccinesPage = () => {
           actions={(v) => (
             <Tooltip title="تعديل">
               <IconButton
-                aria-label="تعديل اللقاح"
+                aria-label={t("vaccination.تعديل اللقاح")}
                 size="small"
                 color="primary"
                 onClick={() => openVaccineDialog(v)}
@@ -277,30 +278,30 @@ const VaccinesPage = () => {
       ) : (
         <DataTable<VaccinationRule>
           columns={[
-            { key: 'vaccine_name_ar', label: 'اللقاح', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
-            { key: 'title_ar', label: 'العنوان', render: (v) => v.title_ar },
+            { key: 'vaccine_name_ar', label: t('vaccination.اللقاح'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
+            { key: 'title_ar', label: t('vaccination.العنوان'), render: (v) => v.title_ar },
             {
               key: 'destination_region',
-              label: 'الوجهة',
+              label: t('vaccination.الوجهة'),
               hideOnMobile: true,
               render: (v) => v.destination_region || '—',
             },
             {
               key: 'required',
-              label: 'الإلزام',
+              label: t('vaccination.الإلزام'),
               render: (v) => (
                 <Chip
                   size="small"
-                  label={v.required ? 'إلزامي' : 'اختياري'}
+                  label={v.required ? t('vaccination.إلزامي') : t('vaccination.اختياري')}
                   color={v.required ? 'error' : 'default'}
                   sx={{ fontWeight: 700 }}
                 />
               ),
             },
-            { key: 'doses_required', label: 'الجرعات المطلوبة', render: (v) => v.doses_required },
+            { key: 'doses_required', label: t('vaccination.الجرعات المطلوبة'), render: (v) => v.doses_required },
             {
               key: 'validity_days',
-              label: 'الصلاحية (يوم)',
+              label: t('vaccination.الصلاحية (يوم)'),
               hideOnMobile: true,
               render: (v) => v.validity_days ?? '—',
             },
@@ -326,7 +327,7 @@ const VaccinesPage = () => {
           actions={(v) => (
             <Tooltip title="تعديل">
               <IconButton
-                aria-label="تعديل القاعدة"
+                aria-label={t("vaccination.تعديل القاعدة")}
                 size="small"
                 color="primary"
                 onClick={() => openRuleDialog(v)}
@@ -341,7 +342,7 @@ const VaccinesPage = () => {
 
       {/* Vaccine dialog */}
       <Dialog open={vaccineDialog.open} onClose={() => setVaccineDialog({ open: false, editing: null })} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>{vaccineDialog.editing ? 'تعديل اللقاح' : 'إضافة لقاح'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{vaccineDialog.editing ? t('vaccination.تعديل اللقاح') : t('vaccination.إضافة لقاح')}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -354,13 +355,13 @@ const VaccinesPage = () => {
               <TextField fullWidth label="الاسم بالعربية *" value={vaccineForm.name_ar} onChange={(e) => setVaccineForm((f) => ({ ...f, name_ar: e.target.value }))} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="الاسم بالإنجليزية" value={vaccineForm.name_en} onChange={(e) => setVaccineForm((f) => ({ ...f, name_en: e.target.value }))} dir="ltr" />
+              <TextField fullWidth label={t("vaccination.الاسم بالإنجليزية")} value={vaccineForm.name_en} onChange={(e) => setVaccineForm((f) => ({ ...f, name_en: e.target.value }))} dir="ltr" />
             </Grid>
             <Grid item xs={6} sm={3}>
               <TextField
                 select
                 fullWidth
-                label="طريق الإعطاء"
+                label={t("vaccination.طريق الإعطاء")}
                 value={vaccineForm.route}
                 onChange={(e) => setVaccineForm((f) => ({ ...f, route: e.target.value }))}
               >
@@ -372,7 +373,7 @@ const VaccinesPage = () => {
             <Grid item xs={6} sm={3}>
               <TextField
                 fullWidth
-                label="الجرعات"
+                label={t("vaccination.الجرعات")}
                 type="number"
                 value={vaccineForm.series}
                 onChange={(e) => setVaccineForm((f) => ({ ...f, series: Number(e.target.value) }))}
@@ -390,7 +391,7 @@ const VaccinesPage = () => {
             <Grid item xs={6} sm={3}>
               <TextField
                 fullWidth
-                label="الصلاحية (يوم)"
+                label={t("vaccination.الصلاحية (يوم)")}
                 type="number"
                 value={vaccineForm.validity_days ?? ''}
                 onChange={(e) => setVaccineForm((f) => ({ ...f, validity_days: e.target.value ? Number(e.target.value) : undefined }))}
@@ -433,7 +434,7 @@ const VaccinesPage = () => {
                       onChange={(e) => setVaccineForm((f) => ({ ...f, is_active: e.target.checked }))}
                     />
                   }
-                  label="نشط"
+                  label={t("vaccination.نشط")}
                 />
               </Stack>
             </Grid>
@@ -455,7 +456,7 @@ const VaccinesPage = () => {
 
       {/* Rule dialog */}
       <Dialog open={ruleDialog.open} onClose={() => setRuleDialog({ open: false, editing: null })} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>{ruleDialog.editing ? 'تعديل القاعدة' : 'إضافة قاعدة'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{ruleDialog.editing ? t('vaccination.تعديل القاعدة') : t('vaccination.إضافة قاعدة')}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -499,7 +500,7 @@ const VaccinesPage = () => {
             <Grid item xs={6} sm={3}>
               <TextField
                 fullWidth
-                label="الجرعات المطلوبة"
+                label={t("vaccination.الجرعات المطلوبة")}
                 type="number"
                 value={ruleForm.doses_required}
                 onChange={(e) => setRuleForm((f) => ({ ...f, doses_required: Number(e.target.value) }))}
@@ -508,7 +509,7 @@ const VaccinesPage = () => {
             <Grid item xs={6} sm={3}>
               <TextField
                 fullWidth
-                label="الصلاحية (يوم)"
+                label={t("vaccination.الصلاحية (يوم)")}
                 type="number"
                 value={ruleForm.validity_days ?? ''}
                 onChange={(e) => setRuleForm((f) => ({ ...f, validity_days: e.target.value ? Number(e.target.value) : undefined }))}
@@ -522,7 +523,7 @@ const VaccinesPage = () => {
                     onChange={(e) => setRuleForm((f) => ({ ...f, required: e.target.checked }))}
                   />
                 }
-                label="إلزامي"
+                label={t("vaccination.إلزامي")}
               />
             </Grid>
             <Grid item xs={12}>
@@ -530,7 +531,7 @@ const VaccinesPage = () => {
                 fullWidth
                 multiline
                 minRows={2}
-                label="ملاحظات"
+                label={t("vaccination.ملاحظات")}
                 value={ruleForm.note || ''}
                 onChange={(e) => setRuleForm((f) => ({ ...f, note: e.target.value }))}
               />

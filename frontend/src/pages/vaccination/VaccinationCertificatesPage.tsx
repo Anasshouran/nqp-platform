@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -28,13 +29,7 @@ import { formatDate, formatDateTime } from '../../utils/formatters';
 import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
-const statusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-  ACTIVE: { label: 'سارية', tone: 'success' },
-  EXPIRED: { label: 'منتهية', tone: 'warning' },
-  REVOKED: { label: 'ملغاة', tone: 'error' },
-};
-
-const printCertificate = (cert: VaccinationCertificate, qrPng?: string) => {
+const printCertificate = (cert: VaccinationCertificate, qrPng: string | undefined, statusMeta: Record<string, { label: string; tone: string }>) => {
   const win = window.open('', '_blank', 'width=900,height=700');
   if (!win) return;
   win.document.write(`<!doctype html>
@@ -99,6 +94,12 @@ const printCertificate = (cert: VaccinationCertificate, qrPng?: string) => {
 type CertDetail = VaccinationCertificate & { qr_png?: string };
 
 const VaccinationCertificatesPage = () => {
+  const { t } = useTranslation();
+  const statusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = useMemo(() => ({
+    ACTIVE: { label: t('vaccination.سارية'), tone: 'success' as const },
+    EXPIRED: { label: t('vaccination.منتهية'), tone: 'warning' as const },
+    REVOKED: { label: t('vaccination.ملغاة'), tone: 'error' as const },
+  }), [t]);
   const table = useServerTable<VaccinationCertificate>({ fetchData: getCertificates });
   const {
     rows, count, loading, error,
@@ -141,11 +142,11 @@ const VaccinationCertificatesPage = () => {
     setRevoking(true);
     try {
       await revokeCertificate(revokeTarget.id);
-      notifySuccess('تم إلغاء الشهادة');
+      notifySuccess(t('vaccination.تم إلغاء الشهادة'));
       setRevokeTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إلغاء الشهادة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر إلغاء الشهادة')));
     } finally {
       setRevoking(false);
     }
@@ -161,12 +162,12 @@ const VaccinationCertificatesPage = () => {
     setReplacing(true);
     try {
       await replaceCertificate(replaceTarget.id, replaceReason);
-      notifySuccess('تم استبدال الشهادة');
+      notifySuccess(t('vaccination.تم استبدال الشهادة'));
       setReplaceTarget(null);
       setReplaceReason('');
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر استبدال الشهادة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر استبدال الشهادة')));
     } finally {
       setReplacing(false);
     }
@@ -177,11 +178,11 @@ const VaccinationCertificatesPage = () => {
     setReissuing(true);
     try {
       await reissueCertificate(reissueTarget.id);
-      notifySuccess('تم إعادة إصدار الشهادة');
+      notifySuccess(t('vaccination.تم إعادة إصدار الشهادة'));
       setReissueTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إعادة إصدار الشهادة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر إعادة إصدار الشهادة')));
     } finally {
       setReissuing(false);
     }
@@ -195,9 +196,9 @@ const VaccinationCertificatesPage = () => {
       if (inv) {
         setInvoiceMap((m) => ({ ...m, [cert.id]: inv }));
       }
-      notifySuccess('تم إنشاء الفاتورة');
+      notifySuccess(t('vaccination.تم إنشاء الفاتورة'));
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إنشاء الفاتورة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر إنشاء الفاتورة')));
     } finally {
       setInvoiceLoading((s) => {
         const n = new Set(s);
@@ -218,12 +219,12 @@ const VaccinationCertificatesPage = () => {
       if (updated) {
         setInvoiceMap((m) => ({ ...m, [payTarget.id]: updated }));
       }
-      notifySuccess('تم تحصيل الدفع بنجاح');
+      notifySuccess(t('vaccination.تم تحصيل الدفع بنجاح'));
       setPayTarget(null);
       setPayMethod('CASH');
       setPayReference('');
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تحصيل الدفع'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر تحصيل الدفع')));
     } finally {
       setPaying(false);
     }
@@ -240,12 +241,12 @@ const VaccinationCertificatesPage = () => {
         columns={[
           {
             key: 'certificate_number',
-            label: 'رقم الشهادة',
+            label: t('vaccination.رقم الشهادة'),
             render: (v) => <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13 }}>{v.certificate_number}</Typography>,
           },
           {
             key: 'traveler',
-            label: 'المسافر',
+            label: t('vaccination.المسافر'),
             render: (v) => (
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Box
@@ -275,7 +276,7 @@ const VaccinationCertificatesPage = () => {
           },
           {
             key: 'vaccine_name_ar',
-            label: 'اللقاح',
+            label: t('vaccination.اللقاح'),
             render: (v) => (
               <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
                 {v.vaccine_name_ar || '—'}
@@ -285,7 +286,7 @@ const VaccinationCertificatesPage = () => {
           },
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('vaccination.الحالة'),
             render: (v) => {
               const m = statusMeta[v.status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
@@ -293,19 +294,19 @@ const VaccinationCertificatesPage = () => {
           },
           {
             key: 'issued_at',
-            label: 'الإصدار',
+            label: t('vaccination.الإصدار'),
             sortable: true,
             render: (v) => formatDateTime(v.issued_at),
           },
           {
             key: 'valid_until',
-            label: 'صالحة حتى',
+            label: t('vaccination.صالحة حتى'),
             hideOnMobile: true,
             render: (v) => formatDate(v.valid_until),
           },
           {
             key: 'fee',
-            label: 'الرسوم',
+            label: t('vaccination.الرسوم'),
             hideOnMobile: true,
             render: (v) => {
               const inv = invoiceMap[v.id];
@@ -350,7 +351,7 @@ const VaccinationCertificatesPage = () => {
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('vaccination.الحالة'),
             options: Object.entries(statusMeta).map(([v, m]) => ({ value: v, label: m.label })),
             value: '',
             onChange: (v) => setFilter('status', v),
@@ -470,7 +471,7 @@ const VaccinationCertificatesPage = () => {
                 <Button
                   variant="contained"
                   startIcon={<PrintIcon />}
-                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png)}
+                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png, statusMeta)}
                   sx={{ fontWeight: 700 }}
                 >
                   طباعة
