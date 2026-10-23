@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -38,15 +40,16 @@ import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/toast';
 
 const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <PreviewIcon fontSize="small" /> },
-  { id: 'activity', label: 'النشاط والسياق', icon: <InsightsIcon fontSize="small" /> },
-  { id: 'stocks', label: 'المخزون والصلاحية', icon: <Inventory2Icon fontSize="small" /> },
+  { id: 'overview', label: i18n.t('vaccination.نظرة عامة'), icon: <PreviewIcon fontSize="small" /> },
+  { id: 'activity', label: i18n.t('vaccination.النشاط والسياق'), icon: <InsightsIcon fontSize="small" /> },
+  { id: 'stocks', label: i18n.t('vaccination.المخزون والصلاحية'), icon: <Inventory2Icon fontSize="small" /> },
   { id: 'recent', label: 'آخر الجرعات', icon: <ScheduleIcon fontSize="small" /> },
 ] as const;
 
 const BAR_COLORS = ['#0c7f6a', '#2f6dd0', '#0e7490', '#7b4fb3', '#b7791f', '#c63a3a', '#0d6efd', '#6f42c1'];
 
 const VaccinationDashboardPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [data, setData] = useState<VaccinationDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,7 @@ const VaccinationDashboardPage = () => {
     if (!data) setLoading(true);
     getVaccinationDashboard()
       .then((res) => setData(res.data.data))
-      .catch((err) => setError(extractErrorMessage(err, 'تعذر تحميل لوحة التطعيم الدولي')))
+      .catch((err) => setError(extractErrorMessage(err, t('vaccination.تعذر تحميل لوحة التطعيم الدولي'))))
       .finally(() => {
         loadingRef.current = false;
         setLoading(false);
@@ -80,41 +83,41 @@ const VaccinationDashboardPage = () => {
     () => [
       {
         icon: <EventAvailableIcon />,
-        label: 'جرعات اليوم',
+        label: t('vaccination.جرعات اليوم'),
         value: data?.doses_today ?? 0,
         accent: 'success.main',
-        hint: 'اليوم',
+        hint: t('vaccination.اليوم'),
       },
       {
         icon: <ScheduleIcon />,
-        label: 'جرعات الأسبوع',
+        label: t('vaccination.جرعات الأسبوع'),
         value: data?.doses_this_week ?? 0,
         accent: 'info.main',
-        hint: 'الأسبوع الحالي',
+        hint: t('vaccination.الأسبوع الحالي'),
       },
       {
         icon: <VaccinesIcon />,
-        label: 'إجمالي الجرعات',
+        label: t('vaccination.إجمالي الجرعات'),
         value: data?.total_records ?? 0,
         accent: 'primary.main',
-        hint: 'الكل',
+        hint: t('vaccination.الكل'),
       },
       {
         icon: <VerifiedUserIcon />,
-        label: 'شهادات سارية',
+        label: t('vaccination.شهادات سارية'),
         value: data?.active_certificates ?? 0,
         accent: 'secondary.main',
-        hint: 'نشطة',
+        hint: t('vaccination.نشطة'),
       },
       {
         icon: <Inventory2Icon />,
-        label: 'تشغيلات متاحة',
+        label: t('vaccination.تشغيلات متاحة'),
         value: data?.batches_count ?? 0,
         accent: 'warning.main',
-        hint: 'بمخزون',
+        hint: t('vaccination.بمخزون'),
       },
     ],
-    [data],
+    [data, t],
   );
 
   const activity = useMemo(() => {
@@ -129,9 +132,9 @@ const VaccinationDashboardPage = () => {
       });
     }
     days[days.length - 1].doses = data.doses_today;
-    days[days.length - 1].name = 'اليوم';
+    days[days.length - 1].name = t('vaccination.اليوم');
     return days;
-  }, [data]);
+  }, [data, t]);
 
   return (
     <>
@@ -207,7 +210,7 @@ const VaccinationDashboardPage = () => {
                         <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                         <ChartTooltip />
-                        <Area type="monotone" dataKey="doses" name="الجرعات" stroke="#0c7f6a" strokeWidth={2.5} fill="url(#vacDoses)" />
+                        <Area type="monotone" dataKey="doses" name={t("vaccination.الجرعات")} stroke="#0c7f6a" strokeWidth={2.5} fill="url(#vacDoses)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </Grid>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -21,8 +23,8 @@ import type { VaccinationSite } from '../../types/vaccination';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
 const kindMeta: Record<string, { label: string; tone: 'primary' | 'info' }> = {
-  CLINIC: { label: 'عيادة تطعيم', tone: 'primary' },
-  PORT_POINT: { label: 'نقطة تطعيم بمنفذ', tone: 'info' },
+  CLINIC: { label: i18n.t('vaccination.عيادة تطعيم'), tone: 'primary' },
+  PORT_POINT: { label: i18n.t('vaccination.نقطة تطعيم بمنفذ'), tone: 'info' },
 };
 
 const emptySite: Partial<VaccinationSite> = {
@@ -36,6 +38,7 @@ const emptySite: Partial<VaccinationSite> = {
 };
 
 const VaccinationSitesPage = () => {
+  const { t } = useTranslation();
   const table = useServerTable<VaccinationSite>({ fetchData: getSites });
   const { rows, count, loading, error, searchInput, setSearchInput, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
 
@@ -49,7 +52,7 @@ const VaccinationSitesPage = () => {
 
   const save = async () => {
     if (!form.name_ar?.trim()) {
-      notifyError('اسم العيادة مطلوب');
+      notifyError(t('vaccination.اسم العيادة مطلوب'));
       return;
     }
     setSaving(true);
@@ -63,11 +66,11 @@ const VaccinationSitesPage = () => {
         phone: form.phone || '',
         is_active: form.is_active,
       });
-      notifySuccess('تمت إضافة نقطة التطعيم');
+      notifySuccess(t('vaccination.تمت إضافة نقطة التطعيم'));
       setDialog(false);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر حفظ نقطة التطعيم'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر حفظ نقطة التطعيم')));
     } finally {
       setSaving(false);
     }
@@ -87,10 +90,10 @@ const VaccinationSitesPage = () => {
       />
       <DataTable<VaccinationSite>
         columns={[
-          { key: 'name_ar', label: 'الاسم', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
+          { key: 'name_ar', label: t('vaccination.الاسم'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
           {
             key: 'kind',
-            label: 'النوع',
+            label: t('vaccination.النوع'),
             render: (v) => {
               const m = kindMeta[v.kind];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.kind;
@@ -98,7 +101,7 @@ const VaccinationSitesPage = () => {
           },
           {
             key: 'location',
-            label: 'الموقع',
+            label: t('vaccination.الموقع'),
             hideOnMobile: true,
             render: (v) =>
               v.location ? (
@@ -112,7 +115,7 @@ const VaccinationSitesPage = () => {
           },
           {
             key: 'phone',
-            label: 'الهاتف',
+            label: t('vaccination.الهاتف'),
             hideOnMobile: true,
             render: (v) =>
               v.phone ? (
@@ -126,8 +129,8 @@ const VaccinationSitesPage = () => {
           },
           {
             key: 'is_active',
-            label: 'الحالة',
-            render: (v) => <StatusChip label={v.is_active ? 'نشط' : 'موقوف'} tone={v.is_active ? 'success' : 'neutral'} />,
+            label: t('vaccination.الحالة'),
+            render: (v) => <StatusChip label={v.is_active ? t('vaccination.نشط') : t('vaccination.موقوف')} tone={v.is_active ? 'success' : 'neutral'} />,
           },
         ]}
         rows={rows}
@@ -146,7 +149,7 @@ const VaccinationSitesPage = () => {
         filters={[
           {
             key: 'kind',
-            label: 'النوع',
+            label: t('vaccination.النوع'),
             options: Object.entries(kindMeta).map(([v, m]) => ({ value: v, label: m.label })),
             value: '',
             onChange: (v) => setFilter('kind', v),
@@ -167,13 +170,13 @@ const VaccinationSitesPage = () => {
               <TextField fullWidth label="الاسم بالعربية *" value={form.name_ar} onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="الاسم بالإنجليزية" value={form.name_en} onChange={(e) => setForm((f) => ({ ...f, name_en: e.target.value }))} dir="ltr" />
+              <TextField fullWidth label={t("vaccination.الاسم بالإنجليزية")} value={form.name_en} onChange={(e) => setForm((f) => ({ ...f, name_en: e.target.value }))} dir="ltr" />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 select
                 fullWidth
-                label="النوع"
+                label={t("vaccination.النوع")}
                 value={form.kind}
                 onChange={(e) => setForm((f) => ({ ...f, kind: e.target.value }))}
               >
@@ -183,13 +186,13 @@ const VaccinationSitesPage = () => {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={8}>
-              <TextField fullWidth label="الموقع" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
+              <TextField fullWidth label={t("vaccination.الموقع")} value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth label="العنوان" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+              <TextField fullWidth label={t("vaccination.العنوان")} value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth label="الهاتف" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+              <TextField fullWidth label={t("vaccination.الهاتف")} value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
             </Grid>
           </Grid>
         </DialogContent>
