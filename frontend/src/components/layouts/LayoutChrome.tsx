@@ -19,6 +19,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GlobalSearchPalette, { openGlobalSearch } from '../search/GlobalSearchPalette';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import NotificationBell from './NotificationBell';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { logout } from '../../store/slices/authSlice';
@@ -159,6 +160,7 @@ const LayoutChrome = ({
           </Stack>
 
           <Stack direction="row" alignItems="center" spacing={1}>
+            <LanguageSwitcher />
             <Tooltip title="البحث الشامل (Ctrl+K)">
               <IconButton aria-label="البحث الشامل" onClick={openGlobalSearch} sx={{ color: 'text.secondary' }}>
                 <SearchIcon />
