@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -47,14 +46,13 @@ const assessmentTone: Record<string, 'success' | 'warning' | 'error'> = {
   MISSING: 'error',
 };
 
-const assessmentLabel: Record<string, string> = {
-  COMPLETE: i18n.t('vaccination.مكتمل'),
-  PARTIAL: i18n.t('vaccination.ناقص'),
-  MISSING: i18n.t('vaccination.مطلوب'),
-};
-
 const RegisterVaccinationPage = () => {
   const { t } = useTranslation();
+  const assessmentLabel: Record<string, string> = useMemo(() => ({
+    COMPLETE: t('vaccination.مكتمل'),
+    PARTIAL: t('vaccination.ناقص'),
+    MISSING: t('vaccination.مطلوب'),
+  }), [t]);
   const { user } = useAuth();
   const [passport, setPassport] = useState('');
   const [destination, setDestination] = useState('');

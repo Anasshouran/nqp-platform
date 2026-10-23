@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -32,13 +31,19 @@ const doseTone: Record<string, 'info' | 'primary' | 'neutral' | 'warning'> = {
   BOOSTER: 'warning',
 };
 
-const statusMeta: Record<string, { label: string; tone: 'success' | 'error' }> = {
-  GIVEN: { label: i18n.t('vaccination.مُعطاة'), tone: 'success' },
-  CANCELLED: { label: i18n.t('vaccination.ملغاة'), tone: 'error' },
-};
-
 const VaccinationRecordsPage = () => {
   const { t } = useTranslation();
+  const statusMeta: Record<string, { label: string; tone: 'success' | 'error' }> = useMemo(() => ({
+    GIVEN: { label: t('vaccination.مُعطاة'), tone: 'success' as const },
+    CANCELLED: { label: t('vaccination.ملغاة'), tone: 'error' as const },
+  }), [t]);
+
+  const DOSE_LABELS: Record<string, string> = useMemo(() => ({
+    FIRST: t('vaccination.الجرعة الأولى'),
+    SECOND: t('vaccination.الجرعة الثانية'),
+    THIRD: t('vaccination.الجرعة الثالثة'),
+    BOOSTER: t('vaccination.جرعة تنشيطية'),
+  }), [t]);
   const table = useServerTable<VaccinationRecord>({ fetchData: getRecords });
   const {
     rows, count, loading, error,
@@ -293,13 +298,6 @@ const VaccinationRecordsPage = () => {
       </Dialog>
     </>
   );
-};
-
-const DOSE_LABELS: Record<string, string> = {
-  FIRST: i18n.t('vaccination.الجرعة الأولى'),
-  SECOND: i18n.t('vaccination.الجرعة الثانية'),
-  THIRD: i18n.t('vaccination.الجرعة الثالثة'),
-  BOOSTER: i18n.t('vaccination.جرعة تنشيطية'),
 };
 
 export default VaccinationRecordsPage;

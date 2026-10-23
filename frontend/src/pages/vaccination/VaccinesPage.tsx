@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -34,13 +33,6 @@ import {
 } from '../../api/endpoints/vaccination';
 import type { Vaccine, VaccinationRule } from '../../types/vaccination';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
-
-const routeLabels: Record<string, string> = {
-  ORAL: i18n.t('vaccination.فموي'),
-  INJECTION: i18n.t('vaccination.حقن'),
-  INTRANASAL: i18n.t('vaccination.بخاخ أنفي'),
-  OTHER: i18n.t('vaccination.أخرى'),
-};
 
 const routeTone: Record<string, 'info' | 'primary' | 'neutral'> = {
   ORAL: 'info',
@@ -79,6 +71,12 @@ const emptyRule: Partial<VaccinationRule> = {
 
 const VaccinesPage = () => {
   const { t } = useTranslation();
+  const routeLabels: Record<string, string> = useMemo(() => ({
+    ORAL: t('vaccination.فموي'),
+    INJECTION: t('vaccination.حقن'),
+    INTRANASAL: t('vaccination.بخاخ أنفي'),
+    OTHER: t('vaccination.أخرى'),
+  }), [t]);
   const [tab, setTab] = useState(0);
 
   const vaccineTable = useServerTable<Vaccine>({ fetchData: getVaccines });

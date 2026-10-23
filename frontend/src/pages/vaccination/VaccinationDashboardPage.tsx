@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -39,17 +38,16 @@ import type { VaccinationDashboard } from '../../types/vaccination';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/toast';
 
-const SECTIONS = [
-  { id: 'overview', label: i18n.t('vaccination.نظرة عامة'), icon: <PreviewIcon fontSize="small" /> },
-  { id: 'activity', label: i18n.t('vaccination.النشاط والسياق'), icon: <InsightsIcon fontSize="small" /> },
-  { id: 'stocks', label: i18n.t('vaccination.المخزون والصلاحية'), icon: <Inventory2Icon fontSize="small" /> },
-  { id: 'recent', label: 'آخر الجرعات', icon: <ScheduleIcon fontSize="small" /> },
-] as const;
-
 const BAR_COLORS = ['#0c7f6a', '#2f6dd0', '#0e7490', '#7b4fb3', '#b7791f', '#c63a3a', '#0d6efd', '#6f42c1'];
 
 const VaccinationDashboardPage = () => {
   const { t } = useTranslation();
+  const SECTIONS = useMemo(() => [
+    { id: 'overview', label: t('vaccination.نظرة عامة'), icon: <PreviewIcon fontSize="small" /> },
+    { id: 'activity', label: t('vaccination.النشاط والسياق'), icon: <InsightsIcon fontSize="small" /> },
+    { id: 'stocks', label: t('vaccination.المخزون والصلاحية'), icon: <Inventory2Icon fontSize="small" /> },
+    { id: 'recent', label: 'آخر الجرعات', icon: <ScheduleIcon fontSize="small" /> },
+  ] as const, [t]);
   const navigate = useNavigate();
   const [data, setData] = useState<VaccinationDashboard | null>(null);
   const [loading, setLoading] = useState(true);
