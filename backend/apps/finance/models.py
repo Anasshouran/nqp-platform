@@ -20,6 +20,7 @@ class ServiceType(models.TextChoices):
     LAB = 'LAB', 'المختبر'
     CERTIFICATE = 'CERTIFICATE', 'الشهادات'
     PEST_CONTROL = 'PEST_CONTROL', 'مكافحة النواقل'
+    VACCINATION = 'VACCINATION', 'التطعيم الدولي'
     OTHER = 'OTHER', 'خدمات أخرى'
 
 
@@ -31,6 +32,7 @@ class Currency(models.TextChoices):
 class InvoiceSource(models.TextChoices):
     FOOD_SHIPMENT = 'FOOD_SHIPMENT', 'شحنة (رقابة أغذية)'
     LAB_SAMPLE = 'LAB_SAMPLE', 'عينة مختبر'
+    VACCINATION_CERTIFICATE = 'VACCINATION_CERTIFICATE', 'شهادة تطعيم'
     MANUAL = 'MANUAL', 'عميل مباشر'
 
 
@@ -131,7 +133,7 @@ class Invoice(BaseModel):
 
     invoice_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الفاتورة')
     source_type = models.CharField(
-        max_length=20, choices=InvoiceSource.choices, default=InvoiceSource.MANUAL, verbose_name='المصدر'
+        max_length=30, choices=InvoiceSource.choices, default=InvoiceSource.MANUAL, verbose_name='المصدر'
     )
     food_shipment = models.ForeignKey(
         'food_quarantine.FoodShipment',
@@ -148,6 +150,14 @@ class Invoice(BaseModel):
         blank=True,
         related_name='finance_invoices',
         verbose_name='العينة',
+    )
+    vaccination_certificate = models.ForeignKey(
+        'vaccination.VaccinationCertificate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='invoices',
+        verbose_name='شهادة التطعيم',
     )
     request_ref = models.CharField(max_length=50, blank=True, verbose_name='رقم الطلب/المرجع')
     service_type = models.CharField(
