@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -10,21 +11,25 @@ import { PageHeader } from '../../components/common';
 import { getCmsPage } from '../../api/endpoints/public';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
-const FALLBACK = [
-  { title: 'مقدمة', body: 'نلتزم في منصة الحجر الصحي القومي (عافيتنا) بحماية بياناتكم الشخصية واحترام خصوصيتكم عند استخدام خدمات المنصة الإلكترونية.' },
-  { title: 'البيانات التي نجمعها', body: 'نقوم بجمع البيانات الضرورية لتقديم خدمات الحجر الصحي والتسجيل المسبق للمسافرين، بما يشمل بيانات الهوية والسفر والصحة، وفق الأسس القانونية المنظمة للعمل.' },
-  { title: 'استخدام البيانات', body: 'تستخدم البيانات لأغراض الرصد الوبائي وإصدار الشهادات الصحية وخدمات التحقق، ولا تتم مشاركتها إلا مع الجهات المختصة وفق مقتضيات الصحة العامة واللوائح الصحية الدولية.' },
-  { title: 'حفظ وأمن البيانات', body: 'نعتمد إجراءات فنية وتنظيمية لحماية البيانات من الوصول غير المصرح به أو الإفصاح أو التعديل، وتُحتفظ البيانات للمدة التي يتطلبها النظام القانوني.' },
-  { title: 'حقوق المستخدم', body: 'يحق لك الاطلاع على بياناتك أو طلب تصحيحها أو طلب حذفها ضمن الحدود التي لا تتعارض مع الالتزامات القانونية للصحة العامة.' },
-];
-
 const PrivacyPage = () => {
-  usePageTitle('سياسة الخصوصية');
+  const { t } = useTranslation();
+  usePageTitle(t('public.سياسة الخصوصية'));
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasCms, setHasCms] = useState(false);
   // محتوى CMS يُصيَّر كـHTML: ننظّفه أولاً حتى لا يصبح محرّر خبيث XSS مخزّن.
   const safeContent = useMemo(() => sanitizeHtml(content), [content]);
+
+  const fallback = useMemo(
+    () => [
+      { title: t('public.مقدمة'), body: t('public.نلتزم في منصة الحجر الصحي القومي (عافيتنا) بحماية بياناتكم الشخصية واحترام خصوصيتكم عند استخدام خدمات المنصة الإلكترونية') },
+      { title: t('public.البيانات التي نجمعها'), body: t('public.نقوم بجمع البيانات الضرورية لتقديم خدمات الحجر الصحي والتسجيل المسبق للمسافرين، بما يشمل بيانات الهوية والسفر والصحة، وفق الأسس القانونية المنظمة للعمل') },
+      { title: t('public.استخدام البيانات'), body: t('public.تستخدم البيانات لأغراض الرصد الوبائي وإصدار الشهادات الصحية وخدمات التحقق، ولا تتم مشاركتها إلا مع الجهات المختصة وفق مقتضيات الصحة العامة واللوائح الصحية الدولية') },
+      { title: t('public.حفظ وأمن البيانات'), body: t('public.نعتمد إجراءات فنية وتنظيمية لحماية البيانات من الوصول غير المصرح به أو الإفصاح أو التعديل، وتُحتفظ البيانات للمدة التي يتطلبها النظام القانوني') },
+      { title: t('public.حقوق المستخدم'), body: t('public.يحق لك الاطلاع على بياناتك أو طلب تصحيحها أو طلب حذفها ضمن الحدود التي لا تتعارض مع الالتزامات القانونية للصحة العامة') },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -48,9 +53,9 @@ const PrivacyPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="سياسة الخصوصية"
-        subtitle="كيف نتعامل مع بياناتكم الصحية والشخصية في منصة الحجر الصحي القومي"
-        eyebrow="خصوصية البيانات"
+        title={t('public.سياسة الخصوصية')}
+        subtitle={t('public.كيف نتعامل مع بياناتكم الصحية والشخصية في منصة الحجر الصحي القومي')}
+        eyebrow={t('public.خصوصية البيانات')}
       />
 
       {loading ? (
@@ -71,7 +76,7 @@ const PrivacyPage = () => {
         />
       ) : (
         <Stack spacing={3} sx={{ maxWidth: 760, mx: 'auto' }}>
-          {FALLBACK.map((section, index) => (
+          {fallback.map((section, index) => (
             <Box key={section.title}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Box
@@ -97,7 +102,7 @@ const PrivacyPage = () => {
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.9 }}>
                 {section.body}
               </Typography>
-              {index < FALLBACK.length - 1 && <Divider sx={{ mt: 3 }} />}
+              {index < fallback.length - 1 && <Divider sx={{ mt: 3 }} />}
             </Box>
           ))}
         </Stack>

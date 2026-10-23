@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,57 +34,69 @@ import { submitCarrierRegistration } from '../../api/endpoints/public';
 import type { CarrierRegistrationResult } from '../../api/endpoints/public';
 import { notifyError, notifySuccess } from '../../utils/toast';
 
-const partnerSchema = z.object({
-  company_name: z.string().min(2, 'اسم الشركة مطلوب'),
-  iata_code: z.string().toUpperCase().regex(/^[A-Z0-9]{2,3}$/, 'كود IATA غير صحيح (سطرتان أو ثلاثة)').optional().or(z.literal('')),
-  icao_code: z.string().toUpperCase().regex(/^[A-Z]{3,4}$/, 'كود ICAO غير صحيح (3–4 أحرف)').optional().or(z.literal('')),
-  contact_name: z.string().min(3, 'اسم جهة الاتصال مطلوب'),
-  email: z.string().email('بريد إلكتروني غير صحيح'),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  documents_url: z.string().url('رابط غير صالح').optional().or(z.literal('')),
-});
-
-type PartnerFormValues = z.infer<typeof partnerSchema>;
-
-const scopeOptions = [
-  { value: 'flights', label: 'الرحلات والكشوف والتنبيهات (flights)', icon: <ListAltIcon /> },
-  { value: 'health_events', label: 'الإبلاغ عن الأحداث الصحية على الرحلات (health_events)', icon: <HealthAndSafetyIcon /> },
-];
-
-const benefits = [
-  {
-    icon: <ListAltIcon />,
-    title: 'رفع كشوف المسافرين',
-    desc: 'إرسال كشوف الركاب إلكترونياً وتلقي تأكيد المعالجة الآلية دون وسيط بشري.',
-  },
-  {
-    icon: <NotificationsActiveIcon />,
-    title: 'تنبيهات صحية لحظية',
-    desc: 'استلام التنبيهات الصحية والإرشادات المحدثة لكل رحلة وجهة.',
-  },
-  {
-    icon: <HealthAndSafetyIcon />,
-    title: 'أحداث صحية على الرحلات',
-    desc: 'الإبلاغ الفوري عن الحالات الصحية المشتبهة أثناء الرحلة وتصعيدها إلى غرفة العمليات.',
-  },
-  {
-    icon: <ApiIcon />,
-    title: 'بوابة API موثّقة',
-    desc: 'تكامل آلي آمن (X-API-Key) مع سجل تدقيق مركزي وحدود استخدام للامتثال.',
-  },
-];
-
-const transportTypes = [
-  { icon: <AirplanemodeActiveIcon />, label: 'الجوي' },
-  { icon: <DirectionsBoatIcon />, label: 'البحري' },
-  { icon: <DirectionsBusIcon />, label: 'البري' },
-];
-
 const PartnersPage = () => {
+  const { t } = useTranslation();
   const [scopes, setScopes] = useState<string[]>(['flights']);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CarrierRegistrationResult | null>(null);
+
+  const partnerSchema = useMemo(
+    () => z.object({
+      company_name: z.string().min(2, t('public.اسم الشركة مطلوب')),
+      iata_code: z.string().toUpperCase().regex(/^[A-Z0-9]{2,3}$/, t('public.كود IATA غير صحيح (سطرتان أو ثلاثة)')).optional().or(z.literal('')),
+      icao_code: z.string().toUpperCase().regex(/^[A-Z]{3,4}$/, t('public.كود ICAO غير صحيح (3–4 أحرف)')).optional().or(z.literal('')),
+      contact_name: z.string().min(3, t('public.اسم جهة الاتصال مطلوب')),
+      email: z.string().email(t('public.بريد إلكتروني غير صحيح')),
+      phone: z.string().optional(),
+      address: z.string().optional(),
+      documents_url: z.string().url(t('public.رابط غير صالح')).optional().or(z.literal('')),
+    }),
+    [t],
+  );
+  type PartnerFormValues = z.infer<typeof partnerSchema>;
+
+  const scopeOptions = useMemo(
+    () => [
+      { value: 'flights', label: t('public.الرحلات والكشوف والتنبيهات (flights)'), icon: <ListAltIcon /> },
+      { value: 'health_events', label: t('public.الإبلاغ عن الأحداث الصحية على الرحلات (health_events)'), icon: <HealthAndSafetyIcon /> },
+    ],
+    [t],
+  );
+
+  const benefits = useMemo(
+    () => [
+      {
+        icon: <ListAltIcon />,
+        title: t('public.رفع كشوف المسافرين'),
+        desc: t('public.إرسال كشوف الركاب إلكترونياً وتلقي تأكيد المعالجة الآلية دون وسيط بشري'),
+      },
+      {
+        icon: <NotificationsActiveIcon />,
+        title: t('public.تنبيهات صحية لحظية'),
+        desc: t('public.استلام التنبيهات الصحية والإرشادات المحدثة لكل رحلة وجهة'),
+      },
+      {
+        icon: <HealthAndSafetyIcon />,
+        title: t('public.أحداث صحية على الرحلات'),
+        desc: t('public.الإبلاغ الفوري عن الحالات الصحية المشتبهة أثناء الرحلة وتصعيدها إلى غرفة العمليات'),
+      },
+      {
+        icon: <ApiIcon />,
+        title: t('public.بوابة API موثّقة'),
+        desc: t('public.تكامل آلي آمن (X-API-Key) مع سجل تدقيق مركزي وحدود استخدام للامتثال'),
+      },
+    ],
+    [t],
+  );
+
+  const transportTypes = useMemo(
+    () => [
+      { icon: <AirplanemodeActiveIcon />, label: t('public.الجوي') },
+      { icon: <DirectionsBoatIcon />, label: t('public.البحري') },
+      { icon: <DirectionsBusIcon />, label: t('public.البري') },
+    ],
+    [t],
+  );
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<PartnerFormValues>({
     resolver: zodResolver(partnerSchema),
@@ -113,29 +126,29 @@ const PartnersPage = () => {
       setResult(d as CarrierRegistrationResult);
       reset();
       setScopes(['flights']);
-      notifySuccess('تم إرسال طلب التسجيل وسيُراجع من قبل الإدارة');
+      notifySuccess(t('public.تم إرسال طلب التسجيل وسيُراجع من قبل الإدارة'));
     } catch {
-      notifyError('تعذّر إرسال الطلب — تأكد من اكتمال البيانات وحدّث الصفحة');
+      notifyError(t('public.تعذّر إرسال الطلب — تأكد من اكتمال البيانات وحدّث الصفحة'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const copyReference = () => {
-    if (result?.id) void navigator.clipboard.writeText(result.id).then(() => notifySuccess('تم نسخ رقم الطلب'));
+    if (result?.id) void navigator.clipboard.writeText(result.id).then(() => notifySuccess(t('public.تم نسخ رقم الطلب')));
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="بوابة الشركات"
-        subtitle="حوار آلي موحّد مع شركات النقل الجوي والبحري والبري القومية والإقليمية والدولية"
-        eyebrow="دوائر النقل"
+        title={t('public.بوابة الشركات')}
+        subtitle={t('public.حوار آلي موحّد مع شركات النقل الجوي والبحري والبري القومية والإقليمية والدولية')}
+        eyebrow={t('public.دوائر النقل')}
       />
 
       <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" sx={{ mb: 4 }}>
-        {transportTypes.map((t) => (
-          <Chip key={t.label} icon={t.icon} label={`شركات النقل ${t.label}`} variant="outlined" />
+        {transportTypes.map((tt) => (
+          <Chip key={tt.label} icon={tt.icon} label={`${t('public.شركات النقل')} ${tt.label}`} variant="outlined" />
         ))}
       </Stack>
 
@@ -158,8 +171,7 @@ const PartnersPage = () => {
               </Card>
             ))}
             <Alert severity="info" sx={{ borderRadius: 2 }} icon={<Diversity3Icon />}>
-              يُراجع طلب التسجيل من إدارة المنصة قبل اعتماد الشركة وتفعيل مفاتيح الوصول.
-            </Alert>
+              {t('public.يُراجع طلب التسجيل من إدارة المنصة قبل اعتماد الشركة وتفعيل مفاتيح الوصول')}</Alert>
           </Stack>
         </Grid>
 
@@ -167,7 +179,7 @@ const PartnersPage = () => {
           <Card sx={{ borderRadius: 3 }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                {result ? 'تم استلام طلب التسجيل' : 'نموذج تسجيل شركة نقل'}
+                {result ? t('public.تم استلام طلب التسجيل') : t('public.نموذج تسجيل شركة نقل')}
               </Typography>
 
               {result && (
@@ -175,33 +187,32 @@ const PartnersPage = () => {
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" flexWrap="wrap">
                     <Box>
                       <Typography sx={{ fontWeight: 700 }}>{result.company_name}</Typography>
-                      <Typography variant="body2">رقم الطلب: {result.id} — الحالة: بانتظار المراجعة</Typography>
+                      <Typography variant="body2">{t('public.رقم الطلب')}: {result.id} — {t('public.الحالة')}: {t('public.بانتظار المراجعة')}</Typography>
                     </Box>
                     <Button size="small" startIcon={<ContentCopyIcon />} onClick={copyReference}>
-                      نسخ رقم الطلب
-                    </Button>
+                      {t('public.نسخ رقم الطلب')}</Button>
                   </Stack>
                 </Alert>
               )}
 
               <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-                <TextField label="اسم الشركة *" fullWidth {...register('company_name')} error={!!errors.company_name} helperText={errors.company_name?.message} />
+                <TextField label={t('public.اسم الشركة *')} fullWidth {...register('company_name')} error={!!errors.company_name} helperText={errors.company_name?.message} />
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField label="كود IATA" fullWidth {...register('iata_code')} error={!!errors.iata_code} helperText={errors.iata_code?.message} placeholder="مثال: J4" />
-                  <TextField label="كود ICAO" fullWidth {...register('icao_code')} error={!!errors.icao_code} helperText={errors.icao_code?.message} placeholder="مثال: BDR" />
+                  <TextField label={t('public.كود IATA')} fullWidth {...register('iata_code')} error={!!errors.iata_code} helperText={errors.iata_code?.message} placeholder={t('public.مثال J4')} />
+                  <TextField label={t('public.كود ICAO')} fullWidth {...register('icao_code')} error={!!errors.icao_code} helperText={errors.icao_code?.message} placeholder={t('public.مثال BDR')} />
                 </Stack>
-                <TextField label="اسم جهة الاتصال *" fullWidth {...register('contact_name')} error={!!errors.contact_name} helperText={errors.contact_name?.message} />
+                <TextField label={t('public.اسم جهة الاتصال *')} fullWidth {...register('contact_name')} error={!!errors.contact_name} helperText={errors.contact_name?.message} />
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField label="البريد الإلكتروني *" type="email" fullWidth {...register('email')} error={!!errors.email} helperText={errors.email?.message} />
-                  <TextField label="رقم الجوال" fullWidth {...register('phone')} />
+                  <TextField label={t('public.البريد الإلكتروني *')} type="email" fullWidth {...register('email')} error={!!errors.email} helperText={errors.email?.message} />
+                  <TextField label={t('public.رقم الجوال')} fullWidth {...register('phone')} />
                 </Stack>
-                <TextField label="العنوان" fullWidth {...register('address')} />
-                <TextField label="رابط مستند إثبات (سجل أو شهادة) — اختياري" fullWidth {...register('documents_url')} error={!!errors.documents_url} helperText={errors.documents_url?.message} placeholder="https://…" />
+                <TextField label={t('public.العنوان')} fullWidth {...register('address')} />
+                <TextField label={t('public.رابط مستند إثبات (سجل أو شهادة) — اختياري')} fullWidth {...register('documents_url')} error={!!errors.documents_url} helperText={errors.documents_url?.message} placeholder="https://…" />
 
                 <Divider />
 
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>الصلاحيات المطلوبة</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t('public.الصلاحيات المطلوبة')}</Typography>
                   <Stack spacing={0.5}>
                     {scopeOptions.map((s) => (
                       <FormControlLabel
@@ -225,7 +236,7 @@ const PartnersPage = () => {
                   startIcon={submitting ? <CircularProgress size={18} /> : <SendIcon />}
                   disabled={submitting}
                 >
-                  {submitting ? 'جارٍ الإرسال…' : 'إرسال طلب التسجيل'}
+                  {submitting ? t('public.جارٍ الإرسال…') : t('public.إرسال طلب التسجيل')}
                 </Button>
               </Stack>
             </CardContent>

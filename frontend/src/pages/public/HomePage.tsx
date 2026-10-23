@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
 import { useEffect, useState, useMemo, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { MapContainer, Marker, Tooltip, Popup, TileLayer, useMap } from 'react-leaflet';
@@ -42,63 +43,6 @@ import { accentTokens } from '../../styles/theme';
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar') : '—';
 
-const QUICK_SERVICES = [
-  {
-    label: 'متطلبات السفر',
-    path: '/travel-requirements',
-    icon: <FlightIcon />,
-    color: accentTokens.air,
-    desc: 'الاطلاع على متطلبات الدخول وفق دولة القدوم',
-  },
-  {
-    label: 'التحقق من الشهادات',
-    path: '/verify',
-    icon: <VerifiedIcon />,
-    color: accentTokens.brand,
-    desc: 'التحقق الإلكتروني من صحة الشهادات الصادرة',
-  },
-  {
-    label: 'التطعيم الدولي',
-    path: '/verify',
-    icon: <BiotechIcon />,
-    color: accentTokens.health,
-    desc: 'شهادات التطعيم الدولية والتحقق منها',
-  },
-  {
-    label: 'المنافذ',
-    path: '/ports',
-    icon: <DomainIcon />,
-    color: accentTokens.sea,
-    desc: 'دليل منافذ الحجر الصحي حسب النوع والقطاع',
-  },
-  {
-    label: 'الشهادات والوثائق',
-    path: '/verify',
-    icon: <WorkspacePremiumIcon />,
-    color: accentTokens.lab,
-    desc: 'الشهادات الصحية والنتائج ووثائق المنصة',
-  },
-  {
-    label: 'الاستعلام',
-    path: '/services/tools',
-    icon: <SearchIcon />,
-    color: accentTokens.land,
-    desc: 'خدمات استعلام ذكية وتتبع ونتائج مختبرات',
-  },
-];
-
-const PORT_TYPE_GROUPS = [
-  { label: 'المطارات', type: 'AIRPORT', icon: <FlightIcon />, color: accentTokens.air },
-  { label: 'الموانئ', type: 'SEAPORT', icon: <DirectionsBoatIcon />, color: accentTokens.sea },
-  { label: 'المعابر البرية', type: 'LAND_PORT', icon: <DirectionsBusIcon />, color: accentTokens.land },
-];
-
-const FEATURED_STATS: { key: keyof PublicStatistics; label: string; icon: ReactNode; color: string }[] = [
-  { key: 'entry_points', label: 'نقاط الدخول', icon: <LocalShippingIcon />, color: accentTokens.brand },
-  { key: 'travelers', label: 'المسافرون', icon: <PeopleIcon />, color: accentTokens.air },
-  { key: 'screenings', label: 'الحالات', icon: <MonitorHeartIcon />, color: accentTokens.health },
-  { key: 'certificates', label: 'الشهادات', icon: <DescriptionIcon />, color: accentTokens.lab },
-];
 
 const PORT_MARKER_COLORS: Record<string, string> = {
   AIRPORT: accentTokens.air,
@@ -133,7 +77,78 @@ function MapBounds({ bounds }: { bounds: L.LatLngBounds | null }) {
 }
 
 const HomePage = () => {
-  usePageTitle('الصفحة الرئيسية');
+  const { t } = useTranslation();
+
+  const QUICK_SERVICES = useMemo(
+    () => (
+      [
+        {
+          label: t('public.متطلبات السفر'),
+          path: '/travel-requirements',
+          icon: <FlightIcon />,
+          color: accentTokens.air,
+          desc: t('public.الاطلاع على متطلبات الدخول وفق دولة القدوم'),
+        },
+        {
+          label: t('public.التحقق من الشهادات'),
+          path: '/verify',
+          icon: <VerifiedIcon />,
+          color: accentTokens.brand,
+          desc: t('public.التحقق الإلكتروني من صحة الشهادات الصادرة'),
+        },
+        {
+          label: t('public.التطعيم الدولي'),
+          path: '/verify',
+          icon: <BiotechIcon />,
+          color: accentTokens.health,
+          desc: t('public.شهادات التطعيم الدولية والتحقق منها'),
+        },
+        {
+          label: t('public.المنافذ'),
+          path: '/ports',
+          icon: <DomainIcon />,
+          color: accentTokens.sea,
+          desc: t('public.دليل منافذ الحجر الصحي حسب النوع والقطاع'),
+        },
+        {
+          label: t('public.الشهادات والوثائق'),
+          path: '/verify',
+          icon: <WorkspacePremiumIcon />,
+          color: accentTokens.lab,
+          desc: t('public.الشهادات الصحية والنتائج ووثائق المنصة'),
+        },
+        {
+          label: t('public.الاستعلام'),
+          path: '/services/tools',
+          icon: <SearchIcon />,
+          color: accentTokens.land,
+          desc: t('public.خدمات استعلام ذكية وتتبع ونتائج مختبرات'),
+        },
+      ]),
+    [t],
+  );
+
+  const PORT_TYPE_GROUPS = useMemo(
+    () => (
+      [
+        { label: t('public.المطارات'), type: 'AIRPORT', icon: <FlightIcon />, color: accentTokens.air },
+        { label: t('public.الموانئ'), type: 'SEAPORT', icon: <DirectionsBoatIcon />, color: accentTokens.sea },
+        { label: t('public.المعابر البرية'), type: 'LAND_PORT', icon: <DirectionsBusIcon />, color: accentTokens.land },
+      ]),
+    [t],
+  );
+
+  const FEATURED_STATS: { key: keyof PublicStatistics; label: string; icon: ReactNode; color: string }[] = useMemo(
+    () => (
+      [
+        { key: 'entry_points', label: t('public.نقاط الدخول'), icon: <LocalShippingIcon />, color: accentTokens.brand },
+        { key: 'travelers', label: t('public.المسافرون'), icon: <PeopleIcon />, color: accentTokens.air },
+        { key: 'screenings', label: t('public.الحالات'), icon: <MonitorHeartIcon />, color: accentTokens.health },
+        { key: 'certificates', label: t('public.الشهادات'), icon: <DescriptionIcon />, color: accentTokens.lab },
+      ]),
+    [t],
+  );
+  usePageTitle(t('public.الصفحة الرئيسية'));
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [circulars, setCirculars] = useState<Circular[]>([]);
   const [ports, setPorts] = useState<PublicPort[]>([]);
@@ -183,14 +198,11 @@ const HomePage = () => {
     return (
       <Box sx={{ textAlign: 'center', py: 20 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          تعذر تحميل الصفحة
-        </Typography>
+          {t('public.تعذر تحميل الصفحة')}</Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.
-        </Typography>
+          {t('public.حدث خطأ أثناء تحميل البيانات يرجى المحاولة مرة أخرى')}</Typography>
         <Button variant="contained" onClick={loadData} sx={{ textTransform: 'none' }}>
-          إعادة المحاولة
-        </Button>
+          {t('public.إعادة المحاولة')}</Button>
       </Box>
     );
   }
@@ -222,7 +234,7 @@ const HomePage = () => {
           <Box sx={{ maxWidth: 820 }}>
             <Chip
               icon={<HealthAndSafetyIcon />}
-              label="المنصة الوطنية الرسمية للحجر الصحي"
+              label={t('public.المنصة الوطنية الرسمية للحجر الصحي')}
               size="small"
               sx={{
                 mb: 3,
@@ -236,8 +248,7 @@ const HomePage = () => {
               }}
             />
             <Typography variant="h1" component="h1" sx={{ mb: 1.5, textWrap: 'balance' }}>
-              منصة الحجر الصحي القومي الرقمية
-            </Typography>
+              {t('public.منصة الحجر الصحي القومي الرقمية')}</Typography>
             <Typography
               variant="h5"
               component="p"
@@ -248,8 +259,7 @@ const HomePage = () => {
                 textWrap: 'balance',
               }}
             >
-              لتعزيز الأمن الصحي بنقاط الدخول
-            </Typography>
+              {t('public.لتعزيز الأمن الصحي بنقاط الدخول')}</Typography>
             <Typography
               variant="body1"
               sx={{
@@ -261,9 +271,7 @@ const HomePage = () => {
                 textWrap: 'pretty',
               }}
             >
-              منصة متكاملة لإدارة الحجر الصحي والرصد الوبائي بجميع منافذ الدخول،
-              تخدم المسافرين وشركات الطيران والجهات الصحية وفق اللوائح الصحية الدولية (IHR).
-            </Typography>
+              {t('public.منصة متكاملة لإدارة الحجر الصحي والرصد الوبائي بجميع منافذ الدخول، تخدم المسافرين وشركات الطيران والجهات الصحية وفق اللوائح الصحية الدولية (IHR)')}</Typography>
 
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', rowGap: 1 }}>
               <Button
@@ -288,8 +296,7 @@ const HomePage = () => {
                   },
                 }}
               >
-                الخدمات الذكية
-              </Button>
+                {t('public.الخدمات الذكية')}</Button>
               <Button
                 component={Link}
                 to="/travel-requirements"
@@ -303,8 +310,7 @@ const HomePage = () => {
                   '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.1)' },
                 }}
               >
-                متطلبات السفر
-              </Button>
+                {t('public.متطلبات السفر')}</Button>
             </Stack>
 
             {/* Entry-point types */}
@@ -314,10 +320,10 @@ const HomePage = () => {
               sx={{ flexWrap: 'wrap' }}
             >
               {[
-                { label: 'المطارات', type: 'AIRPORT', icon: <FlightIcon /> },
-                { label: 'الموانئ', type: 'SEAPORT', icon: <DirectionsBoatIcon /> },
-                { label: 'المعابر البرية', type: 'LAND_PORT', icon: <DirectionsBusIcon /> },
-                { label: 'الشحن الصحي', type: null, icon: <LocalShippingIcon />, path: '/services/food-safety' },
+                { label: t('public.المطارات'), type: 'AIRPORT', icon: <FlightIcon /> },
+                { label: t('public.الموانئ'), type: 'SEAPORT', icon: <DirectionsBoatIcon /> },
+                { label: t('public.المعابر البرية'), type: 'LAND_PORT', icon: <DirectionsBusIcon /> },
+                { label: t('public.الشحن الصحي'), type: null, icon: <LocalShippingIcon />, path: '/services/food-safety' },
               ].map((item) => (
                 <Button
                   key={item.label}
@@ -342,10 +348,10 @@ const HomePage = () => {
 
       <Container maxWidth="lg">
         {/* ============ مؤشرات عامة ============ */}
-        <Box component="section" id="stats" aria-label="مؤشرات عامة" sx={{ mb: { xs: 8, md: 11 } }}>
+        <Box component="section" id="stats" aria-label={t('public.مؤشرات عامة')} sx={{ mb: { xs: 8, md: 11 } }}>
           <SectionTitle
-            title="مؤشرات عامة"
-            subtitle="أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات"
+            title={t('public.مؤشرات عامة')}
+            subtitle={t('public.أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات')}
             align="center"
           />
           <Grid container spacing={2}>
@@ -398,22 +404,21 @@ const HomePage = () => {
           </Grid>
           <Box sx={{ textAlign: 'center', mt: 3 }}>
             <Button component={Link} to="/indicators" endIcon={<ArrowBackIcon />} sx={{ fontWeight: 700 }}>
-              جميع المؤشرات التفصيلية
-            </Button>
+              {t('public.جميع المؤشرات التفصيلية')}</Button>
           </Box>
         </Box>
 
         {/* ============ خريطة نقاط الدخول ============ */}
-        <Box component="section" id="entry-map" aria-label="خريطة نقاط الدخول" sx={{ mb: { xs: 8, md: 11 } }}>
+        <Box component="section" id="entry-map" aria-label={t('public.خريطة نقاط الدخول')} sx={{ mb: { xs: 8, md: 11 } }}>
           <SectionTitle
-            title="خريطة نقاط الدخول"
-            subtitle="توزيع المطارات والموانئ والمعابر البرية على خارطة السودان"
+            title={t('public.خريطة نقاط الدخول')}
+            subtitle={t('public.توزيع المطارات والموانئ والمعابر البرية على خارطة السودان')}
             align="center"
           />
           <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }} justifyContent="center">
             <Chip
               size="medium"
-              label="الكل"
+              label={t('public.الكل')}
               color={portFilter === '' ? 'primary' : 'default'}
               variant={portFilter === '' ? 'filled' : 'outlined'}
               onClick={() => setPortFilter('')}
@@ -444,7 +449,7 @@ const HomePage = () => {
           >
             {mapPoints.length === 0 ? (
               <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography color="text.secondary">لا توجد نقاط دخول مطابقة للفلتر</Typography>
+                <Typography color="text.secondary">{t('public.لا توجد نقاط دخول مطابقة للفلتر')}</Typography>
               </Box>
             ) : (
               <MapContainer
@@ -476,8 +481,7 @@ const HomePage = () => {
                             {p.address ? ` — ${p.address}` : ''}
                           </Typography>
                           <Button size="small" component={Link} to={`/ports/${p.id}`} sx={{ mt: 1 }} endIcon={<ArrowBackIcon />}>
-                            تفاصيل المنفذ
-                          </Button>
+                            {t('public.تفاصيل المنفذ')}</Button>
                         </Box>
                       </Popup>
                     </Marker>
@@ -491,8 +495,8 @@ const HomePage = () => {
         {/* ============ الخدمات الأكثر استخداماً ============ */}
         <Box component="section" id="quick-services" sx={{ mb: { xs: 8, md: 11 } }}>
           <SectionTitle
-            title="الخدمات الأكثر استخداماً"
-            subtitle="أهم الخدمات الإلكترونية التي تقدمها المنصة للمسافرين والشركاء والجهات الصحية"
+            title={t('public.الخدمات الأكثر استخداماً')}
+            subtitle={t('public.أهم الخدمات الإلكترونية التي تقدمها المنصة للمسافرين والشركاء والجهات الصحية')}
             align="center"
           />
           <Grid container spacing={2} className="stagger">
@@ -557,22 +561,19 @@ const HomePage = () => {
           </Grid>
           <Box sx={{ textAlign: 'center', mt: 3 }}>
             <Button component={Link} to="/services" variant="contained" endIcon={<ArrowBackIcon />} sx={{ fontWeight: 700 }}>
-              عرض جميع الخدمات
-            </Button>
+              {t('public.عرض جميع الخدمات')}</Button>
           </Box>
 </Box>
 
         {/* ============ آخر الأخبار والتعاميم ============ */}
         <Box component="section" id="news" sx={{ mb: { xs: 8, md: 11 } }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-            <SectionTitle title="آخر الأخبار والتعاميم" align="right" />
+            <SectionTitle title={t('public.آخر الأخبار والتعاميم')} align="right" />
             <Stack direction="row" spacing={1}>
               <Button component={Link} to="/news" endIcon={<ArrowBackIcon />} sx={{ mb: 4 }}>
-                جميع الأخبار
-              </Button>
+                {t('public.جميع الأخبار')}</Button>
               <Button component={Link} to="/circulars" endIcon={<ArrowBackIcon />} sx={{ mb: 4 }}>
-                جميع التعاميم
-              </Button>
+                {t('public.جميع التعاميم')}</Button>
             </Stack>
           </Stack>
           <Grid container spacing={3}>
@@ -580,7 +581,7 @@ const HomePage = () => {
               {loading ? (
                 <CardsGridSkeleton count={2} />
               ) : news.length === 0 ? (
-                <Typography color="text.secondary">لا توجد أخبار حالياً.</Typography>
+                <Typography color="text.secondary">{t('public.لا توجد أخبار حالياً')}</Typography>
               ) : (
                 <Grid container spacing={2.5}>
                   {news.slice(0, 4).map((article) => (
@@ -659,8 +660,7 @@ const HomePage = () => {
                             endIcon={<ArrowBackIcon />}
                             sx={{ fontWeight: 700 }}
                           >
-                            اقرأ المزيد
-                          </Button>
+                            {t('public.اقرأ المزيد')}</Button>
                         </CardActions>
                       </Card>
                     </Grid>
@@ -688,11 +688,9 @@ const HomePage = () => {
                 >
                   <CampaignIcon sx={{ color: 'primary.dark' }} />
                   <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>
-                    التعاميم
-                  </Typography>
+                    {t('public.التعاميم')}</Typography>
                   <Button component={Link} to="/circulars" size="small" endIcon={<ArrowBackIcon />} sx={{ fontWeight: 700 }}>
-                    الكل
-                  </Button>
+                    {t('public.الكل')}</Button>
                 </Stack>
                 <Divider />
                 {loading ? (
@@ -703,8 +701,7 @@ const HomePage = () => {
                   </Box>
                 ) : circulars.length === 0 ? (
                   <Typography color="text.secondary" sx={{ p: 2.5 }}>
-                    لا توجد تعاميم حالياً.
-                  </Typography>
+                    {t('public.لا توجد تعاميم حالياً')}</Typography>
                 ) : (
                   circulars.slice(0, 5).map((circular, index) => (
                     <Box key={circular.id}>
@@ -776,11 +773,9 @@ const HomePage = () => {
           />
           <Box sx={{ position: 'relative', maxWidth: 640, mx: 'auto' }}>
             <Typography variant="h2" sx={{ mb: 1.5, textWrap: 'balance' }}>
-              أنت على وشك السفر إلى السودان؟
-            </Typography>
+              {t('public.أنت على وشك السفر إلى السودان؟')}</Typography>
 <Typography variant="body1" sx={{ mb: 3.5, color: 'rgba(255,255,255,0.95)', lineHeight: 1.8 }}>
-                تحقق من متطلبات الدخول وسجّل مسبقاً لتوفير وقتك عند المنفذ.
-              </Typography>
+                {t('public.تحقق من متطلبات الدخول وسجّل مسبقاً لتوفير وقتك عند المنفذ')}</Typography>
             <Button
               component={Link}
               to="/travel-requirements"
@@ -794,8 +789,7 @@ const HomePage = () => {
                 '&:hover': { bgcolor: 'grey.50', transform: 'translateY(-2px)' },
               }}
             >
-              تعرّف على متطلبات السفر
-            </Button>
+              {t('public.تعرّف على متطلبات السفر')}</Button>
           </Box>
         </Box>
       </Container>
