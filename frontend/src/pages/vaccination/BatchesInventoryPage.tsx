@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -34,17 +36,17 @@ import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
 const batchStatusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'neutral' }> = {
-  ACTIVE: { label: 'متاحة', tone: 'success' },
-  DEPLETED: { label: 'نفدت', tone: 'warning' },
-  EXPIRED: { label: 'منتهية', tone: 'error' },
-  RETURNED: { label: 'مرتجعة', tone: 'neutral' },
+  ACTIVE: { label: i18n.t('vaccination.متاحة'), tone: 'success' },
+  DEPLETED: { label: i18n.t('vaccination.نفدت'), tone: 'warning' },
+  EXPIRED: { label: i18n.t('vaccination.منتهية'), tone: 'error' },
+  RETURNED: { label: i18n.t('vaccination.مرتجعة'), tone: 'neutral' },
 };
 
 const txMeta: Record<string, { label: string; tone: 'success' | 'info' | 'warning' | 'error' }> = {
-  IN: { label: 'استلام', tone: 'success' },
-  OUT: { label: 'صرف', tone: 'info' },
-  ADJUST: { label: 'تسوية', tone: 'warning' },
-  EXPIRED: { label: 'انتهاء صلاحية', tone: 'error' },
+  IN: { label: i18n.t('vaccination.استلام'), tone: 'success' },
+  OUT: { label: i18n.t('vaccination.صرف'), tone: 'info' },
+  ADJUST: { label: i18n.t('vaccination.تسوية'), tone: 'warning' },
+  EXPIRED: { label: i18n.t('vaccination.انتهاء صلاحية'), tone: 'error' },
 };
 
 const emptyBatch: Partial<VaccineBatch> = {
@@ -57,6 +59,7 @@ const emptyBatch: Partial<VaccineBatch> = {
 };
 
 const BatchesInventoryPage = () => {
+  const { t } = useTranslation();
   const [tab, setTab] = useState(0);
   const batchTable = useServerTable<VaccineBatch>({ fetchData: getBatches });
   const txTable = useServerTable<InventoryTransaction>({ fetchData: getInventory });
@@ -77,7 +80,7 @@ const BatchesInventoryPage = () => {
 
   const saveBatch = async () => {
     if (!batchForm.vaccine || !batchForm.lot_number?.trim() || !batchForm.expiry_date) {
-      notifyError('اللقاح ورقم التشغيلة وتاريخ الانتهاء مطلوبون');
+      notifyError(t('vaccination.اللقاح ورقم التشغيلة وتاريخ الانتهاء مطلوبون'));
       return;
     }
     setSavingBatch(true);
@@ -90,13 +93,13 @@ const BatchesInventoryPage = () => {
         expiry_date: batchForm.expiry_date,
         received_quantity: Number(batchForm.received_quantity || 0),
       });
-      notifySuccess('تم استلام التشغيلة');
+      notifySuccess(t('vaccination.تم استلام التشغيلة'));
       setBatchDialog(false);
       setBatchForm(emptyBatch);
       batchTable.refresh();
       txTable.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر حفظ التشغيلة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر حفظ التشغيلة')));
     } finally {
       setSavingBatch(false);
     }
@@ -106,7 +109,7 @@ const BatchesInventoryPage = () => {
     if (!adjustTarget || adjusting) return;
     const value = Number(delta);
     if (!Number.isFinite(value) || value === 0) {
-      notifyError('أدخل قيمة تسوية غير صفرية');
+      notifyError(t('vaccination.أدخل قيمة تسوية غير صفرية'));
       return;
     }
     setAdjusting(true);
@@ -118,7 +121,7 @@ const BatchesInventoryPage = () => {
       setReason('');
       batchTable.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تسوية المخزون'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر تسوية المخزون')));
     } finally {
       setAdjusting(false);
     }
@@ -147,17 +150,17 @@ const BatchesInventoryPage = () => {
       {tab === 0 ? (
         <DataTable<VaccineBatch>
           columns={[
-            { key: 'vaccine_name_ar', label: 'اللقاح', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
-            { key: 'lot_number', label: 'رقم التشغيلة', render: (v) => <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.lot_number}</Typography> },
+            { key: 'vaccine_name_ar', label: t('vaccination.اللقاح'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
+            { key: 'lot_number', label: t('vaccination.رقم التشغيلة'), render: (v) => <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.lot_number}</Typography> },
             {
               key: 'manufacturer',
-              label: 'المُصنّع',
+              label: t('vaccination.المُصنّع'),
               hideOnMobile: true,
               render: (v) => v.manufacturer || '—',
             },
             {
               key: 'expiry_date',
-              label: 'الانتهاء',
+              label: t('vaccination.الانتهاء'),
               sortable: true,
               render: (v) => (
                 <Chip
@@ -170,7 +173,7 @@ const BatchesInventoryPage = () => {
             },
             {
               key: 'available_quantity',
-              label: 'الرصيد',
+              label: t('vaccination.الرصيد'),
               render: (v) => (
                 <Stack spacing={0.5} sx={{ minWidth: 120 }}>
                   <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
@@ -187,7 +190,7 @@ const BatchesInventoryPage = () => {
             },
             {
               key: 'status',
-              label: 'الحالة',
+              label: t('vaccination.الحالة'),
               render: (v) => {
                 const m = batchStatusMeta[v.status];
                 return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
@@ -210,7 +213,7 @@ const BatchesInventoryPage = () => {
           filters={[
             {
               key: 'status',
-              label: 'الحالة',
+              label: t('vaccination.الحالة'),
               options: Object.entries(batchStatusMeta).map(([v, m]) => ({ value: v, label: m.label })),
               value: '',
               onChange: (v) => batchTable.setFilter('status', v),
@@ -242,32 +245,32 @@ const BatchesInventoryPage = () => {
       ) : (
         <DataTable<InventoryTransaction>
           columns={[
-            { key: 'vaccine_name_ar', label: 'اللقاح', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
-            { key: 'batch_number', label: 'التشغيلة', render: (v) => <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{v.batch_number}</Typography> },
+            { key: 'vaccine_name_ar', label: t('vaccination.اللقاح'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.vaccine_name_ar}</Typography> },
+            { key: 'batch_number', label: t('vaccination.التشغيلة'), render: (v) => <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{v.batch_number}</Typography> },
             {
               key: 'type',
-              label: 'النوع',
+              label: t('vaccination.النوع'),
               render: (v) => {
                 const m = txMeta[v.type];
                 return m ? <StatusChip label={m.label} tone={m.tone} /> : v.type;
               },
             },
-            { key: 'quantity', label: 'الكمية', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.quantity}</Typography> },
+            { key: 'quantity', label: t('vaccination.الكمية'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.quantity}</Typography> },
             {
               key: 'created_by_name',
-              label: 'بواسطة',
+              label: t('vaccination.بواسطة'),
               hideOnMobile: true,
               render: (v) => v.created_by_name || '—',
             },
             {
               key: 'created_at',
-              label: 'التاريخ',
+              label: t('vaccination.التاريخ'),
               sortable: true,
               render: (v) => formatDateTime(v.created_at),
             },
             {
               key: 'note',
-              label: 'ملاحظات',
+              label: t('vaccination.ملاحظات'),
               hideOnMobile: true,
               render: (v) => v.note || '—',
             },
@@ -288,7 +291,7 @@ const BatchesInventoryPage = () => {
           filters={[
             {
               key: 'type',
-              label: 'النوع',
+              label: t('vaccination.النوع'),
               options: Object.entries(txMeta).map(([v, m]) => ({ value: v, label: m.label })),
               value: '',
               onChange: (v) => txTable.setFilter('type', v),
@@ -332,7 +335,7 @@ const BatchesInventoryPage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="المُصنّع"
+                label={t("vaccination.المُصنّع")}
                 value={batchForm.manufacturer}
                 onChange={(e) => setBatchForm((f) => ({ ...f, manufacturer: e.target.value }))}
               />

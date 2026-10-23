@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -31,11 +33,12 @@ const doseTone: Record<string, 'info' | 'primary' | 'neutral' | 'warning'> = {
 };
 
 const statusMeta: Record<string, { label: string; tone: 'success' | 'error' }> = {
-  GIVEN: { label: 'مُعطاة', tone: 'success' },
-  CANCELLED: { label: 'ملغاة', tone: 'error' },
+  GIVEN: { label: i18n.t('vaccination.مُعطاة'), tone: 'success' },
+  CANCELLED: { label: i18n.t('vaccination.ملغاة'), tone: 'error' },
 };
 
 const VaccinationRecordsPage = () => {
+  const { t } = useTranslation();
   const table = useServerTable<VaccinationRecord>({ fetchData: getRecords });
   const {
     rows, count, loading, error,
@@ -55,7 +58,7 @@ const VaccinationRecordsPage = () => {
       setIssueTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إصدار الشهادة'));
+      notifyError(extractErrorMessage(err, t('vaccination.تعذر إصدار الشهادة')));
     } finally {
       setIssuing(false);
     }
@@ -72,7 +75,7 @@ const VaccinationRecordsPage = () => {
         columns={[
           {
             key: 'traveler',
-            label: 'المسافر',
+            label: t('vaccination.المسافر'),
             render: (v) => (
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Box
@@ -102,7 +105,7 @@ const VaccinationRecordsPage = () => {
           },
           {
             key: 'vaccine_name_ar',
-            label: 'اللقاح',
+            label: t('vaccination.اللقاح'),
             render: (v) => (
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography sx={{ fontWeight: 700, fontSize: 14 }}>{v.vaccine_name_ar}</Typography>
@@ -112,7 +115,7 @@ const VaccinationRecordsPage = () => {
           },
           {
             key: 'dose_type',
-            label: 'الجرعة',
+            label: t('vaccination.الجرعة'),
             render: (v) => (
               <StatusChip
                 label={v.dose_type_label || v.dose_type}
@@ -122,13 +125,13 @@ const VaccinationRecordsPage = () => {
           },
           {
             key: 'dose_number',
-            label: 'رقم الجرعة',
+            label: t('vaccination.رقم الجرعة'),
             hideOnMobile: true,
             render: (v) => v.dose_number,
           },
           {
             key: 'lot_number',
-            label: 'التشغيلة',
+            label: t('vaccination.التشغيلة'),
             hideOnMobile: true,
             render: (v) =>
               v.lot_number ? (
@@ -139,7 +142,7 @@ const VaccinationRecordsPage = () => {
           },
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('vaccination.الحالة'),
             render: (v) => {
               const m = statusMeta[v.status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
@@ -147,13 +150,13 @@ const VaccinationRecordsPage = () => {
           },
           {
             key: 'administered_at',
-            label: 'تاريخ التطعيم',
+            label: t('vaccination.تاريخ التطعيم'),
             sortable: true,
             render: (v) => formatDate(v.administered_at),
           },
           {
             key: 'created_at',
-            label: 'سُجلت',
+            label: t('vaccination.سُجلت'),
             hideOnMobile: true,
             render: (v) => formatDateTime(v.created_at),
           },
@@ -174,7 +177,7 @@ const VaccinationRecordsPage = () => {
         filters={[
           {
             key: 'dose_type',
-            label: 'نوع الجرعة',
+            label: t('vaccination.نوع الجرعة'),
             options: ['FIRST', 'SECOND', 'THIRD', 'BOOSTER'].map((v) => ({
               value: v,
               label: DOSE_LABELS[v] || v,
@@ -293,10 +296,10 @@ const VaccinationRecordsPage = () => {
 };
 
 const DOSE_LABELS: Record<string, string> = {
-  FIRST: 'الجرعة الأولى',
-  SECOND: 'الجرعة الثانية',
-  THIRD: 'الجرعة الثالثة',
-  BOOSTER: 'جرعة تنشيطية',
+  FIRST: i18n.t('vaccination.الجرعة الأولى'),
+  SECOND: i18n.t('vaccination.الجرعة الثانية'),
+  THIRD: i18n.t('vaccination.الجرعة الثالثة'),
+  BOOSTER: i18n.t('vaccination.جرعة تنشيطية'),
 };
 
 export default VaccinationRecordsPage;
