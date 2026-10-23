@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -35,20 +34,6 @@ import type { InventoryTransaction, Vaccine, VaccineBatch } from '../../types/va
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
-const batchStatusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'neutral' }> = {
-  ACTIVE: { label: i18n.t('vaccination.متاحة'), tone: 'success' },
-  DEPLETED: { label: i18n.t('vaccination.نفدت'), tone: 'warning' },
-  EXPIRED: { label: i18n.t('vaccination.منتهية'), tone: 'error' },
-  RETURNED: { label: i18n.t('vaccination.مرتجعة'), tone: 'neutral' },
-};
-
-const txMeta: Record<string, { label: string; tone: 'success' | 'info' | 'warning' | 'error' }> = {
-  IN: { label: i18n.t('vaccination.استلام'), tone: 'success' },
-  OUT: { label: i18n.t('vaccination.صرف'), tone: 'info' },
-  ADJUST: { label: i18n.t('vaccination.تسوية'), tone: 'warning' },
-  EXPIRED: { label: i18n.t('vaccination.انتهاء صلاحية'), tone: 'error' },
-};
-
 const emptyBatch: Partial<VaccineBatch> = {
   vaccine: '',
   lot_number: '',
@@ -60,6 +45,19 @@ const emptyBatch: Partial<VaccineBatch> = {
 
 const BatchesInventoryPage = () => {
   const { t } = useTranslation();
+  const batchStatusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'neutral' }> = useMemo(() => ({
+    ACTIVE: { label: t('vaccination.متاحة'), tone: 'success' as const },
+    DEPLETED: { label: t('vaccination.نفدت'), tone: 'warning' as const },
+    EXPIRED: { label: t('vaccination.منتهية'), tone: 'error' as const },
+    RETURNED: { label: t('vaccination.مرتجعة'), tone: 'neutral' as const },
+  }), [t]);
+
+  const txMeta: Record<string, { label: string; tone: 'success' | 'info' | 'warning' | 'error' }> = useMemo(() => ({
+    IN: { label: t('vaccination.استلام'), tone: 'success' as const },
+    OUT: { label: t('vaccination.صرف'), tone: 'info' as const },
+    ADJUST: { label: t('vaccination.تسوية'), tone: 'warning' as const },
+    EXPIRED: { label: t('vaccination.انتهاء صلاحية'), tone: 'error' as const },
+  }), [t]);
   const [tab, setTab] = useState(0);
   const batchTable = useServerTable<VaccineBatch>({ fetchData: getBatches });
   const txTable = useServerTable<InventoryTransaction>({ fetchData: getInventory });

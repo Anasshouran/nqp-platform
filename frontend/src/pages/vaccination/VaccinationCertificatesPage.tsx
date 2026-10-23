@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -30,13 +29,7 @@ import { formatDate, formatDateTime } from '../../utils/formatters';
 import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
-const statusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-  ACTIVE: { label: i18n.t('vaccination.سارية'), tone: 'success' },
-  EXPIRED: { label: i18n.t('vaccination.منتهية'), tone: 'warning' },
-  REVOKED: { label: i18n.t('vaccination.ملغاة'), tone: 'error' },
-};
-
-const printCertificate = (cert: VaccinationCertificate, qrPng?: string) => {
+const printCertificate = (cert: VaccinationCertificate, qrPng: string | undefined, statusMeta: Record<string, { label: string; tone: string }>) => {
   const win = window.open('', '_blank', 'width=900,height=700');
   if (!win) return;
   win.document.write(`<!doctype html>
@@ -102,6 +95,11 @@ type CertDetail = VaccinationCertificate & { qr_png?: string };
 
 const VaccinationCertificatesPage = () => {
   const { t } = useTranslation();
+  const statusMeta: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = useMemo(() => ({
+    ACTIVE: { label: t('vaccination.سارية'), tone: 'success' as const },
+    EXPIRED: { label: t('vaccination.منتهية'), tone: 'warning' as const },
+    REVOKED: { label: t('vaccination.ملغاة'), tone: 'error' as const },
+  }), [t]);
   const table = useServerTable<VaccinationCertificate>({ fetchData: getCertificates });
   const {
     rows, count, loading, error,
@@ -473,7 +471,7 @@ const VaccinationCertificatesPage = () => {
                 <Button
                   variant="contained"
                   startIcon={<PrintIcon />}
-                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png)}
+                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png, statusMeta)}
                   sx={{ fontWeight: 700 }}
                 >
                   طباعة

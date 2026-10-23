@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -22,11 +21,6 @@ import { createSite, getSites } from '../../api/endpoints/vaccination';
 import type { VaccinationSite } from '../../types/vaccination';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 
-const kindMeta: Record<string, { label: string; tone: 'primary' | 'info' }> = {
-  CLINIC: { label: i18n.t('vaccination.عيادة تطعيم'), tone: 'primary' },
-  PORT_POINT: { label: i18n.t('vaccination.نقطة تطعيم بمنفذ'), tone: 'info' },
-};
-
 const emptySite: Partial<VaccinationSite> = {
   name_ar: '',
   name_en: '',
@@ -39,6 +33,10 @@ const emptySite: Partial<VaccinationSite> = {
 
 const VaccinationSitesPage = () => {
   const { t } = useTranslation();
+  const kindMeta: Record<string, { label: string; tone: 'primary' | 'info' }> = useMemo(() => ({
+    CLINIC: { label: t('vaccination.عيادة تطعيم'), tone: 'primary' as const },
+    PORT_POINT: { label: t('vaccination.نقطة تطعيم بمنفذ'), tone: 'info' as const },
+  }), [t]);
   const table = useServerTable<VaccinationSite>({ fetchData: getSites });
   const { rows, count, loading, error, searchInput, setSearchInput, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
 
