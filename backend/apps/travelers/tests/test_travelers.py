@@ -294,9 +294,10 @@ def test_get_qr_code(api_client, country, db):
     assert payload['traveler_id'] == str(traveler.id)
     assert payload['passport_hash'] == hashlib.sha256(b'A1234567').hexdigest()
     assert 'signature' in payload and 'expires_at' in payload
-    expected = {k: payload[k] for k in ['traveler_id', 'passport_hash', 'issued_at', 'expires_at']}
-    sig = hmac.new(settings.SECRET_KEY.encode(), json.dumps(expected, separators=(',', ':'), sort_keys=True).encode(), hashlib.sha256).hexdigest()
+    expected = {k: payload[k] for k in ['traveler_id', 'passport_hash', 'issued_at', 'expires_at', 'key_id']}
+    sig = hmac.new(settings.QR_SIGNING_KEY.encode(), json.dumps(expected, separators=(',', ':'), sort_keys=True).encode(), hashlib.sha256).hexdigest()
     assert payload['signature'] == sig
+    assert payload['key_id'] == settings.QR_KEY_ID
 
 
 def test_qr_download(api_client, country, db):

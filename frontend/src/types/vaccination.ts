@@ -96,6 +96,23 @@ export interface VaccinationCertificate {
   verification_path?: string;
 }
 
+/** فاتورة تحصيل رسوم التطعيم (SIVS-FIN-009). */
+export interface VaccinationInvoice {
+  id: string;
+  invoice_number: string;
+  status: 'DRAFT' | 'ISSUED' | 'PENDING_PAYMENT' | 'PAID' | 'RECONCILED' | 'CANCELLED' | 'REFUNDED' | 'OVERDUE' | 'PARTIAL' | string;
+  amount_sdg: number | string;
+  amount_usd: number | string;
+  issued_at: string;
+  paid_at: string | null;
+  receipt_number: string;
+  vaccination_certificate: string;
+  net_amount: number | string;
+  currency: string;
+}
+
+export type PaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'BANK_CARD' | 'ELECTRONIC';
+
 export interface VaccinationRule {
   id: string;
   vaccine: string;

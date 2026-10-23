@@ -9,7 +9,7 @@ from apps.food_quarantine.models import FoodFee, QuarantineFee
 QUARANTINE_CATEGORY_TO_SERVICE = {
     QuarantineFee.Category.SHIP_INSPECTION: ServiceType.INSPECTION,
     QuarantineFee.Category.HEALTH_SERVICES: ServiceType.OTHER,
-    QuarantineFee.Category.VACCINATION: ServiceType.OTHER,
+    QuarantineFee.Category.VACCINATION: ServiceType.VACCINATION,
     QuarantineFee.Category.MEDICAL_FITNESS: ServiceType.OTHER,
     QuarantineFee.Category.PEST_CONTROL: ServiceType.PEST_CONTROL,
     QuarantineFee.Category.CERTIFICATE: ServiceType.CERTIFICATE,

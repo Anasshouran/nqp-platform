@@ -1,5 +1,6 @@
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './i18n';
 import AppRoutes from './routes';
 import OfflineSyncPresenter from './components/common/OfflineSyncPresenter';
 

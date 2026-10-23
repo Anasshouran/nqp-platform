@@ -7,7 +7,7 @@ from django.db import models
 
 from apps.travelers.models import Traveler
 from core.models import BaseModel
-from core.utils.qr_payload import sign_payload
+from core.utils.qr_payload import sign_payload, verify_payload
 
 
 class Vaccine(BaseModel):
@@ -278,7 +278,28 @@ class VaccinationCertificate(BaseModel):
         return f'{url}?sig={self.verification_signature}'
 
     def signature_matches(self, signature):
-        return bool(signature) and hmac.compare_digest(self.verification_signature, signature)
+        """التحقق من توقيع شهادة — يدعم key_id القديم (dual-key) أثناء نافذة الانتقال."""
+        if not signature:
+            return False
+        base = {'certificate_number': self.certificate_number, 'qr_token': str(self.qr_token)}
+
+        # Try current key (with and without key_id for backward compat)
+        payload_with_key = {**base, 'key_id': settings.QR_KEY_ID, 'signature': signature}
+        if verify_payload(payload_with_key):
+            return True
+        payload_no_key = {**base, 'signature': signature}
+        if verify_payload(payload_no_key):
+            return True
+
+        # Try old key (if set) — for certs signed before rotation
+        old_key = getattr(settings, 'QR_SIGNING_KEY_OLD', None)
+        if old_key:
+            if verify_payload(payload_with_key, key=old_key):
+                return True
+            if verify_payload(payload_no_key, key=old_key):
+                return True
+
+        return False
 
 
 class CertificateVerification(BaseModel):

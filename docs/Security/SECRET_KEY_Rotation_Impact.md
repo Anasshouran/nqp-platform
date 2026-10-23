@@ -1,7 +1,7 @@
 # SECRET_KEY Rotation Impact Assessment (SEC-PLAT-002)
 
 > Status: DRAFT — for Tech Lead + IT Security review
-> Baseline: main @ f9d00b6
+> Baseline: main @ 6ef1d98
 > Related: SEC-PLAT-001 (QR key separation), DEC-SEC-001..005
 > Scope: impact analysis only — no code, configuration, or migration changes accompany this document.
 
@@ -25,9 +25,9 @@ Rotation without a migration plan still causes cascading failures, most severely
 |---|---|---|---|---|
 | 1 | HMAC signing — traveler QR + vaccination certificate + public verify | `core/utils/qr_payload.py:20-27`, `:44-58`; `apps/vaccination/models.py:263-272`; `apps/public/views.py:116`; `apps/travelers/views.py:339` | `HMAC-SHA256(SECRET_KEY, canonical-JSON)` | All previously issued QR payloads fail verification. Printed certificates remain physically in circulation for years (yellow fever: 10 years per IHR) and would be reported as invalid by public verify. |
 | 2 | Fernet encryption — WHO credentials + Integration credentials (shared key) | `apps/who/models.py:14-20` (`_fernet`), `:60,65`; `apps/integration/models.py:214-225` | `SHA256(SECRET_KEY)` → `base64.urlsafe_b64encode` → `Fernet` | All encrypted secrets become undecryptable: WHO `client_secret`, and every `EncryptedCredentialValue.encrypted_value` (integration API keys/tokens). `reveal()` currently swallows the exception and returns `''`, so failure is silent until an integration call fails. |
-| 3 | Password reset tokens | `apps/accounts/views.py:196,234`; `apps/travelers/auth_views.py:72`; `apps/travelers/auth_serializers.py:152` | `django.contrib.auth.tokens.default_token_generator` (`PasswordResetTokenGenerator`, signs with `SECRET_KEY`) | All pending reset links become invalid. Both the staff (`accounts`) and traveler (`travelers`) flows are affected because they share the same generator. |
+| 3 | Password reset tokens | `apps/accounts/views.py:195,212`; `apps/travelers/auth_views.py:71`; `apps/travelers/auth_serializers.py:152` | `django.contrib.auth.tokens.default_token_generator` (`PasswordResetTokenGenerator`, signs with `SECRET_KEY`) | All pending reset links become invalid. Both the staff (`accounts`) and traveler (`travelers`) flows are affected because they share the same generator. |
 | 4 | JWT access/refresh tokens (conditional) | `nqp_backend/settings.py:286-300`; SimpleJWT default `SIGNING_KEY = settings.SECRET_KEY` | `HS256(SECRET_KEY)` when `JWT_SECRET_KEY` is unset | Every access/refresh token is rejected. If `JWT_SECRET_KEY` is set explicitly, JWT is unaffected by `SECRET_KEY` rotation. |
-| 5 | VAPID web push (conditional) | `core/utils/vapid.py:27-46` | `VAPID_PRIVATE_KEY`/`VAPID_PUBLIC_KEY` env vars, else `SHA256(b'afyatna:vapid:v1:' + SECRET_KEY)` | If env keys are set, no impact. If not, the derived EC private key changes and existing push subscriptions can no longer be decrypted/used; clients must re-subscribe. |
+| 5 | VAPID web push (conditional) | `core/utils/vapid.py:27-47` | `VAPID_PRIVATE_KEY`/`VAPID_PUBLIC_KEY` env vars, else `SHA256(b'afyatna:vapid:v1:' + SECRET_KEY)` | If env keys are set, no impact. If not, the derived EC private key changes and existing push subscriptions can no longer be decrypted/used; clients must re-subscribe. |
 | 6 | Django messages cookie storage | `django/contrib/messages/storage/cookie.py:92` (signer); default `MESSAGE_STORAGE` = `FallbackStorage` | `django.core.signing` (keyed by `SECRET_KEY`) | Pending flash messages stored in the cookie are dropped. Limited, transient impact (messages are short-lived). |
 
 ### Notes on the inventory

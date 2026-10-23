@@ -22,8 +22,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import { PageHeader } from '../../components/common';
 import { DataTable, StatusChip } from '../../components/ui';
 import { useServerTable } from '../../hooks/useServerTable';
-import { getCertificateQr, getCertificates, revokeCertificate, replaceCertificate, reissueCertificate } from '../../api/endpoints/vaccination';
-import type { VaccinationCertificate } from '../../types/vaccination';
+import { getCertificateQr, getCertificates, revokeCertificate, replaceCertificate, reissueCertificate, createVaccinationInvoice, payVaccinationInvoice } from '../../api/endpoints/vaccination';
+import type { VaccinationCertificate, VaccinationInvoice } from '../../types/vaccination';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
@@ -115,6 +115,14 @@ const VaccinationCertificatesPage = () => {
   const [reissueTarget, setReissueTarget] = useState<VaccinationCertificate | null>(null);
   const [reissuing, setReissuing] = useState(false);
 
+  // تحصيل رسوم (SIVS-FIN-009)
+  const [invoiceMap, setInvoiceMap] = useState<Record<string, VaccinationInvoice>>({});
+  const [invoiceLoading, setInvoiceLoading] = useState<Set<string>>(new Set());
+  const [payTarget, setPayTarget] = useState<VaccinationCertificate | null>(null);
+  const [payMethod, setPayMethod] = useState('CASH');
+  const [payReference, setPayReference] = useState('');
+  const [paying, setPaying] = useState(false);
+
   const openView = async (c: VaccinationCertificate) => {
     setViewTarget(c);
     setQrLoading(true);
@@ -176,6 +184,48 @@ const VaccinationCertificatesPage = () => {
       notifyError(extractErrorMessage(err, 'تعذر إعادة إصدار الشهادة'));
     } finally {
       setReissuing(false);
+    }
+  };
+
+  const handleCreateInvoice = async (cert: VaccinationCertificate) => {
+    setInvoiceLoading((s) => new Set(s).add(cert.id));
+    try {
+      const res = await createVaccinationInvoice(cert.id);
+      const inv = res.data?.data;
+      if (inv) {
+        setInvoiceMap((m) => ({ ...m, [cert.id]: inv }));
+      }
+      notifySuccess('تم إنشاء الفاتورة');
+    } catch (err) {
+      notifyError(extractErrorMessage(err, 'تعذر إنشاء الفاتورة'));
+    } finally {
+      setInvoiceLoading((s) => {
+        const n = new Set(s);
+        n.delete(cert.id);
+        return n;
+      });
+    }
+  };
+
+  const handlePay = async () => {
+    if (!payTarget || paying) return;
+    const inv = invoiceMap[payTarget.id];
+    if (!inv) return;
+    setPaying(true);
+    try {
+      const res = await payVaccinationInvoice(payTarget.id, { method: payMethod, reference: payReference });
+      const updated = res.data?.data;
+      if (updated) {
+        setInvoiceMap((m) => ({ ...m, [payTarget.id]: updated }));
+      }
+      notifySuccess('تم تحصيل الدفع بنجاح');
+      setPayTarget(null);
+      setPayMethod('CASH');
+      setPayReference('');
+    } catch (err) {
+      notifyError(extractErrorMessage(err, 'تعذر تحصيل الدفع'));
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -252,6 +302,36 @@ const VaccinationCertificatesPage = () => {
             label: 'صالحة حتى',
             hideOnMobile: true,
             render: (v) => formatDate(v.valid_until),
+          },
+          {
+            key: 'fee',
+            label: 'الرسوم',
+            hideOnMobile: true,
+            render: (v) => {
+              const inv = invoiceMap[v.id];
+              const loading = invoiceLoading.has(v.id);
+              if (loading) return <CircularProgress size={18} />;
+              if (!inv) {
+                return (
+                  <Button size="small" variant="outlined" onClick={() => handleCreateInvoice(v)} disabled={loading} sx={{ fontWeight: 700 }}>
+                    إنشاء فاتورة
+                  </Button>
+                );
+              }
+              if (inv.status === 'PAID') {
+                return <Chip label={`مدفوع · ${inv.receipt_number || ''}`} color="success" size="small" sx={{ fontWeight: 700 }} />;
+              }
+              return (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                    {inv.net_amount} {inv.currency}
+                  </Typography>
+                  <Button size="small" variant="contained" color="primary" onClick={() => setPayTarget(v)} sx={{ fontWeight: 700 }}>
+                    تحصيل
+                  </Button>
+                </Stack>
+              );
+            },
           },
         ]}
         rows={rows}
@@ -470,6 +550,52 @@ const VaccinationCertificatesPage = () => {
             sx={{ fontWeight: 700 }}
           >
             تأكيد إعادة الإصدار
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* تحصيل رسوم (SIVS-FIN-009) */}
+      <Dialog open={Boolean(payTarget)} onClose={() => setPayTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>تحصيل رسوم الشهادة</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            الشهادة: {payTarget?.certificate_number}
+            {payTarget && invoiceMap[payTarget.id] && (
+              <> · {invoiceMap[payTarget.id].net_amount} {invoiceMap[payTarget.id].currency}</>
+            )}
+          </Typography>
+          <TextField
+            select
+            label="طريقة الدفع"
+            value={payMethod}
+            onChange={(e) => setPayMethod(e.target.value)}
+            fullWidth
+            sx={{ mb: 2 }}
+            SelectProps={{ native: true }}
+          >
+            <option value="CASH">نقدي</option>
+            <option value="BANK_TRANSFER">تحويل بنكي</option>
+            <option value="BANK_CARD">بطاقة بنكية</option>
+            <option value="ELECTRONIC">دفع إلكتروني</option>
+          </TextField>
+          <TextField
+            label="مرجع (اختياري)"
+            value={payReference}
+            onChange={(e) => setPayReference(e.target.value)}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setPayTarget(null)} sx={{ fontWeight: 700 }}>تراجع</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={paying}
+            startIcon={paying ? <CircularProgress size={16} color="inherit" /> : null}
+            onClick={handlePay}
+            sx={{ fontWeight: 700 }}
+          >
+            تأكيد التحصيل
           </Button>
         </DialogActions>
       </Dialog>

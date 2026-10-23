@@ -266,6 +266,69 @@ def create_sample_invoice(sample, user, request=None, currency='SDG', due_days=1
     return invoice, False
 
 
+def create_vaccination_invoice(certificate, user, request=None, year=None, currency='SDG'):
+    """فاتورة شهادة تطعيم (VACCINATION_CERTIFICATE) — بنود من QuarantineFee.VACCINATION."""
+    from apps.food_quarantine.models import QuarantineFee
+
+    if year is None:
+        year = timezone.localdate().year
+    fees = QuarantineFee.objects.filter(
+        category=QuarantineFee.Category.VACCINATION,
+        year=year,
+        is_active=True,
+    ).order_by('order', 'id')
+    if not fees.exists():
+        raise FinanceServiceError(f'لا توجد رسوم تطعيم معرّفة لسنة {year}.')
+
+    lines = []
+    total_sdg = Decimal('0')
+    total_usd = Decimal('0')
+    for qf in fees:
+        amount_sdg = qf.amount_sdg if qf.amount_sdg is not None else Decimal('0')
+        amount_usd = qf.amount_usd if qf.amount_usd is not None else Decimal('0')
+        total_sdg += amount_sdg
+        total_usd += amount_usd
+        lines.append({
+            'fee_id': None,
+            'fee_code': qf.code or '',
+            'name': qf.name_ar,
+            'quantity': 1,
+            'unit': '',
+            'unit_amount': str(amount_sdg if currency == 'SDG' else amount_usd),
+            'amount': str(amount_sdg if currency == 'SDG' else amount_usd),
+            'currency': currency,
+            'quarantine_fee_id': str(qf.id),
+        })
+
+    primary_total = total_sdg if currency == 'SDG' else total_usd
+    invoice = Invoice.objects.create(
+        invoice_number=next_invoice_number(),
+        source_type=InvoiceSource.VACCINATION_CERTIFICATE,
+        vaccination_certificate=certificate,
+        request_ref=getattr(certificate, 'certificate_number', ''),
+        service_type=ServiceType.VACCINATION,
+        applicant_name=getattr(certificate.traveler, 'full_name', '') if getattr(certificate, 'traveler', None) else '',
+        items=lines,
+        gross_amount=primary_total,
+        net_amount=primary_total,
+        currency=currency,
+        status=InvoiceStatus.DRAFT,
+        issued_by=user,
+        issued_at=timezone.now(),
+    )
+    issue_invoice(invoice, user, due_days=14, request=request)
+    return invoice
+
+
+def pay_vaccination_invoice(invoice, user, method='CASH', amount=None,
+                            gateway_ref='', notes='', request=None):
+    """تحصيل الدفعة وإصدار الإيصال لفاتورة تطعيم."""
+    return confirm_payment(
+        invoice, user, method=method, amount=amount,
+        gateway_ref=gateway_ref, notes=notes, request=request,
+    )
+
+
 def pending_statuses():
     return [InvoiceStatus.DRAFT, InvoiceStatus.ISSUED,
             InvoiceStatus.PENDING_PAYMENT, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE]

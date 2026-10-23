@@ -1409,3 +1409,85 @@ def test_qr_valid_signature_but_revoked_fails_closed(issued_certificate, admin_u
     assert resp.status_code == 200
     assert resp.json()['data']['verified'] is False
     assert resp.json()['data']['status'] == VaccinationCertificate.Status.REVOKED
+
+
+# ---------------------------------------------------------------------------
+# SEC-PLAT-001 — QR signing key separation
+# ---------------------------------------------------------------------------
+
+
+def test_certificate_signature_includes_key_id(issued_certificate):
+    """verification_signature uses sign_payload which now includes key_id."""
+    from django.conf import settings
+    from core.utils.qr_payload import sign_payload, verify_payload
+
+    cert = issued_certificate
+    sig = cert.verification_signature
+    assert isinstance(sig, str) and len(sig) == 64
+
+    # Reconstruct payload with key_id and verify
+    payload = {
+        'certificate_number': cert.certificate_number,
+        'qr_token': str(cert.qr_token),
+        'key_id': settings.QR_KEY_ID,
+        'signature': sig,
+    }
+    assert verify_payload(payload) is True
+
+    # Without key_id: the cert was signed WITH key_id, so verifying
+    # without key_id must fail (key_id is part of signed data).
+    payload_no_key = {
+        'certificate_number': cert.certificate_number,
+        'qr_token': str(cert.qr_token),
+        'signature': sig,
+    }
+    assert verify_payload(payload_no_key) is False
+
+
+def test_certificate_verifies_with_old_key(issued_certificate, monkeypatch):
+    """During transition, an old-key signature is accepted via signature_matches."""
+    from django.conf import settings
+    from django.test import override_settings
+    from core.utils.qr_payload import _sign
+
+    cert = issued_certificate
+    old_key = 'old-qr-signing-key-for-transition'
+
+    # Simulate a cert signed with the old key (pre-rotation)
+    base = {'certificate_number': cert.certificate_number, 'qr_token': str(cert.qr_token)}
+    old_sig = _sign(base, old_key)
+
+    with override_settings(QR_SIGNING_KEY='new-qr-signing-key', QR_SIGNING_KEY_OLD=old_key, QR_KEY_ID='v2'):
+        # signature_matches should accept the old-key signature
+        assert cert.signature_matches(old_sig) is True
+
+        # And reject a completely wrong signature
+        assert cert.signature_matches('0' * 64) is False
+
+
+def test_public_verify_works_with_old_key(traveler, vaccine, batch, site, admin_user, monkeypatch):
+    """End-to-end: public verify accepts a cert whose signature was made with old key."""
+    from django.conf import settings
+    from django.test import override_settings
+    from core.utils.qr_payload import _sign
+    from rest_framework.test import APIClient
+
+    record = record_vaccination(
+        {'traveler': traveler, 'vaccine': vaccine, 'batch': batch, 'site': site, 'administered_at': date.today()},
+        admin_user,
+    )
+    cert = issue_certificate(record, admin_user)
+
+    old_key = 'old-qr-signing-key-for-transition'
+    base = {'certificate_number': cert.certificate_number, 'qr_token': str(cert.qr_token)}
+    old_sig = _sign(base, old_key)
+
+    with override_settings(QR_SIGNING_KEY='new-qr-signing-key', QR_SIGNING_KEY_OLD=old_key, QR_KEY_ID='v2'):
+        client = APIClient()
+        resp = client.get(
+            f'/api/v1/vaccination/public/verify/{cert.certificate_number}/'
+            f'?sig={old_sig}'
+        )
+        assert resp.status_code == 200
+        body = resp.json()['data']
+        assert body['signature_valid'] is True

@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
 from core.permissions import ActionPermissionMixin, PermissionAction
-from core.utils.response import success_response
+from core.utils.response import error_response, success_response
 from core.utils.scoping import SectorScopedMixin, resolve_user_port_ids
 
 from .models import (
@@ -55,6 +55,15 @@ from .services import (
     traveler_summary,
 )
 
+# Finance fee collection (SIVS-FIN-009)
+try:
+    from apps.finance.services import create_vaccination_invoice, pay_vaccination_invoice
+    from apps.finance.serializers import InvoiceSerializer as FinanceInvoiceSerializer
+except ImportError:
+    create_vaccination_invoice = None
+    pay_vaccination_invoice = None
+    FinanceInvoiceSerializer = None
+
 
 # خريطة CRUD الأساسية؛ كل viewset يوسّعها بإجراءاته المخصصة.
 BASE_ACTION_PERMISSIONS = {
@@ -84,6 +93,8 @@ CERTIFICATE_ACTION_PERMISSIONS = {
     'revoke': 'issue',
     'replace': 'issue',
     'reissue': 'issue',
+    'invoice': 'issue',
+    'pay': 'issue',
 }
 
 
@@ -330,6 +341,42 @@ class VaccinationCertificateViewSet(
         except ValueError as exc:
             return Response({'status': 'error', 'message': str(exc)}, status=400)
         return Response(success_response(self.get_serializer(cert).data), status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='invoice')
+    def invoice(self, request, pk=None):
+        """إنشاء فاتورة تحصيل رسوم التطعيم (QuarantineFee.VACCINATION)."""
+        certificate = self.get_object()
+        try:
+            inv = create_vaccination_invoice(certificate, request.user, request=request)
+        except Exception as exc:
+            return Response(error_response(str(exc)), status=status.HTTP_400_BAD_REQUEST)
+        from apps.finance.serializers import InvoiceSerializer as FinanceInvoiceSerializer
+        return Response(success_response(FinanceInvoiceSerializer(inv).data), status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='pay')
+    def pay(self, request, pk=None):
+        """تحصيل الدفع وإصدار الإيصال لفاتورة التطعيم."""
+        certificate = self.get_object()
+        invoice = certificate.invoices.order_by('-created_at').first()
+        if not invoice:
+            return Response(error_response('لا توجد فاتورة للشهادة'), status=status.HTTP_400_BAD_REQUEST)
+        from apps.finance.models import InvoiceStatus
+        if invoice.status == InvoiceStatus.PAID:
+            return Response(error_response('تم تسديد الفاتورة مسبقاً'), status=status.HTTP_400_BAD_REQUEST)
+        try:
+            from apps.finance.services import confirm_payment
+            invoice, payment, receipt = confirm_payment(
+                invoice, request.user,
+                method=request.data.get('method') or 'CASH',
+                amount=request.data.get('amount'),
+                gateway_ref=request.data.get('gateway_ref', ''),
+                notes=request.data.get('notes', ''),
+                request=request,
+            )
+        except Exception as exc:
+            return Response(error_response(str(exc)), status=status.HTTP_400_BAD_REQUEST)
+        from apps.finance.serializers import InvoiceSerializer as FinanceInvoiceSerializer
+        return Response(success_response(FinanceInvoiceSerializer(invoice).data))
 
     @action(detail=True, methods=['get'], url_path='qr')
     def qr(self, request, pk=None):

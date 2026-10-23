@@ -1,0 +1,13 @@
+{
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "success": "تم بنجاح",
+    "language": "اللغة",
+    "arabic": "العربية",
+    "english": "English"
+  }
+}
