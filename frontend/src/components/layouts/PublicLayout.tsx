@@ -30,6 +30,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import BrandLogo from '../common/BrandLogo';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import BackToTop from '../common/BackToTop';
 import AssistantFab from '../AssistantFab';
 import GlobalSearchPalette, { openGlobalSearch } from '../search/GlobalSearchPalette';
@@ -625,6 +626,7 @@ const PublicLayout = () => {
             </Menu>
 
             <Stack direction="row" spacing={1} alignItems="center">
+              <LanguageSwitcher />
               <IconButton
                 aria-label={lang === 'ar' ? 'البحث الشامل' : 'Global search'}
                 onClick={openGlobalSearch}
