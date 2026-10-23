@@ -6,6 +6,7 @@ import type {
   TravelerLookupResult,
   VaccinationCertificate,
   VaccinationDashboard,
+  VaccinationInvoice,
   VaccinationRecord,
   VaccinationRule,
   VaccinationSite,
@@ -105,6 +106,16 @@ export const reissueCertificate = (certificateId: string) =>
     `/vaccination/certificates/${certificateId}/reissue/`,
     {},
   );
+
+/* تحصيل رسوم التطعيم (SIVS-FIN-009) */
+export const createVaccinationInvoice = (certificateId: string) =>
+  apiClient.post<ApiResponse<VaccinationInvoice>>(`/vaccination/certificates/${certificateId}/invoice/`);
+
+export const payVaccinationInvoice = (
+  certificateId: string,
+  payload: { method: string; amount?: number; reference?: string; notes?: string },
+) =>
+  apiClient.post<ApiResponse<VaccinationInvoice>>(`/vaccination/certificates/${certificateId}/pay/`, payload);
 
 export interface VaccineCertificateVerifyResult {
   certificate_number: string;
