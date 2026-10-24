@@ -71,6 +71,9 @@ const TravelRequirementsPage = () => {
   ];
 
   const groupRequirements = (reqs: TravelRequirement['requirements']) => {
+    // ملاحظة i18n: مفاتيح object العربية أدناه مُعرِّفات داخلية للكود فقط (لا تُعرض
+    // على الشاشة — عناوين الأقسام لها مفاتيح t() منفصلة)، ودمج title.includes(...)
+    // أدناه مقصود: يقارن مع نصوص API ولا يُترجم.
     const groups = {
       التطعيمات: [] as TravelRequirement['requirements'],
       الفحوصات: [] as TravelRequirement['requirements'],
