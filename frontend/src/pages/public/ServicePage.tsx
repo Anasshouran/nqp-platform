@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -20,18 +21,6 @@ import { iconFor } from '../../utils/iconMap';
 import { safeExternalUrl } from '../../utils/safeUrl';
 import ServiceAuthGate from '../../components/services/ServiceAuthGate';
 
-const audienceLabels: Record<string, string> = {
-  PUBLIC: 'عام',
-  INDIVIDUAL: 'الأفراد',
-  BUSINESS: 'الأعمال',
-  GOVERNMENT: 'الجهات الحكومية',
-  EMPLOYEE: 'الموظفون',
-};
-
-const identityLabels: Record<string, string> = {
-  NONE: 'لا يتطلب هوية',
-  CREDENTIALS: 'اسم مستخدم وكلمة مرور',
-};
 
 const destinationFor = (service: Service, currentPath: string): { href: string; external?: boolean } => {
   const external = safeExternalUrl(service.external_url);
@@ -55,6 +44,28 @@ const destinationFor = (service: Service, currentPath: string): { href: string; 
  * تجلب بيانات الخدمة من النهاية الخلفية حسب الكود وتقدّم معلوماتها وزر الانتقال إلى النظام التشغيلي.
  */
 const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
+  const { t } = useTranslation();
+
+  const audienceLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        PUBLIC: t('public.عام'),
+        INDIVIDUAL: t('public.الأفراد'),
+        BUSINESS: t('public.الأعمال'),
+        GOVERNMENT: t('public.الجهات الحكومية'),
+        EMPLOYEE: t('public.الموظفون'),
+      }),
+    [t],
+  );
+
+  const identityLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        NONE: t('public.لا يتطلب هوية'),
+        CREDENTIALS: t('public.اسم مستخدم وكلمة مرور'),
+      }),
+    [t],
+  );
   const location = useLocation();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,9 +76,9 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
     setError(null);
     getService(serviceCode)
       .then((res) => setService(res.data.data))
-      .catch(() => setError('تعذّر تحميل بيانات الخدمة.'))
+      .catch(() => setError(t('public.تعذّر تحميل بيانات الخدمة')))
       .finally(() => setLoading(false));
-  }, [serviceCode]);
+  }, [serviceCode, t]);
 
   if (loading) {
     return (
@@ -81,11 +92,10 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error || 'الخدمة غير موجودة.'}
+          {error || t('public.الخدمة غير موجودة')}
         </Alert>
         <Button component={Link} to="/services" startIcon={<ArrowBackIcon />} sx={{ textTransform: 'none' }}>
-          العودة إلى الخدمات
-        </Button>
+          {t('public.العودة إلى الخدمات')}</Button>
       </Container>
     );
   }
@@ -97,11 +107,9 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Breadcrumbs sx={{ mb: 3 }}>
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          الرئيسية
-        </Link>
+          {t('public.الرئيسية')}</Link>
         <Link to="/services" style={{ textDecoration: 'none', color: 'inherit' }}>
-          الخدمات
-        </Link>
+          {t('public.الخدمات')}</Link>
         <Typography color="text.primary">{service.name_ar}</Typography>
       </Breadcrumbs>
 
@@ -137,16 +145,16 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
                 {service.description_ar}
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
-                <Chip label={audienceLabels[service.audience] || 'عام'} size="small" />
+                <Chip label={audienceLabels[service.audience] || t('public.عام')} size="small" />
                 <Chip
                   icon={service.requires_auth ? <LockOutlinedIcon /> : <VerifiedUserIcon />}
-                  label={service.requires_auth ? (identityLabels[service.identity_provider] || 'يتطلب تسجيل الدخول') : 'خدمة عامة'}
+                  label={service.requires_auth ? (identityLabels[service.identity_provider] || t('public.يتطلب تسجيل الدخول')) : t('public.خدمة عامة')}
                   size="small"
                   color={service.requires_auth ? 'primary' : 'success'}
                   variant="outlined"
                 />
                 {service.target_system && (
-                  <Chip label={`النظام: ${service.target_system}`} size="small" variant="outlined" />
+                  <Chip label={`${t('public.النظام')}: ${service.target_system}`} size="small" variant="outlined" />
                 )}
               </Stack>
             </Box>
@@ -155,9 +163,7 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
           <Divider sx={{ my: 3 }} />
 
           <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 2 }}>
-            تُنفَّذ هذه الخدمة داخل النظام التشغيلي المتخصص للحجر الصحي القومي. البيانات التي تراها هنا هي وصف
-            للخدمة؛ تبدأ الإجراءات الفعلية بالضغط على الزر أدناه.
-          </Typography>
+            {t('public.تُنفَّذ هذه الخدمة داخل النظام التشغيلي المتخصص للحجر الصحي القومي البيانات التي تراها هنا هي وصف للخدمة؛ تبدأ الإجراءات الفعلية بالضغط على الزر أدناه')}</Typography>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 3 }}>
             <ServiceAuthGate service={service} returnRoute={service.route || location.pathname}>
@@ -170,12 +176,11 @@ const ServicePage = ({ serviceCode }: { serviceCode: string }) => {
                 startIcon={service.requires_auth ? <VerifiedUserIcon /> : undefined}
                 sx={{ py: 1.2, px: 4, textTransform: 'none', fontWeight: 700 }}
               >
-                {service.requires_auth ? `ابدأ الخدمة (${identityLabels[service.identity_provider]})` : 'الانتقال إلى الخدمة'}
+                {service.requires_auth ? `${t('public.ابدأ الخدمة')} (${identityLabels[service.identity_provider]})` : t('public.الانتقال إلى الخدمة')}
               </Button>
             </ServiceAuthGate>
             <Button component={Link} to="/services" startIcon={<ArrowBackIcon />} size="large" sx={{ textTransform: 'none' }}>
-              جميع الخدمات
-            </Button>
+              {t('public.جميع الخدمات')}</Button>
           </Stack>
         </CardContent>
       </Card>

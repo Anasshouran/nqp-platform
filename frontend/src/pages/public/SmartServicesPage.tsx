@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -26,37 +27,43 @@ interface ServiceGroup {
   services: SmartService[];
 }
 
-const serviceGroups: ServiceGroup[] = [
-  {
-    label: 'الأفراد والمسافرون',
-    icon: '👤',
-    services: [
-      { title: 'السفر', desc: 'متطلبات السفر والإجراءات الصحية للدخول والخروج', emoji: '✈️', to: '/travel-requirements' },
-      { title: 'التطعيم الدولي', desc: 'التسجيل للتطعيم واستخراج الشهادات الدولية', emoji: '💉', to: '/app/vaccination' },
-      { title: 'الشهادة الصحية', desc: 'التحقق من صحة الشهادات الصحية الدولية', emoji: '📜', to: '/verify' },
-      { title: 'التحقق من الوثيقة', desc: 'التحقق من صحة رموز QR والوثائق الصادرة عن المنصة', emoji: '🔍', to: '/verify' },
-    ],
-  },
-  {
-    label: 'الشركات',
-    icon: '🏢',
-    services: [
-      { title: 'رقابة الأغذية', desc: 'تصاريح استيراد الأغذية ومراقبة شحناتها في المنافذ', emoji: '📦', to: '/services/food-safety' },
-      { title: 'الاستيراد والتصدير', desc: 'إجراءات الاستيراد والتصدير والإفراج عن الشحنات', emoji: '🚢', to: '/services/food-safety' },
-    ],
-  },
-  {
-    label: 'الجهات الحكومية والمنظمات',
-    icon: '🏛️',
-    services: [
-      { title: 'الخدمات المؤسسية', desc: 'خدمات مشتركة للجهات الحكومية العاملة في نقاط الدخول', emoji: '📋', to: '/services' },
-      { title: 'التكامل الإلكتروني', desc: 'ربط الأنظمة وتبادل البيانات مع المنصة والمنظمات', emoji: '🔗', to: '/partners' },
-    ],
-  },
-];
 
 const SmartServicesPage = () => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
+
+  const serviceGroups: ServiceGroup[] = useMemo(
+    () => (
+      [
+        {
+          label: t('public.الأفراد والمسافرون'),
+          icon: '👤',
+          services: [
+            { title: t('public.السفر'), desc: t('public.متطلبات السفر والإجراءات الصحية للدخول والخروج'), emoji: '✈️', to: '/travel-requirements' },
+            { title: t('public.التطعيم الدولي'), desc: t('public.التسجيل للتطعيم واستخراج الشهادات الدولية'), emoji: '💉', to: '/app/vaccination' },
+            { title: t('public.الشهادة الصحية'), desc: t('public.التحقق من صحة الشهادات الصحية الدولية'), emoji: '📜', to: '/verify' },
+            { title: t('public.التحقق من الوثيقة'), desc: t('public.التحقق من صحة رموز QR والوثائق الصادرة عن المنصة'), emoji: '🔍', to: '/verify' },
+          ],
+        },
+        {
+          label: t('public.الشركات'),
+          icon: '🏢',
+          services: [
+            { title: t('public.رقابة الأغذية'), desc: t('public.تصاريح استيراد الأغذية ومراقبة شحناتها في المنافذ'), emoji: '📦', to: '/services/food-safety' },
+            { title: t('public.الاستيراد والتصدير'), desc: t('public.إجراءات الاستيراد والتصدير والإفراج عن الشحنات'), emoji: '🚢', to: '/services/food-safety' },
+          ],
+        },
+        {
+          label: t('public.الجهات الحكومية والمنظمات'),
+          icon: '🏛️',
+          services: [
+            { title: t('public.الخدمات المؤسسية'), desc: t('public.خدمات مشتركة للجهات الحكومية العاملة في نقاط الدخول'), emoji: '📋', to: '/services' },
+            { title: t('public.التكامل الإلكتروني'), desc: t('public.ربط الأنظمة وتبادل البيانات مع المنصة والمنظمات'), emoji: '🔗', to: '/partners' },
+          ],
+        },
+      ]),
+    [t],
+  );
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -69,27 +76,27 @@ const SmartServicesPage = () => {
         ),
       }))
       .filter((group) => group.services.length > 0);
-  }, [query]);
+  }, [query, serviceGroups, t]);
 
   const totalServices = useMemo(
     () => serviceGroups.reduce((acc, g) => acc + g.services.length, 0),
-    []
+    [serviceGroups]
   );
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="الخدمات الذكية"
-        subtitle="خدمات رقمية من منصة عافيتنا"
-        eyebrow="بوابة الخدمات"
+        title={t('public.الخدمات الذكية')}
+        subtitle={t('public.خدمات رقمية من منصة عافيتنا')}
+        eyebrow={t('public.بوابة الخدمات')}
       />
 
       <TextField
         fullWidth
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="ابحث عن خدمة..."
-        aria-label="ابحث عن خدمة"
+        placeholder={t('public.ابحث عن خدمة')}
+        aria-label={t('public.ابحث عن خدمة 2')}
         sx={{ maxWidth: 560, mb: 5, mx: 'auto', display: 'flex' }}
         InputProps={{
           startAdornment: (
@@ -107,11 +114,9 @@ const SmartServicesPage = () => {
               🔎
             </Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-              لا توجد خدمات مطابقة
-            </Typography>
+              {t('public.لا توجد خدمات مطابقة')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              جرّب كلمات أخرى مثل «السفر» أو «الأغذية» أو «التحقق».
-            </Typography>
+              {t('public.جرّب كلمات أخرى مثل «السفر» أو «الأغذية» أو «التحقق»')}</Typography>
           </Box>
         )}
 
@@ -183,7 +188,7 @@ const SmartServicesPage = () => {
 
       <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mt: 6 }}>
         <Typography variant="body2" color="text.secondary">
-          لأكثر من {totalServices} خدمة، يمكنك زيارة <b>كتالوج الخدمات</b> أو <b>اتصل بنا</b>.
+          {t('public.لأكثر من')} {totalServices} {t('public.خدمة، يمكنك زيارة')} <b>{t('public.كتالوج الخدمات')}</b> {t('public.أو')}<b>{t('public.اتصل بنا')}</b>.
         </Typography>
       </Stack>
     </Container>

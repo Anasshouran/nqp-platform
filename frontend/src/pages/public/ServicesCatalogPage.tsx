@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -24,23 +25,21 @@ import { PageHeader, ListSkeleton, EmptyState } from '../../components/common';
 import { iconFor } from '../../utils/iconMap';
 import { safeExternalUrl } from '../../utils/safeUrl';
 
-const audienceLabels: Record<string, string> = {
-  PUBLIC: 'عام',
-  INDIVIDUAL: 'الأفراد',
-  BUSINESS: 'الأعمال',
-  GOVERNMENT: 'الجهات الحكومية',
-  EMPLOYEE: 'الموظفون',
-};
-
-const filterChips = [
-  { key: 'all', label: 'الكل' },
-  { key: 'INDIVIDUAL', label: 'المسافرون' },
-  { key: 'BUSINESS', label: 'الأعمال' },
-  { key: 'GOVERNMENT', label: 'الحكومة' },
-  { key: 'PUBLIC', label: 'الصحة والتحقق' },
-];
 
 const ServiceCard = ({ service }: { service: Service }) => {
+  const { t } = useTranslation();
+
+  const audienceLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        PUBLIC: t('public.عام'),
+        INDIVIDUAL: t('public.الأفراد'),
+        BUSINESS: t('public.الأعمال'),
+        GOVERNMENT: t('public.الجهات الحكومية'),
+        EMPLOYEE: t('public.الموظفون'),
+      }),
+    [t],
+  );
   const Icon = iconFor(service.icon);
   const externalUrl = safeExternalUrl(service.external_url);
   const href = externalUrl || service.route || '/services';
@@ -77,7 +76,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
             gap: 0.5,
             color: 'success.main',
           }}
-          title="يتطلب هوية موثقة"
+          title={t('public.يتطلب هوية موثقة')}
         >
           <VerifiedUserIcon sx={{ fontSize: 15 }} />
         </Box>
@@ -120,7 +119,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
           <Chip
-            label={audienceLabels[service.audience] || 'عام'}
+            label={audienceLabels[service.audience] || t('public.عام')}
             size="small"
             variant="outlined"
             sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700 }}
@@ -147,10 +146,23 @@ const ServiceCard = ({ service }: { service: Service }) => {
 };
 
 const ServicesCatalogPage = () => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+
+  const filterChips = useMemo(
+    () => (
+      [
+        { key: 'all', label: t('public.الكل') },
+        { key: 'INDIVIDUAL', label: t('public.المسافرون') },
+        { key: 'BUSINESS', label: t('public.الأعمال') },
+        { key: 'GOVERNMENT', label: t('public.الحكومة') },
+        { key: 'PUBLIC', label: t('public.الصحة والتحقق') },
+      ]),
+    [t],
+  );
 
   useEffect(() => {
     getServiceCategories()
@@ -185,9 +197,9 @@ const ServicesCatalogPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="جميع الخدمات"
-        subtitle="جميع الخدمات الإلكترونية التي تقدمها المنصة للمسافرين والشركاء والجهات الصحية"
-        eyebrow="بوابة الخدمات"
+        title={t('public.جميع الخدمات')}
+        subtitle={t('public.جميع الخدمات الإلكترونية التي تقدمها المنصة للمسافرين والشركاء والجهات الصحية')}
+        eyebrow={t('public.بوابة الخدمات')}
       />
 
       {/* Search + filters */}
@@ -195,8 +207,8 @@ const ServicesCatalogPage = () => {
         <TextField
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="ابحث عن خدمة... (التسجيل المسبق، فحص شحنة، التحقق من شهادة)"
-          aria-label="بحث عن خدمة"
+          placeholder={t('public.ابحث عن خدمة (التسجيل المسبق، فحص شحنة، التحقق من شهادة)')}
+          aria-label={t('public.بحث عن خدمة')}
           fullWidth
           InputProps={{
             startAdornment: (
@@ -230,8 +242,8 @@ const ServicesCatalogPage = () => {
       ) : allServices.length === 0 ? (
         <EmptyState
           icon={<SearchIcon />}
-          title="لا توجد خدمات مطابقة"
-          description="جرّب تعديل كلمة البحث أو اختيار فئة أخرى."
+          title={t('public.لا توجد خدمات مطابقة')}
+          description={t('public.جرّب تعديل كلمة البحث أو اختيار فئة أخرى')}
         />
       ) : (
         <Grid container spacing={2}>
@@ -245,8 +257,7 @@ const ServicesCatalogPage = () => {
 
       <Box sx={{ textAlign: 'center', mt: 4 }}>
         <Button variant="outlined" component={Link} to="/contact" sx={{ textTransform: 'none' }}>
-          لم تجد ما تبحث عنه؟ تواصل معنا
-        </Button>
+          {t('public.لم تجد ما تبحث عنه؟ تواصل معنا')}</Button>
       </Box>
     </Container>
   );

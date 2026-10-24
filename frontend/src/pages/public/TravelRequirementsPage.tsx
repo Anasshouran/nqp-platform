@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -29,6 +30,7 @@ import type { TravelRequirement, PublicCountry } from '../../api/endpoints/publi
 import { PageHeader, EmptyState } from '../../components/common';
 
 const TravelRequirementsPage = () => {
+  const { t } = useTranslation();
   const [countries, setCountries] = useState<PublicCountry[]>([]);
   const [from, setFrom] = useState('SD');
   const [to, setTo] = useState('');
@@ -36,6 +38,7 @@ const TravelRequirementsPage = () => {
   const [requirements, setRequirements] = useState<TravelRequirement | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     getCountries()
@@ -54,7 +57,7 @@ const TravelRequirementsPage = () => {
       const data = response.data.data;
       setRequirements(Array.isArray(data) && data.length > 0 ? data[0] : null);
     } catch {
-      setError('تعذر جلب متطلبات السفر، حاول مرة أخرى لاحقاً.');
+      setError(t('public.تعذر جلب متطلبات السفر، حاول مرة أخرى لاحقاً'));
       setRequirements(null);
     } finally {
       setLoading(false);
@@ -62,9 +65,9 @@ const TravelRequirementsPage = () => {
   };
 
   const modeOptions = [
-    { value: 'AIR' as const, label: 'طيران', icon: <FlightIcon />, emoji: '✈️' },
-    { value: 'SEA' as const, label: 'بحري', icon: <DirectionsBoatIcon />, emoji: '🚢' },
-    { value: 'LAND' as const, label: 'بري', icon: <DirectionsBusIcon />, emoji: '🚌' },
+    { value: 'AIR' as const, label: t('public.طيران'), icon: <FlightIcon />, emoji: '✈️' },
+    { value: 'SEA' as const, label: t('public.بحري'), icon: <DirectionsBoatIcon />, emoji: '🚢' },
+    { value: 'LAND' as const, label: t('public.بري'), icon: <DirectionsBusIcon />, emoji: '🚌' },
   ];
 
   const groupRequirements = (reqs: TravelRequirement['requirements']) => {
@@ -94,9 +97,9 @@ const TravelRequirementsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <PageHeader
-        title="✈️ متطلبات السفر"
-        subtitle="أدخِل بيانات رحلتك لعرض المتطلبات الصحية الدقيقة"
-        eyebrow="إرشادات الدخول"
+        title={t('public.✈️ متطلبات السفر')}
+        subtitle={t('public.أدخِل بيانات رحلتك لعرض المتطلبات الصحية الدقيقة')}
+        eyebrow={t('public.إرشادات الدخول')}
       />
 
       <Card sx={{ mb: 4, border: '1px solid', borderColor: 'divider' }}>
@@ -105,11 +108,11 @@ const TravelRequirementsPage = () => {
             <Grid container spacing={2} alignItems="flex-end">
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth size="small">
-                  <InputLabel id="from-label">من</InputLabel>
+                  <InputLabel id="from-label">{t('public.من')}</InputLabel>
                   <Select
                     labelId="from-label"
                     value={from}
-                    label="من"
+                    label={t('public.من')}
                     onChange={(e) => setFrom(e.target.value)}
                   >
                     {countries
@@ -130,35 +133,34 @@ const TravelRequirementsPage = () => {
                         </MenuItem>
                       ))}
                   </Select>
-                  <FormHelperText>دولة المغادرة (السودان افتراضياً)</FormHelperText>
+                  <FormHelperText>{t('public.دولة المغادرة (السودان افتراضياً)')}</FormHelperText>
                 </FormControl>
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth size="small">
-                  <InputLabel id="to-label">إلى</InputLabel>
+                  <InputLabel id="to-label">{t('public.إلى')}</InputLabel>
                   <Select
                     labelId="to-label"
                     value={to}
-                    label="إلى"
+                    label={t('public.إلى')}
                     onChange={(e) => setTo(e.target.value)}
                   >
-                    <MenuItem value="">اختر دولة الوجهة</MenuItem>
+                    <MenuItem value="">{t('public.اختر دولة الوجهة')}</MenuItem>
                     {countries.map((c) => (
                       <MenuItem key={c.code} value={c.code}>
                         {c.name_ar} ({c.code})
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>دولة الوصول</FormHelperText>
+                  <FormHelperText>{t('public.دولة الوصول')}</FormHelperText>
                 </FormControl>
               </Grid>
             </Grid>
 
             <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center" sx={{ pt: 1 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, minWidth: 100 }}>
-                وسيلة السفر
-              </Typography>
+                {t('public.وسيلة السفر')}</Typography>
               <RadioGroup
                 value={mode}
                 onChange={(e) => setMode(e.target.value as 'AIR' | 'SEA' | 'LAND')}
@@ -191,7 +193,7 @@ const TravelRequirementsPage = () => {
               fullWidth
               sx={{ mx: 'auto', mt: 2, maxWidth: 360 }}
             >
-              {loading ? 'جاري البحث...' : 'عرض المتطلبات'}
+              {loading ? t('public.جاري البحث') : t('public.عرض المتطلبات')}
             </Button>
 
             {error && (
@@ -218,7 +220,7 @@ const TravelRequirementsPage = () => {
       ) : requirements ? (
         <Stack spacing={3}>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            المتطلبات الصحية لـ {countries.find((c) => c.code === to)?.name_ar || to}
+            {t('public.المتطلبات الصحية لـ')} {countries.find((c) => c.code === to)?.name_ar || to}
           </Typography>
 
           <Grid container spacing={3}>
@@ -240,8 +242,7 @@ const TravelRequirementsPage = () => {
                       <LocalHospitalIcon fontSize="large" />
                     </Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      التطعيمات المطلوبة
-                    </Typography>
+                      {t('public.التطعيمات المطلوبة')}</Typography>
                   </Stack>
                   {requirementGroups.التطعيمات.length > 0 ? (
                     <Stack spacing={1}>
@@ -258,8 +259,7 @@ const TravelRequirementsPage = () => {
                     </Stack>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      لا توجد تطعيمات مطلوبة
-                    </Typography>
+                      {t('public.لا توجد تطعيمات مطلوبة')}</Typography>
                   )}
                 </CardContent>
               </Card>
@@ -283,8 +283,7 @@ const TravelRequirementsPage = () => {
                       <ScienceIcon fontSize="large" />
                     </Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      الفحوصات المطلوبة
-                    </Typography>
+                      {t('public.الفحوصات المطلوبة')}</Typography>
                   </Stack>
                   {requirementGroups.الفحوصات.length > 0 ? (
                     <Stack spacing={1}>
@@ -301,8 +300,7 @@ const TravelRequirementsPage = () => {
                     </Stack>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      لا توجد فحوصات مطلوبة
-                    </Typography>
+                      {t('public.لا توجد فحوصات مطلوبة')}</Typography>
                   )}
                 </CardContent>
               </Card>
@@ -326,8 +324,7 @@ const TravelRequirementsPage = () => {
                       <VerifiedIcon fontSize="large" />
                     </Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      الشهادات الصحية
-                    </Typography>
+                      {t('public.الشهادات الصحية')}</Typography>
                   </Stack>
                   {requirementGroups.الشهادات.length > 0 ? (
                     <Stack spacing={1}>
@@ -344,8 +341,7 @@ const TravelRequirementsPage = () => {
                     </Stack>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      لا توجد شهادات مطلوبة
-                    </Typography>
+                      {t('public.لا توجد شهادات مطلوبة')}</Typography>
                   )}
                 </CardContent>
               </Card>
@@ -369,8 +365,7 @@ const TravelRequirementsPage = () => {
                       <WarningAmberIcon fontSize="large" />
                     </Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      التنبيهات الصحية
-                    </Typography>
+                      {t('public.التنبيهات الصحية')}</Typography>
                   </Stack>
                   {requirementGroups.التنبيهات.length > 0 ? (
                     <Stack spacing={1}>
@@ -387,8 +382,7 @@ const TravelRequirementsPage = () => {
                     </Stack>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      لا توجد تنبيهات صحية
-                    </Typography>
+                      {t('public.لا توجد تنبيهات صحية')}</Typography>
                   )}
                 </CardContent>
               </Card>
@@ -398,14 +392,14 @@ const TravelRequirementsPage = () => {
       ) : !loading && !requirements && to ? (
         <EmptyState
           icon={<FlightIcon />}
-          title="لا توجد متطلبات مسجلة"
-          description="لم تُسجل متطلبات صحية لهذه الدولة بعد."
+          title={t('public.لا توجد متطلبات مسجلة')}
+          description={t('public.لم تُسجل متطلبات صحية لهذه الدولة بعد')}
         />
       ) : (
         <EmptyState
           icon={<FlightIcon />}
-          title="اختر دولة الوجهة"
-          description="حدد دولة الوصول واضغط «عرض المتطلبات» لرؤية الإرشادات الصحية."
+          title={t('public.اختر دولة الوجهة')}
+          description={t('public.حدد دولة الوصول واضغط «عرض المتطلبات» لرؤية الإرشادات الصحية')}
         />
       )}
     </Container>
