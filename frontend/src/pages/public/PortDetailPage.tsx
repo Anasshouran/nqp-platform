@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -24,6 +25,8 @@ const formatDate = (value: string) =>
   new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' });
 
 const PortDetailPage = () => {
+  const { t } = useTranslation();
+
   const { id } = useParams<{ id: string }>();
   const [port, setPort] = useState<PublicPort | null>(null);
   const [stats, setStats] = useState<PortStats | null>(null);
@@ -49,23 +52,22 @@ const PortDetailPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Button component={Link} to="/sectors" startIcon={<ArrowBackIcon />} sx={{ mb: 3 }}>
-        العودة إلى القطاعات والمنافذ
-      </Button>
+        {t('public.العودة إلى القطاعات والمنافذ')}</Button>
 
       {loading ? (
         <ListSkeleton count={3} />
       ) : !port ? (
         <EmptyState
           icon={<LocationOnIcon />}
-          title="المنفذ غير متاح"
-          description="لم يتم العثور على هذا المنفذ."
+          title={t('public.المنفذ غير متاح')}
+          description={t('public.لم يتم العثور على هذا المنفذ')}
         />
       ) : (
         <>
           <PageHeader
             title={port.name_ar}
             subtitle={port.name_en}
-            eyebrow="منفذ دخول"
+            eyebrow={t('public.منفذ دخول')}
             action={
               <Chip
                 icon={portTypeMeta(port.type).icon}
@@ -97,13 +99,12 @@ const PortDetailPage = () => {
                 </Box>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    معلومات المنفذ
-                  </Typography>
+                    {t('public.معلومات المنفذ')}</Typography>
                   <Stack spacing={1.5}>
-                    <InfoRow label="رمز المنفذ" value={port.code} dir="ltr" />
-                    <InfoRow label="الاسم بالعربية" value={port.name_ar} />
-                    <InfoRow label="الاسم بالإنجليزية" value=<En>{port.name_en}</En> dir="ltr" />
-                    <InfoRow label="الولاية" value={port.country_name || '—'} />
+                    <InfoRow label={t('public.رمز المنفذ')} value={port.code} dir="ltr" />
+                    <InfoRow label={t('public.الاسم بالعربية')} value={port.name_ar} />
+                    <InfoRow label={t('public.الاسم بالإنجليزية')} value=<En>{port.name_en}</En> dir="ltr" />
+                    <InfoRow label={t('public.الولاية')} value={port.country_name || '—'} />
                   </Stack>
                 </CardContent>
               </Card>
@@ -111,13 +112,12 @@ const PortDetailPage = () => {
 
             <Grid item xs={12} md={5}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                المؤشرات التشغيلية
-              </Typography>
+                {t('public.المؤشرات التشغيلية')}</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <StatBox
                     icon={<PeopleIcon />}
-                    label="إجمالي الفحوصات الصحية"
+                    label={t('public.إجمالي الفحوصات الصحية')}
                     value={stats?.screenings_total ?? 0}
                     accent="#0c7f6a"
                   />
@@ -125,7 +125,7 @@ const PortDetailPage = () => {
                 <Grid item xs={12}>
                   <StatBox
                     icon={<WarningAmberIcon />}
-                    label="إنذارات نشطة"
+                    label={t('public.إنذارات نشطة')}
                     value={stats?.active_alerts ?? 0}
                     accent={(stats?.active_alerts ?? 0) > 0 ? '#c62828' : '#2f6f9f'}
                   />
@@ -133,7 +133,7 @@ const PortDetailPage = () => {
                 <Grid item xs={12}>
                   <StatBox
                     icon={<FlightTakeoffIcon />}
-                    label="الرحلات المسجلة"
+                    label={t('public.الرحلات المسجلة')}
                     value={stats?.flights_total ?? 0}
                     accent="#7a5c9e"
                   />
@@ -143,10 +143,9 @@ const PortDetailPage = () => {
               <Card sx={{ border: '1px solid', borderColor: 'divider', mt: 2 }}>
                 <CardContent sx={{ p: 2.5 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                    ملاحظة
-                  </Typography>
+                    {t('public.ملاحظة')}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    البيانات التشغيلية تُحدَّث من النظام الداخلي. آخر تحديث: {formatDate(new Date().toISOString())}.
+                    {t('public.البيانات التشغيلية تُحدَّث من النظام الداخلي')} {t('public.آخر تحديث')}: {formatDate(new Date().toISOString())}.
                   </Typography>
                 </CardContent>
               </Card>

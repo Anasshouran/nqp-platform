@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -27,14 +28,6 @@ const PAGE_SIZE = 20;
 /* IHR classification doubles as a severity signal, so each level gets its own
    semantic colour: red = public-health emergency, amber = targeted eradication,
    blue = surveillance only, grey = not under IHR. */
-const IHR_META: Record<string, { label: string; color: 'error' | 'warning' | 'info' | 'default'; tone: string }> = {
-  PHEIC: { label: 'طوارئ صحية عامة', color: 'error', tone: '#c63a3a' },
-  TARGETED_ERADICATION: { label: 'استئصال مستهدف', color: 'warning', tone: '#a86400' },
-  SURVEILLANCE_ONLY: { label: 'ترصد فقط', color: 'info', tone: '#2f6dd0' },
-  NOT_IHR: { label: 'غير مدرج', color: 'default', tone: '#3f584f' },
-};
-
-const ihrMeta = (category?: string | null) => (category ? IHR_META[category] : undefined);
 
 const DetailChips = ({
   label,
@@ -59,7 +52,22 @@ const DetailChips = ({
 );
 
 const DiseasePage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
+
+  const IHR_META: Record<string, { label: string; color: 'error' | 'warning' | 'info' | 'default'; tone: string }> = useMemo(
+    () => (
+      {
+        PHEIC: { label: t('public.طوارئ صحية عامة'), color: 'error', tone: '#c63a3a' },
+        TARGETED_ERADICATION: { label: t('public.استئصال مستهدف'), color: 'warning', tone: '#a86400' },
+        SURVEILLANCE_ONLY: { label: t('public.ترصد فقط'), color: 'info', tone: '#2f6dd0' },
+        NOT_IHR: { label: t('public.غير مدرج'), color: 'default', tone: '#3f584f' },
+      }),
+    [t],
+  );
+
+  const ihrMeta = (category?: string | null) => (category ? IHR_META[category] : undefined);
+
   const debouncedSearch = useDebounce(search, 300);
   const [page, setPage] = useState(1);
 
@@ -93,16 +101,16 @@ const DiseasePage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="الأمراض والإرشادات"
-        subtitle="معلومات توعوية حول الأمراض الوبائية ذات الاهتمام الصحي العام وإرشادات الوقاية"
-        eyebrow="المرجع الصحي"
+        title={t('public.الأمراض والإرشادات')}
+        subtitle={t('public.معلومات توعوية حول الأمراض الوبائية ذات الاهتمام الصحي العام وإرشادات الوقاية')}
+        eyebrow={t('public.المرجع الصحي')}
       />
       <TextField
         fullWidth
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        placeholder="ابحث عن مرض..."
-        inputProps={{ 'aria-label': 'ابحث عن مرض' }}
+        placeholder={t('public.ابحث عن مرض')}
+        inputProps={{ 'aria-label': t('public.ابحث عن مرض 2') }}
         sx={{ maxWidth: 560, mb: 4, mx: 'auto', display: 'flex' }}
         InputProps={{
           startAdornment: (
@@ -115,13 +123,13 @@ const DiseasePage = () => {
       {loading ? (
         <CardsGridSkeleton count={6} />
       ) : error ? (
-        <ErrorState message="تعذّر تحميل البيانات الصحية" onRetry={retry} />
+        <ErrorState message={t('public.تعذّر تحميل البيانات الصحية')} onRetry={retry} />
       ) : diseases.length === 0 ? (
         <EmptyState
           icon={<BiotechIcon />}
-          title={debouncedSearch ? 'لا توجد نتائج مطابقة' : 'لا توجد أمراض مسجلة'}
+          title={debouncedSearch ? t('public.لا توجد نتائج مطابقة') : t('public.لا توجد أمراض مسجلة')}
           description={
-            debouncedSearch ? 'جرّب كلمات بحث أخرى.' : 'سيتم إضافة المعلومات التوعوية قريباً.'
+            debouncedSearch ? t('public.جرّب كلمات بحث أخرى') : t('public.سيتم إضافة المعلومات التوعوية قريباً')
           }
         />
       ) : (
@@ -173,12 +181,12 @@ const DiseasePage = () => {
                   )}
 
                   {disease.symptoms && disease.symptoms.length > 0 && (
-                    <DetailChips label="الأعراض الرئيسية" items={disease.symptoms} />
+                    <DetailChips label={t('public.الأعراض الرئيسية')} items={disease.symptoms} />
                   )}
 
                   {disease.transmission_methods && disease.transmission_methods.length > 0 && (
                     <DetailChips
-                      label="طرق الانتقال"
+                      label={t('public.طرق الانتقال')}
                       items={disease.transmission_methods}
                       color="default"
                     />
@@ -189,8 +197,8 @@ const DiseasePage = () => {
                       <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: 13, mb: 0.5 }}>
                         <ScheduleIcon sx={{ fontSize: 16 }} />
                         <span>
-                          فترة الحضانة: {disease.incubation_period_min}
-                          {disease.incubation_period_max ? ` - ${disease.incubation_period_max}` : ''} يوم
+                          {t('public.فترة الحضانة')}: {disease.incubation_period_min}
+                          {disease.incubation_period_max ? ` - ${disease.incubation_period_max}` : ''} {t('public.يوم')}
                         </span>
                       </Stack>
                     )}
@@ -217,7 +225,7 @@ const DiseasePage = () => {
                 onChange={(_event, value) => setPage(value)}
                 color="primary"
                 shape="rounded"
-                aria-label="التنقل بين صفحات الأمراض"
+                aria-label={t('public.التنقل بين صفحات الأمراض')}
               />
             </Box>
           )}

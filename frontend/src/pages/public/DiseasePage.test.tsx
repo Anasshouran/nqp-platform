@@ -1,6 +1,11 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Side-effect import: i18n initializes on import (vitest has no setupFiles), so
+// after the Phase 2a migration the page's t() keys resolve to their original
+// Arabic values instead of raw keys. Expectations below are unchanged.
+import '../../i18n';
+
 import type { PublicDisease } from '../../api/endpoints/public';
 
 const useApi = vi.fn();

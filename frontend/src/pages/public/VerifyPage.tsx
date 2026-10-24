@@ -8,21 +8,30 @@ import Stack from '@mui/material/Stack';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../components/common';
 import VerifyTools from '../../components/VerifyTools';
 
-const capabilities = [
-  { icon: <QrCode2Icon />, title: 'التحقق من QR', desc: 'التحقق من صحة وصلاحية رموز QR الصادرة للمسافرين.' },
-  { icon: <WorkspacePremiumIcon />, title: 'التحقق من الشهادات', desc: 'التأكد من صحة وسريان الشهادات الصحية الدولية.' },
-  { icon: <VerifiedUserIcon />, title: 'تتبّع الطلبات', desc: 'الاستعلام عن حالة طلبات التسجيل المسبق للمسافرين.' },
-];
+const VerifyPage = () => {
+  const { t } = useTranslation();
 
-const VerifyPage = () => (
-  <Container maxWidth="lg" sx={{ py: 5 }}>
+  const capabilities = useMemo(
+    () => (
+      [
+        { icon: <QrCode2Icon />, title: t('public.التحقق من QR'), desc: t('public.التحقق من صحة وصلاحية رموز QR الصادرة للمسافرين') },
+        { icon: <WorkspacePremiumIcon />, title: t('public.التحقق من الشهادات'), desc: t('public.التأكد من صحة وسريان الشهادات الصحية الدولية') },
+        { icon: <VerifiedUserIcon />, title: t('public.تتبّع الطلبات'), desc: t('public.الاستعلام عن حالة طلبات التسجيل المسبق للمسافرين') },
+      ]),
+    [t],
+  );
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 5 }}>
     <PageHeader
-      title="التحقق الذكي"
-      subtitle="أدوات تحقق موثوقة للبيانات الصحية والشهادات ورموز QR الصادرة عن المنصة"
-      eyebrow="خدمة التحقق"
+      title={t('public.التحقق الذكي')}
+      subtitle={t('public.أدوات تحقق موثوقة للبيانات الصحية والشهادات ورموز QR الصادرة عن المنصة')}
+      eyebrow={t('public.خدمة التحقق')}
     />
 
     <Grid container spacing={3} sx={{ mb: 5 }}>
@@ -82,12 +91,12 @@ const VerifyPage = () => (
         <VerifiedUserIcon />
       </Box>
       <Typography variant="h5" sx={{ fontWeight: 700 }}>
-        أدوات التحقق
-      </Typography>
+        {t('public.أدوات التحقق')}</Typography>
     </Stack>
 
     <VerifyTools />
   </Container>
-);
+  );
+};
 
 export default VerifyPage;
