@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -152,6 +153,8 @@ const computeRisk = (data: WizardData) => {
 };
 
 const PreRegistrationPage = () => {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardData>(() => {
@@ -220,7 +223,7 @@ const PreRegistrationPage = () => {
     const e: Record<string, string> = {};
     if (s === 1) {
       if (data.full_name.trim().length < 2) e.full_name = 'يرجى إدخال الاسم الكامل.';
-      if (!/^[A-Za-z0-9]{6,20}$/.test(data.passport_number.trim())) e.passport_number = 'رقم الجواز غير صحيح (6-20 حرفاً).';
+      if (!/^[A-Za-z0-9]{6,20}$/.test(data.passport_number.trim())) e.passport_number = t('traveler.preRegistration.validation.passport');
       if (!data.date_of_birth) {
         e.date_of_birth = 'يرجى إدخال تاريخ الميلاد.';
       }
@@ -231,7 +234,7 @@ const PreRegistrationPage = () => {
       if (!data.port_of_entry) e.port_of_entry = 'يرجى اختيار منفذ الدخول.';
       if (!data.transport_mode) e.transport_mode = 'يرجى اختيار وسيلة النقل.';
       if (data.transport_mode === 'AIR' && !/^[A-Za-z0-9]{2,10}$/.test(data.flight_number.trim())) {
-        e.flight_number = 'رقم الرحلة غير صحيح.';
+        e.flight_number = t('traveler.preRegistration.validation.flight');
       }
       if (!data.arrival_date) {
         e.arrival_date = 'يرجى إدخال تاريخ الوصول.';
@@ -831,8 +834,8 @@ const PreRegistrationPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="التسجيل المسبق للمسافر"
-        subtitle="استمارة إلكترونية متعددة الخطوات لتسريع إجراءات وصولك إلى المنافذ"
+        title={t('traveler.preRegistration.pageTitle')}
+        subtitle={t('traveler.preRegistration.pageSubtitle')}
         eyebrow="بوابة المسافرين"
       />
 

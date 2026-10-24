@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,7 +12,6 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -29,7 +29,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import Badge from '@mui/material/Badge';
-import { ListSkeleton, EmptyState } from '../../components/common';
+import { ListSkeleton } from '../../components/common';
 import { travelerMe, getTravelerStatus, getTravelerDeclaration } from '../../api/endpoints/travelers';
 import type { TravelerDeclaration, TravelerAuthUser } from '../../api/endpoints/travelers';
 import { getNotices } from '../../api/endpoints/public';
@@ -95,12 +95,14 @@ const progressFor = (status?: string) => {
 };
 
 const TravelerDashboardPage = () => {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [user, setUser] = useState<TravelerAuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<{ registration_status: string; qr_code_issued: boolean; rejection_reason: string | null } | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [notices, setNotices] = useState<HealthNotice[]>([]);
   const [declaration, setDeclaration] = useState<TravelerDeclaration | null>(null);
   const [declarationLoading, setDeclarationLoading] = useState(false);

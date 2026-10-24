@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -33,14 +34,6 @@ import { getCountries, getPorts } from '../../api/endpoints/public';
 import type { PublicCountry, PublicPort } from '../../api/endpoints/public';
 import { getTravelerSession, clearTravelerSession } from '../../utils/travelerSession';
 import { safeExternalUrl } from '../../utils/safeUrl';
-
-const registrationLabels: Record<string, string> = {
-  PENDING_DOCUMENTS: 'بانتظار المستندات',
-  UNDER_REVIEW: 'قيد المراجعة',
-  ACTION_REQUIRED: 'إجراء مطلوب',
-  COMPLETED: 'مكتمل',
-  REJECTED: 'مرفوض',
-};
 
 const statusColors: Record<string, 'warning' | 'info' | 'success' | 'error'> = {
   PENDING_DOCUMENTS: 'warning',
@@ -141,6 +134,19 @@ const SectionCard = ({
 );
 
 const HealthProfilePage = () => {
+  const { t } = useTranslation();
+
+  const registrationLabels = useMemo<Record<string, string>>(
+    () => ({
+      PENDING_DOCUMENTS: t('traveler.healthProfile.status.pendingDocuments'),
+      UNDER_REVIEW: t('traveler.healthProfile.status.underReview'),
+      ACTION_REQUIRED: t('traveler.healthProfile.status.actionRequired'),
+      COMPLETED: t('traveler.healthProfile.status.completed'),
+      REJECTED: t('traveler.healthProfile.status.rejected'),
+    }),
+    [t],
+  );
+
   const navigate = useNavigate();
   const [traveler, setTraveler] = useState<Traveler | null>(null);
   const [documents, setDocuments] = useState<TravelerDocument[]>([]);
@@ -235,7 +241,7 @@ const HealthProfilePage = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
-        <PageHeader title="الملف الصحي" subtitle="جارٍ تحميل الملف الصحي للمسافر" eyebrow="بوابة المسافرين" />
+        <PageHeader title={t('traveler.healthProfile.title')} subtitle="جارٍ تحميل الملف الصحي للمسافر" eyebrow="بوابة المسافرين" />
         <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
           <CardContent><ListSkeleton count={5} /></CardContent>
         </Card>
@@ -246,7 +252,7 @@ const HealthProfilePage = () => {
   if (error || !traveler) {
     return (
       <Container maxWidth="md" sx={{ py: 5 }}>
-        <PageHeader title="الملف الصحي" subtitle="الملف الصحي الكامل للمسافر" eyebrow="بوابة المسافرين" />
+        <PageHeader title={t('traveler.healthProfile.title')} subtitle="الملف الصحي الكامل للمسافر" eyebrow="بوابة المسافرين" />
         <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
           <CardContent sx={{ p: 3 }}>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -277,7 +283,7 @@ const HealthProfilePage = () => {
         العودة إلى لوحة التحكم
       </Button>
       <PageHeader
-        title="الملف الصحي"
+        title={t('traveler.healthProfile.title')}
         subtitle="ملف المسافر الصحي الكامل — البيانات الشخصية والطبية والمستندات"
         eyebrow="بوابة المسافرين"
         action={
