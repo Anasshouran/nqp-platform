@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -35,14 +36,6 @@ import type { TravelerQrResult, TravelerStatusResult, TravelerStatusLog } from '
 import { getTravelerSession, setTravelerSession } from '../../utils/travelerSession';
 import { escapeHtml } from '../../utils/escapeHtml';
 
-const registrationLabels: Record<string, string> = {
-  PENDING_DOCUMENTS: 'بانتظار المستندات',
-  UNDER_REVIEW: 'قيد المراجعة',
-  ACTION_REQUIRED: 'إجراء مطلوب',
-  COMPLETED: 'مكتمل',
-  REJECTED: 'مرفوض',
-};
-
 const statusColors: Record<string, 'warning' | 'info' | 'success' | 'error'> = {
   PENDING_DOCUMENTS: 'warning',
   UNDER_REVIEW: 'info',
@@ -66,12 +59,14 @@ const progressFor = (status?: string) => {
   }
 };
 
-const buildTimeline = (status: TravelerStatusResult) => {
+type TFunc = (k: string) => string;
+
+const buildTimeline = (status: TravelerStatusResult, t: TFunc) => {
   const steps = [
-    { label: 'تم إنشاء الطلب', status: 'done' },
-    { label: 'رفع المستندات', status: status.registration_status !== 'PENDING_DOCUMENTS' ? 'done' : 'current' },
-    { label: 'الإقرار الصحي والمراجعة', status: status.registration_status === 'UNDER_REVIEW' ? 'current' : status.registration_status === 'ACTION_REQUIRED' ? 'current' : status.registration_status === 'COMPLETED' ? 'done' : 'upcoming' },
-    { label: 'اعتماد الطلب وإصدار QR', status: status.registration_status === 'COMPLETED' ? 'done' : 'upcoming' },
+    { label: t('traveler.requestTracking.timeline.created'), status: 'done' },
+    { label: t('traveler.requestTracking.timeline.documents'), status: status.registration_status !== 'PENDING_DOCUMENTS' ? 'done' : 'current' },
+    { label: t('traveler.requestTracking.timeline.review'), status: status.registration_status === 'UNDER_REVIEW' ? 'current' : status.registration_status === 'ACTION_REQUIRED' ? 'current' : status.registration_status === 'COMPLETED' ? 'done' : 'upcoming' },
+    { label: t('traveler.requestTracking.timeline.approved'), status: status.registration_status === 'COMPLETED' ? 'done' : 'upcoming' },
   ];
   if (status.registration_status === 'REJECTED') {
     return steps.map((step) => (step.status === 'current' ? { ...step, status: 'rejected' } : step));
@@ -80,6 +75,19 @@ const buildTimeline = (status: TravelerStatusResult) => {
 };
 
 const RequestTrackingPage = () => {
+  const { t } = useTranslation();
+
+  const registrationLabels: Record<string, string> = useMemo(
+    () => ({
+      PENDING_DOCUMENTS: t('traveler.requestTracking.status.pendingDocuments'),
+      UNDER_REVIEW: t('traveler.requestTracking.status.underReview'),
+      ACTION_REQUIRED: t('traveler.requestTracking.status.actionRequired'),
+      COMPLETED: t('traveler.requestTracking.status.completed'),
+      REJECTED: t('traveler.requestTracking.status.rejected'),
+    }),
+    [t],
+  );
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [passport, setPassport] = useState('');
@@ -99,7 +107,7 @@ const RequestTrackingPage = () => {
       const res = await refreshTravelerQr(lookup.traveler_id);
       setQr(res.data.data);
     } catch {
-      setError('تعذر إعادة إصدار رمز QR، حاول مرة أخرى.');
+      setError(t('traveler.requestTracking.error.refresh'));
     } finally {
       setRefreshingQr(false);
     }
@@ -152,7 +160,7 @@ const RequestTrackingPage = () => {
         }
       }
     } catch {
-      setError('تعذر تحميل حالة الطلب، حاول مرة أخرى لاحقاً.');
+      setError(t('traveler.requestTracking.error.load'));
     } finally {
       setLoading(false);
     }
@@ -168,7 +176,7 @@ const RequestTrackingPage = () => {
 
   const submit = () => {
     if (!passport.trim() || !dob.trim()) {
-      setError(!passport.trim() ? 'يرجى إدخال رقم جواز السفر.' : 'يرجى إدخال تاريخ الميلاد للتحقق من الهوية.');
+      setError(!passport.trim() ? t('traveler.requestTracking.error.search') : t('traveler.requestTracking.error.searchDob'));
       return;
     }
     load(passport.trim(), dob.trim());
@@ -188,10 +196,10 @@ const RequestTrackingPage = () => {
     if (!win) return;
     win.document.write(
       `<html dir="rtl"><body style="font-family:sans-serif;text-align:center;padding:40px">` +
-        `<h2>منصة الحجر الصحي القومي</h2>` +
+        `<h2>${t('traveler.dashboard.brand')}</h2>` +
         `<p>${escapeHtml(lookup?.full_name || '')} · ${escapeHtml(lookup?.passport_number || '')}</p>` +
         `<img src="${escapeHtml(qr.qr_code)}" width="320" height="320" style="margin:20px 0" />` +
-        `<p>اعرض هذا الرمز لموظف الحجر الصحي عند الوصول.</p>` +
+        `<p>${t('traveler.requestTracking.qr.printInstruction')}</p>` +
         `</body></html>`
     );
     win.document.close();
@@ -204,14 +212,14 @@ const RequestTrackingPage = () => {
       const response = await fetch(qr.qr_code);
       const blob = await response.blob();
       const file = new File([blob], 'nqp-qr-code.png', { type: 'image/png' });
-      await navigator.share({ files: [file], title: 'رمز QR - NQP' });
+      await navigator.share({ files: [file], title: t('traveler.requestTracking.share.title') });
     } catch {
       // user cancelled or share unsupported
     }
   };
 
   const progress = progressFor(status?.registration_status || lookup?.registration_status);
-  const timeline = status ? buildTimeline(status) : [];
+  const timeline = status ? buildTimeline(status, t) : [];
   const historyLogs = [...timelineLogs].reverse();
 
   return (
@@ -220,7 +228,7 @@ const RequestTrackingPage = () => {
         العودة إلى لوحة التحكم
       </Button>
       <PageHeader
-        title="تتبع الطلب"
+        title={t('traveler.requestTracking.title')}
         subtitle="تابع حالة طلب التسجيل المسبق والخطوات المتبقية"
         eyebrow="بوابة المسافرين"
       />
@@ -229,7 +237,7 @@ const RequestTrackingPage = () => {
         <CardContent sx={{ p: 3 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
             <TextField
-              label="رقم جواز السفر"
+              label={t('traveler.requestTracking.form.passportLabel')}
               value={passport}
               onChange={(e) => setPassport(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submit()}
@@ -237,7 +245,7 @@ const RequestTrackingPage = () => {
               dir="ltr"
             />
             <TextField
-              label="تاريخ الميلاد"
+              label={t('traveler.requestTracking.form.dobLabel')}
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
@@ -251,7 +259,7 @@ const RequestTrackingPage = () => {
               disabled={!passport.trim() || !dob.trim() || loading}
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SearchIcon />}
             >
-              بحث
+              {t('traveler.requestTracking.form.search')}
             </Button>
           </Stack>
           {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
@@ -291,7 +299,7 @@ const RequestTrackingPage = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                   <Box
                     role="progressbar"
-                    aria-label="نسبة اكتمال الطلب"
+                    aria-label={t('traveler.requestTracking.progressLabel')}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(progress)}
@@ -331,27 +339,27 @@ const RequestTrackingPage = () => {
 
                 {status?.registration_status === 'REJECTED' && status.rejection_reason && (
                   <Alert severity="error">
-                    سبب الرفض: {status.rejection_reason}
+                    {t('traveler.requestTracking.rejectionReason')} {status.rejection_reason}
                   </Alert>
                 )}
                 {status?.registration_status === 'PENDING_DOCUMENTS' && (
                   <Alert severity="warning">
-                    الإجراء المطلوب: يرجى رفع المستندات المطلوبة.
+                    {t('traveler.requestTracking.actionRequired.title')}
                     <Button size="small" sx={{ mt: 1 }} startIcon={<UploadIcon />} onClick={() => navigate('/traveler/documents')}>
-                      رفع المستندات
+                      {t('traveler.requestTracking.actionRequired.upload')}
                     </Button>
                   </Alert>
                 )}
                 {status?.registration_status === 'ACTION_REQUIRED' && (
                   <Alert severity="warning">
-                    {status.rejection_reason || 'طلبك يحتاج إلى إجراء منك قبل متابعة المراجعة.'}
+                    {status.rejection_reason || t('traveler.requestTracking.rejected.needsAction')}
                     <Button size="small" sx={{ mt: 1 }} startIcon={<EditIcon />} onClick={() => navigate(`/traveler/documents`)}>
-                      تعديل الطلب
+                      {t('traveler.requestTracking.rejected.edit')}
                     </Button>
                   </Alert>
                 )}
                 {status?.registration_status === 'UNDER_REVIEW' && (
-                  <Alert severity="info">طلبك قيد المراجعة، سيتم إشعارك عند تحديث الحالة.</Alert>
+                  <Alert severity="info">{t('traveler.requestTracking.underReview.info')}</Alert>
                 )}
                 {status?.registration_status === 'COMPLETED' && (
                   <Alert severity="success">
@@ -365,7 +373,7 @@ const RequestTrackingPage = () => {
               <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4, mt: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    سجل التحديثات
+                    {t('traveler.requestTracking.updates.title')}
                   </Typography>
                   <Stack spacing={2}>
                     {historyLogs.map((log) => (
@@ -398,7 +406,7 @@ const RequestTrackingPage = () => {
               <Card sx={{ border: '1px solid', borderColor: 'success.main', borderRadius: 4 }}>
                 <CardContent sx={{ p: 3, textAlign: 'center' }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    رمز QR الخاص بك
+                    {t('traveler.requestTracking.qr.title')}
                   </Typography>
                   <Box
                     component="img"
@@ -413,7 +421,7 @@ const RequestTrackingPage = () => {
                     {lookup.passport_number}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                    صادر: {new Date(qr.qr_data.issued_at).toLocaleString('ar-SA')}
+                    {t('traveler.requestTracking.qr.issued')} {new Date(qr.qr_data.issued_at).toLocaleString('ar-SA')}
                   </Typography>
                   {qrExpired ? (
                     <Alert severity="error" sx={{ mt: 1.5, textAlign: 'right' }}>
@@ -421,11 +429,11 @@ const RequestTrackingPage = () => {
                     </Alert>
                   ) : qrExpiringSoon ? (
                     <Alert severity="warning" sx={{ mt: 1.5, textAlign: 'right' }}>
-                      سينتهي صلاحية الرمز خلال 24 ساعة.
+                      {t('traveler.requestTracking.qr.expiresIn24h')}
                     </Alert>
                   ) : (
                     <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mt: 1.5, textAlign: 'right' }}>
-                      نشط — صالح للاستخدام حتى {new Date(qr.qr_data.expires_at).toLocaleString('ar-SA')}
+                      {t('traveler.requestTracking.qr.validUntil')} {new Date(qr.qr_data.expires_at).toLocaleString('ar-SA')}
                     </Alert>
                   )}
                   <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2.5 }} flexWrap="wrap" gap={1}>
@@ -450,7 +458,7 @@ const RequestTrackingPage = () => {
                     </Button>
                   </Stack>
                   <Alert severity="info" icon={<RefreshIcon />} sx={{ mt: 2.5, textAlign: 'right' }}>
-                    اعرض هذا الرمز لموظف الحجر الصحي عند وصولك إلى المنفذ لتسريع إجراءاتك.
+                    {t('traveler.requestTracking.qr.instruction')}
                   </Alert>
                 </CardContent>
               </Card>
@@ -459,11 +467,11 @@ const RequestTrackingPage = () => {
                 <CardContent sx={{ p: 3 }}>
                   <EmptyState
                     icon={<QrCode2Icon />}
-                    title="رمز QR غير متاح بعد"
+                    title={t('traveler.requestTracking.qr.notAvailable.title')}
                     description={
                       status?.registration_status === 'REJECTED'
-                        ? 'تم رفض طلبك. يرجى التواصل مع الدعم.'
-                        : 'سيتم إصدار رمز QR بعد اعتماد الطلب واكتمال جميع الخطوات.'
+                        ? t('traveler.requestTracking.qr.notAvailable.rejected')
+                        : t('traveler.requestTracking.qr.notAvailable.pending')
                     }
                   />
                 </CardContent>
@@ -476,8 +484,8 @@ const RequestTrackingPage = () => {
           <CardContent>
             <EmptyState
               icon={<SearchIcon />}
-              title={lookup ? 'لم يتم العثور على الطلب' : 'ابحث عن طلبك'}
-              description="أدخل رقم جواز السفر وتاريخ الميلاد أعلاه لعرض حالة الطلب، أو سجّل مسبقاً من بوابة المسافرين."
+              title={lookup ? t('traveler.requestTracking.notFound.title') : t('traveler.requestTracking.empty.title')}
+              description={t('traveler.requestTracking.empty.description')}
             />
           </CardContent>
         </Card>

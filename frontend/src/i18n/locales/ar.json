@@ -847,5 +847,360 @@
     "الإرشادات الصحية": "الإرشادات الصحية",
     "التنبيهات": "التنبيهات",
     "سلامة الأغذية": "سلامة الأغذية"
+  },
+  "traveler": {
+    "preRegistration": {
+      "symptoms": {
+        "fever": "حمى",
+        "headache": "صداع",
+        "bodyPain": "ألم في الجسم",
+        "vomiting": "قيء",
+        "diarrhea": "إسهال",
+        "lossOfAppetite": "فقدان الشهية",
+        "difficultySwallowing": "صعوبة في البلع",
+        "bleeding": "نزيف",
+        "contactWithPatient": "مخالطة مريض",
+        "otherSymptoms": "أعراض أخرى"
+      },
+      "travelModes": {
+        "air": "جوي",
+        "land": "بري",
+        "sea": "بحري"
+      },
+      "yesNo": {
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "title": "التسجيل المسبق للحدود",
+      "subtitle": "يرجى ملء البيانات التالية قبل الوصول إلى نقطة الدخول",
+      "eyebrow": "مسافر",
+      "submit": "إرسال الطلب",
+      "submitting": "جاري الإرسال...",
+      "success": "تم إرسال الطلب بنجاح",
+      "steps": {
+        "start": "البدء",
+        "personal": "البيانات الشخصية",
+        "trip": "بيانات الرحلة",
+        "purposeContact": "الغرض والتواصل",
+        "health": "الإقرار الصحي",
+        "review": "المراجعة والتأكيد"
+      },
+      "personal": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "passportNumber": "رقم جواز السفر",
+        "nationality": "الجنسية",
+        "dob": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني"
+      },
+      "travel": {
+        "arrivalPort": "ميناء/معبر الدخول",
+        "arrivalDate": "تاريخ الوصول المتوقع",
+        "arrivalTime": "وقت الوصول",
+        "travelMode": "وسيلة السفر",
+        "flightNumber": "رقم الرحلة"
+      },
+      "health": {
+        "symptoms": "هل تعاني من أي من الأعراض التالية؟",
+        "feverTemp": "درجة الحرارة (°م)",
+        "contact": "هل كانت لديك مخالطة لشخص مصاب بأمراض معدية خلال 14 يومًا؟",
+        "visited": "هل زرت أي منطقة موبوءة خلال 14 يومًا؟"
+      },
+      "accommodation": {
+        "address": "عنوان الإقامة في السودان",
+        "hotel": "اسم الفندق/المكان"
+      },
+      "review": {
+        "confirm": "أقر بصحة المعلومات المقدمة"
+      },
+      "next": "التالي",
+      "back": "السابق",
+      "saveDraft": "حفظ مسودة",
+      "validation": {
+        "required": "هذا الحقل مطلوب",
+        "email": "يرجى إدخال بريد إلكتروني صحيح",
+        "passport": "رقم الجواز غير صحيح (6-20 حرفاً).",
+        "flight": "رقم الرحلة غير صحيح."
+      },
+      "pageTitle": "التسجيل المسبق للمسافر",
+      "pageSubtitle": "استمارة إلكترونية متعددة الخطوات لتسريع إجراءات وصولك إلى المنافذ",
+      "requestTracking": {
+        "title": "تتبع الطلب",
+        "subtitle": "تحقق من حالة طلب التسجيل المسبق"
+      },
+      "healthProfile": {
+        "title": "الملف الصحي",
+        "subtitle": "عرض ملفك الصحي وحالة الطلب"
+      },
+      "uploadDocuments": {
+        "title": "رفع المستندات",
+        "subtitle": "رفع المستندات المطلوبة لإتمام الطلب"
+      },
+      "purpose": {
+        "tourism": "سياحة",
+        "work": "عمل",
+        "visit": "زيارة",
+        "study": "دراسة",
+        "transit": "عبور",
+        "diplomatic": "دبلوماسي",
+        "internationalOrg": "منظمة دولية",
+        "other": "آخر"
+      },
+      "form": {
+        "seatOrCabin": "رقم المقعد / الكابينة (اختياري)",
+        "bookingOrFlight": "رقم الحجز / الرحلة (اختياري)",
+        "seat": "رقم المقعد (اختياري)",
+        "flightNumberOrShip": "رقم الرحلة / اسم السفينة",
+        "flightNumber": "رقم الرحلة"
+      },
+      "risk": {
+        "initial": "تصنيف المخاطر المبدئي:",
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "mediumDesc": "قد تحتاج إلى فحص إضافي عند الوصول.",
+        "highDesc": "يرجى التوجه إلى الفحص الطبي فور وصولك."
+      },
+      "points": "نقطة",
+      "date": "تاريخ",
+      "noSymptoms": "لا توجد أعراض",
+      "stepProgress": "الخطوة",
+      "of": "من"
+    },
+    "requestTracking": {
+      "status": {
+        "pendingDocuments": "بانتظار المستندات",
+        "underReview": "قيد المراجعة",
+        "actionRequired": "إجراء مطلوب",
+        "completed": "مكتمل",
+        "rejected": "مرفوض"
+      },
+      "progressLabel": "نسبة اكتمال الطلب",
+      "title": "تتبع الطلب",
+      "subtitle": "تحقق من حالة طلب التسجيل المسبق وسجّل المستندات إذا طُلب ذلك",
+      "eyebrow": "مسافر",
+      "form": {
+        "passportLabel": "رقم جواز السفر",
+        "dobLabel": "تاريخ الميلاد",
+        "search": "بحث",
+        "passportPlaceholder": "أدخل رقم جواز السفر",
+        "searchButton": "بحث",
+        "searching": "جاري البحث..."
+      },
+      "statusCard": {
+        "title": "حالة الطلب"
+      },
+      "qr": {
+        "title": "رمز QR للتتبع",
+        "issued": "تم إصدار رمز QR",
+        "notIssued": "رمز QR غير صادر بعد",
+        "refresh": "تحديث QR",
+        "printInstruction": "اعرض هذا الرمز لموظف الحجر الصحي عند الوصول."
+      },
+      "timeline": {
+        "title": "مسار الطلب",
+        "created": "تم إنشاء الطلب",
+        "documents": "رفع المستندات",
+        "review": "الإقرار الصحي والمراجعة",
+        "approved": "اعتماد الطلب وإصدار QR"
+      },
+      "details": {
+        "travelerName": "اسم المسافر",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني",
+        "nationality": "الجنسية"
+      },
+      "error": {
+        "notFound": "لم يتم العثور على طلب بهذا الرقم",
+        "search": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "refresh": "تعذر إعادة إصدار رمز QR، حاول مرة أخرى.",
+        "load": "تعذر تحميل حالة الطلب، حاول مرة أخرى لاحقاً."
+      },
+      "share": {
+        "title": "رمز QR - NQP"
+      },
+      "empty": {
+        "title": "ابحث عن طلبك",
+        "description": "أدخل رقم جواز السفر وتاريخ الميلاد أعلاه لعرض حالة الطلب، أو سجّل مسبقاً من بوابة المسافرين."
+      }
+    },
+    "healthProfile": {
+      "status": {
+        "pendingDocuments": "بانتظار المستندات",
+        "underReview": "قيد المراجعة",
+        "actionRequired": "إجراء مطلوب",
+        "completed": "مكتمل",
+        "rejected": "مرفوض"
+      },
+      "title": "الملف الصحي",
+      "subtitle": "عرض معلومات التسجيل المسبق وحالة الطلب",
+      "eyebrow": "مسافر",
+      "personalInfo": "المعلومات الشخصية",
+      "fullName": "الاسم الكامل",
+      "passportNumber": "رقم جواز السفر",
+      "nationality": "الجنسية",
+      "phone": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "tripInfo": "معلومات الرحلة",
+      "arrivalPort": "ميناء الوصول",
+      "arrivalDate": "تاريخ الوصول",
+      "travelMode": "وسيلة السفر",
+      "healthDeclaration": "الإقرار الصحي",
+      "documents": "المستندات",
+      "viewDocuments": "عرض المستندات",
+      "units": {
+        "byte": "بايت",
+        "kb": "كيلوبايت",
+        "mb": "ميجابايت"
+      }
+    },
+    "dashboard": {
+      "title": "لوحة المسافر",
+      "subtitle": "إدارة طلبات التسجيل المسبق والمستندات",
+      "eyebrow": "مسافر",
+      "preRegistration": {
+        "title": "التسجيل المسبق",
+        "description": "تقديم طلب تسجيل مسبق للحدود",
+        "button": "بدء التسجيل"
+      },
+      "tracking": {
+        "title": "تتبع الطلب",
+        "description": "التحقق من حالة طلبك",
+        "button": "تتبع"
+      },
+      "healthProfile": {
+        "title": "الملف الصحي",
+        "description": "عرض وإدارة معلوماتك الصحية",
+        "button": "عرض الملف"
+      },
+      "documents": {
+        "title": "المستندات",
+        "description": "رفع المستندات المطلوبة",
+        "button": "رفع المستندات",
+        "manage": "إدارة المستندات",
+        "viewAll": "عرض جميع المستندات"
+      },
+      "logout": "تسجيل الخروج",
+      "loading": "جاري التحميل...",
+      "noTraveler": "لا يوجد ملف مسافر مرتبط بهذا الحساب",
+      "preRegister": "التسجيل المسبق",
+      "status": {
+        "title": "حالة الطلب",
+        "progress": "نسبة الإنجاز",
+        "qrIssued": "تم إصدار رمز QR",
+        "qrNotIssued": "لم يتم إصدار رمز QR بعد",
+        "viewTracking": "عرض تتبع الطلب",
+        "rejectionReason": "سبب الرفض"
+      },
+      "personalInfo": {
+        "title": "المعلومات الشخصية",
+        "fullName": "الاسم الكامل",
+        "passport": "رقم جواز السفر",
+        "nationality": "الجنسية",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني"
+      },
+      "tripInfo": {
+        "title": "معلومات الرحلة",
+        "port": "ميناء الوصول",
+        "date": "تاريخ الوصول",
+        "mode": "وسيلة السفر",
+        "flight": "رقم الرحلة/المركبة"
+      },
+      "health": {
+        "title": "الإقرار الصحي",
+        "riskLevel": "مستوى الخطر",
+        "symptoms": "الأعراض المبلغ عنها",
+        "contact": "مخالطة مريض خلال 14 يومًا",
+        "visited": "زيارة منطقة موبوءة خلال 14 يومًا"
+      },
+      "notices": {
+        "title": "إعلانات صحية"
+      },
+      "edit": "تعديل",
+      "risk": {
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع"
+      },
+      "symptoms": {
+        "fever": "حمى",
+        "headache": "صداع",
+        "bodyPain": "ألم في الجسم",
+        "vomiting": "قيء",
+        "diarrhea": "إسهال",
+        "lossOfAppetite": "فقدان الشهية",
+        "difficultySwallowing": "صعوبة في البلع",
+        "bleeding": "نزيف",
+        "contactWithPatient": "مخالطة مريض",
+        "otherSymptoms": "أعراض أخرى"
+      },
+      "transport": {
+        "air": "طائرة",
+        "sea": "سفينة",
+        "land": "بر"
+      },
+      "notificationsTooltip": "إشعارات",
+      "notificationsAria": "الإشعارات",
+      "profileTooltip": "ملفي الشخصي",
+      "profileAria": "الملف الشخصي",
+      "healthDeclaration": {
+        "title": "الإقرار الصحي",
+        "submitted": "تم التقديم",
+        "risk": "تصنيف المخاطر",
+        "date": "تاريخ التقديم",
+        "symptoms": "الأعراض",
+        "noSymptoms": "لا توجد أعراض"
+      }
+    },
+    "uploadDocuments": {
+      "types": {
+        "passport": "صورة جواز السفر",
+        "vaccine": "شهادة التطعيم",
+        "testResult": "نتيجة فحص",
+        "other": "مستندات أخرى"
+      },
+      "title": "رفع المستندات",
+      "subtitle": "يرجى رفع المستندات المطلوبة لإتمام طلب التسجيل المسبق",
+      "eyebrow": "مسافر",
+      "required": "إلزامي",
+      "optional": "اختياري",
+      "upload": "رفع",
+      "uploading": "جاري الرفع...",
+      "uploaded": "تم الرفع",
+      "remove": "حذف",
+      "submit": "إرسال",
+      "success": {
+        "delete": "تم حذف المستند"
+      },
+      "error": {
+        "load": "تعذر تحميل المستندات.",
+        "searchPassport": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "notFound": "لم يتم العثور على مسافر بهذا الرقم. يرجى إكمال التسجيل المسبق أولاً.",
+        "searchGeneric": "حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.",
+        "fileType": "نوع الملف غير مدعوم (يُسمح بـ JPEG, PNG, PDF).",
+        "fileSize": "حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).",
+        "upload": "فشل رفع الملف:",
+        "delete": "تعذر حذف المستند"
+      },
+      "passportNumber": "رقم جواز السفر",
+      "passportPlaceholder": "أدخل رقم جواز السفر",
+      "selectType": "اختر نوع المستند",
+      "selectFile": "اختر ملف",
+      "noDocuments": "لا توجد مستندات مرفوعة",
+      "fileSize": "حجم الملف",
+      "fileType": "نوع الملف",
+      "delete": {
+        "title": "حذف المستند",
+        "message": "هل تريد حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف",
+        "aria": "حذف",
+        "fallback": "المستند"
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { lookupTraveler } from '../../api/endpoints/public';
+import '../../i18n';
 
 const RequestTrackingPage = (await import('./RequestTrackingPage')).default;
 
