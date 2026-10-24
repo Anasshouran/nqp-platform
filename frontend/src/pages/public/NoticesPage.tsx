@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -26,20 +27,6 @@ import { useApi } from '../../hooks/useApi';
 
 const PAGE_SIZE = 9;
 
-const PRIORITY_META: Record<string, { label: string; color: 'error' | 'warning' | 'info'; tone: string }> = {
-  HIGH: { label: 'عاجل', color: 'error', tone: '#c63a3a' },
-  MEDIUM: { label: 'متوسط', color: 'warning', tone: '#a86400' },
-  LOW: { label: 'منخفض', color: 'info', tone: '#2f6dd0' },
-};
-
-const CATEGORY_META: Record<string, { label: string; icon: ReactElement }> = {
-  ENTRY_REQUIREMENTS: { label: 'متطلبات الدخول', icon: <FactCheckIcon /> },
-  FLIGHT_SUSPENSION: { label: 'تعليق رحلات', icon: <FlightTakeoffIcon /> },
-  EPIDEMIC_ALERT: { label: 'إنذار وبائي', icon: <BugReportIcon /> },
-};
-
-const categoryMeta = (category: string): { label: string; icon: ReactElement } =>
-  CATEGORY_META[category] ?? { label: 'إشعار صحي', icon: <WarningAmberIcon /> };
 
 const formatDate = (iso?: string | null) => {
   if (!iso) return '—';
@@ -51,6 +38,33 @@ const formatDate = (iso?: string | null) => {
 };
 
 const NoticesPage = () => {
+  const { t } = useTranslation();
+
+  const PRIORITY_META: Record<string, { label: string; color: 'error' | 'warning' | 'info'; tone: string }> = useMemo(
+    () => (
+      {
+    HIGH: { label: t('public.عاجل'), color: 'error', tone: '#c63a3a' },
+    MEDIUM: { label: t('public.متوسط'), color: 'warning', tone: '#a86400' },
+    LOW: { label: t('public.منخفض'), color: 'info', tone: '#2f6dd0' },
+  }),
+    [t],
+  );
+
+  const CATEGORY_META: Record<string, { label: string; icon: ReactElement }> = useMemo(
+    () => (
+      {
+    ENTRY_REQUIREMENTS: { label: t('public.متطلبات الدخول'), icon: <FactCheckIcon /> },
+    FLIGHT_SUSPENSION: { label: t('public.تعليق رحلات'), icon: <FlightTakeoffIcon /> },
+    EPIDEMIC_ALERT: { label: t('public.إنذار وبائي'), icon: <BugReportIcon /> },
+  }),
+    [t],
+  );
+
+  const categoryMeta = useMemo(
+    () => ((category: string): { label: string; icon: ReactElement } =>
+      CATEGORY_META[category] ?? { label: t('public.إشعار صحي'), icon: <WarningAmberIcon /> }),
+    [t, CATEGORY_META],
+  );
   const { data, loading, error, retry } = useApi<HealthNotice[]>(() =>
     getNotices().then((response) => response.data.data),
   );
@@ -86,29 +100,29 @@ const NoticesPage = () => {
   const shown = filtered.slice(0, visible);
 
   const priorityOptions = [
-    { value: 'ALL', label: 'الكل' },
-    { value: 'HIGH', label: 'عاجل' },
-    { value: 'MEDIUM', label: 'متوسط' },
-    { value: 'LOW', label: 'منخفض' },
+    { value: 'ALL', label: t('public.الكل') },
+    { value: 'HIGH', label: t('public.عاجل') },
+    { value: 'MEDIUM', label: t('public.متوسط') },
+    { value: 'LOW', label: t('public.منخفض') },
   ];
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="الإشعارات والتنبيهات الصحية"
-        subtitle="آخر الإشعارات والتنبيهات الصحية الصادرة عن المنصة"
-        eyebrow="مركز التنبيهات"
+        title={t('public.الإشعارات والتنبيهات الصحية')}
+        subtitle={t('public.آخر الإشعارات والتنبيهات الصحية الصادرة عن المنصة')}
+        eyebrow={t('public.مركز التنبيهات')}
       />
 
       {loading ? (
         <ListSkeleton count={3} />
       ) : error ? (
-        <ErrorState message="تعذّر تحميل التنبيهات الصحية" onRetry={retry} />
+        <ErrorState message={t('public.تعذّر تحميل التنبيهات الصحية')} onRetry={retry} />
       ) : notices.length === 0 ? (
         <EmptyState
           icon={<NotificationsActiveIcon />}
-          title="لا توجد إشعارات صحية حالياً"
-          description="ستُنشر الإشعارات والتنبيهات الصحية الصادرة عن المنصة هنا فور صدورها."
+          title={t('public.لا توجد إشعارات صحية حالياً')}
+          description={t('public.ستُنشر الإشعارات والتنبيهات الصحية الصادرة عن المنصة هنا فور صدورها')}
         />
       ) : (
         <>
@@ -124,11 +138,10 @@ const NoticesPage = () => {
                   onClick={() => setPriority('HIGH')}
                   sx={{ fontWeight: 700 }}
                 >
-                  عرضها
-                </Button>
+                  {t('public.عرضها')}</Button>
               }
             >
-              يوجد {activeUrgent} تنبيه عاجل نشط — اطّلع عليها أولاً.
+              {t('public.يوجد')} {activeUrgent} {t('public.تنبيه عاجل نشط — اطّلع عليها أولاً')}
             </Alert>
           )}
 
@@ -137,7 +150,7 @@ const NoticesPage = () => {
             exclusive
             onChange={(_, value) => value && setPriority(value)}
             size="small"
-            aria-label="تصفية التنبيهات حسب الأولوية"
+            aria-label={t('public.تصفية التنبيهات حسب الأولوية')}
             sx={{ mb: 3 }}
           >
             {priorityOptions.map((option) => (
@@ -193,7 +206,7 @@ const NoticesPage = () => {
                           icon={<NotificationsActiveIcon />}
                           sx={{ fontWeight: 700, '& .MuiChip-icon': { fontSize: 16 } }}
                         />
-                        {expired && <Chip label="منتهي" size="small" variant="outlined" color="default" />}
+                        {expired && <Chip label={t('public.منتهي')} size="small" variant="outlined" color="default" />}
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
                         <Box
@@ -242,10 +255,9 @@ const NoticesPage = () => {
                 onClick={() => setVisible((v) => v + PAGE_SIZE)}
                 sx={{ px: 4 }}
               >
-                عرض المزيد من الإشعارات
-              </Button>
+                {t('public.عرض المزيد من الإشعارات')}</Button>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                تم عرض {visible} من {filtered.length} إشعار
+                {t('public.تم عرض')} {visible} {t('public.من')} {filtered.length} {t('public.إشعار')}
               </Typography>
             </Box>
           )}

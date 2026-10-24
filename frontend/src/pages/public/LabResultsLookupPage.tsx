@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -40,6 +41,7 @@ const outcomeColor = (outcome?: string) => {
 };
 
 const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const hasQr = qrPayload.length > 0;
@@ -80,12 +82,10 @@ const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
           <QrCode2Icon fontSize="small" color="success" />
           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            رمز QR للنتيجة المعتمدة
-          </Typography>
+            {t('public.رمز QR للنتيجة المعتمدة')}</Typography>
         </Stack>
         <Typography variant="body2" color="text.secondary">
-          امسح الرمز للتحقق الرسمي من النتيجة، أو ألصق بياناته داخل «أداة التحقق بالرمز QR» في أدوات التحقق الذكية.
-        </Typography>
+          {t('public.امسح الرمز للتحقق الرسمي من النتيجة، أو ألصق بياناته داخل «أداة التحقق بالرمز QR» في أدوات التحقق الذكية')}</Typography>
         <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
           <Button
             size="small"
@@ -93,9 +93,8 @@ const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
             onClick={() => setExpanded((v) => !v)}
             endIcon={<ExpandMoreIcon />}
           >
-            عرض البيانات المضمّنة
-          </Button>
-          <IconButton size="medium" onClick={copyPayload} title="نسخ البيانات" aria-label="نسخ البيانات" sx={{ minWidth: 44, minHeight: 44 }}>
+            {t('public.عرض البيانات المضمّنة')}</Button>
+          <IconButton size="medium" onClick={copyPayload} title={t('public.نسخ البيانات')} aria-label={t('public.نسخ البيانات')} sx={{ minWidth: 44, minHeight: 44 }}>
             {copied ? <CheckIcon color="success" /> : <ContentCopyIcon />}
           </IconButton>
         </Stack>
@@ -124,6 +123,8 @@ const ResultQrPanel = ({ qrPayload }: { qrPayload: string }) => {
 };
 
 const LabResultsLookupPage = () => {
+  const { t } = useTranslation();
+
   const { user } = useAuth();
   const [reference, setReference] = useState('');
   const [code, setCode] = useState('');
@@ -142,7 +143,7 @@ const LabResultsLookupPage = () => {
       setResult(response.data.data);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      setError(axiosErr.response?.data?.message || 'تعذّر الاستعلام، حاول مرة أخرى');
+      setError(axiosErr.response?.data?.message || t('public.تعذّر الاستعلام، حاول مرة أخرى'));
     } finally {
       setLoading(false);
     }
@@ -154,16 +155,15 @@ const LabResultsLookupPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="نتائج التحاليل المخبرية"
-        subtitle="الاستعلام عن النتيجة المعتمدة برقم العينة (أو باركودها) ورمز التحقق المطبوع في التقرير"
-        eyebrow="خدمة المختبر المعتمدة"
+        title={t('public.نتائج التحاليل المخبرية')}
+        subtitle={t('public.الاستعلام عن النتيجة المعتمدة برقم العينة (أو باركودها) ورمز التحقق المطبوع في التقرير')}
+        eyebrow={t('public.خدمة المختبر المعتمدة')}
       />
 
       <Card sx={{ border: '1px solid', borderColor: 'divider', mb: 4 }}>
         <CardContent sx={{ p: 3.5 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2.5 }}>
-            أدخل رقم المرجع ورمز التحقق
-          </Typography>
+            {t('public.أدخل رقم المرجع ورمز التحقق')}</Typography>
           <Stack
             component="form"
             direction={{ xs: 'column', md: 'row' }}
@@ -171,8 +171,8 @@ const LabResultsLookupPage = () => {
             onSubmit={handleSearch}
           >
             <TextField
-              label="رقم العينة أو الباركود"
-              placeholder="مثال: NQL-2026-000123"
+              label={t('public.رقم العينة أو الباركود')}
+              placeholder={t('public.مثال NQL-2026-000123')}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               fullWidth
@@ -180,8 +180,8 @@ const LabResultsLookupPage = () => {
               InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="رمز التحقق"
-              placeholder="مثال: LNC-A3F9K2"
+              label={t('public.رمز التحقق')}
+              placeholder={t('public.مثال LNC-A3F9K2')}
               value={code}
               onChange={(e) => setCode(e.target.value)}
               fullWidth
@@ -196,8 +196,7 @@ const LabResultsLookupPage = () => {
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SearchIcon />}
               sx={{ minWidth: 160 }}
             >
-              استعلام
-            </Button>
+              {t('public.استعلام')}</Button>
           </Stack>
         </CardContent>
       </Card>
@@ -210,8 +209,7 @@ const LabResultsLookupPage = () => {
 
       {result?.found === false && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          لم يتم العثور على نتيجة مطابقة لهذا الرقم والرمز. تحقّق من صحة الإدخال أو تواصل مع المختبر المصدر.
-        </Alert>
+          {t('public.لم يتم العثور على نتيجة مطابقة لهذا الرقم والرمز تحقّق من صحة الإدخال أو تواصل مع المختبر المصدر')}</Alert>
       )}
 
       {result?.found && result.sample && (
@@ -233,10 +231,9 @@ const LabResultsLookupPage = () => {
               </Box>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  نتيجة معتمدة
-                </Typography>
+                  {t('public.نتيجة معتمدة')}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  صدرت نتائجك بتاريخ{' '}
+                  {t('public.صدرت نتائجك بتاريخ')}{' '}
                   {result.sample.public_issued_at ? formatDate(result.sample.public_issued_at) : '—'}
                 </Typography>
               </Box>
@@ -247,13 +244,13 @@ const LabResultsLookupPage = () => {
               spacing={1.5}
               sx={{ mb: 3 }}
             >
-              <Chip label={`رقم العينة: ${result.sample.sample_number}`} variant="outlined" />
-              <Chip label={`النوع: ${result.sample.sample_type_label}`} variant="outlined" />
+              <Chip label={`${t('public.رقم العينة')}: ${result.sample.sample_number}`} variant="outlined" />
+              <Chip label={`${t('public.النوع')}: ${result.sample.sample_type_label}`} variant="outlined" />
               {result.sample.section_name && (
-                <Chip label={`القسم: ${result.sample.section_name}`} variant="outlined" />
+                <Chip label={`${t('public.القسم')}: ${result.sample.section_name}`} variant="outlined" />
               )}
               {result.sample.sector_name && (
-                <Chip label={`القطاع: ${result.sample.sector_name}`} variant="outlined" />
+                <Chip label={`${t('public.القطاع')}: ${result.sample.sector_name}`} variant="outlined" />
               )}
             </Stack>
 
@@ -262,12 +259,12 @@ const LabResultsLookupPage = () => {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>الفحص</TableCell>
-                      <TableCell>النتيجة</TableCell>
+                      <TableCell>{t('public.الفحص')}</TableCell>
+                      <TableCell>{t('public.النتيجة')}</TableCell>
                       {hasMeasurementColumns && (
                         <>
-                          <TableCell>القيمة</TableCell>
-                          <TableCell>الوحددة/المرجع</TableCell>
+                          <TableCell>{t('public.القيمة')}</TableCell>
+                          <TableCell>{t('public.الوحددة/المرجع')}</TableCell>
                         </>
                       )}
                     </TableRow>
@@ -322,8 +319,7 @@ const LabResultsLookupPage = () => {
             )}
 
             <Typography variant="caption" display="block" sx={{ mt: 3, color: 'text.secondary' }}>
-              هذه النتيجة صادرة للمعني في العينة، ورمز التحقق يُعامل كوسيلة تحقق عامة. لا تشاركه مع أي طرف آخر.
-            </Typography>
+              {t('public.هذه النتيجة صادرة للمعني في العينة، ورمز التحقق يُعامل كوسيلة تحقق عامة لا تشاركه مع أي طرف آخر')}</Typography>
           </CardContent>
         </Card>
       )}
@@ -332,8 +328,7 @@ const LabResultsLookupPage = () => {
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 4, color: 'text.secondary' }}>
           <BiotechIcon fontSize="small" />
           <Typography variant="body2">
-            خدمة عامة متاحة للجميع — لا يلزم تسجيل الدخول.
-          </Typography>
+            {t('public.خدمة عامة متاحة للجميع — لا يلزم تسجيل الدخول')}</Typography>
         </Stack>
       )}
     </Container>
