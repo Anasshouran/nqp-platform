@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -34,14 +35,6 @@ import type { TravelerLookupResult } from '../../api/endpoints/public';
 import type { TravelerQrResult, TravelerStatusResult, TravelerStatusLog } from '../../api/endpoints/travelers';
 import { getTravelerSession, setTravelerSession } from '../../utils/travelerSession';
 import { escapeHtml } from '../../utils/escapeHtml';
-
-const registrationLabels: Record<string, string> = {
-  PENDING_DOCUMENTS: 'بانتظار المستندات',
-  UNDER_REVIEW: 'قيد المراجعة',
-  ACTION_REQUIRED: 'إجراء مطلوب',
-  COMPLETED: 'مكتمل',
-  REJECTED: 'مرفوض',
-};
 
 const statusColors: Record<string, 'warning' | 'info' | 'success' | 'error'> = {
   PENDING_DOCUMENTS: 'warning',
@@ -80,6 +73,19 @@ const buildTimeline = (status: TravelerStatusResult) => {
 };
 
 const RequestTrackingPage = () => {
+  const { t } = useTranslation();
+
+  const registrationLabels: Record<string, string> = useMemo(
+    () => ({
+      PENDING_DOCUMENTS: t('traveler.requestTracking.status.pendingDocuments'),
+      UNDER_REVIEW: t('traveler.requestTracking.status.underReview'),
+      ACTION_REQUIRED: t('traveler.requestTracking.status.actionRequired'),
+      COMPLETED: t('traveler.requestTracking.status.completed'),
+      REJECTED: t('traveler.requestTracking.status.rejected'),
+    }),
+    [t],
+  );
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [passport, setPassport] = useState('');
@@ -220,7 +226,7 @@ const RequestTrackingPage = () => {
         العودة إلى لوحة التحكم
       </Button>
       <PageHeader
-        title="تتبع الطلب"
+        title={t('traveler.requestTracking.title')}
         subtitle="تابع حالة طلب التسجيل المسبق والخطوات المتبقية"
         eyebrow="بوابة المسافرين"
       />
@@ -291,7 +297,7 @@ const RequestTrackingPage = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                   <Box
                     role="progressbar"
-                    aria-label="نسبة اكتمال الطلب"
+                    aria-label={t('traveler.requestTracking.progressLabel')}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(progress)}

@@ -847,5 +847,275 @@
     "الإرشادات الصحية": "Health guidance",
     "التنبيهات": "Alerts",
     "سلامة الأغذية": "Food safety"
+  },
+  "traveler": {
+    "preRegistration": {
+      "symptoms": {
+        "fever": "Fever",
+        "headache": "Headache",
+        "bodyPain": "Body Pain",
+        "vomiting": "Vomiting",
+        "diarrhea": "Diarrhea",
+        "lossOfAppetite": "Loss of Appetite",
+        "difficultySwallowing": "Difficulty Swallowing",
+        "bleeding": "Bleeding",
+        "other": "Other"
+      },
+      "travelModes": {
+        "air": "Air",
+        "land": "Land",
+        "sea": "Sea"
+      },
+      "yesNo": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "title": "Border Pre-Registration",
+      "subtitle": "Please fill in the following information before arriving at the entry point",
+      "eyebrow": "Traveler",
+      "submit": "Submit Request",
+      "submitting": "Submitting...",
+      "success": "Request submitted successfully",
+      "steps": {
+        "personal": "Personal Information",
+        "travel": "Travel Information",
+        "health": "Health Declaration",
+        "accommodation": "Accommodation",
+        "review": "Review"
+      },
+      "personal": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "passportNumber": "Passport Number",
+        "nationality": "Nationality",
+        "dob": "Date of Birth",
+        "gender": "Gender",
+        "phone": "Phone Number",
+        "email": "Email"
+      },
+      "travel": {
+        "arrivalPort": "Entry Point",
+        "arrivalDate": "Expected Arrival Date",
+        "arrivalTime": "Arrival Time",
+        "travelMode": "Mode of Travel",
+        "flightNumber": "Flight/Vehicle Number"
+      },
+      "health": {
+        "symptoms": "Do you have any of the following symptoms?",
+        "feverTemp": "Temperature (°C)",
+        "contact": "Have you been in contact with someone with infectious disease in last 14 days?",
+        "visited": "Have you visited any affected area in last 14 days?"
+      },
+      "accommodation": {
+        "address": "Address of Stay in Sudan",
+        "hotel": "Hotel/Place Name"
+      },
+      "review": {
+        "confirm": "I confirm the information provided is correct"
+      },
+      "next": "Next",
+      "back": "Back",
+      "saveDraft": "Save Draft",
+      "validation": {
+        "required": "This field is required",
+        "email": "Please enter a valid email",
+        "passport": "Invalid passport number (6-20 characters).",
+        "flight": "Invalid flight/vehicle number."
+      },
+      "pageTitle": "Traveler Pre-Registration",
+      "pageSubtitle": "Multi-step electronic form to speed up entry procedures",
+      "requestTracking": {
+        "title": "Track Request",
+        "subtitle": "Check pre-registration request status"
+      },
+      "healthProfile": {
+        "title": "Health Profile",
+        "subtitle": "View your health profile and request status"
+      },
+      "uploadDocuments": {
+        "title": "Upload Documents",
+        "subtitle": "Upload required documents to complete request"
+      }
+    },
+    "requestTracking": {
+      "status": {
+        "pendingDocuments": "Pending Documents",
+        "underReview": "Under Review",
+        "actionRequired": "Action Required",
+        "completed": "Completed",
+        "rejected": "Rejected"
+      },
+      "progressLabel": "Request completion percentage",
+      "title": "Track Request",
+      "subtitle": "Check the status of your pre-registration request and upload documents if requested",
+      "eyebrow": "Traveler",
+      "form": {
+        "passportLabel": "Passport Number",
+        "passportPlaceholder": "Enter passport number",
+        "dobLabel": "Date of Birth",
+        "searchButton": "Search",
+        "searching": "Searching..."
+      },
+      "statusCard": {
+        "title": "Request Status"
+      },
+      "qr": {
+        "title": "QR Code for Tracking",
+        "issued": "QR code issued",
+        "notIssued": "QR code not issued yet",
+        "refresh": "Refresh QR"
+      },
+      "timeline": {
+        "title": "Request Timeline"
+      },
+      "details": {
+        "travelerName": "Traveler Name",
+        "phone": "Phone Number",
+        "email": "Email",
+        "nationality": "Nationality"
+      },
+      "error": {
+        "notFound": "Request not found with this number"
+      }
+    },
+    "healthProfile": {
+      "status": {
+        "pendingDocuments": "Pending Documents",
+        "underReview": "Under Review",
+        "actionRequired": "Action Required",
+        "completed": "Completed",
+        "rejected": "Rejected"
+      },
+      "title": "Health Profile",
+      "subtitle": "View pre-registration information and request status",
+      "eyebrow": "Traveler",
+      "personalInfo": "Personal Information",
+      "fullName": "Full Name",
+      "passportNumber": "Passport Number",
+      "nationality": "Nationality",
+      "phone": "Phone",
+      "email": "Email",
+      "tripInfo": "Trip Information",
+      "arrivalPort": "Arrival Port",
+      "arrivalDate": "Arrival Date",
+      "travelMode": "Travel Mode",
+      "healthDeclaration": "Health Declaration",
+      "documents": "Documents",
+      "viewDocuments": "View Documents"
+    },
+    "dashboard": {
+      "title": "Traveler Dashboard",
+      "subtitle": "Manage pre-registration requests and documents",
+      "eyebrow": "Traveler",
+      "preRegistration": {
+        "title": "Pre-Registration",
+        "description": "Submit pre-registration request at borders",
+        "button": "Start Registration"
+      },
+      "tracking": {
+        "title": "Track Request",
+        "description": "Check your request status",
+        "button": "Track"
+      },
+      "healthProfile": {
+        "title": "Health Profile",
+        "description": "View and manage your health information",
+        "button": "View Profile"
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Upload required documents",
+        "button": "Upload Documents",
+        "manage": "Manage Documents",
+        "viewAll": "View All Documents"
+      },
+      "logout": "Logout",
+      "loading": "Loading...",
+      "noTraveler": "No traveler profile linked to this account",
+      "preRegister": "Pre-Register",
+      "status": {
+        "title": "Request Status",
+        "progress": "Progress",
+        "qrIssued": "QR Code Issued",
+        "qrNotIssued": "QR Code Not Issued Yet",
+        "viewTracking": "View Request Tracking",
+        "rejectionReason": "Rejection Reason"
+      },
+      "personalInfo": {
+        "title": "Personal Information",
+        "fullName": "Full Name",
+        "passport": "Passport Number",
+        "nationality": "Nationality",
+        "phone": "Phone",
+        "email": "Email"
+      },
+      "tripInfo": {
+        "title": "Trip Information",
+        "port": "Arrival Port",
+        "date": "Arrival Date",
+        "mode": "Travel Mode",
+        "flight": "Flight/Vehicle Number"
+      },
+      "health": {
+        "title": "Health Declaration",
+        "riskLevel": "Risk Level",
+        "symptoms": "Reported Symptoms",
+        "contact": "Contact with patient in last 14 days",
+        "visited": "Visited affected area in last 14 days"
+      },
+      "notices": {
+        "title": "Health Notices"
+      },
+      "edit": "Edit",
+      "risk": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "symptoms": {
+        "fever": "Fever",
+        "headache": "Headache",
+        "bodyPain": "Body Pain",
+        "vomiting": "Vomiting",
+        "diarrhea": "Diarrhea",
+        "lossOfAppetite": "Loss of Appetite",
+        "difficultySwallowing": "Difficulty Swallowing",
+        "bleeding": "Bleeding",
+        "contactWithPatient": "Contact with Patient",
+        "otherSymptoms": "Other Symptoms"
+      },
+      "transport": {
+        "air": "Airplane",
+        "sea": "Ship",
+        "land": "Land"
+      }
+    },
+    "uploadDocuments": {
+      "types": {
+        "passport": "Passport Copy",
+        "vaccine": "Vaccination Certificate",
+        "testResult": "Test Result",
+        "other": "Other Documents"
+      },
+      "title": "Upload Documents",
+      "subtitle": "Please upload required documents to complete pre-registration",
+      "eyebrow": "Traveler",
+      "required": "Required",
+      "optional": "Optional",
+      "upload": "Upload",
+      "uploading": "Uploading...",
+      "uploaded": "Uploaded",
+      "remove": "Remove",
+      "submit": "Submit",
+      "success": "Documents uploaded successfully",
+      "error": "Error uploading documents",
+      "passportNumber": "Passport Number",
+      "passportPlaceholder": "Enter passport number",
+      "selectType": "Select document type",
+      "selectFile": "Select File",
+      "noDocuments": "No documents uploaded",
+      "fileSize": "File Size",
+      "fileType": "File Type"
+    }
   }
 }

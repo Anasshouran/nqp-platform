@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -37,19 +38,8 @@ import { notifySuccess, notifyError } from '../../utils/toast';
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
-const documentTypes = [
-  { value: 'PASSPORT', label: 'صورة جواز السفر', required: true, icon: '📄' },
-  { value: 'VACCINE', label: 'شهادة التطعيم', required: false, icon: '💉' },
-  { value: 'TEST_RESULT', label: 'نتيجة فحص', required: false, icon: '🧪' },
-  { value: 'OTHER', label: 'مستندات أخرى', required: false, icon: '📎' },
-];
 
-const documentTypeLabel: Record<string, string> = {
-  PASSPORT: 'صورة جواز السفر',
-  VACCINE: 'شهادة التطعيم',
-  TEST_RESULT: 'نتيجة فحص',
-  OTHER: 'مستندات أخرى',
-};
+
 
 const formatBytes = (bytes?: number | null) => {
   if (!bytes) return '';
@@ -59,6 +49,28 @@ const formatBytes = (bytes?: number | null) => {
 };
 
 const UploadDocumentsPage = () => {
+  const { t } = useTranslation();
+
+  const documentTypes = useMemo(
+    () => [
+      { value: 'PASSPORT', label: t('traveler.uploadDocuments.types.passport'), required: true, icon: '📄' },
+      { value: 'VACCINE', label: t('traveler.uploadDocuments.types.vaccine'), required: false, icon: '💉' },
+      { value: 'TEST_RESULT', label: t('traveler.uploadDocuments.types.testResult'), required: false, icon: '🧪' },
+      { value: 'OTHER', label: t('traveler.uploadDocuments.types.other'), required: false, icon: '📎' },
+    ],
+    [t],
+  );
+
+  const documentTypeLabel = useMemo<Record<string, string>>(
+    () => ({
+      PASSPORT: t('traveler.uploadDocuments.types.passport'),
+      VACCINE: t('traveler.uploadDocuments.types.vaccine'),
+      TEST_RESULT: t('traveler.uploadDocuments.types.testResult'),
+      OTHER: t('traveler.uploadDocuments.types.other'),
+    }),
+    [t],
+  );
+
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [travelerId, setTravelerId] = useState<string | null>(null);
@@ -183,7 +195,7 @@ const UploadDocumentsPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="رفع المستندات"
+        title={t('traveler.uploadDocuments.title')}
         subtitle="ارفع المستندات الداعمة لطلبك الصحي قبل السفر"
         eyebrow="بوابة المسافرين"
       />
