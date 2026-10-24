@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -29,48 +30,60 @@ import { PageHeader } from '../../components/common';
 import { sendContactMessage } from '../../api/endpoints/public';
 import { notifyError, notifySuccess } from '../../utils/toast';
 
-const contactSchema = z.object({
-  name: z.string().min(2, 'الاسم مطلوب (حرفان على الأقل)'),
-  email: z.string().email('بريد إلكتروني غير صحيح'),
-  phone: z.string().optional(),
-  subject: z.string().min(3, 'الموضوع مطلوب'),
-  message: z.string().min(10, 'الرسالة قصيرة جداً (10 أحرف على الأقل)'),
-});
-
-type ContactFormValues = z.infer<typeof contactSchema>;
-
-const contactInfo = [
-  {
-    icon: <PhoneIcon />,
-    title: 'الهاتف',
-    lines: ['+249 187 777 (الخط الساخن)', '+249 183 123 456 (المكتب الرئيسي)'],
-  },
-  {
-    icon: <MailIcon />,
-    title: 'البريد الإلكتروني',
-    lines: ['info@nqp.gov.sd', 'support@nqp.gov.sd'],
-  },
-  {
-    icon: <LocationOnIcon />,
-    title: 'المقر الرئيسي',
-    lines: ['الخرطوم - شارع النيل', 'مباني وزارة الصحة الاتحادية'],
-  },
-];
-
-const socialLinks = [
-  { label: 'فيسبوك', icon: <FacebookIcon />, url: 'https://facebook.com' },
-  { label: 'إكس', icon: <XIcon />, url: 'https://x.com' },
-  { label: 'يوتيوب', icon: <YouTubeIcon />, url: 'https://youtube.com' },
-  { label: 'إنستغرام', icon: <InstagramIcon />, url: 'https://instagram.com' },
-];
 
 const mapEmbedUrl =
   'https://maps.google.com/maps?q=Khartoum%2C%20Sudan&z=11&output=embed&hl=ar';
 
 const ContactPage = () => {
+  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const contactSchema = useMemo(
+    () => (
+      z.object({
+        name: z.string().min(2, t('public.الاسم مطلوب (حرفان على الأقل)')),
+        email: z.string().email(t('public.بريد إلكتروني غير صحيح')),
+        phone: z.string().optional(),
+        subject: z.string().min(3, t('public.الموضوع مطلوب')),
+        message: z.string().min(10, t('public.الرسالة قصيرة جداً (10 أحرف على الأقل)')),
+      })),
+    [t],
+  );
+  type ContactFormValues = z.infer<typeof contactSchema>;
+
+  const contactInfo = useMemo(
+    () => (
+      [
+        {
+          icon: <PhoneIcon />,
+          title: t('public.الهاتف'),
+          lines: [t('public.+249 187 777 (الخط الساخن)'), t('public.+249 183 123 456 (المكتب الرئيسي)')],
+        },
+        {
+          icon: <MailIcon />,
+          title: t('public.البريد الإلكتروني'),
+          lines: ['info@nqp.gov.sd', 'support@nqp.gov.sd'],
+        },
+        {
+          icon: <LocationOnIcon />,
+          title: t('public.المقر الرئيسي'),
+          lines: [t('public.الخرطوم - شارع النيل'), t('public.مباني وزارة الصحة الاتحادية')],
+        },
+      ]),
+    [t],
+  );
+  const socialLinks = useMemo(
+    () => (
+      [
+        { label: t('public.فيسبوك'), icon: <FacebookIcon />, url: 'https://facebook.com' },
+        { label: t('public.إكس'), icon: <XIcon />, url: 'https://x.com' },
+        { label: t('public.يوتيوب'), icon: <YouTubeIcon />, url: 'https://youtube.com' },
+        { label: t('public.إنستغرام'), icon: <InstagramIcon />, url: 'https://instagram.com' },
+      ]),
+    [t],
+  );
 
   const {
     register,
@@ -87,10 +100,10 @@ const ContactPage = () => {
     try {
       await sendContactMessage(values);
       setSubmitted(true);
-      notifySuccess('تم استلام رسالتك بنجاح، سنرد عليك قريباً.');
+      notifySuccess(t('public.تم استلام رسالتك بنجاح، سنرد عليك قريباً'));
     } catch {
-      setError('تعذر إرسال الرسالة، حاول مرة أخرى لاحقاً.');
-      notifyError('تعذر إرسال الرسالة، حاول مرة أخرى لاحقاً.');
+      setError(t('public.تعذر إرسال الرسالة، حاول مرة أخرى لاحقاً'));
+      notifyError(t('public.تعذر إرسال الرسالة، حاول مرة أخرى لاحقاً'));
     } finally {
       setSubmitting(false);
     }
@@ -99,9 +112,9 @@ const ContactPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="اتصل بنا"
-        subtitle="نحن هنا للإجابة عن استفساراتك حول خدمات الحجر الصحي ومتطلبات السفر"
-        eyebrow="قنوات التواصل"
+        title={t('public.اتصل بنا')}
+        subtitle={t('public.نحن هنا للإجابة عن استفساراتك حول خدمات الحجر الصحي ومتطلبات السفر')}
+        eyebrow={t('public.قنوات التواصل')}
       />
 
       <Grid container spacing={3}>
@@ -113,11 +126,9 @@ const ContactPage = () => {
                 <Stack alignItems="center" sx={{ py: 6, textAlign: 'center' }}>
                   <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    تم استلام رسالتك
-                  </Typography>
+                    {t('public.تم استلام رسالتك')}</Typography>
                   <Typography variant="body1" color="text.secondary">
-                    شكراً لتواصلك معنا، سيقوم فريقنا بالرد عليك في أقرب وقت ممكن.
-                  </Typography>
+                    {t('public.شكراً لتواصلك معنا، سيقوم فريقنا بالرد عليك في أقرب وقت ممكن')}</Typography>
                   <Button
                     variant="outlined"
                     sx={{ mt: 3 }}
@@ -125,14 +136,12 @@ const ContactPage = () => {
                       setSubmitted(false);
                     }}
                   >
-                    إرسال رسالة أخرى
-                  </Button>
+                    {t('public.إرسال رسالة أخرى')}</Button>
                 </Stack>
               ) : (
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2.5 }}>
-                    نموذج التواصل
-                  </Typography>
+                    {t('public.نموذج التواصل')}</Typography>
                   {error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                       {error}
@@ -142,7 +151,7 @@ const ContactPage = () => {
                     <Grid item xs={12} sm={6}>
                       <TextField
                         {...register('name')}
-                        label="الاسم الكامل"
+                        label={t('public.الاسم الكامل')}
                         fullWidth
                         autoComplete="name"
                         error={!!errors.name}
@@ -152,7 +161,7 @@ const ContactPage = () => {
                     <Grid item xs={12} sm={6}>
                       <TextField
                         {...register('email')}
-                        label="البريد الإلكتروني"
+                        label={t('public.البريد الإلكتروني')}
                         type="email"
                         fullWidth
                         autoComplete="email"
@@ -163,7 +172,7 @@ const ContactPage = () => {
                     <Grid item xs={12}>
                       <TextField
                         {...register('phone')}
-                        label="رقم الهاتف (اختياري)"
+                        label={t('public.رقم الهاتف (اختياري)')}
                         fullWidth
                         autoComplete="tel"
                         error={!!errors.phone}
@@ -173,7 +182,7 @@ const ContactPage = () => {
                     <Grid item xs={12}>
                       <TextField
                         {...register('subject')}
-                        label="الموضوع"
+                        label={t('public.الموضوع')}
                         fullWidth
                         error={!!errors.subject}
                         helperText={errors.subject?.message}
@@ -182,7 +191,7 @@ const ContactPage = () => {
                     <Grid item xs={12}>
                       <TextField
                         {...register('message')}
-                        label="الرسالة"
+                        label={t('public.الرسالة')}
                         fullWidth
                         multiline
                         minRows={5}
@@ -199,7 +208,7 @@ const ContactPage = () => {
                     disabled={submitting}
                     sx={{ mt: 3, minWidth: 160 }}
                   >
-                    {submitting ? 'جارٍ الإرسال…' : 'إرسال الرسالة'}
+                    {submitting ? t('public.جارٍ الإرسال…') : t('public.إرسال الرسالة')}
                   </Button>
                 </Box>
               )}
@@ -247,15 +256,13 @@ const ContactPage = () => {
             <Card sx={{ border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
               <Box sx={{ p: 2.5, pb: 0 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
-                  مواقع المكاتب
-                </Typography>
+                  {t('public.مواقع المكاتب')}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  المقر الرئيسي - الخرطوم
-                </Typography>
+                  {t('public.المقر الرئيسي - الخرطوم')}</Typography>
               </Box>
               <Box
                 component="iframe"
-                title="خريطة مواقع المكاتب"
+                title={t('public.خريطة مواقع المكاتب')}
                 src={mapEmbedUrl}
                 loading="lazy"
                 allowFullScreen
@@ -297,11 +304,9 @@ const ContactPage = () => {
               </Box>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  تابعنا على
-                </Typography>
+                  {t('public.تابعنا على')}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  آخر الأخبار والتنبيهات الصحية عبر قنواتنا الرسمية
-                </Typography>
+                  {t('public.آخر الأخبار والتنبيهات الصحية عبر قنواتنا الرسمية')}</Typography>
               </Box>
             </Stack>
             <Stack direction="row" spacing={1.5} alignItems="center">
