@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -18,39 +19,51 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import { getDirectorProfile, type DirectorProfile } from '../../api/endpoints/public';
 import { PageHeader, SectionTitle, Particles } from '../../components/common';
 
-const fallback: DirectorProfile = {
-  id: '',
-  name_ar: 'د. الفاتح ربيع',
-  name_en: 'El Fateh Rabeih',
-  title: 'المدير العام للحجر الصحي القومي',
-  qualification: 'دكتوراه في الطب',
-  specialization: 'الصحة العامة وطب المنافذ الحدودية',
-  summary:
-    'الطبيب المسؤول عن الإشراف العام على منظومة الحجر الصحي في جمهورية السودان، ' +
-    'وعلى تنفيذ اللوائح الصحية الدولية (IHR 2005) في المنافذ الجوية والبحرية والبرية، ' +
-    'وإدارة الرصد الوبائي للأمراض المعدية والتنسيق مع الجهات الوطنية والدولية.',
-  message:
-    'تحرص الإدارة العامة للحجر الصحي القومي على حماية صحة المواطنين والمسافرين، وضمان سلامة الحركة عبر منافذ الدخول المختلفة، وذلك بتطبيق أعلى المعايير الصحية وفق اللوائح الصحية الدولية.\n\nإن التنسيق بين الجهات الوطنية هو حجر الأساس في نجاح منظومة الحجر الصحي، ونؤكد استمرار العمل لرفع كفاءة المختبرات وتحديث المرجعيات القياسية وتأهيل الكوادر.\n\nندعو جميع المسافرين إلى الالتزام بالإجراءات الصحية المعتمدة لضمان رحلة آمنة وبيئة صحية مستقرة للجميع.',
-};
-
-const responsibilities = [
-  'الإشراف العام على إدارات الحجر الصحي في المنافذ الجوية والبحرية والبرية.',
-  'تطبيق اللوائح الصحية الدولية (IHR 2005) وتحديث إجراءات المنافذ الحدودية.',
-  'قيادة منظومة الرصد الوبائي والاستجابة للأخطار الصحية العامة.',
-  'اعتماد الشهادات الصحية الدولية والتنسيق مع السلطات الصحية الإقليمية والدولية.',
-  'تطوير الكوادر الصحية وتحديث البنية التحتية لمنافذ الحجر الصحي.',
-  'تفعيل الشراكات المؤسسية مع وزارة الصحة والجهات الرقابية الوطنية.',
-];
-
-const priorities = [
-  { icon: <VerifiedIcon />, label: 'الرقابة الصحية للمنافذ', desc: 'تطبيق الرقابة الصحية الفعالة في المنافذ الحدودية' },
-  { icon: <MedicalServicesIcon />, label: 'الاستجابة للطوارئ الصحية', desc: 'جاهزية عالية للاستجابة للأخطار الوبائية' },
-  { icon: <SchoolIcon />, label: 'بناء القدرات', desc: 'تأهيل الكوادر وتحديث المختبرات والمرجعيات' },
-];
 
 const DirectorPage = () => {
+  const { t } = useTranslation();
+
+  const fallback: DirectorProfile = useMemo(
+    () => (
+      {
+        id: '',
+        name_ar: t('public.د الفاتح ربيع'),
+        name_en: 'El Fateh Rabeih',
+        title: t('public.المدير العام للحجر الصحي القومي'),
+        qualification: t('public.دكتوراه في الطب'),
+        specialization: t('public.الصحة العامة وطب المنافذ الحدودية'),
+        summary:
+          t('public.الطبيب المسؤول عن الإشراف العام على منظومة الحجر الصحي في جمهورية السودان،') +
+          t('public.وعلى تنفيذ اللوائح الصحية الدولية (IHR 2005) في المنافذ الجوية والبحرية والبرية،') +
+          t('public.وإدارة الرصد الوبائي للأمراض المعدية والتنسيق مع الجهات الوطنية والدولية'),
+        message:
+          t('public.تحرص الإدارة العامة للحجر الصحي القومي على حماية صحة المواطنين والمسافرين، وضمان سلامة الحركة عبر منافذ الدخول المختلفة، وذلك بتطبيق أعلى المعايير الصحية وفق اللوائح الصحية الدولية\\n\\nإن التنسيق بين الجهات الوطنية هو حجر الأساس في نجاح منظومة الحجر الصحي، ونؤكد استمرار العمل لرفع كفاءة المختبرات وتحديث المرجعيات القياسية وتأهيل الكوادر\\n\\nندعو جميع المسافرين إلى الالتزام بالإجراءات الصحية المعتمدة لضمان رحلة آمنة وبيئة صحية مستقرة للجميع'),
+      }),
+    [t],
+  );
+
   const [profile, setProfile] = useState<DirectorProfile>(fallback);
   const [loading, setLoading] = useState(true);
+
+const responsibilities = useMemo(
+    () => (   [
+    t('public.الإشراف العام على إدارات الحجر الصحي في المنافذ الجوية والبحرية والبرية'),
+    t('public.تطبيق اللوائح الصحية الدولية (IHR 2005) وتحديث إجراءات المنافذ الحدودية'),
+    t('public.قيادة منظومة الرصد الوبائي والاستجابة للأخطار الصحية العامة'),
+    t('public.اعتماد الشهادات الصحية الدولية والتنسيق مع السلطات الصحية الإقليمية والدولية'),
+    t('public.تطوير الكوادر الصحية وتحديث البنية التحتية لمنافذ الحجر الصحي'),
+    t('public.تفعيل الشراكات المؤسسية مع وزارة الصحة والجهات الرقابية الوطنية'),
+  ]),
+    [t],
+  );
+const priorities = useMemo(
+    () => (   [
+    { icon: <VerifiedIcon />, label: t('public.الرقابة الصحية للمنافذ'), desc: t('public.تطبيق الرقابة الصحية الفعالة في المنافذ الحدودية') },
+    { icon: <MedicalServicesIcon />, label: t('public.الاستجابة للطوارئ الصحية'), desc: t('public.جاهزية عالية للاستجابة للأخطار الوبائية') },
+    { icon: <SchoolIcon />, label: t('public.بناء القدرات'), desc: t('public.تأهيل الكوادر وتحديث المختبرات والمرجعيات') },
+  ]),
+    [t],
+  );
 
   useEffect(() => {
     getDirectorProfile()
@@ -68,9 +81,9 @@ const DirectorPage = () => {
   return (
   <Container maxWidth="lg" sx={{ py: 5 }}>
     <PageHeader
-      title="المدير العام للحجر الصحي القومي"
-      subtitle="صفحة المدير العام: السيرة، الرسالة، والمسؤوليات"
-      eyebrow="قيادة الحجر الصحي"
+      title={t('public.المدير العام للحجر الصحي القومي')}
+      subtitle={t('public.صفحة المدير العام السيرة، الرسالة، والمسؤوليات')}
+      eyebrow={t('public.قيادة الحجر الصحي')}
     />
 
     {/* Profile hero */}
@@ -123,7 +136,7 @@ const DirectorPage = () => {
           </Grid>
           <Grid item xs={12} md={8}>
             <Chip
-              label="المدير العام"
+              label={t('public.المدير العام')}
               sx={{ bgcolor: 'rgba(255,255,255,0.16)', color: '#fff', mb: 1.5 }}
             />
             <Typography variant="h3" component="h2" sx={{ fontWeight: 700, mb: 1 }}>
@@ -154,8 +167,8 @@ const DirectorPage = () => {
     {/* Priorities */}
     <Box sx={{ mb: 5 }}>
       <SectionTitle
-        title="أولويات المدير العام"
-        subtitle="أبرز المحاور التي يقودها المدير العام للحجر الصحي القومي"
+        title={t('public.أولويات المدير العام')}
+        subtitle={t('public.أبرز المحاور التي يقودها المدير العام للحجر الصحي القومي')}
         align="center"
       />
       <Grid container spacing={3} className="stagger">
@@ -194,8 +207,8 @@ const DirectorPage = () => {
     {/* Director's message */}
     <Box sx={{ mb: 5 }}>
       <SectionTitle
-        title="كلمة المدير العام"
-        subtitle="رسالة المدير العام إلى المواطنين والمسافرين والشركاء"
+        title={t('public.كلمة المدير العام')}
+        subtitle={t('public.رسالة المدير العام إلى المواطنين والمسافرين والشركاء')}
         align="center"
       />
       <Card sx={{ border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
@@ -229,8 +242,8 @@ const DirectorPage = () => {
     {/* Responsibilities */}
     <Box sx={{ mb: 2 }}>
       <SectionTitle
-        title="المسؤوليات والاختصاصات"
-        subtitle="الاختصاصات المنوطة بالمدير العام للحجر الصحي القومي"
+        title={t('public.المسؤوليات والاختصاصات')}
+        subtitle={t('public.الاختصاصات المنوطة بالمدير العام للحجر الصحي القومي')}
         align="center"
       />
       <Grid container spacing={2} className="stagger">

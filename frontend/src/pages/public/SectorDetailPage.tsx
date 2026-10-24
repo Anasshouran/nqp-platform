@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -42,17 +43,6 @@ import type { Service, ServiceCategory } from '../../api/endpoints/services';
 import { PageHeader, EmptyState, ListSkeleton, SectionTitle } from '../../components/common';
 import { portTypeMeta } from '../../config/portTypes';
 
-const regionLabels: Record<string, string> = {
-  KHARTOUM: 'الخرطوم',
-  RED_SEA: 'البحر الأحمر',
-  KASSALA: 'كسلا',
-  GEDAREF: 'القضارف',
-  NORTHERN: 'شمالي',
-  EL_OBEID: 'الأبيض',
-  KORDOFAN: 'كردفان',
-  BLUE_NILE: 'النيل الأزرق',
-  W_DARFUR: 'غرب دارفور',
-};
 
 const serviceIcons: Record<string, React.ReactNode> = {
   AIRPORT: <FlightIcon />,
@@ -69,6 +59,23 @@ const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar') : '—';
 
 const SectorDetailPage = () => {
+  const { t } = useTranslation();
+
+  const regionLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        KHARTOUM: t('public.الخرطوم'),
+        RED_SEA: t('public.البحر الأحمر'),
+        KASSALA: t('public.كسلا'),
+        GEDAREF: t('public.القضارف'),
+        NORTHERN: t('public.شمالي'),
+        EL_OBEID: t('public.الأبيض'),
+        KORDOFAN: t('public.كردفان'),
+        BLUE_NILE: t('public.النيل الأزرق'),
+        W_DARFUR: t('public.غرب دارفور'),
+      }),
+    [t],
+  );
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [sector, setSector] = useState<Sector | null>(null);
@@ -125,18 +132,18 @@ const SectorDetailPage = () => {
   }, [id]);
 
   const stats: { value: string; label: string; icon: React.ReactNode; accent?: string }[] = [
-    { value: String(sector?.ports_count ?? '—'), label: 'منافذ دخول', icon: <AirportShuttleIcon /> },
+    { value: String(sector?.ports_count ?? '—'), label: t('public.منافذ دخول'), icon: <AirportShuttleIcon /> },
     {
       value: sectorStats ? String(sectorStats.entry_points) : '—',
-      label: 'منفذ نشط',
+      label: t('public.منفذ نشط'),
       icon: <LocationOnIcon />,
     },
     {
       value: sectorStats ? String(sectorStats.screenings) : '—',
-      label: 'فحص صحي',
+      label: t('public.فحص صحي'),
       icon: <HealthAndSafetyIcon />,
     },
-    { value: '24/7', label: 'مراقبة مستمرة', icon: <CampaignIcon />, accent: '#8c6d1f' },
+    { value: '24/7', label: t('public.مراقبة مستمرة'), icon: <CampaignIcon />, accent: '#8c6d1f' },
   ];
 
   const flattenPath = (service: Service): string =>
@@ -146,27 +153,26 @@ const SectorDetailPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Button component={Link} to="/sectors" startIcon={<ArrowBackIcon />} sx={{ mb: 3 }}>
-        العودة إلى القطاعات
-      </Button>
+        {t('public.العودة إلى القطاعات')}</Button>
 
       {loading ? (
         <ListSkeleton count={3} />
       ) : !sector ? (
         <EmptyState
           icon={<DomainIcon />}
-          title="القطاع غير متاح"
-          description="لم يتم العثور على هذا القطاع."
+          title={t('public.القطاع غير متاح')}
+          description={t('public.لم يتم العثور على هذا القطاع')}
         />
       ) : (
         <>
           <PageHeader
             title={sector.name_ar}
-            subtitle={sector.description_ar || `القطاع الصحي لمنطقة ${regionLabels[sector.region] || sector.region}`}
-            eyebrow={`القطاع · ${regionLabels[sector.region] || sector.region}`}
+            subtitle={sector.description_ar || `${t('public.القطاع الصحي لمنطقة')} ${regionLabels[sector.region] || sector.region}`}
+            eyebrow={`${t('public.القطاع')} · ${regionLabels[sector.region] || sector.region}`}
             action={
               <Chip
                 icon={<LocationOnIcon />}
-                label={`${sector.ports_count} منفذ`}
+                label={`${sector.ports_count} ${t('public.منفذ')}`}
                 color="primary"
                 variant="outlined"
                 sx={{ fontWeight: 700, py: 1.25, px: 1, fontSize: 14 }}
@@ -214,7 +220,7 @@ const SectorDetailPage = () => {
                 <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <DomainIcon sx={{ color: 'primary.main' }} />
-                    <Typography sx={{ fontWeight: 700 }}>الموقع الجغرافي</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{t('public.الموقع الجغرافي')}</Typography>
                   </Stack>
                 </Box>
                 <Box sx={{ p: 2 }}>
@@ -227,16 +233,15 @@ const SectorDetailPage = () => {
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    حول القطاع
-                  </Typography>
+                    {t('public.حول القطاع')}</Typography>
                   <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-wrap', mb: 3 }}>
-                    {sector.description_ar || 'قطاع صحي تابع للإدارة الاتحادية للحجر الصحي.'}
+                    {sector.description_ar || t('public.قطاع صحي تابع للإدارة الاتحادية للحجر الصحي')}
                   </Typography>
                   <Stack spacing={1.5}>
-                    <InfoRow label="الاسم بالعربية" value={sector.name_ar} />
-                    <InfoRow label="الاسم بالإنجليزية" value=<En>{sector.name_en}</En> dir="ltr" />
-                    <InfoRow label="الإقليم" value={regionLabels[sector.region] || sector.region} />
-                    <InfoRow label="عدد المنافذ" value={String(sector.ports_count)} />
+                    <InfoRow label={t('public.الاسم بالعربية')} value={sector.name_ar} />
+                    <InfoRow label={t('public.الاسم بالإنجليزية')} value=<En>{sector.name_en}</En> dir="ltr" />
+                    <InfoRow label={t('public.الإقليم')} value={regionLabels[sector.region] || sector.region} />
+                    <InfoRow label={t('public.عدد المنافذ')} value={String(sector.ports_count)} />
                   </Stack>
                 </CardContent>
               </Card>
@@ -246,13 +251,12 @@ const SectorDetailPage = () => {
           {/* Ports */}
           <Box sx={{ mt: 5 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-              منافذ الدخول في القطاع
-            </Typography>
+              {t('public.منافذ الدخول في القطاع')}</Typography>
             {ports.length === 0 ? (
               <EmptyState
                 icon={<LocationOnIcon />}
-                title="لا توجد منافذ في هذا القطاع"
-                description="سيتم إضافة المنافذ قريباً."
+                title={t('public.لا توجد منافذ في هذا القطاع')}
+                description={t('public.سيتم إضافة المنافذ قريباً')}
               />
             ) : (
               <Grid container spacing={2.5}>
@@ -317,12 +321,11 @@ const SectorDetailPage = () => {
           <Box sx={{ mt: 8 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
               <SectionTitle
-                title="الخدمات الإلكترونية المتاحة"
-                subtitle="خدمات إلكترونية متكاملة مقدمة عبر القطاع والمنصة القومية"
+                title={t('public.الخدمات الإلكترونية المتاحة')}
+                subtitle={t('public.خدمات إلكترونية متكاملة مقدمة عبر القطاع والمنصة القومية')}
               />
               <Button component={Link} to="/services" endIcon={<ArrowForwardIcon />} sx={{ mb: 4 }}>
-                عرض جميع الخدمات
-              </Button>
+                {t('public.عرض جميع الخدمات')}</Button>
             </Stack>
             {sectionsLoading ? (
               <Grid container spacing={2.5}>
@@ -333,7 +336,7 @@ const SectorDetailPage = () => {
                 ))}
               </Grid>
             ) : services.length === 0 ? (
-              <Typography color="text.secondary">لا توجد خدمات مسجلة حالياً.</Typography>
+              <Typography color="text.secondary">{t('public.لا توجد خدمات مسجلة حالياً')}</Typography>
             ) : (
               <Grid container spacing={2.5}>
                 {services.map((service) => (
@@ -394,8 +397,8 @@ const SectorDetailPage = () => {
           {/* Notices */}
           <Box sx={{ mt: 8 }}>
             <SectionTitle
-              title="التنبيهات الصحية"
-              subtitle="آخر الإشعارات والتنبيهات الصحية الصادرة عن المنصة"
+              title={t('public.التنبيهات الصحية')}
+              subtitle={t('public.آخر الإشعارات والتنبيهات الصحية الصادرة عن المنصة')}
             />
             <PublicNotices notices={notices} loading={sectionsLoading} />
           </Box>
@@ -403,10 +406,9 @@ const SectorDetailPage = () => {
           {/* Latest news */}
           <Box sx={{ mt: 8 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
-              <SectionTitle title="آخر الأخبار" subtitle="أحدث الأخبار والتحديثات من المركز الإعلامي" />
+              <SectionTitle title={t('public.آخر الأخبار')} subtitle={t('public.أحدث الأخبار والتحديثات من المركز الإعلامي')} />
               <Button component={Link} to="/news" endIcon={<ArrowForwardIcon />} sx={{ mb: 4 }}>
-                عرض الكل
-              </Button>
+                {t('public.عرض الكل')}</Button>
             </Stack>
             {sectionsLoading ? (
               <Grid container spacing={3}>
@@ -417,7 +419,7 @@ const SectorDetailPage = () => {
                 ))}
               </Grid>
             ) : news.length === 0 ? (
-              <Typography color="text.secondary">لا توجد أخبار حالياً.</Typography>
+              <Typography color="text.secondary">{t('public.لا توجد أخبار حالياً')}</Typography>
             ) : (
               <Grid container spacing={3}>
                 {news.slice(0, 3).map((article) => (
@@ -428,7 +430,7 @@ const SectorDetailPage = () => {
                       )}
                       <CardContent sx={{ p: 3, flex: 1 }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                          <Chip label={article.category || 'عام'} size="small" color="primary" variant="outlined" />
+                          <Chip label={article.category || t('public.عام')} size="small" color="primary" variant="outlined" />
                           <Typography variant="caption" color="text.secondary">
                             {formatDate(article.published_at)}
                           </Typography>
@@ -446,8 +448,7 @@ const SectorDetailPage = () => {
                       </CardContent>
                       <CardActions sx={{ px: 3, pb: 2 }}>
                         <Button component={Link} to={`/news/${article.id}`} size="small" color="primary">
-                          تفاصيل الخبر
-                        </Button>
+                          {t('public.تفاصيل الخبر')}</Button>
                       </CardActions>
                     </Card>
                   </Grid>
@@ -470,18 +471,14 @@ const SectorDetailPage = () => {
             }}
           >
             <Typography variant="h2" sx={{ mb: 1.5 }}>
-              تحتاج مساعدة أو لديك استفسار؟
-            </Typography>
+              {t('public.تحتاج مساعدة أو لديك استفسار؟')}</Typography>
             <Typography variant="body1" sx={{ mb: 3, opacity: 0.92 }}>
-              تواصل مع القطاع أو استفد من خدمات المنصة الإلكترونية.
-            </Typography>
+              {t('public.تواصل مع القطاع أو استفد من خدمات المنصة الإلكترونية')}</Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
               <Button component={Link} to="/contact" variant="contained" sx={{ bgcolor: '#fff', color: 'primary.darker', '&:hover': { bgcolor: '#f0f7f5' } }}>
-                اتصل بنا
-              </Button>
+                {t('public.اتصل بنا')}</Button>
               <Button component={Link} to="/services" variant="outlined" sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.6)', '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.12)' } }}>
-                استكشف الخدمات
-              </Button>
+                {t('public.استكشف الخدمات')}</Button>
             </Stack>
           </Box>
         </>

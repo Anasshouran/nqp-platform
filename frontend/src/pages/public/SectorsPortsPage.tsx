@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -43,27 +44,14 @@ import { PageHeader, EmptyState, CardsGridSkeleton, SectionTitle } from '../../c
 import { accentTokens } from '../../styles/theme';
 import { portTypeMeta } from '../../config/portTypes';
 
-const regionLabels: Record<string, string> = {
-  KHARTOUM: 'الخرطوم',
-  RED_SEA: 'البحر الأحمر',
-  KASSALA: 'كسلا',
-  GEDAREF: 'القضارف',
-  NORTHERN: 'شمالي',
-  KORDOFAN: 'كردفان',
-};
 
 type PortType = PublicPort['type'];
 
-const typeFilterOptions: Array<{ value: 'ALL' | PortType; label: string }> = [
-  { value: 'ALL', label: 'الكل' },
-  { value: 'AIRPORT', label: 'المطارات' },
-  { value: 'SEAPORT', label: 'الموانئ' },
-  { value: 'LAND_PORT', label: 'المعابر البرية' },
-];
 
 const sectorSlug = (code: string) => code.toLowerCase().replace('_', '-');
 
 const SectorsPortsPage = () => {
+  const { t } = useTranslation();
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [allPorts, setAllPorts] = useState<PublicPort[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +62,29 @@ const SectorsPortsPage = () => {
   const [search, setSearch] = useState('');
   const [sectorSearch, setSectorSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const regionLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        KHARTOUM: t('public.الخرطوم'),
+        RED_SEA: t('public.البحر الأحمر'),
+        KASSALA: t('public.كسلا'),
+        GEDAREF: t('public.القضارف'),
+        NORTHERN: t('public.شمالي'),
+        KORDOFAN: t('public.كردفان'),
+      }),
+    [t],
+  );
+  const typeFilterOptions: Array<{ value: 'ALL' | PortType; label: string }> = useMemo(
+    () => (
+      [
+        { value: 'ALL', label: t('public.الكل') },
+        { value: 'AIRPORT', label: t('public.المطارات') },
+        { value: 'SEAPORT', label: t('public.الموانئ') },
+        { value: 'LAND_PORT', label: t('public.المعابر البرية') },
+      ]),
+    [t],
+  );
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -149,29 +160,29 @@ const SectorsPortsPage = () => {
         s.code.toLowerCase().includes(query) ||
         (regionLabels[s.region] || '').toLowerCase().includes(query),
     );
-  }, [sectors, sectorSearch]);
+  }, [sectors, sectorSearch, regionLabels]);
 
   const statCards = [
-    { value: portStats.total, label: 'إجمالي المنافذ', icon: <DomainIcon />, color: accentTokens.brand },
-    { value: portStats.air, label: 'المطارات', icon: <FlightIcon />, color: accentTokens.air },
-    { value: portStats.sea, label: 'الموانئ', icon: <DirectionsBoatIcon />, color: accentTokens.sea },
-    { value: portStats.land, label: 'المعابر البرية', icon: <DirectionsBusIcon />, color: accentTokens.land },
-    { value: portStats.sectors, label: 'قطاع صحي', icon: <DomainIcon />, color: accentTokens.health },
+    { value: portStats.total, label: t('public.إجمالي المنافذ'), icon: <DomainIcon />, color: accentTokens.brand },
+    { value: portStats.air, label: t('public.المطارات'), icon: <FlightIcon />, color: accentTokens.air },
+    { value: portStats.sea, label: t('public.الموانئ'), icon: <DirectionsBoatIcon />, color: accentTokens.sea },
+    { value: portStats.land, label: t('public.المعابر البرية'), icon: <DirectionsBusIcon />, color: accentTokens.land },
+    { value: portStats.sectors, label: t('public.قطاع صحي'), icon: <DomainIcon />, color: accentTokens.health },
   ];
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="القطاعات والمنافذ"
-        subtitle="تعرّف على القطاعات الصحية ومنافذ الحجر الصحي المنتشرة في جميع أنحاء السودان"
-        eyebrow="شبكة المنافذ"
+        title={t('public.القطاعات والمنافذ')}
+        subtitle={t('public.تعرّف على القطاعات الصحية ومنافذ الحجر الصحي المنتشرة في جميع أنحاء السودان')}
+        eyebrow={t('public.شبكة المنافذ')}
       />
 
       {/* Network overview */}
       <Box sx={{ mb: 6 }}>
         <SectionTitle
-          title="شبكة المنافذ"
-          subtitle="إحصاءات شاملة لشبكة منافذ الحجر الصحي حسب النوع والقطاع"
+          title={t('public.شبكة المنافذ')}
+          subtitle={t('public.إحصاءات شاملة لشبكة منافذ الحجر الصحي حسب النوع والقطاع')}
           align="center"
         />
         <Grid container spacing={2}>
@@ -219,8 +230,8 @@ const SectorsPortsPage = () => {
       {/* Ports directory */}
       <Box sx={{ mb: 6 }}>
         <SectionTitle
-          title="دليل المنافذ"
-          subtitle="تصفّح جميع منافذ الحجر الصحي مع إمكانية التصفية حسب النوع والبحث"
+          title={t('public.دليل المنافذ')}
+          subtitle={t('public.تصفّح جميع منافذ الحجر الصحي مع إمكانية التصفية حسب النوع والبحث')}
           align="center"
         />
 
@@ -240,7 +251,7 @@ const SectorsPortsPage = () => {
               setSearchParams(value === 'ALL' ? {} : { type: value });
             }}
             size="small"
-            aria-label="تصفية حسب نوع المنفذ"
+            aria-label={t('public.تصفية حسب نوع المنفذ')}
           >
             {typeFilterOptions.map((option) => (
               <ToggleButton key={option.value} value={option.value} sx={{ fontWeight: 700 }}>
@@ -251,8 +262,8 @@ const SectorsPortsPage = () => {
           <TextField
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث عن منفذ بالاسم أو الرمز أو الدولة..."
-            aria-label="بحث عن منفذ"
+            placeholder={t('public.ابحث عن منفذ بالاسم أو الرمز أو الدولة')}
+            aria-label={t('public.بحث عن منفذ')}
             size="small"
             sx={{ minWidth: { xs: '100%', sm: 320 } }}
             InputProps={{
@@ -270,8 +281,8 @@ const SectorsPortsPage = () => {
         ) : filteredPorts.length === 0 ? (
           <EmptyState
             icon={<DomainIcon />}
-            title="لا توجد منافذ مطابقة"
-            description="جرّب تغيير نوع المنفذ أو كلمة البحث."
+            title={t('public.لا توجد منافذ مطابقة')}
+            description={t('public.جرّب تغيير نوع المنفذ أو كلمة البحث')}
           />
         ) : (
           <Grid container spacing={3}>
@@ -354,8 +365,7 @@ const SectorsPortsPage = () => {
                       color="primary"
                       sx={{ mt: 1.5, fontWeight: 700 }}
                     >
-                      التفاصيل
-                    </Button>
+                      {t('public.التفاصيل')}</Button>
                   </CardContent>
                 </Card>
               </Grid>
@@ -367,16 +377,16 @@ const SectorsPortsPage = () => {
       {/* Sectors */}
       <Box sx={{ mb: 2 }}>
         <SectionTitle
-          title="بوابات"
-          subtitle="الوصول إلى الخدمات والمعلومات الخاصة بكل قطاع صحي"
+          title={t('public.بوابات')}
+          subtitle={t('public.الوصول إلى الخدمات والمعلومات الخاصة بكل قطاع صحي')}
           align="center"
         />
 
         <TextField
           value={sectorSearch}
           onChange={(e) => setSectorSearch(e.target.value)}
-          placeholder="ابحث عن قطاع بالاسم أو المنطقة..."
-          aria-label="بحث عن قطاع"
+          placeholder={t('public.ابحث عن قطاع بالاسم أو المنطقة')}
+          aria-label={t('public.بحث عن قطاع')}
           size="small"
           sx={{ mb: 3, maxWidth: 400 }}
           InputProps={{
@@ -393,8 +403,8 @@ const SectorsPortsPage = () => {
         ) : filteredSectors.length === 0 ? (
           <EmptyState
             icon={<DomainIcon />}
-            title="لا توجد قطاعات مطابقة"
-            description="جرّب تغيير كلمة البحث."
+            title={t('public.لا توجد قطاعات مطابقة')}
+            description={t('public.جرّب تغيير كلمة البحث')}
           />
         ) : (
           <Grid container spacing={3}>
@@ -426,7 +436,7 @@ const SectorsPortsPage = () => {
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Chip
                             icon={<CheckCircleIcon />}
-                            label="نشط"
+                            label={t('public.نشط')}
                             size="small"
                             color="success"
                             variant="outlined"
@@ -447,13 +457,13 @@ const SectorsPortsPage = () => {
                       <Divider sx={{ my: 1.5 }} />
 
                       <Typography variant="body2" sx={{ mb: 2, flex: 1, minHeight: 40 }}>
-                        {sector.description_ar || 'قطاع صحي تابع للإدارة الاتحادية للحجر الصحي.'}
+                        {sector.description_ar || t('public.قطاع صحي تابع للإدارة الاتحادية للحجر الصحي')}
                       </Typography>
 
                       <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: 'primary.main', fontWeight: 700, fontSize: 14 }}>
                           <LocalShippingIcon sx={{ fontSize: 18 }} />
-                          {sector.ports_count} نقطة دخول
+                          {sector.ports_count} {t('public.نقطة دخول')}
                         </Box>
                         {sector.phone && (
                           <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', fontSize: 13 }}>
@@ -473,8 +483,7 @@ const SectorsPortsPage = () => {
                           endIcon={<ArrowForwardIcon />}
                           sx={{ fontWeight: 700 }}
                         >
-                          دخول البوابة
-                        </Button>
+                          {t('public.دخول البوابة')}</Button>
                         <Button
                           size="small"
                           variant="outlined"
@@ -484,8 +493,7 @@ const SectorsPortsPage = () => {
                           aria-expanded={expandedId === sector.id}
                           sx={{ minWidth: 110 }}
                         >
-                          النقاط
-                        </Button>
+                          {t('public.النقاط')}</Button>
                       </Stack>
 
                       <Collapse in={expandedId === sector.id} unmountOnExit>
@@ -495,8 +503,7 @@ const SectorsPortsPage = () => {
                           </Box>
                         ) : (portsBySector[sector.id] || []).length === 0 ? (
                           <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                            لا توجد منافذ مسجلة في هذا القطاع.
-                          </Typography>
+                            {t('public.لا توجد منافذ مسجلة في هذا القطاع')}</Typography>
                         ) : (
                           <List dense sx={{ mt: 1 }}>
                             {(portsBySector[sector.id] || []).map((port) => (
