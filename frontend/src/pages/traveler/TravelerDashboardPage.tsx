@@ -190,6 +190,17 @@ const TravelerDashboardPage = () => {
     [declaration, symptomLabels],
   );
 
+  const quickActions = useMemo(
+    () => [
+      { icon: <EditIcon />, label: t('traveler.dashboard.quickActions.new'), sub: t('traveler.dashboard.quickActions.newSub'), to: '/traveler/register', color: 'primary.main' },
+      { icon: <TravelExploreIcon />, label: t('traveler.dashboard.quickActions.track'), sub: t('traveler.dashboard.quickActions.trackSub'), to: '/traveler/tracking', color: 'info.main' },
+      { icon: <HealthAndSafetyIcon />, label: t('traveler.dashboard.quickActions.profile'), sub: t('traveler.dashboard.quickActions.profileSub'), to: '/traveler/profile', color: 'success.main' },
+      { icon: <DescriptionIcon />, label: t('traveler.dashboard.quickActions.documents'), sub: t('traveler.dashboard.quickActions.documentsSub'), to: '/traveler/documents', color: 'warning.main' },
+    ],
+    [t],
+  );
+
+
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -202,16 +213,6 @@ const TravelerDashboardPage = () => {
   }
 
   if (!user) return null;
-
-  const quickActions = useMemo(
-    () => [
-      { icon: <EditIcon />, label: t('traveler.dashboard.quickActions.new'), sub: t('traveler.dashboard.quickActions.newSub'), to: '/traveler/register', color: 'primary.main' },
-      { icon: <TravelExploreIcon />, label: t('traveler.dashboard.quickActions.track'), sub: t('traveler.dashboard.quickActions.trackSub'), to: '/traveler/tracking', color: 'info.main' },
-      { icon: <HealthAndSafetyIcon />, label: t('traveler.dashboard.quickActions.profile'), sub: t('traveler.dashboard.quickActions.profileSub'), to: '/traveler/profile', color: 'success.main' },
-      { icon: <DescriptionIcon />, label: t('traveler.dashboard.quickActions.documents'), sub: t('traveler.dashboard.quickActions.documentsSub'), to: '/traveler/documents', color: 'warning.main' },
-    ],
-    [t],
-  );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
