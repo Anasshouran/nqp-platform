@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -24,6 +25,8 @@ const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
 const NewsPage = () => {
+  const { t } = useTranslation();
+
   const { data, loading, error, retry } = useApi<NewsArticle[]>(getNews);
   const news = data ?? [];
   const [visible, setVisible] = useState(PAGE_SIZE);
@@ -32,19 +35,19 @@ const NewsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="الأخبار والإعلانات"
-        subtitle="آخر الأخبار والإعلانات الرسمية الصادرة عن الإدارة الاتحادية للحجر الصحي"
-        eyebrow="مركز الأخبار"
+        title={t('public.الأخبار والإعلانات')}
+        subtitle={t('public.آخر الأخبار والإعلانات الرسمية الصادرة عن الإدارة الاتحادية للحجر الصحي')}
+        eyebrow={t('public.مركز الأخبار')}
       />
       {loading ? (
         <ListSkeleton count={3} />
       ) : error ? (
-        <ErrorState message="تعذّر تحميل الأخبار" onRetry={retry} />
+        <ErrorState message={t('public.تعذّر تحميل الأخبار')} onRetry={retry} />
       ) : news.length === 0 ? (
         <EmptyState
           icon={<NewspaperIcon />}
-          title="لا توجد أخبار منشورة حالياً"
-          description="سيتم نشر الأخبار والإعلانات الرسمية هنا فور صدورها."
+          title={t('public.لا توجد أخبار منشورة حالياً')}
+          description={t('public.سيتم نشر الأخبار والإعلانات الرسمية هنا فور صدورها')}
         />
       ) : (
         <>
@@ -112,7 +115,7 @@ const NewsPage = () => {
                 </CardContent>
                 <CardActions sx={{ px: 3, pb: 2.5 }}>
                   <Button component={Link} to={`/news/${article.id}`} size="small" color="primary">
-                    تفاصيل الخبر
+                    {t('public.تفاصيل الخبر')}
                   </Button>
                 </CardActions>
               </Card>
@@ -129,10 +132,10 @@ const NewsPage = () => {
                 onClick={() => setVisible((v) => v + PAGE_SIZE)}
                 sx={{ px: 4 }}
               >
-                عرض المزيد من الأخبار
+                {t('public.عرض المزيد من الأخبار')}
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                تم عرض {visible} من {news.length} خبر
+                {t('public.تم عرض')} {visible} {t('public.من')} {news.length} {t('public.خبر')}
               </Typography>
             </Box>
           )}

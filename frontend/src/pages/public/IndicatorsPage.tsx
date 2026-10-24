@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import { getPublicStatistics } from '../../api/endpoints/public';
@@ -7,6 +8,8 @@ import PerformanceKpiCards from '../../components/PerformanceKpiCards';
 import { useApi } from '../../hooks/useApi';
 
 const IndicatorsPage = () => {
+  const { t } = useTranslation();
+
   const { data, loading, error, retry } = useApi<PublicStatistics>(() =>
     getPublicStatistics().then((response) => response.data.data),
   );
@@ -15,9 +18,9 @@ const IndicatorsPage = () => {
     <Box sx={{ py: 4, bgcolor: 'grey.50', flex: 1 }}>
       <Container maxWidth="lg">
         <PageHeader
-          eyebrow="إحصاءات المنصة"
-          title="المؤشرات العامة"
-          subtitle="مؤشرات وإحصاءات المنصة: قطاعات ومنافذ وفحوصات وشهادات وأنشطة تشغيلية"
+          eyebrow={t('public.إحصاءات المنصة')}
+          title={t('public.المؤشرات العامة')}
+          subtitle={t('public.مؤشرات وإحصاءات المنصة قطاعات ومنافذ وفحوصات وشهادات وأنشطة تشغيلية')}
         />
         {error ? (
           <ErrorState onRetry={retry} />
