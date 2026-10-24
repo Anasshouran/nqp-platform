@@ -1,4 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -9,7 +10,8 @@ import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { usePageTitle } from '../../hooks/usePageTitle';
 
 const NotFoundPage = () => {
-  usePageTitle('الصفحة غير موجودة (404)');
+  const { t } = useTranslation();
+  usePageTitle(t('public.الصفحة غير موجودة (404)'));
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 6, md: 10 } }}>
@@ -53,19 +55,14 @@ const NotFoundPage = () => {
           404
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-          عذراً، الصفحة التي تبحث عنها غير موجودة
-        </Typography>
+          {t('public.عذراً، الصفحة التي تبحث عنها غير موجودة')}</Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 4, lineHeight: 1.8 }}>
-          ربما تم نقل الصفحة أو حذفها أو أن الرابط الذي استخدمته غير صحيح. يمكنك العودة إلى
-          الصفحة الرئيسية للوصول إلى جميع خدمات المنصة.
-        </Typography>
+          {t('public.ربما تم نقل الصفحة أو حذفها أو أن الرابط الذي استخدمته غير صحيح يمكنك العودة إلى الصفحة الرئيسية للوصول إلى جميع خدمات المنصة')}</Typography>
         <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" useFlexGap>
           <Button component={RouterLink} to="/" variant="contained" color="primary" size="large" startIcon={<HomeIcon />}>
-            العودة إلى الصفحة الرئيسية
-          </Button>
+            {t('public.العودة إلى الصفحة الرئيسية')}</Button>
           <Button component={RouterLink} to="/services" variant="outlined" size="large">
-            تصفح الخدمات
-          </Button>
+            {t('public.تصفح الخدمات')}</Button>
         </Stack>
       </Box>
     </Container>

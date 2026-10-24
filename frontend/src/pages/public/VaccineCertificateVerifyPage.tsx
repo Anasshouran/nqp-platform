@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
@@ -16,13 +17,19 @@ import { PageHeader } from '../../components/common';
 import { publicVerifyCertificate, type VaccineCertificateVerifyResult } from '../../api/endpoints/vaccination';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 
-const statusLabels: Record<string, string> = {
-  ACTIVE: 'سارية',
-  EXPIRED: 'منتهية',
-  REVOKED: 'ملغاة',
-};
 
 const VaccineCertificateVerifyPage = () => {
+  const { t } = useTranslation();
+
+  const statusLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        ACTIVE: t('public.سارية'),
+        EXPIRED: t('public.منتهية'),
+        REVOKED: t('public.ملغاة'),
+      }),
+    [t],
+  );
   const { code } = useParams<{ code: string }>();
   const [result, setResult] = useState<VaccineCertificateVerifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,17 +42,17 @@ const VaccineCertificateVerifyPage = () => {
     publicVerifyCertificate(code)
       .then((res) => setResult(res.data.data))
       .catch((err) =>
-        setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'تعذر التحقق من الشهادة'),
+        setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('public.تعذر التحقق من الشهادة')),
       )
       .finally(() => setLoading(false));
-  }, [code]);
+  }, [code, t]);
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="التحقق من شهادة التطعيم الدولية"
-        subtitle="تحقق موثوق من الشهادات الصادرة عبر بوابة التطعيم الدولي"
-        eyebrow="خدمة التحقق"
+        title={t('public.التحقق من شهادة التطعيم الدولية')}
+        subtitle={t('public.تحقق موثوق من الشهادات الصادرة عبر بوابة التطعيم الدولي')}
+        eyebrow={t('public.خدمة التحقق')}
       />
 
       <Card
@@ -59,7 +66,7 @@ const VaccineCertificateVerifyPage = () => {
           {loading ? (
             <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
               <CircularProgress />
-              <Typography color="text.secondary">جارٍ التحقق…</Typography>
+              <Typography color="text.secondary">{t('public.جارٍ التحقق…')}</Typography>
             </Stack>
           ) : error ? (
             <Stack alignItems="center" spacing={1.5} sx={{ py: 3 }}>
@@ -70,12 +77,10 @@ const VaccineCertificateVerifyPage = () => {
             <Stack spacing={2}>
               {result.verified ? (
                 <Alert icon={<VerifiedUserIcon />} severity="success" sx={{ borderRadius: 2.5 }}>
-                  تم التحقق بنجاح — الشهادة سارية وصلبة
-                </Alert>
+                  {t('public.تم التحقق بنجاح — الشهادة سارية وصلبة')}</Alert>
               ) : (
                 <Alert icon={<HighlightOffIcon />} severity="error" sx={{ borderRadius: 2.5 }}>
-                  الشهادة ملغاة أو منتهية الصلاحية
-                </Alert>
+                  {t('public.الشهادة ملغاة أو منتهية الصلاحية')}</Alert>
               )}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
                 <Box
@@ -107,13 +112,13 @@ const VaccineCertificateVerifyPage = () => {
               </Stack>
               <Stack spacing={1}>
                 <Typography variant="body2">
-                  رقم الشهادة: <b style={{ fontFamily: 'monospace' }}>{result.certificate_number}</b>
+                  {t('public.رقم الشهادة')}<b style={{ fontFamily: 'monospace' }}>{result.certificate_number}</b>
                 </Typography>
                 <Typography variant="body2">
-                  تاريخ الإصدار: <b>{formatDateTime(result.issued_at)}</b>
+                  {t('public.تاريخ الإصدار')}<b>{formatDateTime(result.issued_at)}</b>
                 </Typography>
                 <Typography variant="body2">
-                  صالحة حتى: <b>{formatDate(result.valid_until)}</b>
+                  {t('public.صالحة حتى')}<b>{formatDate(result.valid_until)}</b>
                 </Typography>
               </Stack>
             </Stack>

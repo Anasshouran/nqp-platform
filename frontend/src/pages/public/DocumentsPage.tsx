@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -53,14 +54,19 @@ const fileTypeIcons: Record<string, React.ReactNode> = {
   XLSX: <GridOnIcon />,
 };
 
-const formatFileSize = (bytes?: number | null) => {
-  if (!bytes && bytes !== 0) return '';
-  if (bytes < 1024) return `${bytes} بايت`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} كيلوبايت`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} ميجابايت`;
-};
-
 const DocumentsPage = () => {
+  const { t } = useTranslation();
+
+  const formatFileSize = useMemo(
+    () => (bytes?: number | null) => {
+      if (!bytes && bytes !== 0) return '';
+      if (bytes < 1024) return `${bytes} ${t('public.بايت')}`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ${t('public.كيلوبايت')}`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} ${t('public.ميجابايت')}`;
+    },
+    [t],
+  );
+
   const { data, loading, error, retry } = useApi<CmsDocument[]>(getDocuments);
   const documents = useMemo(() => data ?? [], [data]);
   const [category, setCategory] = useState('ALL');
@@ -95,7 +101,7 @@ const DocumentsPage = () => {
   const shown = filtered.slice(0, visible);
 
   const categoryOptions = [
-    { value: 'ALL', label: 'الكل', count: documents.length },
+    { value: 'ALL', label: t('public.الكل'), count: documents.length },
     ...(['LAW', 'REGULATION', 'FORM', 'GUIDE', 'OTHER'] as const).map((key) => ({
       value: key,
       label: DOC_CATEGORY_LABELS[key] || key,
@@ -106,16 +112,16 @@ const DocumentsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="مركز الوثائق"
-        subtitle="القوانين واللوائح والبروتوكولات والنماذج الرسمية القابلة للتحميل"
-        eyebrow="مكتبة الوثائق"
+        title={t('public.مركز الوثائق')}
+        subtitle={t('public.القوانين واللوائح والبروتوكولات والنماذج الرسمية القابلة للتحميل')}
+        eyebrow={t('public.مكتبة الوثائق')}
       />
 
       {/* Library stats */}
       <Box sx={{ mb: 5 }}>
         <SectionTitle
-          title="مكتبة الوثائق"
-          subtitle="مرجع موحد للوثائق الرسمية الصادرة عن الإدارة الاتحادية للحجر الصحي"
+          title={t('public.مكتبة الوثائق')}
+          subtitle={t('public.مرجع موحد للوثائق الرسمية الصادرة عن الإدارة الاتحادية للحجر الصحي')}
           align="center"
         />
         <Grid container spacing={2}>
@@ -173,7 +179,7 @@ const DocumentsPage = () => {
           exclusive
           onChange={(_, value) => value && setCategory(value)}
           size="small"
-          aria-label="تصفية حسب فئة الوثيقة"
+          aria-label={t('public.تصفية حسب فئة الوثيقة')}
         >
           {categoryOptions.map((option) => (
             <ToggleButton key={option.value} value={option.value} sx={{ fontWeight: 700 }}>
@@ -187,7 +193,7 @@ const DocumentsPage = () => {
         <TextField
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="ابحث عن وثيقة بالعنوان أو الوصف..."
+          placeholder={t('public.ابحث عن وثيقة بالعنوان أو الوصف')}
           size="small"
           sx={{ minWidth: { xs: '100%', sm: 320 } }}
           InputProps={{
@@ -204,12 +210,12 @@ const DocumentsPage = () => {
       {loading ? (
         <ListSkeleton count={4} />
       ) : error ? (
-        <ErrorState message="تعذّر تحميل الوثائق" onRetry={retry} />
+        <ErrorState message={t('public.تعذّر تحميل الوثائق')} onRetry={retry} />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<FolderOpenIcon />}
-          title="لا توجد وثائق مطابقة"
-          description="جرّب تغيير الفئة أو كلمة البحث."
+          title={t('public.لا توجد وثائق مطابقة')}
+          description={t('public.جرّب تغيير الفئة أو كلمة البحث')}
         />
       ) : (
         <Stack spacing={2}>
@@ -267,7 +273,7 @@ const DocumentsPage = () => {
                         {document.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {document.description || 'وثيقة رسمية صادرة عن الإدارة الاتحادية للحجر الصحي.'}
+                        {document.description || t('public.وثيقة رسمية صادرة عن الإدارة الاتحادية للحجر الصحي')}
                       </Typography>
                       {document.file_name && (
                         <Typography variant="caption" color="text.disabled" dir="ltr" sx={{ display: 'block', mt: 0.5 }}>
@@ -284,8 +290,7 @@ const DocumentsPage = () => {
                         : { disabled: true })}
                       sx={{ flexShrink: 0 }}
                     >
-                      تحميل
-                    </Button>
+                      {t('public.تحميل')}</Button>
                   </Stack>
                 </CardContent>
               </Card>
@@ -304,18 +309,16 @@ const DocumentsPage = () => {
             onClick={() => setVisible((v) => v + PAGE_SIZE)}
             sx={{ px: 4 }}
           >
-            عرض المزيد من الوثائق
-          </Button>
+            {t('public.عرض المزيد من الوثائق')}</Button>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-            تم عرض {visible} من {filtered.length} وثيقة
+            {t('public.تم عرض')} {visible} {t('public.من')} {filtered.length} {t('public.وثيقة')}
           </Typography>
         </Box>
       )}
 
       <Divider sx={{ my: 4 }} />
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-        لم تجد ما تبحث عنه؟ يمكنك التواصل معنا عبر صفحة <b>اتصل بنا</b> لطلب وثيقة رسمية محددة.
-      </Typography>
+        {t('public.لم تجد ما تبحث عنه؟ يمكنك التواصل معنا عبر صفحة')}<b>{t('public.اتصل بنا')}</b> {t('public.لطلب وثيقة رسمية محددة')}</Typography>
     </Container>
   );
 };

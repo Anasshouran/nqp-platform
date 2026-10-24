@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -10,21 +11,25 @@ import { PageHeader } from '../../components/common';
 import { getCmsPage } from '../../api/endpoints/public';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
-const FALLBACK = [
-  { title: 'بيعة الخدمة', body: 'تقدم المنصة خدمات الحجر الصحي والتسجيل المسبق والتحقق من الشهادات بناءً على اللوائح الصحية الدولية (IHR) والتشريعات الوطنية السودانية.' },
-  { title: 'استخدام المنصة', body: 'الاستفادة من خدمات المنصة مسألة طوعية للجهات العامة؛ ويترتب على المستخدم الالتزام ببيانات صحيحة وكاملة عند التسجيل، وتُشكل أي بيانات مغلوطة مسؤولية مُدخلها.' },
-  { title: 'المسؤوليات', body: 'تبذل المنصة جهداً معقولاً لتوافر الخدمة ودقة المعلومات، دون ضمان عدم انقطاعها؛ ولا تعتبر المنصة مسؤولة عن نتائج الدخول أو القرارات المتخذة بناءً على بيانات غير دقيقة أُدخلت من المستخدم.' },
-  { title: 'الإجراءات واللوائح', body: 'تخضع الخدمات لإجراءات ولوائح العمل المنظمة في المنافذ الصحية، وقد تُحدَّث هذه الشروط من وقت لآخر مع إشعار على المنصة.' },
-  { title: 'القانون الساري', body: 'يُحكم هذه الشروط والأحكام وفق قوانين جمهورية السودان، وأي نزاع يُعرض على القضاء المختص.' },
-];
-
 const TermsPage = () => {
-  usePageTitle('الشروط والأحكام');
+  const { t } = useTranslation();
+  usePageTitle(t('public.الشروط والأحكام'));
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasCms, setHasCms] = useState(false);
   // محتوى CMS يُصيَّر كـHTML: ننظّفه أولاً حتى لا يصبح محرّر خبيث XSS مخزّن.
   const safeContent = useMemo(() => sanitizeHtml(content), [content]);
+
+  const fallback = useMemo(
+    () => [
+      { title: t('public.بيعة الخدمة'), body: t('public.تقدم المنصة خدمات الحجر الصحي والتسجيل المسبق والتحقق من الشهادات بناءً على اللوائح الصحية الدولية (IHR) والتشريعات الوطنية السودانية') },
+      { title: t('public.استخدام المنصة'), body: t('public.الاستفادة من خدمات المنصة مسألة طوعية للجهات العامة؛ ويترتب على المستخدم الالتزام ببيانات صحيحة وكاملة عند التسجيل، وتُشكل أي بيانات مغلوطة مسؤولية مُدخلها') },
+      { title: t('public.المسؤوليات'), body: t('public.تبذل المنصة جهداً معقولاً لتوافر الخدمة ودقة المعلومات، دون ضمان عدم انقطاعها؛ ولا تعتبر المنصة مسؤولة عن نتائج الدخول أو القرارات المتخذة بناءً على بيانات غير دقيقة أُدخلت من المستخدم') },
+      { title: t('public.الإجراءات واللوائح'), body: t('public.تخضع الخدمات لإجراءات ولوائح العمل المنظمة في المنافذ الصحية، وقد تُحدَّث هذه الشروط من وقت لآخر مع إشعار على المنصة') },
+      { title: t('public.القانون الساري'), body: t('public.يُحكم هذه الشروط والأحكام وفق قوانين جمهورية السودان، وأي نزاع يُعرض على القضاء المختص') },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -48,9 +53,9 @@ const TermsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="الشروط والأحكام"
-        subtitle="الشروط المنظمة لاستخدام خدمات منصة الحجر الصحي القومي"
-        eyebrow="شروط الاستخدام"
+        title={t('public.الشروط والأحكام')}
+        subtitle={t('public.الشروط المنظمة لاستخدام خدمات منصة الحجر الصحي القومي')}
+        eyebrow={t('public.شروط الاستخدام')}
       />
 
       {loading ? (
@@ -71,7 +76,7 @@ const TermsPage = () => {
         />
       ) : (
         <Stack spacing={3} sx={{ maxWidth: 760, mx: 'auto' }}>
-          {FALLBACK.map((section, index) => (
+          {fallback.map((section, index) => (
             <Box key={section.title}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Box
@@ -97,7 +102,7 @@ const TermsPage = () => {
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.9 }}>
                 {section.body}
               </Typography>
-              {index < FALLBACK.length - 1 && <Divider sx={{ mt: 3 }} />}
+              {index < fallback.length - 1 && <Divider sx={{ mt: 3 }} />}
             </Box>
           ))}
         </Stack>

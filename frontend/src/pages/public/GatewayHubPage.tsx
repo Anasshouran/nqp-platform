@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -53,159 +54,172 @@ interface Gateway {
   public: boolean;
 }
 
-const GATEWAYS: Gateway[] = [
-  {
-    id: 'traveler',
-    title: 'بوابة المسافر',
-    subtitle: 'خدمات المسافر: التسجيل المسبق، تتبع الطلبات، إدارة المستندات',
-    icon: <PersonIcon />,
-    color: 'primary.main',
-    path: '/traveler/login',
-    public: true,
-  },
-  {
-    id: 'sectors',
-    title: 'بوابة القطاعات',
-    subtitle: 'القطاعات الصحية الخمسة: البحر الأحمر، الخرطوم، كسلا، القضارف، الشمالي',
-    icon: <AccountTreeIcon />,
-    color: 'primary.main',
-    path: '/gateways#sectors',
-    public: true,
-  },
-  {
-    id: 'ports',
-    title: 'بوابة المنافذ',
-    subtitle: 'المطارات والموانئ والمعابر البرية المنتشرة في جميع أنحاء السودان',
-    icon: <FlightIcon />,
-    color: '#2f6f9f',
-    path: '/gateways#ports',
-    public: true,
-  },
-  {
-    id: 'clinic',
-    title: 'بوابة العيادات',
-    subtitle: 'نظام العيادات: الفحوصات، العزل، الأدوية، وسجلات المرضى',
-    icon: <LocalHospitalIcon />,
-    color: '#c63a3a',
-    path: '/app/clinic',
-    public: false,
-  },
-  {
-    id: 'lab',
-    title: 'بوابة المختبرات',
-    subtitle: 'إدارة المختبرات: التحاليل الدموية، الكيمياء، المجهرية، مراقبة الجودة',
-    icon: <ScienceIcon />,
-    color: '#7a5c9e',
-    path: '/app/laboratory',
-    public: false,
-  },
-  {
-    id: 'food',
-    title: 'بوابة رقابة الأغذية',
-    subtitle: 'فحص وتحليل ورقابة الأغذية والمستوردات الغذائية',
-    icon: <RestaurantIcon />,
-    color: '#8c6d1f',
-    path: '/app/food',
-    public: false,
-  },
-  {
-    id: 'vector',
-    title: 'بوابة مكافحة النواقل',
-    subtitle: 'مكافحة الحشرات الناقلة للأمراض ومراقبة المخاطر البيئية',
-    icon: <BugReportIcon />,
-    color: '#b3544b',
-    path: '/app/vector-control',
-    public: false,
-  },
-  {
-    id: 'surveillance',
-    title: 'بوابة الترصد',
-    subtitle: 'الرصد الوبائي والإنذارات المبكرة وتحليل الأوبئة',
-    icon: <MonitorHeartIcon />,
-    color: '#1565c0',
-    path: '/app/surveillance',
-    public: false,
-  },
-  {
-    id: 'vaccination',
-    title: 'بوابة التطعيم الدولي',
-    subtitle: 'إدارة التطعيمات والجرعات وشهادات التطعيم الدولية',
-    icon: <VaccinesIcon />,
-    color: '#2e7d32',
-    path: '/app/vaccination',
-    public: false,
-  },
-  {
-    id: 'certificates',
-    title: 'التحقق من الشهادات',
-    subtitle: 'التحقق من صحة الشهادات الطبية وطلب شهادات جديدة',
-    icon: <VerifiedIcon />,
-    color: '#0277bd',
-    path: '/verify',
-    public: true,
-  },
-  {
-    id: 'airlines',
-    title: 'بوابة شركات الطيران',
-    subtitle: 'خدمات شركات الطيران: إدارة الرحلات والركاب والمتطلبات الصحية',
-    icon: <LocalShippingIcon />,
-    color: '#2f6dd0',
-    path: '/app/carrier',
-    public: false,
-  },
-  {
-    id: 'shipping',
-    title: 'بوابة شركات الشحن والموانئ',
-    subtitle: 'شركات الشحن والجهات البحرية وشحن البضائع',
-    icon: <DirectionsBoatIcon />,
-    color: '#6d4c41',
-    path: '/app/food-ops',
-    public: false,
-  },
-  {
-    id: 'partners',
-    title: 'بوابة المنظمات والشركاء',
-    subtitle: 'المنظمات الدولية والشراكات الثنائية والتعاون المؤسسي',
-    icon: <HandshakeIcon />,
-    color: '#00838f',
-    path: '/partners',
-    public: true,
-  },
-  {
-    id: 'admin',
-    title: 'بوابة الإدارة العامة',
-    subtitle: 'لوحة الإدارة العامة: إدارة المستخدمين، الأدوار، البلاغات، الإعدادات',
-    icon: <AdminPanelSettingsIcon />,
-    color: '#37474f',
-    path: '/app',
-    public: false,
-  },
-];
-
-const regionLabels: Record<string, string> = {
-  KHARTOUM: 'الخرطوم',
-  RED_SEA: 'البحر الأحمر',
-  KASSALA: 'كسلا',
-  GEDAREF: 'القضارف',
-  NORTHERN: 'شمالي',
-  KORDOFAN: 'كردفان',
-};
 
 const sectorSlug = (code: string) => code.toLowerCase().replace('_', '-');
 
-const statsOverview = [
-  { icon: <HealthAndSafetyIcon />, value: '5', label: 'قطاعات صحية', color: 'primary.main' },
-  { icon: <LocalShippingIcon />, value: '14', label: 'منافذ دخول', color: '#2f6f9f' },
-  { icon: <LocalHospitalIcon />, value: '7', label: 'عيادات نشطة', color: '#c63a3a' },
-  { icon: <ScienceIcon />, value: '12', label: 'مختبر', color: '#7a5c9e' },
-  { icon: <VaccinesIcon />, value: '6', label: 'مواقع تطعيم', color: '#2e7d32' },
-];
 
 const GatewayHubPage = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [ports, setPorts] = useState<PublicPort[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const GATEWAYS: Gateway[] = useMemo(
+    () => (
+      [
+        {
+          id: 'traveler',
+          title: t('public.بوابة المسافر'),
+          subtitle: t('public.خدمات المسافر التسجيل المسبق، تتبع الطلبات، إدارة المستندات'),
+          icon: <PersonIcon />,
+          color: 'primary.main',
+          path: '/traveler/login',
+          public: true,
+        },
+        {
+          id: 'sectors',
+          title: t('public.بوابة القطاعات'),
+          subtitle: t('public.القطاعات الصحية الخمسة البحر الأحمر، الخرطوم، كسلا، القضارف، الشمالي'),
+          icon: <AccountTreeIcon />,
+          color: 'primary.main',
+          path: '/gateways#sectors',
+          public: true,
+        },
+        {
+          id: 'ports',
+          title: t('public.بوابة المنافذ'),
+          subtitle: t('public.المطارات والموانئ والمعابر البرية المنتشرة في جميع أنحاء السودان'),
+          icon: <FlightIcon />,
+          color: '#2f6f9f',
+          path: '/gateways#ports',
+          public: true,
+        },
+        {
+          id: 'clinic',
+          title: t('public.بوابة العيادات'),
+          subtitle: t('public.نظام العيادات الفحوصات، العزل، الأدوية، وسجلات المرضى'),
+          icon: <LocalHospitalIcon />,
+          color: '#c63a3a',
+          path: '/app/clinic',
+          public: false,
+        },
+        {
+          id: 'lab',
+          title: t('public.بوابة المختبرات'),
+          subtitle: t('public.إدارة المختبرات التحاليل الدموية، الكيمياء، المجهرية، مراقبة الجودة'),
+          icon: <ScienceIcon />,
+          color: '#7a5c9e',
+          path: '/app/laboratory',
+          public: false,
+        },
+        {
+          id: 'food',
+          title: t('public.بوابة رقابة الأغذية'),
+          subtitle: t('public.فحص وتحليل ورقابة الأغذية والمستوردات الغذائية'),
+          icon: <RestaurantIcon />,
+          color: '#8c6d1f',
+          path: '/app/food',
+          public: false,
+        },
+        {
+          id: 'vector',
+          title: t('public.بوابة مكافحة النواقل'),
+          subtitle: t('public.مكافحة الحشرات الناقلة للأمراض ومراقبة المخاطر البيئية'),
+          icon: <BugReportIcon />,
+          color: '#b3544b',
+          path: '/app/vector-control',
+          public: false,
+        },
+        {
+          id: 'surveillance',
+          title: t('public.بوابة الترصد'),
+          subtitle: t('public.الرصد الوبائي والإنذارات المبكرة وتحليل الأوبئة'),
+          icon: <MonitorHeartIcon />,
+          color: '#1565c0',
+          path: '/app/surveillance',
+          public: false,
+        },
+        {
+          id: 'vaccination',
+          title: t('public.بوابة التطعيم الدولي'),
+          subtitle: t('public.إدارة التطعيمات والجرعات وشهادات التطعيم الدولية'),
+          icon: <VaccinesIcon />,
+          color: '#2e7d32',
+          path: '/app/vaccination',
+          public: false,
+        },
+        {
+          id: 'certificates',
+          title: t('public.التحقق من الشهادات'),
+          subtitle: t('public.التحقق من صحة الشهادات الطبية وطلب شهادات جديدة'),
+          icon: <VerifiedIcon />,
+          color: '#0277bd',
+          path: '/verify',
+          public: true,
+        },
+        {
+          id: 'airlines',
+          title: t('public.بوابة شركات الطيران'),
+          subtitle: t('public.خدمات شركات الطيران إدارة الرحلات والركاب والمتطلبات الصحية'),
+          icon: <LocalShippingIcon />,
+          color: '#2f6dd0',
+          path: '/app/carrier',
+          public: false,
+        },
+        {
+          id: 'shipping',
+          title: t('public.بوابة شركات الشحن والموانئ'),
+          subtitle: t('public.شركات الشحن والجهات البحرية وشحن البضائع'),
+          icon: <DirectionsBoatIcon />,
+          color: '#6d4c41',
+          path: '/app/food-ops',
+          public: false,
+        },
+        {
+          id: 'partners',
+          title: t('public.بوابة المنظمات والشركاء'),
+          subtitle: t('public.المنظمات الدولية والشراكات الثنائية والتعاون المؤسسي'),
+          icon: <HandshakeIcon />,
+          color: '#00838f',
+          path: '/partners',
+          public: true,
+        },
+        {
+          id: 'admin',
+          title: t('public.بوابة الإدارة العامة'),
+          subtitle: t('public.لوحة الإدارة العامة إدارة المستخدمين، الأدوار، البلاغات، الإعدادات'),
+          icon: <AdminPanelSettingsIcon />,
+          color: '#37474f',
+          path: '/app',
+          public: false,
+        },
+      ]),
+    [t],
+  );
+  const regionLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        KHARTOUM: t('public.الخرطوم'),
+        RED_SEA: t('public.البحر الأحمر'),
+        KASSALA: t('public.كسلا'),
+        GEDAREF: t('public.القضارف'),
+        NORTHERN: t('public.شمالي'),
+        KORDOFAN: t('public.كردفان'),
+      }),
+    [t],
+  );
+  const statsOverview = useMemo(
+    () => (
+      [
+        { icon: <HealthAndSafetyIcon />, value: '5', label: t('public.قطاعات صحية'), color: 'primary.main' },
+        { icon: <LocalShippingIcon />, value: '14', label: t('public.منافذ دخول'), color: '#2f6f9f' },
+        { icon: <LocalHospitalIcon />, value: '7', label: t('public.عيادات نشطة'), color: '#c63a3a' },
+        { icon: <ScienceIcon />, value: '12', label: t('public.مختبر'), color: '#7a5c9e' },
+        { icon: <VaccinesIcon />, value: '6', label: t('public.مواقع تطعيم'), color: '#2e7d32' },
+      ]),
+    [t],
+  );
   const { hash } = useLocation();
 
   useEffect(() => {
@@ -239,7 +253,7 @@ const GatewayHubPage = () => {
         g.subtitle.toLowerCase().includes(query) ||
         g.id.toLowerCase().includes(query),
     );
-  }, [search]);
+  }, [search, GATEWAYS]);
 
   const publicGateways = filteredGateways.filter((g) => g.public);
   const operationalGateways = filteredGateways.filter((g) => !g.public);
@@ -266,7 +280,7 @@ const GatewayHubPage = () => {
           {gateway.public ? (
             <Chip
               icon={<PublicIcon />}
-              label="عامة"
+              label={t('public.عامة')}
               size="small"
               color="success"
               variant="outlined"
@@ -275,7 +289,7 @@ const GatewayHubPage = () => {
           ) : (
             <Chip
               icon={<LockIcon />}
-              label="تتطلب تسجيل"
+              label={t('public.تتطلب تسجيل')}
               size="small"
               color="warning"
               variant="outlined"
@@ -302,8 +316,7 @@ const GatewayHubPage = () => {
           endIcon={<ArrowForwardIcon />}
           sx={{ fontWeight: 700 }}
         >
-          دخول البوابة
-        </Button>
+          {t('public.دخول البوابة')}</Button>
       </CardContent>
     </Card>
   );
@@ -311,9 +324,9 @@ const GatewayHubPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="بوابات الحجر الصحي القومي"
-        subtitle="اختر البوابة المناسبة للوصول إلى الخدمات الرقمية"
-        eyebrow="🏛️ بوابات المنصة"
+        title={t('public.بوابات الحجر الصحي القومي')}
+        subtitle={t('public.اختر البوابة المناسبة للوصول إلى الخدمات الرقمية')}
+        eyebrow={t('public.🏛️ بوابات المنصة')}
       />
 
       {/* Stats overview */}
@@ -365,8 +378,8 @@ const GatewayHubPage = () => {
         <TextField
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="ابحث عن بوابة..."
-          aria-label="بحث عن بوابة"
+          placeholder={t('public.ابحث عن بوابة')}
+          aria-label={t('public.بحث عن بوابة')}
           size="small"
           sx={{ minWidth: { xs: '100%', sm: 400 } }}
           InputProps={{
@@ -383,8 +396,8 @@ const GatewayHubPage = () => {
       {publicGateways.length > 0 && (
         <Box sx={{ mb: 5 }}>
           <SectionTitle
-            title="البوابات العامة"
-            subtitle="خدمات متاحة بدون تسجيل الدخول"
+            title={t('public.البوابات العامة')}
+            subtitle={t('public.خدمات متاحة بدون تسجيل الدخول')}
             align="center"
           />
           <Grid container spacing={3}>
@@ -401,8 +414,8 @@ const GatewayHubPage = () => {
       {operationalGateways.length > 0 && (
         <Box sx={{ mb: 5 }}>
           <SectionTitle
-            title="البوابات التشغيلية"
-            subtitle="تتطلب تسجيل الدخول عبر المنصة"
+            title={t('public.البوابات التشغيلية')}
+            subtitle={t('public.تتطلب تسجيل الدخول عبر المنصة')}
             align="center"
           />
           <Grid container spacing={3}>
@@ -418,27 +431,24 @@ const GatewayHubPage = () => {
       {filteredGateways.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography variant="h6" color="text.secondary">
-            لا توجد بوابات مطابقة
-          </Typography>
+            {t('public.لا توجد بوابات مطابقة')}</Typography>
           <Typography variant="body2" color="text.secondary">
-            جرّب تغيير كلمة البحث.
-          </Typography>
+            {t('public.جرّب تغيير كلمة البحث')}</Typography>
         </Box>
       )}
 
       {/* Sectors section */}
       <Box id="sectors" sx={{ mb: 6, pt: 3 }}>
         <SectionTitle
-          title="بوابة القطاعات"
-          subtitle="الوصول إلى الخدمات والمعلومات الخاصة بكل قطاع صحي"
+          title={t('public.بوابة القطاعات')}
+          subtitle={t('public.الوصول إلى الخدمات والمعلومات الخاصة بكل قطاع صحي')}
           align="center"
         />
         {loading ? (
           <CardsGridSkeleton count={6} />
         ) : sectors.length === 0 ? (
           <Typography color="text.secondary" sx={{ textAlign: 'center', display: 'block', py: 4 }}>
-            لا توجد قطاعات مسجلة.
-          </Typography>
+            {t('public.لا توجد قطاعات مسجلة')}</Typography>
         ) : (
           <Grid container spacing={3}>
             {sectors.map((sector) => (
@@ -463,7 +473,7 @@ const GatewayHubPage = () => {
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Chip
                           icon={<CheckCircleIcon />}
-                          label="نشط"
+                          label={t('public.نشط')}
                           size="small"
                           color="success"
                           variant="outlined"
@@ -481,13 +491,13 @@ const GatewayHubPage = () => {
                     <Divider sx={{ my: 1.5 }} />
 
                     <Typography variant="body2" sx={{ mb: 2, flex: 1, minHeight: 40 }}>
-                      {sector.description_ar || 'قطاع صحي تابع للإدارة الاتحادية للحجر الصحي.'}
+                      {sector.description_ar || t('public.قطاع صحي تابع للإدارة الاتحادية للحجر الصحي')}
                     </Typography>
 
                     <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: 'primary.main', fontWeight: 700, fontSize: 14 }}>
                         <LocalShippingIcon sx={{ fontSize: 18 }} />
-                        {sector.ports_count} نقطة دخول
+                        {sector.ports_count} {t('public.نقطة دخول')}
                       </Box>
                       {sector.phone && (
                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', fontSize: 13 }}>
@@ -506,8 +516,7 @@ const GatewayHubPage = () => {
                       endIcon={<ArrowForwardIcon />}
                       sx={{ fontWeight: 700 }}
                     >
-                      دخول البوابة
-                    </Button>
+                      {t('public.دخول البوابة')}</Button>
                   </CardContent>
                 </Card>
               </Grid>
@@ -519,16 +528,15 @@ const GatewayHubPage = () => {
       {/* Ports section */}
       <Box id="ports" sx={{ mb: 2, pt: 3 }}>
         <SectionTitle
-          title="بوابة المنافذ"
-          subtitle="تصفّح جميع منافذ الحجر الصحي حسب النوع"
+          title={t('public.بوابة المنافذ')}
+          subtitle={t('public.تصفّح جميع منافذ الحجر الصحي حسب النوع')}
           align="center"
         />
         {loading ? (
           <CardsGridSkeleton count={6} />
         ) : ports.length === 0 ? (
           <Typography color="text.secondary" sx={{ textAlign: 'center', display: 'block', py: 4 }}>
-            لا توجد منافذ مسجلة.
-          </Typography>
+            {t('public.لا توجد منافذ مسجلة')}</Typography>
         ) : (
           <Grid container spacing={3}>
             {ports.map((port) => (
@@ -597,8 +605,7 @@ const GatewayHubPage = () => {
                       color="primary"
                       sx={{ mt: 1.5, fontWeight: 700 }}
                     >
-                      التفاصيل
-                    </Button>
+                      {t('public.التفاصيل')}</Button>
                   </CardContent>
                 </Card>
               </Grid>
@@ -615,8 +622,7 @@ const GatewayHubPage = () => {
           startIcon={<AdminPanelSettingsIcon />}
           sx={{ fontWeight: 700 }}
         >
-          دخول موظفي المنصة
-        </Button>
+          {t('public.دخول موظفي المنصة')}</Button>
       </Box>
     </Container>
   );

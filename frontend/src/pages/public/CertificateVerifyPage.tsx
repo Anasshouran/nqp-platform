@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
@@ -18,13 +19,19 @@ import type { CertificateVerifyResult } from '../../types/clinic';
 import { formatDateTime } from '../../utils/formatters';
 import { maskIdentity } from '../../utils/maskIdentity';
 
-const certTypeLabels: Record<string, string> = {
-  CLEARANCE: 'شهادة خلو من الأمراض',
-  NEGATIVE: 'شهادة نتيجة سلبية',
-  MEDICAL: 'تقرير طبي',
-};
 
 const CertificateVerifyPage = () => {
+  const { t } = useTranslation();
+
+  const certTypeLabels: Record<string, string> = useMemo(
+    () => (
+      {
+        CLEARANCE: t('public.شهادة خلو من الأمراض'),
+        NEGATIVE: t('public.شهادة نتيجة سلبية'),
+        MEDICAL: t('public.تقرير طبي'),
+      }),
+    [t],
+  );
   const { number } = useParams<{ number: string }>();
   const [result, setResult] = useState<CertificateVerifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +44,16 @@ const CertificateVerifyPage = () => {
     apiClient
       .get(`/clinic/public/certificates/${encodeURIComponent(number)}/verify/`)
       .then((res: { data?: { data?: CertificateVerifyResult } }) => setResult(res.data?.data ?? null))
-      .catch((err) => setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'تعذر التحقق من الشهادة'))
+      .catch((err) => setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('public.تعذر التحقق من الشهادة')))
       .finally(() => setLoading(false));
-  }, [number]);
+  }, [number, t]);
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="التحقق من الشهادة الصحية"
-        subtitle="تحقق موثوق من الشهادات الصحية الصادرة عن عيادات الحجر الصحي"
-        eyebrow="خدمة التحقق"
+        title={t('public.التحقق من الشهادة الصحية')}
+        subtitle={t('public.تحقق موثوق من الشهادات الصحية الصادرة عن عيادات الحجر الصحي')}
+        eyebrow={t('public.خدمة التحقق')}
       />
 
       <Card
@@ -65,7 +72,7 @@ const CertificateVerifyPage = () => {
           {loading ? (
             <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
               <CircularProgress />
-              <Typography color="text.secondary">جارٍ التحقق…</Typography>
+              <Typography color="text.secondary">{t('public.جارٍ التحقق…')}</Typography>
             </Stack>
           ) : error ? (
             <Stack alignItems="center" spacing={1.5} sx={{ py: 3 }}>
@@ -76,12 +83,10 @@ const CertificateVerifyPage = () => {
             <Stack spacing={2}>
               {result.verified ? (
                 <Alert icon={<VerifiedUserIcon />} severity="success" sx={{ borderRadius: 2.5 }}>
-                  تم التحقق بنجاح — الشهادة صالحة وسارية
-                </Alert>
+                  {t('public.تم التحقق بنجاح — الشهادة صالحة وسارية')}</Alert>
               ) : (
                 <Alert icon={<HighlightOffIcon />} severity="error" sx={{ borderRadius: 2.5 }}>
-                  الشهادة ملغاة أو غير صالحة
-                </Alert>
+                  {t('public.الشهادة ملغاة أو غير صالحة')}</Alert>
               )}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
                 <Box
@@ -106,17 +111,17 @@ const CertificateVerifyPage = () => {
                   </Typography>
                 </Box>
                 <Chip
-                  label={result.status === 'ACTIVE' ? 'سارية' : 'ملغاة'}
+                  label={result.status === 'ACTIVE' ? t('public.سارية') : t('public.ملغاة')}
                   color={result.status === 'ACTIVE' ? 'success' : 'error'}
                   sx={{ fontWeight: 700 }}
                 />
               </Stack>
               <Stack spacing={1}>
                 <Typography variant="body2">
-                  الجهة المصدرة: <b>{result.clinic_name || '—'}</b>
+                  {t('public.الجهة المصدرة')}<b>{result.clinic_name || '—'}</b>
                 </Typography>
                 <Typography variant="body2">
-                  تاريخ الإصدار: <b>{formatDateTime(result.issued_at)}</b>
+                  {t('public.تاريخ الإصدار')}<b>{formatDateTime(result.issued_at)}</b>
                 </Typography>
               </Stack>
             </Stack>

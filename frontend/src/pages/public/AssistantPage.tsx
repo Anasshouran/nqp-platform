@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -30,15 +31,6 @@ import {
 import { ListSkeleton } from '../../components/common';
 import SmartAssistant from '../../components/common/SmartAssistant';
 
-const heroTopics: Array<{ key: string; label: string; icon: React.ReactElement }> = [
-  { key: 'travel', label: 'متطلبات السفر', icon: <LuggageIcon /> },
-  { key: 'services', label: 'الخدمات', icon: <AppsIcon /> },
-  { key: 'health', label: 'الإرشادات الصحية', icon: <HealthAndSafetyIcon /> },
-  { key: 'notices', label: 'التنبيهات', icon: <NotificationsActiveIcon /> },
-  { key: 'verify', label: 'التحقق من الشهادات', icon: <VerifiedIcon /> },
-  { key: 'food', label: 'سلامة الأغذية', icon: <RestaurantIcon /> },
-];
-
 const topicIconMap: Record<string, React.ReactElement> = {
   FAQ: <HealthAndSafetyIcon fontSize="small" />,
   TRAVEL: <LuggageIcon fontSize="small" />,
@@ -56,6 +48,20 @@ const topicColor: Record<string, 'default' | 'primary' | 'secondary' | 'error' |
 };
 
 const AssistantPage = () => {
+  const { t } = useTranslation();
+
+  const heroTopics: Array<{ key: string; label: string; icon: React.ReactElement }> = useMemo(
+    () => [
+      { key: 'travel', label: t('public.متطلبات السفر'), icon: <LuggageIcon /> },
+      { key: 'services', label: t('public.الخدمات'), icon: <AppsIcon /> },
+      { key: 'health', label: t('public.الإرشادات الصحية'), icon: <HealthAndSafetyIcon /> },
+      { key: 'notices', label: t('public.التنبيهات'), icon: <NotificationsActiveIcon /> },
+      { key: 'verify', label: t('public.التحقق من الشهادات'), icon: <VerifiedIcon /> },
+      { key: 'food', label: t('public.سلامة الأغذية'), icon: <RestaurantIcon /> },
+    ],
+    [t],
+  );
+
   const [topics, setTopics] = useState<AssistantTopic[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,13 +90,13 @@ const AssistantPage = () => {
           <SmartToyIcon sx={{ fontSize: 44 }} />
         </Avatar>
         <Typography variant="h3" sx={{ fontWeight: 700 }}>
-          المساعد الذكي
+          {t('public.المساعد الذكي')}
         </Typography>
         <Typography color="text.secondary" sx={{ fontWeight: 700, mb: 1 }} dir="ltr">
           NQP Smart Assistant
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 560, mx: 'auto' }}>
-          مساعدك للوصول إلى المعلومات والخدمات الرسمية لمنصة الحجر الصحي القومي.
+          {t('public.مساعدك للوصول إلى المعلومات والخدمات الرسمية لمنصة الحجر الصحي القومي')}
         </Typography>
         <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" useFlexGap sx={{ mt: 2.5 }}>
           {heroTopics.map((t) => (
@@ -113,7 +119,7 @@ const AssistantPage = () => {
             <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  المواضيع الشائعة
+                  {t('public.المواضيع الشائعة')}
                 </Typography>
                 {loading ? (
                   <ListSkeleton count={4} />
@@ -137,7 +143,7 @@ const AssistantPage = () => {
                   </List>
                 )}
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  يقوم المسؤول بتحديث هذه المصادر من لوحة الإدارة دون تعديل البرنامج.
+                  {t('public.يقوم المسؤول بتحديث هذه المصادر من لوحة الإدارة دون تعديل البرنامج')}
                 </Typography>
               </CardContent>
             </Card>
@@ -145,10 +151,10 @@ const AssistantPage = () => {
             <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
-                  التواصل مع الدعم
+                  {t('public.التواصل مع الدعم')}
                 </Typography>
                 <Stack spacing={1}>
-                  <Chip icon={<CallIcon />} label="الخط الساخن: 18777" sx={{ width: 'fit-content', fontWeight: 700 }} />
+                  <Chip icon={<CallIcon />} label={t('public.الخط الساخن 18777')} sx={{ width: 'fit-content', fontWeight: 700 }} />
                   <Chip icon={<EmailIcon />} label="info@nqp.gov.sd" sx={{ width: 'fit-content', fontWeight: 700 }} />
                 </Stack>
                 <Button
@@ -158,7 +164,7 @@ const AssistantPage = () => {
                   size="small"
                   sx={{ mt: 2, textTransform: 'none' }}
                 >
-                  صفحة اتصل بنا
+                  {t('public.صفحة اتصل بنا')}
                 </Button>
               </CardContent>
             </Card>
@@ -172,7 +178,7 @@ const AssistantPage = () => {
 
       <Box sx={{ mt: 4, textAlign: 'center' }}>
         <Button component={Link} to="/services" size="small" sx={{ textTransform: 'none' }}>
-          تصفح جميع خدمات المنصة
+          {t('public.تصفح جميع خدمات المنصة')}
         </Button>
       </Box>
     </Container>
