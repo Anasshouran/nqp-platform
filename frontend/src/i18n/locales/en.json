@@ -856,10 +856,11 @@
         "bodyPain": "Body Pain",
         "vomiting": "Vomiting",
         "diarrhea": "Diarrhea",
-        "lossOfAppetite": "Loss of Appetite",
-        "difficultySwallowing": "Difficulty Swallowing",
+        "lossOfAppetite": "Loss of appetite",
+        "difficultySwallowing": "Difficulty swallowing",
         "bleeding": "Bleeding",
-        "other": "Other"
+        "contactWithPatient": "Contact with patient",
+        "otherSymptoms": "Other symptoms"
       },
       "travelModes": {
         "air": "Air",
@@ -877,11 +878,12 @@
       "submitting": "Submitting...",
       "success": "Request submitted successfully",
       "steps": {
-        "personal": "Personal Information",
-        "travel": "Travel Information",
+        "start": "Start",
+        "personal": "Personal Info",
+        "trip": "Trip Info",
+        "purposeContact": "Purpose & Contact",
         "health": "Health Declaration",
-        "accommodation": "Accommodation",
-        "review": "Review"
+        "review": "Review & Confirm"
       },
       "personal": {
         "firstName": "First Name",
@@ -935,7 +937,37 @@
       "uploadDocuments": {
         "title": "Upload Documents",
         "subtitle": "Upload required documents to complete request"
-      }
+      },
+      "purpose": {
+        "tourism": "Tourism",
+        "work": "Work",
+        "visit": "Visit",
+        "study": "Study",
+        "transit": "Transit",
+        "diplomatic": "Diplomatic",
+        "internationalOrg": "International Organization",
+        "other": "Other"
+      },
+      "form": {
+        "seatOrCabin": "Seat / Cabin No. (optional)",
+        "bookingOrFlight": "Booking / Flight No. (optional)",
+        "seat": "Seat No. (optional)",
+        "flightNumberOrShip": "Flight No. / Ship Name",
+        "flightNumber": "Flight No."
+      },
+      "risk": {
+        "initial": "Initial risk assessment:",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "mediumDesc": "You may need additional screening on arrival.",
+        "highDesc": "Please proceed to medical screening upon arrival."
+      },
+      "points": "points",
+      "date": "Date",
+      "noSymptoms": "No symptoms",
+      "stepProgress": "Step",
+      "of": "of"
     },
     "requestTracking": {
       "status": {
@@ -951,8 +983,9 @@
       "eyebrow": "Traveler",
       "form": {
         "passportLabel": "Passport Number",
-        "passportPlaceholder": "Enter passport number",
         "dobLabel": "Date of Birth",
+        "search": "Search",
+        "passportPlaceholder": "Enter passport number",
         "searchButton": "Search",
         "searching": "Searching..."
       },
@@ -963,10 +996,15 @@
         "title": "QR Code for Tracking",
         "issued": "QR code issued",
         "notIssued": "QR code not issued yet",
-        "refresh": "Refresh QR"
+        "refresh": "Refresh QR",
+        "printInstruction": "Show this QR code to the quarantine officer on arrival."
       },
       "timeline": {
-        "title": "Request Timeline"
+        "title": "Request Timeline",
+        "created": "Request created",
+        "documents": "Documents uploaded",
+        "review": "Health declaration & review",
+        "approved": "Approval & QR issuance"
       },
       "details": {
         "travelerName": "Traveler Name",
@@ -975,7 +1013,18 @@
         "nationality": "Nationality"
       },
       "error": {
-        "notFound": "Request not found with this number"
+        "notFound": "Request not found with this number",
+        "search": "Please enter passport number.",
+        "searchDob": "Please enter date of birth to verify identity.",
+        "refresh": "Failed to reissue QR code, try again.",
+        "load": "Failed to load request status, try again."
+      },
+      "share": {
+        "title": "QR Code - NQP"
+      },
+      "empty": {
+        "title": "Search for your request",
+        "description": "Enter passport number and date of birth above to view status, or pre-register from the traveler portal."
       }
     },
     "healthProfile": {
@@ -1001,7 +1050,12 @@
       "travelMode": "Travel Mode",
       "healthDeclaration": "Health Declaration",
       "documents": "Documents",
-      "viewDocuments": "View Documents"
+      "viewDocuments": "View Documents",
+      "units": {
+        "byte": "Bytes",
+        "kb": "KB",
+        "mb": "MB"
+      }
     },
     "dashboard": {
       "title": "Traveler Dashboard",
@@ -1088,6 +1142,18 @@
         "air": "Airplane",
         "sea": "Ship",
         "land": "Land"
+      },
+      "notificationsTooltip": "Notifications",
+      "notificationsAria": "Notifications",
+      "profileTooltip": "My Profile",
+      "profileAria": "Profile",
+      "healthDeclaration": {
+        "title": "Health Declaration",
+        "submitted": "Submitted",
+        "risk": "Risk Level",
+        "date": "Submitted On",
+        "symptoms": "Symptoms",
+        "noSymptoms": "No symptoms"
       }
     },
     "uploadDocuments": {
@@ -1107,15 +1173,34 @@
       "uploaded": "Uploaded",
       "remove": "Remove",
       "submit": "Submit",
-      "success": "Documents uploaded successfully",
-      "error": "Error uploading documents",
+      "success": {
+        "delete": "Document deleted"
+      },
+      "error": {
+        "load": "Failed to load documents.",
+        "searchPassport": "Please enter passport number.",
+        "searchDob": "Please enter date of birth to verify identity.",
+        "notFound": "No traveler found with this number. Please complete pre-registration first.",
+        "searchGeneric": "Error searching. Please try again.",
+        "fileType": "Unsupported file type (JPEG, PNG, PDF allowed).",
+        "fileSize": "File too large (max 5MB).",
+        "upload": "Failed to upload file:",
+        "delete": "Failed to delete document"
+      },
       "passportNumber": "Passport Number",
       "passportPlaceholder": "Enter passport number",
       "selectType": "Select document type",
       "selectFile": "Select File",
       "noDocuments": "No documents uploaded",
       "fileSize": "File Size",
-      "fileType": "File Type"
+      "fileType": "File Type",
+      "delete": {
+        "title": "Delete document",
+        "message": "Do you want to delete \"{{name}}\"? This action cannot be undone.",
+        "confirm": "Delete",
+        "aria": "Delete",
+        "fallback": "the document"
+      }
     }
   }
 }

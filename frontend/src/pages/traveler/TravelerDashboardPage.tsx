@@ -37,13 +37,6 @@ import type { HealthNotice } from '../../api/endpoints/public';
 import { logout as logoutApi } from '../../api/endpoints/auth';
 import { purgeServiceWorkerCaches } from '../../api/client';
 
-const registrationLabels: Record<string, string> = {
-  PENDING_DOCUMENTS: 'بانتظار المستندات',
-  UNDER_REVIEW: 'قيد المراجعة',
-  COMPLETED: 'مكتمل',
-  REJECTED: 'مرفوض',
-};
-
 const statusColors: Record<string, 'warning' | 'info' | 'success' | 'error'> = {
   PENDING_DOCUMENTS: 'warning',
   UNDER_REVIEW: 'info',
@@ -55,25 +48,6 @@ const riskColors: Record<string, 'success' | 'warning' | 'error'> = {
   منخفض: 'success',
   متوسط: 'warning',
   مرتفع: 'error',
-};
-
-const symptomLabels: Record<string, string> = {
-  fever: 'حمى',
-  headache: 'صداع',
-  body_pain: 'ألم في الجسم',
-  vomiting: 'قيء',
-  diarrhea: 'إسهال',
-  loss_of_appetite: 'فقدان الشهية',
-  difficulty_swallowing: 'صعوبة في البلع',
-  bleeding: 'نزيف',
-  contact_with_patient: 'مخالطة مريض',
-  other_symptoms: 'أعراض أخرى',
-};
-
-const transportLabels: Record<string, string> = {
-  AIR: 'طائرة',
-  SEA: 'سفينة',
-  LAND: 'بر',
 };
 
 const formatDate = (value?: string | null) =>
@@ -96,6 +70,41 @@ const progressFor = (status?: string) => {
 
 const TravelerDashboardPage = () => {
   const { t } = useTranslation();
+
+  const registrationLabels = useMemo<Record<string, string>>(
+    () => ({
+      PENDING_DOCUMENTS: t('traveler.dashboard.status.pendingDocs'),
+      UNDER_REVIEW: t('traveler.dashboard.status.underReview'),
+      COMPLETED: t('traveler.dashboard.status.approved'),
+      REJECTED: t('traveler.dashboard.status.rejected'),
+    }),
+    [t],
+  );
+
+  const symptomLabels = useMemo<Record<string, string>>(
+    () => ({
+      fever: t('traveler.dashboard.symptoms.fever'),
+      headache: t('traveler.dashboard.symptoms.headache'),
+      body_pain: t('traveler.dashboard.symptoms.bodyPain'),
+      vomiting: t('traveler.dashboard.symptoms.vomiting'),
+      diarrhea: t('traveler.dashboard.symptoms.diarrhea'),
+      loss_of_appetite: t('traveler.dashboard.symptoms.lossOfAppetite'),
+      difficulty_swallowing: t('traveler.dashboard.symptoms.difficultySwallowing'),
+      bleeding: t('traveler.dashboard.symptoms.bleeding'),
+      contact_with_patient: t('traveler.dashboard.symptoms.contactWithPatient'),
+      other_symptoms: t('traveler.dashboard.symptoms.otherSymptoms'),
+    }),
+    [t],
+  );
+
+  const transportLabels = useMemo<Record<string, string>>(
+    () => ({
+      AIR: t('traveler.dashboard.transport.air'),
+      SEA: t('traveler.dashboard.transport.sea'),
+      LAND: t('traveler.dashboard.transport.land'),
+    }),
+    [t],
+  );
 
   const navigate = useNavigate();
   const [user, setUser] = useState<TravelerAuthUser | null>(null);
@@ -178,7 +187,7 @@ const TravelerDashboardPage = () => {
             .filter(([, s]) => s.has)
             .map(([key]) => symptomLabels[key] || key)
         : [],
-    [declaration],
+    [declaration, symptomLabels],
   );
 
   if (loading) {
@@ -186,7 +195,7 @@ const TravelerDashboardPage = () => {
       <Container maxWidth="lg" sx={{ py: 5 }}>
         <Stack alignItems="center" spacing={2}>
           <CircularProgress />
-          <Typography color="text.secondary">جاري تحميل بياناتك...</Typography>
+          <Typography color="text.secondary">{t('traveler.dashboard.loading')}</Typography>
         </Stack>
       </Container>
     );
@@ -194,12 +203,15 @@ const TravelerDashboardPage = () => {
 
   if (!user) return null;
 
-  const quickActions = [
-    { icon: <EditIcon />, label: 'تسجيل جديد', sub: 'بدء طلب جديد', to: '/traveler/register', color: 'primary.main' },
-    { icon: <TravelExploreIcon />, label: 'تتبع الطلب', sub: 'متابعة الحالة', to: '/traveler/tracking', color: 'info.main' },
-    { icon: <HealthAndSafetyIcon />, label: 'ملفي الصحي', sub: 'عرض وتحديث', to: '/traveler/profile', color: 'success.main' },
-    { icon: <DescriptionIcon />, label: 'المستندات', sub: 'رفع وإدارة', to: '/traveler/documents', color: 'warning.main' },
-  ];
+  const quickActions = useMemo(
+    () => [
+      { icon: <EditIcon />, label: t('traveler.dashboard.quickActions.new'), sub: t('traveler.dashboard.quickActions.newSub'), to: '/traveler/register', color: 'primary.main' },
+      { icon: <TravelExploreIcon />, label: t('traveler.dashboard.quickActions.track'), sub: t('traveler.dashboard.quickActions.trackSub'), to: '/traveler/tracking', color: 'info.main' },
+      { icon: <HealthAndSafetyIcon />, label: t('traveler.dashboard.quickActions.profile'), sub: t('traveler.dashboard.quickActions.profileSub'), to: '/traveler/profile', color: 'success.main' },
+      { icon: <DescriptionIcon />, label: t('traveler.dashboard.quickActions.documents'), sub: t('traveler.dashboard.quickActions.documentsSub'), to: '/traveler/documents', color: 'warning.main' },
+    ],
+    [t],
+  );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -210,14 +222,14 @@ const TravelerDashboardPage = () => {
             <Stack direction="row" alignItems="center" spacing={1.5}>
               <HealthAndSafetyIcon sx={{ fontSize: 28 }} />
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>منصة الحجر الصحي القومي</Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>مرحباً، {user.full_name}</Typography>
+                <Typography variant="subtitle1" fontWeight={700}>{t('traveler.dashboard.brand')}</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }}>{t('traveler.dashboard.greeting')} {user.full_name}</Typography>
               </Box>
             </Stack>
             <Stack direction="row" spacing={0.5}>
-              <Tooltip title="إشعارات">
+              <Tooltip title={t('traveler.dashboard.notificationsTooltip')}>
                 <IconButton
-                  aria-label="الإشعارات"
+                  aria-label={t('traveler.dashboard.notificationsAria')}
                   color="inherit"
                   onClick={() => navigate('/traveler/tracking')}
                   size="small"
@@ -227,9 +239,9 @@ const TravelerDashboardPage = () => {
                   </Badge>
                 </IconButton>
               </Tooltip>
-              <Tooltip title="ملفي الشخصي">
+              <Tooltip title={t('traveler.dashboard.profileTooltip')}>
                 <IconButton
-                  aria-label="الملف الشخصي"
+                  aria-label={t('traveler.dashboard.profileAria')}
                   color="inherit"
                   onClick={() => navigate('/traveler/profile')}
                   size="small"
@@ -274,7 +286,7 @@ const TravelerDashboardPage = () => {
           <Box sx={{ bgcolor: 'primary.main', color: 'white', px: 3, py: 1.5 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <FlightTakeoffIcon />
-              <Typography variant="h6" fontWeight={700}>حالة طلبك</Typography>
+              <Typography variant="h6" fontWeight={700}>{t('traveler.dashboard.status.title')}</Typography>
             </Stack>
           </Box>
           <CardContent sx={{ p: 3 }}>
@@ -287,11 +299,11 @@ const TravelerDashboardPage = () => {
                     {currentStatus === 'COMPLETED' && <CheckCircleIcon sx={{ color: 'success.main' }} />}
                     {currentStatus === 'UNDER_REVIEW' && <InfoIcon sx={{ color: 'info.main' }} />}
                     <Typography variant="body1" fontWeight={700}>
-                      {currentStatus === 'COMPLETED' && 'طلبك معتمد'}
-                      {currentStatus === 'UNDER_REVIEW' && 'طلبك قيد المراجعة'}
-                      {currentStatus === 'PENDING_DOCUMENTS' && 'بانتظار المستندات'}
-                      {currentStatus === 'REJECTED' && 'طلبك مرفوض'}
-                      {!currentStatus && 'لم تُقدّم طلباً بعد'}
+                      {currentStatus === 'COMPLETED' && t('traveler.dashboard.status.approved')}
+                      {currentStatus === 'UNDER_REVIEW' && t('traveler.dashboard.status.underReview')}
+                      {currentStatus === 'PENDING_DOCUMENTS' && t('traveler.dashboard.status.pendingDocs')}
+                      {currentStatus === 'REJECTED' && t('traveler.dashboard.status.rejected')}
+                      {!currentStatus && t('traveler.dashboard.status.none')}
                     </Typography>
                   </Stack>
                   {currentStatus && (
@@ -328,11 +340,11 @@ const TravelerDashboardPage = () => {
                 <Box>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
                     <Typography variant="caption" color="text.secondary">
-                      {currentStatus === 'COMPLETED' && 'تم إكمال جميع الخطوات'}
-                      {currentStatus === 'UNDER_REVIEW' && 'تم إكمال الخطوات: 3 من 5'}
-                      {currentStatus === 'PENDING_DOCUMENTS' && 'يرجى إكمال المستندات'}
-                      {currentStatus === 'REJECTED' && 'يرجى مراجعة سبب الرفض'}
-                      {!currentStatus && 'ابدأ بالتسجيل'}
+                      {currentStatus === 'COMPLETED' && t('traveler.dashboard.progress.completed')}
+                      {currentStatus === 'UNDER_REVIEW' && t('traveler.dashboard.progress.underReview')}
+                      {currentStatus === 'PENDING_DOCUMENTS' && t('traveler.dashboard.progress.pendingDocs')}
+                      {currentStatus === 'REJECTED' && t('traveler.dashboard.progress.rejected')}
+                      {!currentStatus && t('traveler.dashboard.progress.start')}
                     </Typography>
                     <Typography variant="caption" fontWeight={700}>{progress}%</Typography>
                   </Stack>
@@ -346,7 +358,7 @@ const TravelerDashboardPage = () => {
 
                 {status?.rejection_reason && (
                   <Alert severity="error" sx={{ borderRadius: 2 }}>
-                    سبب الرفض: {status.rejection_reason}
+                    {t('traveler.dashboard.rejection.reason')} {status.rejection_reason}
                   </Alert>
                 )}
 
@@ -358,7 +370,7 @@ const TravelerDashboardPage = () => {
                       onClick={() => navigate('/traveler/tracking')}
                       size="small"
                     >
-                      عرض رمز QR
+                      {t('traveler.dashboard.viewQr')}
                     </Button>
                   </Stack>
                 )}
@@ -370,7 +382,7 @@ const TravelerDashboardPage = () => {
                     onClick={() => navigate('/traveler/documents')}
                     size="small"
                   >
-                    رفع المستندات
+                    {t('traveler.dashboard.uploadDocuments')}
                   </Button>
                 )}
               </Stack>
@@ -378,10 +390,10 @@ const TravelerDashboardPage = () => {
               <Stack spacing={2} alignItems="center" sx={{ py: 2 }}>
                 <PersonIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
                 <Typography color="text.secondary">
-                  لم تُقدّم طلباً بعد. سجّل الآن للبدء.
+                  {t('traveler.dashboard.noRequest.msg')}
                 </Typography>
                 <Button variant="contained" onClick={() => navigate('/traveler/register')}>
-                  بدء التسجيل
+                  {t('traveler.dashboard.noRequest.start')}
                 </Button>
               </Stack>
             )}
@@ -436,16 +448,16 @@ const TravelerDashboardPage = () => {
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <HealthAndSafetyIcon sx={{ color: 'success.main' }} />
-                  <Typography variant="subtitle1" fontWeight={700}>الإقرار الصحي</Typography>
+                  <Typography variant="subtitle1" fontWeight={700}>{t('traveler.dashboard.healthDeclaration.title')}</Typography>
                 </Stack>
-                <Chip icon={<CheckCircleIcon />} label="تم التقديم" color="success" size="small" sx={{ fontWeight: 700 }} />
+                <Chip icon={<CheckCircleIcon />} label={t('traveler.dashboard.healthDeclaration.submitted')} color="success" size="small" sx={{ fontWeight: 700 }} />
               </Stack>
               {declarationLoading ? (
                 <ListSkeleton count={1} />
               ) : (
                 <Grid container spacing={2}>
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="caption" color="text.secondary">تصنيف المخاطر</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('traveler.dashboard.healthDeclaration.risk')}</Typography>
                     <Chip
                       label={`${declaration.risk_level || '—'} (${declaration.risk_score ?? 0})`}
                       color={riskColors[declaration.risk_level || ''] || 'default'}
@@ -454,11 +466,11 @@ const TravelerDashboardPage = () => {
                     />
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="caption" color="text.secondary">تاريخ التقديم</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('traveler.dashboard.healthDeclaration.date')}</Typography>
                     <Typography variant="body2" fontWeight={600}>{formatDate(declaration.submitted_at)}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary">الأعراض</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('traveler.dashboard.healthDeclaration.symptoms')}</Typography>
                     {activeSymptoms.length > 0 ? (
                       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
                         {activeSymptoms.map((label) => (
@@ -466,17 +478,17 @@ const TravelerDashboardPage = () => {
                         ))}
                       </Box>
                     ) : (
-                      <Typography variant="body2" sx={{ mt: 0.5 }}>لا توجد أعراض</Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>{t('traveler.dashboard.healthDeclaration.noSymptoms')}</Typography>
                     )}
                   </Grid>
                   {declaration.trip && (
                     <Grid item xs={12}>
-                      <Typography variant="caption" color="text.secondary">بيانات الرحلة</Typography>
+                      <Typography variant="caption" color="text.secondary">{t('traveler.dashboard.tripInfo.title')}</Typography>
                       <Typography variant="body2" sx={{ mt: 0.5 }}>
-                        وسيلة النقل: {transportLabels[declaration.trip.transport_mode || ''] || declaration.trip.transport_mode || '—'}
-                        {declaration.trip.flight_number ? ` · الرحلة: ${declaration.trip.flight_number}` : ''}
-                        {declaration.trip.seat_number ? ` · المقعد: ${declaration.trip.seat_number}` : ''}
-                        {declaration.trip.arrival_date ? ` · الوصول: ${formatDate(declaration.trip.arrival_date)}` : ''}
+                        {t('traveler.dashboard.tripInfo.transport')} {transportLabels[declaration.trip.transport_mode || ''] || declaration.trip.transport_mode || '—'}
+                        {declaration.trip.flight_number ? ` · ${t('traveler.dashboard.tripInfo.flight')} ${declaration.trip.flight_number}` : ''}
+                        {declaration.trip.seat_number ? ` · ${t('traveler.dashboard.tripInfo.seat')} ${declaration.trip.seat_number}` : ''}
+                        {declaration.trip.arrival_date ? ` · ${t('traveler.dashboard.tripInfo.arrival')} ${formatDate(declaration.trip.arrival_date)}` : ''}
                       </Typography>
                     </Grid>
                   )}
@@ -493,14 +505,14 @@ const TravelerDashboardPage = () => {
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <NotificationsActiveIcon sx={{ color: 'warning.main' }} />
-                  <Typography variant="subtitle1" fontWeight={700}>آخر الإشعارات</Typography>
+                  <Typography variant="subtitle1" fontWeight={700}>{t('traveler.dashboard.notices.title')}</Typography>
                 </Stack>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => navigate('/traveler/tracking')}
                 >
-                  عرض الكل
+                  {t('traveler.dashboard.notices.viewAll')}
                 </Button>
               </Stack>
               <Stack spacing={1}>
@@ -528,7 +540,7 @@ const TravelerDashboardPage = () => {
 
         {/* ── Quick Stats ── */}
         <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-          إحصائيات سريعة
+          {t('traveler.dashboard.stats.title')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={6} md={3}>
@@ -537,7 +549,7 @@ const TravelerDashboardPage = () => {
                 <Typography variant="h4" fontWeight={700} color="primary.main">
                   {user.travelers?.length || 0}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">طلبات مقدمة</Typography>
+<Typography variant="caption" color="text.secondary">{t('traveler.dashboard.stats.requests')}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -557,7 +569,7 @@ const TravelerDashboardPage = () => {
                 <Typography variant="h4" fontWeight={700} color={declaration?.declared ? 'success.main' : 'text.disabled'}>
                   {declaration?.declared ? '✓' : '—'}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">الإقرار الصحي</Typography>
+<Typography variant="caption" color="text.secondary">{t('traveler.dashboard.stats.declaration')}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -567,7 +579,7 @@ const TravelerDashboardPage = () => {
                 <Typography variant="h4" fontWeight={700} color="primary.main">
                   {currentStatus === 'COMPLETED' ? '✓' : '—'}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">الشهادة</Typography>
+<Typography variant="caption" color="text.secondary">{t('traveler.dashboard.stats.certificate')}</Typography>
               </CardContent>
             </Card>
           </Grid>

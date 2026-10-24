@@ -859,7 +859,8 @@
         "lossOfAppetite": "فقدان الشهية",
         "difficultySwallowing": "صعوبة في البلع",
         "bleeding": "نزيف",
-        "other": "أخرى"
+        "contactWithPatient": "مخالطة مريض",
+        "otherSymptoms": "أعراض أخرى"
       },
       "travelModes": {
         "air": "جوي",
@@ -877,11 +878,12 @@
       "submitting": "جاري الإرسال...",
       "success": "تم إرسال الطلب بنجاح",
       "steps": {
-        "personal": "المعلومات الشخصية",
-        "travel": "معلومات السفر",
+        "start": "البدء",
+        "personal": "البيانات الشخصية",
+        "trip": "بيانات الرحلة",
+        "purposeContact": "الغرض والتواصل",
         "health": "الإقرار الصحي",
-        "accommodation": "الإقامة",
-        "review": "مراجعة"
+        "review": "المراجعة والتأكيد"
       },
       "personal": {
         "firstName": "الاسم الأول",
@@ -935,7 +937,37 @@
       "uploadDocuments": {
         "title": "رفع المستندات",
         "subtitle": "رفع المستندات المطلوبة لإتمام الطلب"
-      }
+      },
+      "purpose": {
+        "tourism": "سياحة",
+        "work": "عمل",
+        "visit": "زيارة",
+        "study": "دراسة",
+        "transit": "عبور",
+        "diplomatic": "دبلوماسي",
+        "internationalOrg": "منظمة دولية",
+        "other": "آخر"
+      },
+      "form": {
+        "seatOrCabin": "رقم المقعد / الكابينة (اختياري)",
+        "bookingOrFlight": "رقم الحجز / الرحلة (اختياري)",
+        "seat": "رقم المقعد (اختياري)",
+        "flightNumberOrShip": "رقم الرحلة / اسم السفينة",
+        "flightNumber": "رقم الرحلة"
+      },
+      "risk": {
+        "initial": "تصنيف المخاطر المبدئي:",
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "mediumDesc": "قد تحتاج إلى فحص إضافي عند الوصول.",
+        "highDesc": "يرجى التوجه إلى الفحص الطبي فور وصولك."
+      },
+      "points": "نقطة",
+      "date": "تاريخ",
+      "noSymptoms": "لا توجد أعراض",
+      "stepProgress": "الخطوة",
+      "of": "من"
     },
     "requestTracking": {
       "status": {
@@ -951,8 +983,9 @@
       "eyebrow": "مسافر",
       "form": {
         "passportLabel": "رقم جواز السفر",
-        "passportPlaceholder": "أدخل رقم جواز السفر",
         "dobLabel": "تاريخ الميلاد",
+        "search": "بحث",
+        "passportPlaceholder": "أدخل رقم جواز السفر",
         "searchButton": "بحث",
         "searching": "جاري البحث..."
       },
@@ -963,10 +996,15 @@
         "title": "رمز QR للتتبع",
         "issued": "تم إصدار رمز QR",
         "notIssued": "رمز QR غير صادر بعد",
-        "refresh": "تحديث QR"
+        "refresh": "تحديث QR",
+        "printInstruction": "اعرض هذا الرمز لموظف الحجر الصحي عند الوصول."
       },
       "timeline": {
-        "title": "مسار الطلب"
+        "title": "مسار الطلب",
+        "created": "تم إنشاء الطلب",
+        "documents": "رفع المستندات",
+        "review": "الإقرار الصحي والمراجعة",
+        "approved": "اعتماد الطلب وإصدار QR"
       },
       "details": {
         "travelerName": "اسم المسافر",
@@ -975,7 +1013,18 @@
         "nationality": "الجنسية"
       },
       "error": {
-        "notFound": "لم يتم العثور على طلب بهذا الرقم"
+        "notFound": "لم يتم العثور على طلب بهذا الرقم",
+        "search": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "refresh": "تعذر إعادة إصدار رمز QR، حاول مرة أخرى.",
+        "load": "تعذر تحميل حالة الطلب، حاول مرة أخرى لاحقاً."
+      },
+      "share": {
+        "title": "رمز QR - NQP"
+      },
+      "empty": {
+        "title": "ابحث عن طلبك",
+        "description": "أدخل رقم جواز السفر وتاريخ الميلاد أعلاه لعرض حالة الطلب، أو سجّل مسبقاً من بوابة المسافرين."
       }
     },
     "healthProfile": {
@@ -1001,7 +1050,12 @@
       "travelMode": "وسيلة السفر",
       "healthDeclaration": "الإقرار الصحي",
       "documents": "المستندات",
-      "viewDocuments": "عرض المستندات"
+      "viewDocuments": "عرض المستندات",
+      "units": {
+        "byte": "بايت",
+        "kb": "كيلوبايت",
+        "mb": "ميجابايت"
+      }
     },
     "dashboard": {
       "title": "لوحة المسافر",
@@ -1088,6 +1142,18 @@
         "air": "طائرة",
         "sea": "سفينة",
         "land": "بر"
+      },
+      "notificationsTooltip": "إشعارات",
+      "notificationsAria": "الإشعارات",
+      "profileTooltip": "ملفي الشخصي",
+      "profileAria": "الملف الشخصي",
+      "healthDeclaration": {
+        "title": "الإقرار الصحي",
+        "submitted": "تم التقديم",
+        "risk": "تصنيف المخاطر",
+        "date": "تاريخ التقديم",
+        "symptoms": "الأعراض",
+        "noSymptoms": "لا توجد أعراض"
       }
     },
     "uploadDocuments": {
@@ -1100,22 +1166,41 @@
       "title": "رفع المستندات",
       "subtitle": "يرجى رفع المستندات المطلوبة لإتمام طلب التسجيل المسبق",
       "eyebrow": "مسافر",
-      "required": "مطلوب",
+      "required": "إلزامي",
       "optional": "اختياري",
       "upload": "رفع",
       "uploading": "جاري الرفع...",
       "uploaded": "تم الرفع",
       "remove": "حذف",
       "submit": "إرسال",
-      "success": "تم رفع المستندات بنجاح",
-      "error": "حدث خطأ أثناء رفع المستندات",
+      "success": {
+        "delete": "تم حذف المستند"
+      },
+      "error": {
+        "load": "تعذر تحميل المستندات.",
+        "searchPassport": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "notFound": "لم يتم العثور على مسافر بهذا الرقم. يرجى إكمال التسجيل المسبق أولاً.",
+        "searchGeneric": "حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.",
+        "fileType": "نوع الملف غير مدعوم (يُسمح بـ JPEG, PNG, PDF).",
+        "fileSize": "حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).",
+        "upload": "فشل رفع الملف:",
+        "delete": "تعذر حذف المستند"
+      },
       "passportNumber": "رقم جواز السفر",
       "passportPlaceholder": "أدخل رقم جواز السفر",
       "selectType": "اختر نوع المستند",
       "selectFile": "اختر ملف",
       "noDocuments": "لا توجد مستندات مرفوعة",
       "fileSize": "حجم الملف",
-      "fileType": "نوع الملف"
+      "fileType": "نوع الملف",
+      "delete": {
+        "title": "حذف المستند",
+        "message": "هل تريد حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف",
+        "aria": "حذف",
+        "fallback": "المستند"
+      }
     }
   }
 }

@@ -91,14 +91,14 @@ const UploadDocumentsPage = () => {
       const res = await getTravelerDocuments(id);
       setDocuments(res.data.data || []);
     } catch {
-      setError('تعذر تحميل المستندات.');
+      setError(t('traveler.uploadDocuments.error.load'));
     }
   };
 
   const handleLookup = async () => {
     const value = passport.trim().toUpperCase();
     if (!value || !dob.trim()) {
-      setLookupError(!value ? 'يرجى إدخال رقم جواز السفر.' : 'يرجى إدخال تاريخ الميلاد للتحقق من الهوية.');
+      setLookupError(!value ? t('traveler.uploadDocuments.error.searchPassport') : t('traveler.uploadDocuments.error.searchDob'));
       return;
     }
     setLookingUp(true);
@@ -113,10 +113,10 @@ const UploadDocumentsPage = () => {
         setError(null);
       } else {
         setTravelerId(null);
-        setLookupError('لم يتم العثور على مسافر بهذا الرقم. يرجى إكمال التسجيل المسبق أولاً.');
+        setLookupError(t('traveler.uploadDocuments.error.notFound'));
       }
     } catch {
-      setLookupError('حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.');
+      setLookupError(t('traveler.uploadDocuments.error.searchGeneric'));
     } finally {
       setLookingUp(false);
     }
@@ -134,8 +134,8 @@ const UploadDocumentsPage = () => {
   }, []);
 
   const validateFile = (file: File): string | null => {
-    if (!ALLOWED_TYPES.includes(file.type)) return 'نوع الملف غير مدعوم (يُسمح بـ JPEG, PNG, PDF).';
-    if (file.size > MAX_SIZE) return 'حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).';
+    if (!ALLOWED_TYPES.includes(file.type)) return t('traveler.uploadDocuments.error.fileType');
+    if (file.size > MAX_SIZE) return t('traveler.uploadDocuments.error.fileSize');
     return null;
   };
 
@@ -155,7 +155,7 @@ const UploadDocumentsPage = () => {
       try {
         await uploadTravelerDocument(travelerId, formData);
       } catch {
-        setError(`فشل رفع الملف: ${file.name}`);
+        setError(`${t('traveler.uploadDocuments.error.upload')} ${file.name}`);
       }
     }
     setUploading(false);
@@ -181,10 +181,10 @@ const UploadDocumentsPage = () => {
     try {
       await deleteTravelerDocument(travelerId, deleteTarget.id);
       setDocuments((prev) => prev.filter((d) => d.id !== deleteTarget.id));
-      notifySuccess('تم حذف المستند');
+      notifySuccess(t('traveler.uploadDocuments.success.delete'));
       setDeleteTarget(null);
     } catch {
-      notifyError('تعذر حذف المستند');
+      notifyError(t('traveler.uploadDocuments.error.delete'));
     } finally {
       setDeleteBusy(false);
     }
@@ -204,14 +204,14 @@ const UploadDocumentsPage = () => {
         <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
           <CardContent sx={{ p: { xs: 3, md: 4 } }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              ابحث عن طلبك برقم جواز السفر
+              {t('traveler.uploadDocuments.search.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-              أدخل رقم جواز السفر وتاريخ الميلاد للتحقق من هويتك قبل رفع المستندات.
+              {t('traveler.uploadDocuments.search.subtitle')}
             </Typography>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
               <TextField
-                label="رقم جواز السفر"
+                label={t('traveler.uploadDocuments.search.passport')}
                 value={passport}
                 onChange={(e) => setPassport(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
@@ -219,7 +219,7 @@ const UploadDocumentsPage = () => {
                 dir="ltr"
               />
               <TextField
-                label="تاريخ الميلاد"
+                label={t('traveler.uploadDocuments.search.dob')}
                 type="date"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
@@ -233,7 +233,7 @@ const UploadDocumentsPage = () => {
                 disabled={!passport.trim() || !dob.trim() || lookingUp}
                 startIcon={lookingUp ? <CircularProgress size={18} color="inherit" /> : <SearchIcon />}
               >
-                بحث
+                {t('traveler.uploadDocuments.search.button')}
               </Button>
             </Stack>
             {lookupError && <Alert severity="warning" sx={{ mt: 2 }}>{lookupError}</Alert>}
@@ -261,10 +261,10 @@ const UploadDocumentsPage = () => {
             >
               <UploadFileIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
               <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                اسحب ملفاتك هنا أو انقر للاختيار
+                {t('traveler.uploadDocuments.dragDrop')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-                يُسمح بملفات JPEG, PNG, PDF بحد أقصى 5 ميجابايت لكل ملف.
+                {t('traveler.uploadDocuments.allowed')}
               </Typography>
               <input
                 ref={inputRef}
@@ -275,7 +275,7 @@ const UploadDocumentsPage = () => {
                 onChange={handlePick}
               />
               <Button variant="contained" onClick={() => inputRef.current?.click()} startIcon={<CloudUploadIcon />}>
-                اختيار الملفات
+                {t('traveler.uploadDocuments.selectFiles')}
               </Button>
             </CardContent>
           </Card>
@@ -292,7 +292,7 @@ const UploadDocumentsPage = () => {
                     {documents.some((d) => d.document_type === dt.value) ? (
                       <CheckCircleIcon sx={{ color: 'success.main', mt: 1 }} />
                     ) : (
-                      <Chip size="small" color={dt.required ? 'error' : 'default'} label={dt.required ? 'إلزامي' : 'اختياري'} sx={{ mt: 1 }} />
+                      <Chip size="small" color={dt.required ? 'error' : 'default'} label={dt.required ? t('traveler.uploadDocuments.required') : t('traveler.uploadDocuments.optional')} sx={{ mt: 1 }} />
                     )}
                   </CardContent>
                 </Card>
@@ -311,10 +311,10 @@ const UploadDocumentsPage = () => {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                الملفات المرفوعة ({documents.length})
+                {t('traveler.uploadDocuments.uploadedFiles')} ({documents.length})
               </Typography>
               {documents.length === 0 ? (
-                <EmptyState title="لا توجد مستندات" description="ارفع مستنداتك أعلاه" />
+                <EmptyState title={t('traveler.uploadDocuments.noDocuments')} description={t('traveler.uploadDocuments.noDocumentsDesc')} />
               ) : (
                 <Stack spacing={1}>
                   {documents.map((doc) => (
@@ -340,8 +340,8 @@ const UploadDocumentsPage = () => {
                           {documentTypeLabel[doc.document_type] || doc.document_type} · {formatBytes(doc.file_size)}
                         </Typography>
                       </Box>
-                      <Chip label="مكتمل" size="small" color="success" />
-                      <IconButton aria-label="حذف" onClick={() => setDeleteTarget(doc)} size="small">
+                      <Chip label={t('traveler.uploadDocuments.status.complete')} size="small" color="success" />
+                      <IconButton aria-label={t('traveler.uploadDocuments.delete.aria')} onClick={() => setDeleteTarget(doc)} size="small">
                         <DeleteOutlineIcon />
                       </IconButton>
                     </Stack>
@@ -369,9 +369,9 @@ const UploadDocumentsPage = () => {
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="حذف المستند"
-        message={`هل تريد حذف «${deleteTarget?.file.split('/').pop() || 'المستند'}»؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف"
+        title={t('traveler.uploadDocuments.delete.title')}
+        message={t('traveler.uploadDocuments.delete.message').replace('{{name}}', deleteTarget?.file.split('/').pop() || t('traveler.uploadDocuments.delete.fallback'))}
+        confirmLabel={t('traveler.uploadDocuments.delete.confirm')}
         tone="error"
         loading={deleteBusy}
         onClose={() => {

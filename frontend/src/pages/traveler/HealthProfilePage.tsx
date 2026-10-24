@@ -225,7 +225,7 @@ const HealthProfilePage = () => {
             .filter(([, s]) => s.has)
             .map(([key]) => symptomLabels[key] || key)
         : [],
-    [declaration],
+    [declaration, symptomLabels],
   );
 
   const groupedDocuments = useMemo(() => {
