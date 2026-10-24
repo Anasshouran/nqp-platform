@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -12,6 +13,8 @@ import type { FaqItem } from '../../api/endpoints/public';
 import { PageHeader, EmptyState, ListSkeleton } from '../../components/common';
 
 const FaqPage = () => {
+  const { t } = useTranslation();
+
   const [items, setItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -26,17 +29,17 @@ const FaqPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="الأسئلة الشائعة"
-        subtitle="إجابات عن أكثر الأسئلة تكراراً حول إجراءات الحجر الصحي والسفر"
-        eyebrow="مركز المساعدة"
+        title={t('public.الأسئلة الشائعة')}
+        subtitle={t('public.إجابات عن أكثر الأسئلة تكراراً حول إجراءات الحجر الصحي والسفر')}
+        eyebrow={t('public.مركز المساعدة')}
       />
       {loading ? (
         <ListSkeleton count={4} />
       ) : items.length === 0 ? (
         <EmptyState
           icon={<ContactSupportIcon />}
-          title="لا توجد أسئلة مسجلة"
-          description="يمكنك التواصل معنا مباشرة لطرح استفساراتك."
+          title={t('public.لا توجد أسئلة مسجلة')}
+          description={t('public.يمكنك التواصل معنا مباشرة لطرح استفساراتك')}
         />
       ) : (
         <Box>

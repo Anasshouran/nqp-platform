@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -19,6 +20,8 @@ const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
 const NewsDetailPage = () => {
+  const { t } = useTranslation();
+
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [related, setRelated] = useState<NewsArticle[]>([]);
@@ -39,12 +42,12 @@ const NewsDetailPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="تفاصيل الخبر"
-        subtitle="تفاصيل الخبر والإعلان الرسمي"
-        eyebrow="مركز الأخبار"
+        title={t('public.تفاصيل الخبر')}
+        subtitle={t('public.تفاصيل الخبر والإعلان الرسمي')}
+        eyebrow={t('public.مركز الأخبار')}
       />
       <Button component={Link} to="/news" startIcon={<ArrowBackIcon />} sx={{ mb: 3 }}>
-        العودة إلى الأخبار
+        {t('public.العودة إلى الأخبار')}
       </Button>
 
       {loading ? (
@@ -52,8 +55,8 @@ const NewsDetailPage = () => {
       ) : !article ? (
         <EmptyState
           icon={<NewspaperIcon />}
-          title="الخبر غير متاح"
-          description="لم يتم العثور على هذا الخبر، أو أن الخبر غير منشور بعد."
+          title={t('public.الخبر غير متاح')}
+          description={t('public.لم يتم العثور على هذا الخبر، أو أن الخبر غير منشور بعد')}
         />
       ) : (
         <Grid container spacing={4}>
@@ -92,7 +95,7 @@ const NewsDetailPage = () => {
 
           <Grid item xs={12} md={4}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              أخبار أخرى
+              {t('public.أخبار أخرى')}
             </Typography>
             <Stack spacing={2}>
               {related.map((n) => (

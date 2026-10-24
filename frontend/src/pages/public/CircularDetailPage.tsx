@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -21,16 +22,21 @@ const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   NORMAL: 'info',
 };
 
-const priorityLabels: Record<string, string> = {
-  URGENT: 'عاجل',
-  IMPORTANT: 'مهم',
-  NORMAL: 'عادي',
-};
-
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
 const CircularDetailPage = () => {
+  const { t } = useTranslation();
+
+  const priorityLabels: Record<string, string> = useMemo(
+    () => ({
+      URGENT: t('public.عاجل'),
+      IMPORTANT: t('public.مهم'),
+      NORMAL: t('public.عادي'),
+    }),
+    [t],
+  );
+
   const { id } = useParams<{ id: string }>();
   const [circular, setCircular] = useState<Circular | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +53,7 @@ const CircularDetailPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Button component={Link} to="/circulars" startIcon={<ArrowBackIcon />} sx={{ mb: 3 }}>
-        العودة إلى التعميمات
+        {t('public.العودة إلى التعميمات')}
       </Button>
 
       {loading ? (
@@ -55,15 +61,15 @@ const CircularDetailPage = () => {
       ) : !circular ? (
         <EmptyState
           icon={<DescriptionIcon />}
-          title="التعميم غير متاح"
-          description="لم يتم العثور على هذا التعميم."
+          title={t('public.التعميم غير متاح')}
+          description={t('public.لم يتم العثور على هذا التعميم')}
         />
       ) : (
         <>
           <PageHeader
             title={circular.title}
-            subtitle={`مرجع التعميم: ${circular.reference_number}`}
-            eyebrow="تعميم"
+            subtitle={`${t('public.مرجع التعميم')}: ${circular.reference_number}`}
+            eyebrow={t('public.تعميم')}
             action={
               <Stack direction="row" spacing={1}>
                 <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
@@ -90,11 +96,11 @@ const CircularDetailPage = () => {
               <DescriptionIcon sx={{ color: 'primary.main' }} />
               <Stack>
                 <Typography variant="body2" color="text.secondary">
-                  تاريخ الإصدار: {formatDate(circular.published_at)}
+                  {t('public.تاريخ الإصدار')} {formatDate(circular.published_at)}
                 </Typography>
                 {circular.author && (
                   <Typography variant="body2" color="text.secondary">
-                    صادر عن: {circular.author}
+                    {t('public.صادر عن')} {circular.author}
                   </Typography>
                 )}
               </Stack>

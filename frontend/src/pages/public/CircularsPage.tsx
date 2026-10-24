@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -28,16 +29,21 @@ const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   NORMAL: 'info',
 };
 
-const priorityLabels: Record<string, string> = {
-  URGENT: 'عاجل',
-  IMPORTANT: 'مهم',
-  NORMAL: 'عادي',
-};
-
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
 const CircularsPage = () => {
+  const { t } = useTranslation();
+
+  const priorityLabels: Record<string, string> = useMemo(
+    () => ({
+      URGENT: t('public.عاجل'),
+      IMPORTANT: t('public.مهم'),
+      NORMAL: t('public.عادي'),
+    }),
+    [t],
+  );
+
   const { data, loading, error, retry } = useApi<Circular[]>(getCirculars);
   const circulars = data ?? [];
   const [visible, setVisible] = useState(PAGE_SIZE);
@@ -46,19 +52,19 @@ const CircularsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <PageHeader
-        title="التعميمات"
-        subtitle="التعميمات والقرارات الإدارية الصادرة عن الإدارة الاتحادية للحجر الصحي"
-        eyebrow="مركز التعميمات"
+        title={t('public.التعميمات')}
+        subtitle={t('public.التعميمات والقرارات الإدارية الصادرة عن الإدارة الاتحادية للحجر الصحي')}
+        eyebrow={t('public.مركز التعميمات')}
       />
       {loading ? (
         <ListSkeleton count={3} />
       ) : error ? (
-        <ErrorState message="تعذّر تحميل التعميمات" onRetry={retry} />
+        <ErrorState message={t('public.تعذّر تحميل التعميمات')} onRetry={retry} />
       ) : circulars.length === 0 ? (
         <EmptyState
           icon={<CampaignIcon />}
-          title="لا توجد تعميمات منشورة حالياً"
-          description="سيتم نشر التعميمات الرسمية هنا فور صدورها."
+          title={t('public.لا توجد تعميمات منشورة حالياً')}
+          description={t('public.سيتم نشر التعميمات الرسمية هنا فور صدورها')}
         />
       ) : (
         <>
@@ -130,7 +136,7 @@ const CircularsPage = () => {
                 </CardContent>
                 <CardActions sx={{ px: 3, pb: 2.5 }}>
                   <Button component={Link} to={`/circulars/${circular.id}`} size="small" color="primary">
-                    قراءة التعميم
+                    {t('public.قراءة التعميم')}
                   </Button>
                 </CardActions>
               </Card>
@@ -147,10 +153,10 @@ const CircularsPage = () => {
                 onClick={() => setVisible((v) => v + PAGE_SIZE)}
                 sx={{ px: 4 }}
               >
-                عرض المزيد من التعميمات
+                {t('public.عرض المزيد من التعميمات')}
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                تم عرض {visible} من {circulars.length} تعميم
+                {t('public.تم عرض')} {visible} {t('public.من')} {circulars.length} {t('public.تعميم')}
               </Typography>
             </Box>
           )}
