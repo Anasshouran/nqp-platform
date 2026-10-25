@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -174,7 +175,7 @@ const DashboardTab = () => {
   return (
     <Stack spacing={2.5}>
       <DashboardHero
-        eyebrow="مركز قيادة المعابر البرية"
+        eyebrow="{t('borders.bordersHealth.eyebrow')} البرية"
         title="الحجر الصحي القومي — المعابر البرية"
         subtitle="مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر"
         avatarLabel="المعابر"
@@ -1782,14 +1783,15 @@ const CertificatesTab = () => {
 };
 
 const BordersHealthPage = () => {
+  const { t } = useTranslation();
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
 
   return (
     <Box>
       <PageHeader
-        title="صحة المعابر البرية"
+        title="{t('borders.bordersHealth.title')}"
         subtitle="إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، الحجر والعزل، والتتبع"
-        eyebrow="مركز قيادة المعابر"
+        eyebrow="{t('borders.bordersHealth.eyebrow')}"
       />
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.4} lg={2}>

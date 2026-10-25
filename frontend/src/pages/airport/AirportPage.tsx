@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -359,6 +360,7 @@ const PointsTab = () => {
 };
 
 const AirportPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawTab = Number(searchParams.get('tab') ?? '0');
   const [tab, setTab] = useState<number>(Number.isInteger(rawTab) && rawTab >= 0 && rawTab <= 5 ? rawTab : 0);
@@ -375,9 +377,9 @@ const AirportPage = () => {
   return (
     <Box>
       <PageHeader
-        title="صحة المطارات"
-        subtitle="إدارة فحوصات المسافرين وتفتيش الطائرات وسجلات الأطقم في المطارات"
-        eyebrow="العمليات"
+        title={t('borders.airport.title')}
+        subtitle={t('borders.airport.subtitle')}
+        eyebrow={t('borders.airport.eyebrow')}
       />
 
       <Box

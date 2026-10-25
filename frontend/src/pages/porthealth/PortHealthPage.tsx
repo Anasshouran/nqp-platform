@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -597,14 +598,15 @@ const HealthCertsTab = () => {
 };
 
 const PortHealthPage = () => {
+  const { t } = useTranslation();
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
 
   return (
     <Box>
       <PageHeader
-        title="صحة الموانئ"
+        title={t('borders.portHealth.title')}
         subtitle="إدارة الحجر الصحي في الموانئ البحرية — السفن والطاقم والركاب والتفتيش والشهادات وفق IHR 2005"
-        eyebrow="العمليات"
+        eyebrow={t('borders.portHealth.eyebrow')}
       />
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>

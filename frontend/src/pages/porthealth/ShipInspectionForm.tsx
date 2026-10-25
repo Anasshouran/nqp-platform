@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -62,6 +63,7 @@ const DERIVED_STATUS_LABEL: Record<string, string> = {
 const emptyAreas = Object.fromEntries(AREAS.map((a) => [a.field, 'COMPLIANT'])) as Record<AreaDef['field'], Compliance>;
 
 const ShipInspectionForm = () => {
+  const { t } = useTranslation();
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [visits, setVisits] = useState<VesselVisit[]>([]);
   const [vesselId, setVesselId] = useState('');
@@ -138,7 +140,7 @@ const ShipInspectionForm = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <FactCheckIcon color="primary" />
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            استمارة التفتيش الصحي الميداني
+            {t('borders.shipInspection.title')}
           </Typography>
         </Box>
 

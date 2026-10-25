@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -68,6 +69,7 @@ const FlightNumberChip = ({ code }: { code: string }) => (
 );
 
 const InspectorDashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<AirportDashboard | null>(null);
@@ -146,7 +148,7 @@ const InspectorDashboard = () => {
     <Stack spacing={2.5}>
       <AirportHero
         name={user?.full_name || ''}
-        role="مفتش الحجر الصحي — قسم صحة المطار"
+        role={t('borders.inspector.role')}
         date={todayArabic()}
         shift={getShift()}
       />

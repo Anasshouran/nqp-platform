@@ -1324,5 +1324,73 @@
         "invalidLink": "Reset link is invalid or expired"
       }
     }
+  },
+  "borders": {
+    "bordersHealth": {
+      "tabs": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات الصحية",
+        "screening": "الفحص الصحي",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "تفتيش الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "حالات الحجر",
+        "isolation": "حالات العزل",
+        "tracing": "حالات التتبع",
+        "incidents": "الحوادث الصحية",
+        "emergencies": "حالات الطوارئ",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "dailyStats": "الحصيلة اليومية",
+        "certificates": "الشهادات"
+      },
+      "title": "Border Health",
+      "subtitle": "Border health management",
+      "eyebrow": "Border Command"
+    },
+    "portHealth": {
+      "nav": {
+        "dashboard": "لوحة المؤشرات",
+        "seaports": "الموانئ",
+        "vessels": "السفن",
+        "crew": "الطاقم",
+        "passengers": "الركاب",
+        "declarations": "الإقرار الصحي",
+        "inspections": "التفتيش الصحي",
+        "shipInspection": "تفتيش ميداني",
+        "foodWater": "الأغذية والمياه",
+        "sanitation": "شهادات صحة السفن",
+        "isolation": "العزل والحجر",
+        "surveillance": "الترصد الوبائي",
+        "vectors": "النواقل",
+        "cargo": "الشحنات",
+        "waste": "النفايات",
+        "emergencies": "الطوارئ",
+        "healthCerts": "الشهادات"
+      },
+      "title": "Port Health",
+      "subtitle": "Port health management",
+      "eyebrow": "Operations"
+    },
+    "shipInspection": {
+      "title": "Ship Inspection Form"
+    },
+    "airport": {
+      "title": "Airport Health",
+      "subtitle": "Airport health management",
+      "eyebrow": "Operations"
+    },
+    "inspector": {
+      "role": "Quarantine Inspector - Airport Health"
+    },
+    "airportHealth": {
+      "title": "Airport Health"
+    }
   }
 }
