@@ -1202,5 +1202,127 @@
         "fallback": "the document"
       }
     }
+  },
+  "login": {
+    "login": {
+      "title": "Login",
+      "subtitle": "For authorized staff and entities only",
+      "brand": "National Quarantine Platform",
+      "description": "A unified system for Federal Quarantine Authority staff to manage ports of entry,\n              health screening, epidemiological surveillance, and emergency operations.",
+      "highlights": [
+        "24/7 epidemiological surveillance",
+        "Integrated port entry management",
+        "Real-time reports for official entities"
+      ],
+      "backToSite": "Back to public site",
+      "copyright": "Federal Quarantine Authority"
+    },
+    "travelerLogin": {
+      "title": "Traveler Login",
+      "subtitle": "Sign in to manage your trip and track your request",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signup": "Create a new account",
+      "backToHome": "Back to home",
+      "invalidCredentials": "Invalid login credentials",
+      "authError": "Authentication error"
+    },
+    "travelerSignup": {
+      "title": "Create Traveler Account",
+      "subtitle": "Create your account to register your trip and track it",
+      "fullNameLabel": "Full Name",
+      "emailLabel": "Email",
+      "phoneLabel": "Mobile Number (optional)",
+      "passwordLabel": "Password",
+      "passwordHelper": "At least 8 characters",
+      "confirmPasswordLabel": "Confirm Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Create Account",
+      "submitting": "Creating...",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in",
+      "backToHome": "Back to home",
+      "errors": {
+        "fullNameRequired": "Full name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "fixErrors": "Please correct the errors below",
+        "createError": "Error creating account"
+      }
+    },
+    "forgot": {
+      "travelerTitle": "Forgot Password?",
+      "travelerSubtitle": "Enter your email and we'll send you a link to reset your password",
+      "emailLabel": "Email",
+      "submit": "Send Reset Link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to login",
+      "backToHome": "Back to home",
+      "successTitle": "Check your email",
+      "successMessage": "If <strong>{{email}}</strong> is registered, you'll receive a link to reset your password.",
+      "successNote": "Didn't receive the message? Check your spam/junk folder.",
+      "error": "Failed to send reset link"
+    },
+    "reset": {
+      "travelerTitle": "Reset Password",
+      "travelerSubtitle": "Enter your new password",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Reset Password",
+      "submitting": "Resetting...",
+      "backToLogin": "Back to login",
+      "requestNewLink": "Request a new link",
+      "noLinkReceived": "Didn't receive the link?",
+      "successTitle": "Password reset successfully",
+      "successSubtitle": "You can now sign in with your new password",
+      "successButton": "Sign In",
+      "errors": {
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "invalidLink": "Reset link is invalid or expired"
+      }
+    },
+    "forgotStaff": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email and we'll send you a link to reset your password",
+      "emailLabel": "Email",
+      "submit": "Send Reset Link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to login",
+      "backToHome": "Back to home",
+      "successTitle": "Check your email",
+      "successMessage": "If <strong>{{email}}</strong> is registered, you'll receive a link to reset your password.",
+      "successNote": "Didn't receive the message? Check your spam/junk folder."
+    },
+    "resetStaff": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Reset Password",
+      "submitting": "Resetting...",
+      "backToLogin": "Back to login",
+      "successTitle": "Password reset successfully",
+      "successSubtitle": "You can now sign in with your new password",
+      "successButton": "Sign In",
+      "errors": {
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "invalidLink": "Reset link is invalid or expired"
+      }
+    }
   }
 }

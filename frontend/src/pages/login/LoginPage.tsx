@@ -1,4 +1,5 @@
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,16 +15,19 @@ import { useAuth } from '../../hooks/useAuth';
 import { roleHomePathFor } from '../../utils/roleHome';
 import { sanitizeNextPath } from '../../utils/navigation';
 
-const highlights = [
-  'مراقبة وبائية على مدار الساعة',
-  'إدارة متكاملة لمنافذ الدخول',
-  'تقارير فورية للجهات الرسمية',
+const highlightsKeys = [
+  'login.login.highlights.0',
+  'login.login.highlights.1',
+  'login.login.highlights.2',
 ];
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuth();
   const next = sanitizeNextPath(searchParams.get('next'));
+
+  const highlights = highlightsKeys.map((k) => t(k));
 
   /* مستخدم موثَّق يصل إلى /login (رابط محفوظ أو زيارة مباشرة): توجيهه
      لوجهته بدل عرض نموذج دخول جديد يحبطه — مع الحفاظ على ?next= الآمن. */
@@ -72,11 +76,10 @@ const LoginPage = () => {
               <HealthAndSafetyIcon sx={{ fontSize: 42 }} />
             </Box>
             <Typography variant="h1" sx={{ mb: 2, maxWidth: 520 }}>
-              منصة الحجر الصحي القومي
+              {t('login.login.brand')}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 2, maxWidth: 500 }}>
-              نظام موحّد لموظفي الإدارة الاتحادية للحجر الصحي لإدارة منافذ الدخول،
-              الفحص الصحي، الرصد الوبائي، وغرفة العمليات الطارئة.
+              {t('login.login.description')}
             </Typography>
             <Stack spacing={1.5}>
               {highlights.map((item) => (
@@ -113,10 +116,10 @@ const LoginPage = () => {
           >
             <CardContent sx={{ p: { xs: 3.5, md: 4.5 } }}>
               <Typography variant="h3" sx={{ mb: 0.5 }}>
-                تسجيل الدخول
+                {t('login.login.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                الدخول للموظفين والجهات المعتمدة فقط
+                {t('login.login.subtitle')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               {next ? <LoginForm redirectPath={next} /> : <LoginForm />}
@@ -130,14 +133,14 @@ const LoginPage = () => {
       <Container maxWidth="lg">
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 2 }}>
           <Typography variant="caption">
-            © {new Date().getFullYear()} الإدارة الاتحادية للحجر الصحي
+            © {new Date().getFullYear()} {t('login.login.copyright')}
           </Typography>
           <Link
             to="/"
             style={{ color: 'inherit', textDecoration: 'none', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}
           >
             <ArrowBackIcon sx={{ fontSize: 15 }} />
-            العودة إلى الموقع العام
+{t('login.login.backToSite')}
           </Link>
         </Stack>
       </Container>
