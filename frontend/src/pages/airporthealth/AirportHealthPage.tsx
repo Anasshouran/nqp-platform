@@ -206,7 +206,7 @@ const AirportHealthPage = () => {
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('borders.airportHealth.header.brand')}</Typography>
             <Typography variant="caption" color="text.secondary">{t('borders.airportHealth.header.subtitle')}</Typography>
           </Box>
-          <Chip label="{t('borders.airportHealth.header.station')}" size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
+          <Chip label={t('borders.airportHealth.header.station')} size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
           <OfflinePill state={pillState} />
         </Stack>
 

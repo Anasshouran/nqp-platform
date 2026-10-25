@@ -1352,7 +1352,68 @@
       },
       "title": "Border Health",
       "subtitle": "Border health management",
-      "eyebrow": "Border Command"
+      "eyebrow": "Border Command",
+      "sections": {
+        "dashboard": "Dashboard",
+        "crossings": "Crossings",
+        "facilities": "Facilities",
+        "shifts": "Shifts",
+        "staff": "Staff",
+        "travelers": "Travelers",
+        "declarations": "Declarations",
+        "screenings": "Screenings",
+        "vehicles": "Vehicles",
+        "vehicleInspections": "Vehicle Inspections",
+        "cargo": "Cargo",
+        "samples": "Samples",
+        "quarantine": "Quarantine",
+        "isolation": "Isolation",
+        "tracing": "Contact Tracing",
+        "emergencies": "Emergencies",
+        "certificates": "Certificates",
+        "decisions": "Decisions",
+        "notifications": "Notifications",
+        "statistics": "Daily Statistics"
+      },
+      "dashboard": {
+        "eyebrow": "Border Command Center",
+        "title": "National Quarantine — Land Border Crossings",
+        "subtitle": "National indicators for traveler, vehicle, cargo and quarantine activity at border crossings",
+        "avatarLabel": "Borders",
+        "kpi": {
+          "openCrossings": "Open Crossings",
+          "from": "from",
+          "travelersToday": "Travelers Today",
+          "vehiclesInspected": "Vehicles Inspected",
+          "cargoInspections": "Cargo Inspections",
+          "activeQuarantine": "Active Quarantine Cases",
+          "activeIsolation": "Isolation Cases",
+          "suspectedCases": "Suspected Cases",
+          "certificatesIssued": "Certificates Issued"
+        },
+        "performance": {
+          "title": "Crossing Performance",
+          "subtitle": "Compare movement, inspections and quarantine across crossings",
+          "emptyTitle": "No performance data",
+          "emptyDescription": "Comparison appears after recording activity at crossings.",
+          "cols": {
+            "crossing": "Crossing",
+            "code": "Code",
+            "neighbor": "Neighboring Country",
+            "status": "Status",
+            "travelerFlow": "Traveler Flow",
+            "vehicles": "Vehicles",
+            "cargo": "Cargo",
+            "quarantine": "Quarantine"
+          }
+        },
+        "trend": {
+          "title": "Traffic Trend (7 Days)",
+          "inbound": "Inbound",
+          "outbound": "Outbound",
+          "daysRecorded": "Days Recorded"
+        }
+      }
     },
     "portHealth": {
       "nav": {
@@ -1376,7 +1437,24 @@
       },
       "title": "Port Health",
       "subtitle": "Port health management",
-      "eyebrow": "Operations"
+      "eyebrow": "Operations",
+      "dashboard": {
+        "eyebrow": "Indicators Dashboard — Port Health",
+        "welcome": "Welcome, ",
+        "supervisor": "Supervisor",
+        "avatar": "S",
+        "live": "Live"
+      },
+      "kpi": {
+        "seaports": "Sea Ports",
+        "totalVessels": "Total Vessels",
+        "arrivedVessels": "Arrived Vessels",
+        "inspections": "Inspections",
+        "certificatesIssued": "Certificates Issued",
+        "suspectedCases": "Suspected Cases",
+        "activeIsolation": "Active Isolation",
+        "openEmergencies": "Open Emergencies"
+      }
     },
     "shipInspection": {
       "title": "Ship Inspection Form"
@@ -1390,7 +1468,27 @@
       "role": "Quarantine Inspector - Airport Health"
     },
     "airportHealth": {
-      "title": "Airport Health"
+      "title": "Airport Health & Aviation",
+      "header": {
+        "brand": "Airport Health & Aviation",
+        "subtitle": "Airport Quarantine Management System",
+        "station": "Command Center"
+      }
+    },
+    "common": {
+      "dashboard": "Dashboard",
+      "sections": "Sections",
+      "yes": "Yes",
+      "no": "No",
+      "save": "Save",
+      "cancel": "Cancel",
+      "search": "Search",
+      "export": "Export",
+      "refresh": "Refresh",
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive",
+      "status": "Status"
     }
   }
 }

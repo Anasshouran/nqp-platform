@@ -13,13 +13,88 @@ import AirportPage from '@/pages/airport/AirportPage';
 import InspectorDashboard from '@/pages/airport/InspectorDashboard';
 import AirportHealthPage from '@/pages/airporthealth/AirportHealthPage';
 
+if (typeof global.IntersectionObserver === 'undefined') {
+  global.IntersectionObserver = class IntersectionObserver {
+    constructor() {}
+    disconnect() {}
+    observe() {}
+    takeRecords() { return []; }
+    unobserve() {}
+  } as any;
+}
+if (typeof global.ResizeObserver === 'undefined') {
+  global.ResizeObserver = class ResizeObserver {
+    constructor() {}
+    disconnect() {}
+    observe() {}
+    unobserve() {}
+  } as any;
+}
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as any;
+}
+if (typeof window !== 'undefined') {
+  window.scrollTo = window.scrollTo || vi.fn();
+}
+
 vi.mock('@/api/clients', () => ({
   apiClient: {
-    get: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-    post: vi.fn().mockResolvedValue({ data: { data: {} } }),
-    patch: vi.fn().mockResolvedValue({ data: { data: {} } }),
-    delete: vi.fn().mockResolvedValue({ data: { data: {} } }),
+    get: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] }, status: 200 }),
+    post: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    patch: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    put: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    delete: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
   },
+  default: {
+    get: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] }, status: 200 }),
+    post: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    patch: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    put: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+    delete: vi.fn().mockResolvedValue({ data: { data: {} }, status: 200 }),
+  },
+})); 
+
+vi.mock('@/api/endpoints/bordersHealth', () => ({
+  changeCrossingStatus: vi.fn(),
+  decideCargoInspection: vi.fn(),
+  getBorderStaff: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getBordersHealthOverview: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getCargoInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getContactTracingCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getContacts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrossingPerformance: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getCrossings: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getDailyStatistics: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getDecisions: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getFacilities: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getHealthDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getIncidents: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getIsolationCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getNotifications: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getQuarantineCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getSamples: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getShifts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getStaff: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getTrafficTrend: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getTravelerRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVehicleInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVehicles: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  issueCertificate: vi.fn(),
+  reassessScreening: vi.fn(),
+  refreshDailyStatistics: vi.fn(),
 }));
 
 vi.mock('@/api/borders', () => ({
@@ -48,39 +123,146 @@ vi.mock('@/api/borders', () => ({
   getDailyStatistics: vi.fn().mockResolvedValue({ data: { data: [] } }),
   refreshDailyStatistics: vi.fn(),
   getCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  changeCrossingStatus: vi.fn(),
+  decideCargoInspection: vi.fn(),
+  getBorderStaff: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getBordersHealthOverview: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getCargoInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getContactTracingCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getContacts: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getCrossingPerformance: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getCrossings: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getDecisions: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getFacilities: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getHealthDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getIncidents: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getIsolationCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getNotifications: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getQuarantineCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getSamples: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getShifts: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getStaff: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getTrafficTrend: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getTravelerRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getVehicleInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getVehicles: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  issueCertificate: vi.fn(),
+  reassessScreening: vi.fn(),
+  refreshDailyStatistics: vi.fn(),
 }));
 
 vi.mock('@/api/portHealth', () => ({
-  getSeaPorts: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getVessels: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getCrewMembers: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getPassengers: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getHealthDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getSeaPorts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVessels: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrewMembers: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPassengers: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getHealthDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   approveDeclaration: vi.fn(),
   rejectDeclaration: vi.fn(),
-  getShipInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getFoodWaterInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getSanitationCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getIsolationRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getSurveillanceCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getVectorControls: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getCargoInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getWasteInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getPortEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getHealthCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getShipInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getFoodWaterInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getSanitationCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getIsolationRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getSurveillanceCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVectorControls: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCargoInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getWasteInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPortEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getHealthCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   createShipInspection: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getPorts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVesselArrivals: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrew: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getFoodWaterInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPortHealthOverview: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getSurveillance: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVectors: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getWaste: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+})); 
+
+vi.mock('@/api/endpoints/portHealth', () => ({
+  getSeaPorts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVessels: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVesselVisits: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrewMembers: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPassengers: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getHealthDeclarations: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getShipInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getFoodWaterInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getSanitationCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getIsolationRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getSurveillanceCases: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getVectorControls: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCargoInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getWasteInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPortEmergencies: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getHealthCertificates: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  createShipInspection: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getPorts: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getPortHealthOverview: vi.fn().mockResolvedValue({ data: { data: {} } }),
 }));
 
 vi.mock('@/api/airport', () => ({
-  getAirportScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getAircraftInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getCrewHealthRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getTerminals: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
-  getCheckpoints: vi.fn().mockResolvedValue({ data: { data: [], count: 0 } }),
+  getAirportScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getAircraftInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrewHealthRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getTerminals: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCheckpoints: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+})); 
+
+vi.mock('@/api/endpoints/airport', () => ({
+  getAirportScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getAircraftInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCrewHealthRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getTerminals: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getCheckpoints: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getAirportDashboard: vi.fn().mockResolvedValue({ data: { data: { kpis: {}, upcoming_flights: [], suspected: [], tasks: [], alerts: [], report: {} } } }),
 }));
 
 vi.mock('@/api/dashboard', () => ({
-  getAirportInspectorDashboard: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getAirportInspectorDashboard: vi.fn().mockResolvedValue({ 
+    data: { 
+      data: { 
+        today_flights: 0, 
+        total_passengers: 0, 
+        pending_screenings: 0, 
+        screened_today: 0, 
+        clinic_referrals: 0, 
+        suspected_cases: 0, 
+        vaccinations_today: 0, 
+        completed_today: 0, 
+        upcoming_flights: [], 
+        suspected_cases_list: [], 
+        tasks: [], 
+        alerts: [], 
+        daily_chart: [] 
+      } 
+    } 
+  }),
+  getAirportDashboard: vi.fn().mockResolvedValue({ 
+    data: { 
+      data: { 
+        flights_today: 0, 
+        passengers_today: 0, 
+        pending_screenings: 0, 
+        screened_today: 0, 
+        clinic_referrals: 0, 
+        suspected_cases: 0, 
+        vaccinations: 0, 
+        completed_today: 0, 
+        upcoming_flights: [], 
+        suspected_cases_list: [], 
+        tasks: [], 
+        alerts: [], 
+        daily_chart: [] 
+      } 
+    } 
+  }),
 }));
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -111,11 +293,12 @@ const renderWithProviders = (ui: React.ReactElement) => {
 describe('Borders/Airport language reactivity', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('ar');
+    vi.clearAllMocks();
   });
 
   it('renders BordersHealthPage in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<BordersHealthPage />);
-    expect(screen.getByText(/صحة المعابر البرية/i)).toBeTruthy();
+    expect(await screen.findByText(/صحة المعابر البرية/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -126,12 +309,12 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Border Health/i)).toBeTruthy();
+    expect(await screen.findByText(/Border Health/i)).toBeTruthy();
   });
 
   it('renders PortHealthPage in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<PortHealthPage />);
-    expect(screen.getByText(/صحة الموانئ/i)).toBeTruthy();
+    expect(await screen.findByText(/صحة الموانئ/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -142,12 +325,12 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Port Health/i)).toBeTruthy();
+    expect(await screen.findByText(/Port Health/i)).toBeTruthy();
   });
 
   it('renders ShipInspectionForm in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<ShipInspectionForm />);
-    expect(screen.getByText(/استمارة التفتيش الصحي الميداني/i)).toBeTruthy();
+    expect(await screen.findByText(/استمارة التفتيش الصحي الميداني/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -158,12 +341,12 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Ship Inspection Form/i)).toBeTruthy();
+    expect(await screen.findByText(/Ship Inspection Form/i)).toBeTruthy();
   });
 
   it('renders AirportPage in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<AirportPage />);
-    expect(screen.getByText(/صحة المطارات/i)).toBeTruthy();
+    expect(await screen.findAllByText(/صحة المطارات/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -174,12 +357,12 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Airport Health/i)).toBeTruthy();
+    expect(await screen.findAllByText(/Airport Health/i)).toBeTruthy();
   });
 
   it('renders InspectorDashboard in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<InspectorDashboard />);
-    expect(screen.getByText(/مفتش الحجر الصحي/i)).toBeTruthy();
+    expect(await screen.findByText(/مفتش الحجر الصحي/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -190,12 +373,12 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Quarantine Inspector/i)).toBeTruthy();
+    expect(await screen.findByText(/Quarantine Inspector/i)).toBeTruthy();
   });
 
   it('renders AirportHealthPage in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<AirportHealthPage />);
-    expect(screen.getByText(/صحة المطارات والطيران/i)).toBeTruthy();
+    expect(await screen.findAllByText(/صحة المطارات والطيران/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -206,6 +389,6 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(screen.getByText(/Airport Health/i)).toBeTruthy();
+    expect(await screen.findAllByText(/Airport Health/i)).toBeTruthy();
   });
 });

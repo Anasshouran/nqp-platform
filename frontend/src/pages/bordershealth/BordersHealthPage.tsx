@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -131,30 +131,31 @@ import {
   borderVehicleType,
 } from '../../utils/status';
 
-const SECTIONS = [
-  { id: 'dashboard', label: 'لوحة القيادة', icon: <PublicIcon fontSize="small" /> },
-  { id: 'crossings', label: 'المعابر', icon: <PublicIcon fontSize="small" /> },
-  { id: 'facilities', label: 'المرافق', icon: <ApartmentIcon fontSize="small" /> },
-  { id: 'shifts', label: 'الورديات', icon: <AssignmentIcon fontSize="small" /> },
-  { id: 'staff', label: 'الكادر', icon: <GroupsIcon fontSize="small" /> },
-  { id: 'travelers', label: 'المسافرون', icon: <GroupsIcon fontSize="small" /> },
-  { id: 'declarations', label: 'الإقرارات', icon: <AssignmentIcon fontSize="small" /> },
-  { id: 'screenings', label: 'الفحوصات', icon: <FactCheckOutlinedIcon fontSize="small" /> },
-  { id: 'vehicles', label: 'المركبات', icon: <DirectionsBusIcon fontSize="small" /> },
-  { id: 'vehicle-inspections', label: 'تفتيش المركبات', icon: <FactCheckIcon fontSize="small" /> },
-  { id: 'cargo', label: 'الشحنات', icon: <LocalShippingIcon fontSize="small" /> },
-  { id: 'samples', label: 'العيّنات', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'quarantine', label: 'الحجر', icon: <HealthAndSafetyIcon fontSize="small" /> },
-  { id: 'isolation', label: 'العزل', icon: <CoronaIcon fontSize="small" /> },
-  { id: 'tracing', label: 'تتبع المخالطين', icon: <ContactMailIcon fontSize="small" /> },
-  { id: 'emergencies', label: 'الطوارئ', icon: <WarningAmberIcon fontSize="small" /> },
-  { id: 'certificates', label: 'الشهادات', icon: <BadgeIcon fontSize="small" /> },
-  { id: 'decisions', label: 'القرارات', icon: <GavelIcon fontSize="small" /> },
-  { id: 'notifications', label: 'الإشعارات', icon: <NotificationsIcon fontSize="small" /> },
-  { id: 'statistics', label: 'الحصيلة اليومية', icon: <TrendingUpIcon fontSize="small" /> },
+const getSections = (t: (key: string) => string) => [
+  { id: 'dashboard', label: t('borders.bordersHealth.sections.dashboard'), icon: <PublicIcon fontSize="small" /> },
+  { id: 'crossings', label: t('borders.bordersHealth.sections.crossings'), icon: <PublicIcon fontSize="small" /> },
+  { id: 'facilities', label: t('borders.bordersHealth.sections.facilities'), icon: <ApartmentIcon fontSize="small" /> },
+  { id: 'shifts', label: t('borders.bordersHealth.sections.shifts'), icon: <AssignmentIcon fontSize="small" /> },
+  { id: 'staff', label: t('borders.bordersHealth.sections.staff'), icon: <GroupsIcon fontSize="small" /> },
+  { id: 'travelers', label: t('borders.bordersHealth.sections.travelers'), icon: <GroupsIcon fontSize="small" /> },
+  { id: 'declarations', label: t('borders.bordersHealth.sections.declarations'), icon: <AssignmentIcon fontSize="small" /> },
+  { id: 'screenings', label: t('borders.bordersHealth.sections.screenings'), icon: <FactCheckOutlinedIcon fontSize="small" /> },
+  { id: 'vehicles', label: t('borders.bordersHealth.sections.vehicles'), icon: <DirectionsBusIcon fontSize="small" /> },
+  { id: 'vehicle-inspections', label: t('borders.bordersHealth.sections.vehicleInspections'), icon: <FactCheckIcon fontSize="small" /> },
+  { id: 'cargo', label: t('borders.bordersHealth.sections.cargo'), icon: <LocalShippingIcon fontSize="small" /> },
+  { id: 'samples', label: t('borders.bordersHealth.sections.samples'), icon: <BiotechIcon fontSize="small" /> },
+  { id: 'quarantine', label: t('borders.bordersHealth.sections.quarantine'), icon: <HealthAndSafetyIcon fontSize="small" /> },
+  { id: 'isolation', label: t('borders.bordersHealth.sections.isolation'), icon: <CoronaIcon fontSize="small" /> },
+  { id: 'tracing', label: t('borders.bordersHealth.sections.tracing'), icon: <ContactMailIcon fontSize="small" /> },
+  { id: 'emergencies', label: t('borders.bordersHealth.sections.emergencies'), icon: <WarningAmberIcon fontSize="small" /> },
+  { id: 'certificates', label: t('borders.bordersHealth.sections.certificates'), icon: <BadgeIcon fontSize="small" /> },
+  { id: 'decisions', label: t('borders.bordersHealth.sections.decisions'), icon: <GavelIcon fontSize="small" /> },
+  { id: 'notifications', label: t('borders.bordersHealth.sections.notifications'), icon: <NotificationsIcon fontSize="small" /> },
+  { id: 'statistics', label: t('borders.bordersHealth.sections.statistics'), icon: <TrendingUpIcon fontSize="small" /> },
 ] as const;
 
 const DashboardTab = () => {
+  const { t } = useTranslation();
   const [overview, setOverview] = useState<BordersHealthOverview | null>(null);
   const [performance, setPerformance] = useState<CrossingPerformanceRow[]>([]);
   const [trend, setTrend] = useState<TrafficTrendRow[]>([]);
@@ -175,55 +176,55 @@ const DashboardTab = () => {
   return (
     <Stack spacing={2.5}>
       <DashboardHero
-        eyebrow="{t('borders.bordersHealth.eyebrow')} البرية"
-        title="الحجر الصحي القومي — المعابر البرية"
-        subtitle="مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر"
-        avatarLabel="المعابر"
+        eyebrow={t('borders.bordersHealth.dashboard.eyebrow')}
+        title={t('borders.bordersHealth.dashboard.title')}
+        subtitle={t('borders.bordersHealth.dashboard.subtitle')}
+        avatarLabel={t('borders.bordersHealth.dashboard.avatarLabel')}
       />
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<PublicIcon />} value={overview?.open_crossings ?? 0} label="معابر عاملة" accent="success.main" hint={`من ${overview?.crossings ?? 0}`} />
+          <KpiCard icon={<PublicIcon />} value={overview?.open_crossings ?? 0} label={t('borders.bordersHealth.dashboard.kpi.openCrossings')} accent="success.main" hint={`${t('borders.bordersHealth.dashboard.kpi.from')} ${overview?.crossings ?? 0}`} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<GroupsIcon />} value={overview?.travelers_today ?? 0} label="مسافرون اليوم" accent="primary.main" />
+          <KpiCard icon={<GroupsIcon />} value={overview?.travelers_today ?? 0} label={t('borders.bordersHealth.dashboard.kpi.travelersToday')} accent="primary.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<DirectionsBusIcon />} value={overview?.vehicles_inspected ?? 0} label="مركبات مفتّشة" accent="info.main" />
+          <KpiCard icon={<DirectionsBusIcon />} value={overview?.vehicles_inspected ?? 0} label={t('borders.bordersHealth.dashboard.kpi.vehiclesInspected')} accent="info.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<LocalShippingIcon />} value={overview?.cargo_inspections ?? 0} label="شحنات مفتّشة" accent="secondary.main" />
+          <KpiCard icon={<LocalShippingIcon />} value={overview?.cargo_inspections ?? 0} label={t('borders.bordersHealth.dashboard.kpi.cargoInspections')} accent="secondary.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<HealthAndSafetyIcon />} value={overview?.active_quarantine ?? 0} label="حالات حجر نشطة" accent="warning.main" />
+          <KpiCard icon={<HealthAndSafetyIcon />} value={overview?.active_quarantine ?? 0} label={t('borders.bordersHealth.dashboard.kpi.activeQuarantine')} accent="warning.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<CoronaIcon />} value={overview?.active_isolation ?? 0} label="حالات عزل" accent="error.main" />
+          <KpiCard icon={<CoronaIcon />} value={overview?.active_isolation ?? 0} label={t('borders.bordersHealth.dashboard.kpi.activeIsolation')} accent="error.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<WarningAmberIcon />} value={overview?.suspected_cases ?? 0} label="حالات مشتبه بها" accent="error.main" />
+          <KpiCard icon={<WarningAmberIcon />} value={overview?.suspected_cases ?? 0} label={t('borders.bordersHealth.dashboard.kpi.suspectedCases')} accent="error.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<BadgeIcon />} value={overview?.certificates_issued ?? 0} label="شهادات صادرة" accent="primary.main" />
+          <KpiCard icon={<BadgeIcon />} value={overview?.certificates_issued ?? 0} label={t('borders.bordersHealth.dashboard.kpi.certificatesIssued')} accent="primary.main" />
         </Grid>
       </Grid>
 
       <DataTable<CrossingPerformanceRow>
         columns={[
-          { key: 'entry_point__name_ar', label: 'المعبر', render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.entry_point__name_ar}</Typography> },
-          { key: 'entry_point__code', label: 'الكود', hideOnMobile: true, render: (r) => (
+          { key: 'entry_point__name_ar', label: t('borders.bordersHealth.dashboard.performance.cols.crossing'), render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.entry_point__name_ar}</Typography> },
+          { key: 'entry_point__code', label: t('borders.bordersHealth.dashboard.performance.cols.code'), hideOnMobile: true, render: (r) => (
             <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{r.entry_point__code}</Typography>
           ) },
-          { key: 'neighbor_country', label: 'الدولة المجاورة', hideOnMobile: true, render: (r) => r.neighbor_country || '—' },
-          { key: 'operating_status', label: 'الحالة', render: (r) => (
+          { key: 'neighbor_country', label: t('borders.bordersHealth.dashboard.performance.cols.neighbor'), hideOnMobile: true, render: (r) => r.neighbor_country || '—' },
+          { key: 'operating_status', label: t('borders.bordersHealth.dashboard.performance.cols.status'), render: (r) => (
             <StatusChip
               label={borderOperatingStatus[r.operating_status]?.label ?? r.operating_status}
               tone={borderOperatingStatus[r.operating_status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'records_count', label: 'حركة المسافرين', align: 'center', render: (r) => r.records_count },
-          { key: 'vehicle_inspections_count', label: 'مركبات', align: 'center', hideOnMobile: true, render: (r) => r.vehicle_inspections_count },
-          { key: 'cargo_count', label: 'شحنات', align: 'center', hideOnMobile: true, render: (r) => r.cargo_count },
-          { key: 'quarantine_count', label: 'حجر', align: 'center', render: (r) => r.quarantine_count },
+          { key: 'records_count', label: t('borders.bordersHealth.dashboard.performance.cols.travelerFlow'), align: 'center', render: (r) => r.records_count },
+          { key: 'vehicle_inspections_count', label: t('borders.bordersHealth.dashboard.performance.cols.vehicles'), align: 'center', hideOnMobile: true, render: (r) => r.vehicle_inspections_count },
+          { key: 'cargo_count', label: t('borders.bordersHealth.dashboard.performance.cols.cargo'), align: 'center', hideOnMobile: true, render: (r) => r.cargo_count },
+          { key: 'quarantine_count', label: t('borders.bordersHealth.dashboard.performance.cols.quarantine'), align: 'center', render: (r) => r.quarantine_count },
         ]}
         rows={performance}
         rowKey={(r) => r.id}
@@ -231,26 +232,26 @@ const DashboardTab = () => {
         page={0}
         rowsPerPage={Math.max(performance.length, 10)}
         hidePagination
-        title="أداء المعابر"
-        subtitle="مقارنة الحركة والتفتيش والحجر بين المعابر"
-        emptyTitle="لا توجد بيانات أداء"
-        emptyDescription="تظهر المقارنة بعد تسجيل حركة عبر المعابر."
+        title={t('borders.bordersHealth.dashboard.performance.title')}
+        subtitle={t('borders.bordersHealth.dashboard.performance.subtitle')}
+        emptyTitle={t('borders.bordersHealth.dashboard.performance.emptyTitle')}
+        emptyDescription={t('borders.bordersHealth.dashboard.performance.emptyDescription')}
       />
 
       {trend.length > 0 && (
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            اتجاه الحركة (7 أيام)
+            {t('borders.bordersHealth.dashboard.trend.title')}
           </Typography>
           <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
             <Typography variant="body2" color="text.secondary">
-              داخل: <b>{inbound.toLocaleString('ar')}</b>
+              {t('borders.bordersHealth.dashboard.trend.inbound')}: <b>{inbound.toLocaleString('ar')}</b>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              خارج: <b>{outbound.toLocaleString('ar')}</b>
+              {t('borders.bordersHealth.dashboard.trend.outbound')}: <b>{outbound.toLocaleString('ar')}</b>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              أيام مسجّلة: <b>{trend.length}</b>
+              {t('borders.bordersHealth.dashboard.trend.daysRecorded')}: <b>{trend.length}</b>
             </Typography>
           </Stack>
         </Box>
@@ -1784,23 +1785,24 @@ const CertificatesTab = () => {
 
 const BordersHealthPage = () => {
   const { t } = useTranslation();
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
+  const SECTIONS = useMemo(() => getSections(t) as unknown as CommandSectionDef[], [t]);
+  const { active, register, scrollTo } = useCommandSections(SECTIONS);
 
   return (
     <Box>
       <PageHeader
-        title="{t('borders.bordersHealth.title')}"
-        subtitle="إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، الحجر والعزل، والتتبع"
-        eyebrow="{t('borders.bordersHealth.eyebrow')}"
+        title={t('borders.bordersHealth.title')}
+        subtitle={t('borders.bordersHealth.subtitle')}
+        eyebrow={t('borders.bordersHealth.eyebrow')}
       />
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.4} lg={2}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={SECTIONS}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('borders.bordersHealth.dashboard.eyebrow')}
           />
         </Grid>
         <Grid item xs={12} md={9.6} lg={10}>

@@ -115,6 +115,7 @@ const SECTIONS = [
 ] as const;
 
 const DashboardTab = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [overview, setOverview] = useState<PortHealthOverview | null>(null);
   useEffect(() => {
@@ -122,29 +123,29 @@ const DashboardTab = () => {
   }, []);
 
   const cards = [
-    { icon: <AnchorIcon />, value: overview?.seaports ?? 0, label: 'الموانئ البحرية', accent: 'primary.main' },
-    { icon: <DirectionsBoatIcon />, value: overview?.vessels ?? 0, label: 'إجمالي السفن', accent: 'info.main' },
-    { icon: <DirectionsBoatIcon />, value: overview?.arrived_vessels ?? 0, label: 'سفن وصلت', accent: 'primary.main' },
-    { icon: <BiotechIcon />, value: overview?.inspections ?? 0, label: 'عمليات التفتيش', accent: 'info.main' },
-    { icon: <VerifiedIcon />, value: overview?.pending_certificates ?? 0, label: 'شهادات صادرة', accent: 'secondary.main' },
-    { icon: <LocalHospitalIcon />, value: overview?.suspected_cases ?? 0, label: 'حالات مشتبه بها', accent: 'error.main' },
-    { icon: <HealthAndSafetyIcon />, value: overview?.active_isolation ?? 0, label: 'عزل نشط', accent: 'warning.main' },
-    { icon: <WarningAmberIcon />, value: overview?.open_emergencies ?? 0, label: 'طوارئ مفتوحة', accent: 'error.main' },
+    { icon: <AnchorIcon />, value: overview?.seaports ?? 0, label: t('borders.portHealth.kpi.seaports'), accent: 'primary.main' },
+    { icon: <DirectionsBoatIcon />, value: overview?.vessels ?? 0, label: t('borders.portHealth.kpi.totalVessels'), accent: 'info.main' },
+    { icon: <DirectionsBoatIcon />, value: overview?.arrived_vessels ?? 0, label: t('borders.portHealth.kpi.arrivedVessels'), accent: 'primary.main' },
+    { icon: <BiotechIcon />, value: overview?.inspections ?? 0, label: t('borders.portHealth.kpi.inspections'), accent: 'info.main' },
+    { icon: <VerifiedIcon />, value: overview?.pending_certificates ?? 0, label: t('borders.portHealth.kpi.certificatesIssued'), accent: 'secondary.main' },
+    { icon: <LocalHospitalIcon />, value: overview?.suspected_cases ?? 0, label: t('borders.portHealth.kpi.suspectedCases'), accent: 'error.main' },
+    { icon: <HealthAndSafetyIcon />, value: overview?.active_isolation ?? 0, label: t('borders.portHealth.kpi.activeIsolation'), accent: 'warning.main' },
+    { icon: <WarningAmberIcon />, value: overview?.open_emergencies ?? 0, label: t('borders.portHealth.kpi.openEmergencies'), accent: 'error.main' },
   ];
 
   return (
     <Stack spacing={2.5}>
       <DashboardHero
-        eyebrow="لوحة المؤشرات — صحة الموانئ"
-        title={`مرحباً، ${user?.full_name || 'المشرف'}`}
-        subtitle="مؤشرات الحجر الصحي في الموانئ البحرية وفق لوائح الصحة الدولية IHR 2005"
-        avatarLabel={(user?.full_name || 'م').slice(0, 1)}
+        eyebrow={t('borders.portHealth.dashboard.eyebrow')}
+        title={`${t('borders.portHealth.dashboard.welcome')}${user?.full_name || t('borders.portHealth.dashboard.supervisor')}`}
+        subtitle={t('borders.portHealth.subtitle')}
+        avatarLabel={(user?.full_name || t('borders.portHealth.dashboard.avatar')).slice(0, 1)}
         gradient="ocean"
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('borders.portHealth.dashboard.live')}
           </Box>,
         ]}
       />
@@ -605,7 +606,7 @@ const PortHealthPage = () => {
     <Box>
       <PageHeader
         title={t('borders.portHealth.title')}
-        subtitle="إدارة الحجر الصحي في الموانئ البحرية — السفن والطاقم والركاب والتفتيش والشهادات وفق IHR 2005"
+        subtitle={t('borders.portHealth.subtitle')}
         eyebrow={t('borders.portHealth.eyebrow')}
       />
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
@@ -615,7 +616,7 @@ const PortHealthPage = () => {
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('borders.portHealth.dashboard.eyebrow')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>

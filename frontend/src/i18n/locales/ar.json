@@ -1352,7 +1352,68 @@
       },
       "title": "صحة المعابر البرية",
       "subtitle": "إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، العينات، الحجر، العزل، التتبع، الطوارئ، القرارات، الإشعارات، الشهادات، الحصيلة اليومية",
-      "eyebrow": "مركز قيادة المعابر"
+      "eyebrow": "مركز قيادة المعابر",
+      "sections": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات",
+        "screenings": "الفحوصات",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "الحجر",
+        "isolation": "العزل",
+        "tracing": "تتبع المخالطين",
+        "emergencies": "الطوارئ",
+        "certificates": "الشهادات",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "statistics": "الحصيلة اليومية"
+      },
+      "dashboard": {
+        "eyebrow": "مركز قيادة المعابر",
+        "title": "الحجر الصحي القومي — المعابر البرية",
+        "subtitle": "مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر",
+        "avatarLabel": "المعابر",
+        "kpi": {
+          "openCrossings": "معابر عاملة",
+          "from": "من",
+          "travelersToday": "مسافرون اليوم",
+          "vehiclesInspected": "مركبات مفتّشة",
+          "cargoInspections": "شحنات مفتّشة",
+          "activeQuarantine": "حالات حجر نشطة",
+          "activeIsolation": "حالات عزل",
+          "suspectedCases": "حالات مشتبه بها",
+          "certificatesIssued": "شهادات صادرة"
+        },
+        "performance": {
+          "title": "أداء المعابر",
+          "subtitle": "مقارنة الحركة والتفتيش والحجر بين المعابر",
+          "emptyTitle": "لا توجد بيانات أداء",
+          "emptyDescription": "تظهر المقارنة بعد تسجيل حركة عبر المعابر.",
+          "cols": {
+            "crossing": "المعبر",
+            "code": "الكود",
+            "neighbor": "الدولة المجاورة",
+            "status": "الحالة",
+            "travelerFlow": "حركة المسافرين",
+            "vehicles": "مركبات",
+            "cargo": "شحنات",
+            "quarantine": "حجر"
+          }
+        },
+        "trend": {
+          "title": "اتجاه الحركة (7 أيام)",
+          "inbound": "داخل",
+          "outbound": "خارج",
+          "daysRecorded": "أيام مسجّلة"
+        }
+      }
     },
     "portHealth": {
       "nav": {
@@ -1376,7 +1437,24 @@
       },
       "title": "صحة الموانئ",
       "subtitle": "إدارة الحجر الصحي في الموانئ البحرية — السفن والطاقم والركاب والشحنات والتفتيش",
-      "eyebrow": "العمليات"
+      "eyebrow": "العمليات",
+      "dashboard": {
+        "eyebrow": "لوحة المؤشرات — صحة الموانئ",
+        "welcome": "مرحباً، ",
+        "supervisor": "المشرف",
+        "avatar": "م",
+        "live": "مباشر"
+      },
+      "kpi": {
+        "seaports": "الموانئ البحرية",
+        "totalVessels": "إجمالي السفن",
+        "arrivedVessels": "سفن وصلت",
+        "inspections": "عمليات التفتيش",
+        "certificatesIssued": "شهادات صادرة",
+        "suspectedCases": "حالات مشتبه بها",
+        "activeIsolation": "عزل نشط",
+        "openEmergencies": "طوارئ مفتوحة"
+      }
     },
     "shipInspection": {
       "title": "استمارة التفتيش الصحي الميداني"
@@ -1390,7 +1468,27 @@
       "role": "مفتش الحجر الصحي — قسم صحة المطار"
     },
     "airportHealth": {
-      "title": "صحة المطارات والطيران"
+      "title": "صحة المطارات والطيران",
+      "header": {
+        "brand": "صحة المطارات والطيران",
+        "subtitle": "نظام إدارة الحجر الصحي بالمطار",
+        "station": "مركز القيادة"
+      }
+    },
+    "common": {
+      "dashboard": "لوحة القيادة",
+      "sections": "أقسام اللوحة",
+      "yes": "نعم",
+      "no": "لا",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "search": "بحث",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "status": "الحالة"
     }
   }
 }
