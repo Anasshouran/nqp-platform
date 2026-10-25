@@ -1413,6 +1413,44 @@
           "outbound": "Outbound",
           "daysRecorded": "Days Recorded"
         }
+      },
+      "crossings": {
+        "title": "Crossings Management",
+        "subtitle": "{count} crossings",
+        "searchPlaceholder": "Search by crossing name, code, or neighboring country...",
+        "filterStatus": "Status",
+        "emptyTitle": "No crossings",
+        "emptyDescription": "Run seed command to create operational files.",
+        "dialogTitle": "Change Crossing Status",
+        "reasonLabel": "Reason for closure/restriction",
+        "newStatus": "New Status",
+        "cols": {
+          "crossing": "Crossing",
+          "neighbor": "Neighboring Country",
+          "state": "State",
+          "status": "Status",
+          "capacity": "Daily Capacity",
+          "lab": "Laboratory"
+        },
+        "actions": {
+          "changeStatus": "Change Status"
+        }
+      },
+      "facilities": {
+        "title": "Border Facilities",
+        "subtitle": "{count} facilities",
+        "searchPlaceholder": "Search by facility name...",
+        "filterType": "Facility Type",
+        "emptyTitle": "No facilities",
+        "emptyDescription": "Register border facilities: laboratory, quarantine unit, warehouse.",
+        "cols": {
+          "facility": "Facility",
+          "type": "Type",
+          "crossing": "Crossing",
+          "capacity": "Capacity",
+          "staff": "Staff",
+          "status": "Operation"
+        }
       }
     },
     "portHealth": {
@@ -1489,6 +1527,70 @@
       "active": "Active",
       "inactive": "Inactive",
       "status": "Status"
+    },
+    "actions": {
+      "changeStatus": "Change Status",
+      "changeBorderStatus": "Change Border Status",
+      "reassess": "Reassess with new measurements",
+      "reassessScreening": "Reassess Screening",
+      "reassessDialog": "Reassess Screening",
+      "recordCargoDecision": "Record Cargo Decision",
+      "issueCertificate": "Issue Certificate"
+    },
+    "labels": {
+      "border": "Crossing",
+      "crossing": "Crossing",
+      "facility": "Facility",
+      "shift": "Shift",
+      "staff": "Staff",
+      "traveler": "Traveler",
+      "declaration": "Declaration",
+      "screening": "Screening",
+      "vehicle": "Vehicle",
+      "cargo": "Cargo",
+      "sample": "Sample",
+      "quarantine": "Quarantine",
+      "isolation": "Isolation",
+      "emergency": "Emergency",
+      "certificate": "Certificate",
+      "decision": "Decision",
+      "notification": "Notification",
+      "yes": "Yes",
+      "no": "No",
+      "active": "Active",
+      "continuous": "Ongoing",
+      "all": "All",
+      "search": "Search",
+      "filter": "Filter",
+      "export": "Export",
+      "refresh": "Refresh",
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "view": "View",
+      "close": "Close",
+      "cancel": "Cancel",
+      "save": "Save",
+      "apply": "Apply",
+      "approve": "Approve",
+      "reject": "Reject",
+      "hold": "Hold",
+      "issue": "Issue",
+      "loading": "Loading...",
+      "none": "—"
+    },
+    "dialogs": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "save": "Save",
+      "apply": "Apply",
+      "confirm": "Confirm"
+    },
+    "messages": {
+      "updated": "Updated successfully",
+      "saved": "Saved successfully",
+      "error": "An error occurred",
+      "exported": "Exported successfully"
     }
   }
 }

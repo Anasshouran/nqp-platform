@@ -1413,6 +1413,44 @@
           "outbound": "خارج",
           "daysRecorded": "أيام مسجّلة"
         }
+      },
+      "crossings": {
+        "title": "إدارة المعابر",
+        "subtitle": "{count} معبر",
+        "searchPlaceholder": "بحث باسم المعبر أو كوده أو الدولة المجاورة...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد معابر",
+        "emptyDescription": "شغّل أمر بذر المعابر لإنشاء الملفات التشغيلية.",
+        "dialogTitle": "تغيير حالة المعبر",
+        "reasonLabel": "سبب الإغلاق / التقييد",
+        "newStatus": "الحالة الجديدة",
+        "cols": {
+          "crossing": "المعبر",
+          "neighbor": "الدولة المجاورة",
+          "state": "الولاية",
+          "status": "الحالة",
+          "capacity": "السعة اليومية",
+          "lab": "مختبر"
+        },
+        "actions": {
+          "changeStatus": "تغيير حالة التشغيل"
+        }
+      },
+      "facilities": {
+        "title": "مرافق المعابر",
+        "subtitle": "{count} مرفق",
+        "searchPlaceholder": "بحث باسم المرفق...",
+        "filterType": "نوع المرفق",
+        "emptyTitle": "لا توجد مرافق",
+        "emptyDescription": "سجّل مرافق المعبر: مختبر، وحدة حجر، مخزن.",
+        "cols": {
+          "facility": "المرفق",
+          "type": "النوع",
+          "crossing": "المعبر",
+          "capacity": "السعة",
+          "staff": "الكادر",
+          "status": "التشغيل"
+        }
       }
     },
     "portHealth": {
@@ -1489,6 +1527,70 @@
       "active": "نشط",
       "inactive": "غير نشط",
       "status": "الحالة"
+    },
+    "actions": {
+      "changeStatus": "تغيير حالة التشغيل",
+      "changeBorderStatus": "تغيير حالة المعبر",
+      "reassess": "إعادة التقييم بقياسات جديدة",
+      "reassessScreening": "إعادة تقييم الفحص",
+      "reassessDialog": "إعادة تقييم الفحص",
+      "recordCargoDecision": "تسجيل قرار الشحنة",
+      "issueCertificate": "إصدار شهادة"
+    },
+    "labels": {
+      "border": "المعبر",
+      "crossing": "المعبر",
+      "facility": "المرفق",
+      "shift": "الوردية",
+      "staff": "الكادر",
+      "traveler": "المسافر",
+      "declaration": "الإقرار",
+      "screening": "الفحص",
+      "vehicle": "المركبة",
+      "cargo": "الشحنة",
+      "sample": "العيّنة",
+      "quarantine": "الحجر",
+      "isolation": "العزل",
+      "emergency": "الطوارئ",
+      "certificate": "الشهادة",
+      "decision": "القرار",
+      "notification": "الإشعار",
+      "yes": "نعم",
+      "no": "لا",
+      "active": "نشط",
+      "continuous": "مستمر",
+      "all": "الكل",
+      "search": "بحث",
+      "filter": "تصفية",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "add": "إضافة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "view": "عرض",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "hold": "حجز",
+      "issue": "إصدار",
+      "loading": "جارٍ...",
+      "none": "—"
+    },
+    "dialogs": {
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "confirm": "تأكيد"
+    },
+    "messages": {
+      "updated": "تم التحديث بنجاح",
+      "saved": "تم الحفظ بنجاح",
+      "error": "حدث خطأ",
+      "exported": "تم التصدير بنجاح"
     }
   }
 }

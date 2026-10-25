@@ -261,8 +261,9 @@ const DashboardTab = () => {
 };
 
 const CrossingsTab = () => {
-  const t = useServerTable<BorderCrossing>({ fetchData: getCrossings });
-  const { exporting, exportAll } = useTableExport(t.fetchAllRows);
+  const { t } = useTranslation();
+  const tt = useServerTable<BorderCrossing>({ fetchData: getCrossings });
+  const { exporting, exportAll } = useTableExport(tt.fetchAllRows);
   const [statusTarget, setStatusTarget] = useState<BorderCrossing | null>(null);
   const [nextStatus, setNextStatus] = useState('CLOSED');
   const [reason, setReason] = useState('');
@@ -273,12 +274,12 @@ const CrossingsTab = () => {
     setSaving(true);
     try {
       await changeCrossingStatus(statusTarget.id, nextStatus, reason || undefined);
-      notifySuccess('تم تحديث حالة المعبر');
+      notifySuccess(t('borders.labels.success') || 'تم تحديث حالة المعبر');
       setStatusTarget(null);
       setReason('');
-      t.refresh();
+      tt.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تحديث حالة المعبر'));
+      notifyError(extractErrorMessage(err, t('borders.labels.error') || 'تعذر تحديث حالة المعبر'));
     } finally {
       setSaving(false);
     }
@@ -288,7 +289,7 @@ const CrossingsTab = () => {
     <>
       <DataTable<BorderCrossing>
         columns={[
-          { key: 'name_ar', label: 'المعبر', render: (v) => (
+          { key: 'name_ar', label: t('borders.bordersHealth.crossings.cols.crossing'), render: (v) => (
             <Stack>
               <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
@@ -296,57 +297,57 @@ const CrossingsTab = () => {
               </Typography>
             </Stack>
           ) },
-          { key: 'neighbor_country', label: 'الدولة المجاورة', hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
-          { key: 'neighbor_state', label: 'الولاية', hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
-          { key: 'operating_status', label: 'الحالة', render: (v) => (
+          { key: 'neighbor_country', label: t('borders.bordersHealth.crossings.cols.neighbor'), hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
+          { key: 'neighbor_state', label: t('borders.bordersHealth.crossings.cols.state'), hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
+          { key: 'operating_status', label: t('borders.bordersHealth.crossings.cols.status'), render: (v) => (
             <StatusChip
               label={borderOperatingStatus[v.operating_status]?.label ?? v.operating_status}
               tone={borderOperatingStatus[v.operating_status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'daily_capacity', label: 'السعة اليومية', align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
-          { key: 'has_laboratory', label: 'مختبر', align: 'center', render: (v) => (
-            <StatusChip label={v.has_laboratory ? 'نعم' : 'لا'} tone={v.has_laboratory ? 'success' : 'neutral'} />
+          { key: 'daily_capacity', label: t('borders.bordersHealth.crossings.cols.capacity'), align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
+          { key: 'has_laboratory', label: t('borders.bordersHealth.crossings.cols.lab'), align: 'center', render: (v) => (
+            <StatusChip label={v.has_laboratory ? t('borders.labels.yes') : t('borders.labels.no')} tone={v.has_laboratory ? 'success' : 'neutral'} />
           ) },
         ]}
-        rows={t.rows}
+        rows={tt.rows}
         rowKey={(v) => v.id}
-        count={t.count}
-        page={t.page}
-        rowsPerPage={t.rowsPerPage}
-        pageSizeOptions={t.pageSizeOptions}
-        loading={t.loading}
-        error={t.error}
-        title="إدارة المعابر"
-        subtitle={`${t.count} معبر`}
-        searchInput={t.searchInput}
-        onSearchChange={t.setSearchInput}
-        searchPlaceholder="بحث باسم المعبر أو كوده أو الدولة المجاورة..."
+        count={tt.count}
+        page={tt.page}
+        rowsPerPage={tt.rowsPerPage}
+        pageSizeOptions={tt.pageSizeOptions}
+        loading={tt.loading}
+        error={tt.error}
+        title={t('borders.bordersHealth.crossings.title')}
+        subtitle={t('borders.bordersHealth.crossings.subtitle').replace('{count}', String(tt.count))}
+        searchInput={tt.searchInput}
+        onSearchChange={tt.setSearchInput}
+        searchPlaceholder={t('borders.bordersHealth.crossings.searchPlaceholder')}
         filters={[
           {
             key: 'operating_status',
-            label: 'الحالة',
+            label: t('borders.bordersHealth.crossings.filterStatus'),
             options: Object.entries(borderOperatingStatus).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
-            onChange: (v) => t.setFilter('operating_status', v),
+            onChange: (v) => tt.setFilter('operating_status', v),
           },
         ]}
-        onPageChange={t.setPage}
-        onRowsPerPageChange={t.setRowsPerPage}
+        onPageChange={tt.setPage}
+        onRowsPerPageChange={tt.setRowsPerPage}
         onExport={() => exportAll({
           filename: 'border-crossings',
-          headers: ['الكود', 'الاسم', 'الدولة', 'الحالة'],
+          headers: [t('borders.bordersHealth.crossings.cols.code') || 'الكود', t('borders.bordersHealth.crossings.cols.crossing'), t('borders.bordersHealth.crossings.cols.neighbor'), t('borders.bordersHealth.crossings.cols.status')],
           mapRow: (v) => [v.entry_point_code ?? '', v.name_ar ?? '', v.neighbor_country, v.operating_status],
-          message: 'تم تصدير بيانات المعابر',
+          message: t('borders.labels.export') || 'تم تصدير بيانات المعابر',
         })}
         exporting={exporting}
-        onRefresh={t.refresh}
-        emptyTitle="لا توجد معابر"
-        emptyDescription="شغّل أمر بذر المعابر لإنشاء الملفات التشغيلية."
+        onRefresh={tt.refresh}
+        emptyTitle={t('borders.bordersHealth.crossings.emptyTitle')}
+        emptyDescription={t('borders.bordersHealth.crossings.emptyDescription')}
         actions={(v) => (
-          <Tooltip title="تغيير حالة التشغيل">
+          <Tooltip title={t('borders.actions.changeStatus')}>
             <IconButton
-              aria-label="تغيير حالة المعبر"
+              aria-label={t('borders.actions.changeBorderStatus')}
               size="small"
               color="primary"
               onClick={() => { setStatusTarget(v); setNextStatus(v.operating_status); }}
