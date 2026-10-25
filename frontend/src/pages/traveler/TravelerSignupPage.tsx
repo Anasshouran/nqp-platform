@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Box from '@mui/material/Box';
@@ -27,6 +28,7 @@ import { roleHomePathFor } from '../../utils/roleHome';
 import { sanitizeNextPath } from '../../utils/navigation';
 
 const TravelerSignupPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
@@ -43,11 +45,11 @@ const TravelerSignupPage = () => {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!fullName.trim()) errs.full_name = 'الاسم الكامل مطلوب';
-    if (!email.trim()) errs.email = 'البريد الإلكتروني مطلوب';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'البريد الإلكتروني غير صحيح';
-    if (password.length < 8) errs.password = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
-    if (password !== confirmPassword) errs.confirm_password = 'كلمتا المرور غير متطابقتين';
+    if (!fullName.trim()) errs.full_name = t('login.travelerSignup.errors.fullNameRequired');
+    if (!email.trim()) errs.email = t('login.travelerSignup.errors.emailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = t('login.travelerSignup.errors.emailInvalid');
+    if (password.length < 8) errs.password = t('login.travelerSignup.errors.passwordMin');
+    if (password !== confirmPassword) errs.confirm_password = t('login.travelerSignup.errors.passwordMismatch');
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -89,15 +91,15 @@ const TravelerSignupPage = () => {
           const errs: Record<string, string> = {};
           fieldEntries.forEach(([k, v]) => { errs[k] = (v as string[])[0]; });
           setFieldErrors(errs);
-          setError('يرجى تصحيح الأخطاء أدناه');
+          setError(t('login.travelerSignup.errors.fixErrors'));
         } else {
           const detail = data.detail;
-          setError(typeof detail === 'string' ? detail : 'حدث خطأ أثناء إنشاء الحساب');
+          setError(typeof detail === 'string' ? detail : t('login.travelerSignup.errors.createError'));
         }
       } else {
         const detail = (data?.detail as string | string[] | undefined);
         setError(
-          Array.isArray(detail) ? String(detail[0]) : detail || 'حدث خطأ أثناء إنشاء الحساب'
+          Array.isArray(detail) ? String(detail[0]) : detail || t('login.travelerSignup.errors.createError')
         );
       }
     } finally {
@@ -124,10 +126,10 @@ const TravelerSignupPage = () => {
                   <HealthAndSafetyIcon fontSize="large" />
                 </Box>
                 <Typography variant="h5" fontWeight={700} textAlign="center">
-                  إنشاء حساب مسافر
+                  {t('login.travelerSignup.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  أنشئ حسابك لتتمكن من تسجيل رحلتك ومتابعتها
+                  {t('login.travelerSignup.subtitle')}
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
@@ -135,7 +137,7 @@ const TravelerSignupPage = () => {
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                   <Stack spacing={2.5}>
                     <TextField
-                      label="الاسم الكامل"
+                      label={t('login.travelerSignup.fullNameLabel')}
                       fullWidth
                       required
                       value={fullName}
@@ -145,7 +147,7 @@ const TravelerSignupPage = () => {
                       inputProps={{ autoComplete: 'name' }}
                     />
                     <TextField
-                      label="البريد الإلكتروني"
+                      label={t('login.travelerSignup.emailLabel')}
                       type="email"
                       fullWidth
                       required
@@ -156,7 +158,7 @@ const TravelerSignupPage = () => {
                       inputProps={{ dir: 'ltr', autoComplete: 'email' }}
                     />
                     <TextField
-                      label="رقم الجوال (اختياري)"
+                      label={t('login.travelerSignup.phoneLabel')}
                       fullWidth
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -166,20 +168,20 @@ const TravelerSignupPage = () => {
                       inputProps={{ dir: 'ltr', autoComplete: 'tel' }}
                     />
                     <TextField
-                      label="كلمة المرور"
+                      label={t('login.travelerSignup.passwordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       error={!!fieldErrors.password}
-                      helperText={fieldErrors.password || '8 أحرف على الأقل'}
+                      helperText={fieldErrors.password || t('login.travelerSignup.passwordHelper')}
                       inputProps={{ dir: 'ltr', autoComplete: 'new-password' }}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                              aria-label={showPassword ? t('login.travelerSignup.hidePassword') : t('login.travelerSignup.showPassword')}
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               size="small"
@@ -191,7 +193,7 @@ const TravelerSignupPage = () => {
                       }}
                     />
                     <TextField
-                      label="تأكيد كلمة المرور"
+                      label={t('login.travelerSignup.confirmPasswordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -209,7 +211,7 @@ const TravelerSignupPage = () => {
                       disabled={submitting}
                       sx={{ py: 1.5, fontWeight: 600 }}
                     >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'إنشاء الحساب'}
+                      {submitting ? <CircularProgress size={24} color="inherit" /> : t('login.travelerSignup.submit')}
                     </Button>
                   </Stack>
                 </Box>
@@ -218,7 +220,7 @@ const TravelerSignupPage = () => {
                   <Divider sx={{ width: '100%' }} />
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <Typography variant="body2" color="text.secondary">
-                      لديك حساب بالفعل؟
+                      {t('login.travelerSignup.hasAccount')}
                     </Typography>
                     <Link
                       component={RouterLink}
@@ -227,7 +229,7 @@ const TravelerSignupPage = () => {
                       fontWeight={600}
                       underline="hover"
                     >
-                      سجّل الدخول
+                      {t('login.travelerSignup.login')}
                     </Link>
                   </Stack>
                 </Stack>
@@ -243,7 +245,7 @@ const TravelerSignupPage = () => {
               size="small"
               sx={{ textTransform: 'none' }}
             >
-              العودة للرئيسية
+              {t('login.travelerSignup.backToHome')}
             </Button>
           </Stack>
         </Container>

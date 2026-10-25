@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,6 +17,7 @@ import BrandLogo from '../../components/common/BrandLogo';
 import { staffForgotPassword } from '../../api/endpoints/auth';
 
 const StaffForgotPasswordPage = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -48,16 +50,16 @@ const StaffForgotPasswordPage = () => {
                     <LockResetIcon fontSize="large" />
                   </Box>
                   <Typography variant="h5" fontWeight={700} textAlign="center">
-                    تحقق من بريدك الإلكتروني
+                    {t('login.forgotStaff.successTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                    إذا كان <strong>{email}</strong> مسجّلاً، ستتلقى رابطاً لإعادة تعيين كلمة المرور.
+                    <span dangerouslySetInnerHTML={{ __html: t('login.forgotStaff.successMessage').replace('{{email}}', email) }} />
                   </Typography>
                   <Typography variant="caption" color="text.secondary" textAlign="center">
-                    لم تصل الرسالة؟ تحقق من مجلد الرسائل غير المرغوب فيها.
+                    {t('login.forgotStaff.successNote')}
                   </Typography>
                   <Button component={RouterLink} to="/login" variant="outlined" fullWidth sx={{ mt: 1 }}>
-                    العودة لتسجيل الدخول
+                    {t('login.forgotStaff.backToLogin')}
                   </Button>
                 </Stack>
               </CardContent>
@@ -82,16 +84,16 @@ const StaffForgotPasswordPage = () => {
                   <LockResetIcon fontSize="large" />
                 </Box>
                 <Typography variant="h5" fontWeight={700} textAlign="center">
-                  نسيت كلمة المرور؟
+                  {t('login.forgotStaff.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور
+                  {t('login.forgotStaff.subtitle')}
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                   <Stack spacing={2.5}>
                     <TextField
-                      label="البريد الإلكتروني"
+                      label={t('login.forgotStaff.emailLabel')}
                       type="email"
                       fullWidth
                       required
@@ -107,13 +109,13 @@ const StaffForgotPasswordPage = () => {
                       disabled={submitting}
                       sx={{ py: 1.5, fontWeight: 600 }}
                     >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'إرسال رابط إعادة التعيين'}
+                      {submitting ? <CircularProgress size={24} color="inherit" /> : t('login.forgotStaff.submit')}
                     </Button>
                   </Stack>
                 </Box>
 
                 <Link component={RouterLink} to="/login" variant="body2" underline="hover" color="primary.main">
-                  العودة لتسجيل الدخول
+                  {t('login.forgotStaff.backToLogin')}
                 </Link>
               </Stack>
             </CardContent>
@@ -121,7 +123,7 @@ const StaffForgotPasswordPage = () => {
 
           <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
             <Button component={RouterLink} to="/" startIcon={<ArrowBackIcon />} size="small" sx={{ textTransform: 'none' }}>
-              العودة للرئيسية
+              {t('login.forgotStaff.backToHome')}
             </Button>
           </Stack>
         </Container>
