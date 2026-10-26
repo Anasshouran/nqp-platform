@@ -32,21 +32,21 @@ interface AreaDef {
   hint: string;
 }
 
-const AREAS: AreaDef[] = [
-  { field: 'accommodation_status', label: 'أماكن الإقامة (Crew Quarters)', hint: 'نظيفة ومناسبة، لا توجد آفات' },
-  { field: 'kitchen_status', label: 'المطابخ (Galley)', hint: 'النظافة، تخزين الأغذية، حرارات الثلاجات' },
-  { field: 'storeroom_status', label: 'مخازن الأغذية (Stores)', hint: 'لا مواد منتهية الصلاحية، تهوية جيدة' },
-  { field: 'water_tank_status', label: 'خزانات المياه (Water Tanks)', hint: 'نظيفة ومغلقة، لا تسريبات' },
-  { field: 'clinic_status', label: 'العيادة الطبية (Medical Bay)', hint: 'مجهزة، الأدوية سارية' },
-  { field: 'toilet_status', label: 'دورات المياه والصرف (Toilets)', hint: 'نظيفة وعاملة' },
-  { field: 'ventilation_status', label: 'التهوية (Ventilation)', hint: 'عاملة وسليمة' },
-  { field: 'cleanliness_status', label: 'النظافة العامة (Cleanliness)', hint: 'مطابقة للمعايير' },
+const getAreas = (t: (key: string) => string): AreaDef[] => [
+  { field: 'accommodation_status', label: t('borders.shipInspection.areas.accommodation.label'), hint: t('borders.shipInspection.areas.accommodation.hint') },
+  { field: 'kitchen_status', label: t('borders.shipInspection.areas.kitchen.label'), hint: t('borders.shipInspection.areas.kitchen.hint') },
+  { field: 'storeroom_status', label: t('borders.shipInspection.areas.storeroom.label'), hint: t('borders.shipInspection.areas.storeroom.hint') },
+  { field: 'water_tank_status', label: t('borders.shipInspection.areas.waterTank.label'), hint: t('borders.shipInspection.areas.waterTank.hint') },
+  { field: 'clinic_status', label: t('borders.shipInspection.areas.clinic.label'), hint: t('borders.shipInspection.areas.clinic.hint') },
+  { field: 'toilet_status', label: t('borders.shipInspection.areas.toilet.label'), hint: t('borders.shipInspection.areas.toilet.hint') },
+  { field: 'ventilation_status', label: t('borders.shipInspection.areas.ventilation.label'), hint: t('borders.shipInspection.areas.ventilation.hint') },
+  { field: 'cleanliness_status', label: t('borders.shipInspection.areas.cleanliness.label'), hint: t('borders.shipInspection.areas.cleanliness.hint') },
 ];
 
-const COMPLIANCE_OPTIONS: { value: Compliance; label: string }[] = [
-  { value: 'COMPLIANT', label: 'مطابق' },
-  { value: 'NON_COMPLIANT', label: 'غير مطابق' },
-  { value: 'NOT_APPLICABLE', label: 'غير متاح' },
+const getComplianceOptions = (t: (key: string) => string): { value: Compliance; label: string }[] => [
+  { value: 'COMPLIANT', label: t('borders.shipInspection.compliance.compliant') },
+  { value: 'NON_COMPLIANT', label: t('borders.shipInspection.compliance.nonCompliant') },
+  { value: 'NOT_APPLICABLE', label: t('borders.shipInspection.compliance.notApplicable') },
 ];
 
 /**
@@ -54,16 +54,20 @@ const COMPLIANCE_OPTIONS: { value: Compliance; label: string }[] = [
  * zones. These labels are for read-only display only; the operator cannot
  * choose one, and the client never sends `overall_status`.
  */
-const DERIVED_STATUS_LABEL: Record<string, string> = {
-  PASSED: 'سليمة — لا توجد نواقص',
-  FAILED: 'نواقص جسيمة — توقيف السفينة',
-  CONDITIONAL: 'مشروط',
-};
+const getDerivedStatusLabel = (t: (key: string) => string): Record<string, string> => ({
+  PASSED: t('borders.shipInspection.derived.passed'),
+  FAILED: t('borders.shipInspection.derived.failed'),
+  CONDITIONAL: t('borders.shipInspection.derived.conditional'),
+});
 
-const emptyAreas = Object.fromEntries(AREAS.map((a) => [a.field, 'COMPLIANT'])) as Record<AreaDef['field'], Compliance>;
+const getEmptyAreas = (areas: AreaDef[]) => Object.fromEntries(areas.map((a) => [a.field, 'COMPLIANT'])) as Record<AreaDef['field'], Compliance>;
 
 const ShipInspectionForm = () => {
   const { t } = useTranslation();
+  const AREAS = useMemo(() => getAreas(t), [t]);
+  const COMPLIANCE_OPTIONS = useMemo(() => getComplianceOptions(t), [t]);
+  const DERIVED_STATUS_LABEL = useMemo(() => getDerivedStatusLabel(t), [t]);
+  const emptyAreas = useMemo(() => getEmptyAreas(AREAS), [AREAS]);
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [visits, setVisits] = useState<VesselVisit[]>([]);
   const [vesselId, setVesselId] = useState('');
@@ -72,6 +76,10 @@ const ShipInspectionForm = () => {
   const [findings, setFindings] = useState('');
   const [saving, setSaving] = useState(false);
   const [derived, setDerived] = useState<ShipInspection | null>(null);
+
+  useEffect(() => {
+    setAreas(emptyAreas);
+  }, [emptyAreas]);
 
   useEffect(() => {
     getVessels({ page_size: 100 }).then((r) => setVessels(r.data.data.results));
@@ -109,11 +117,11 @@ const ShipInspectionForm = () => {
 
   const handleSubmit = async () => {
     if (notApplicableCount > 0) {
-      notifyError('«غير متاح» غير مدعوم: يجب تصنيف كل المناطق الثماني قاطعاً للحفظ');
+      notifyError(t('borders.shipInspection.errors.notApplicableNotSupported'));
       return;
     }
     if (!vesselId) {
-      notifyError('اختر السفينة أولاً');
+      notifyError(t('borders.shipInspection.errors.selectVesselFirst'));
       return;
     }
     setSaving(true);
@@ -125,10 +133,10 @@ const ShipInspectionForm = () => {
         ...areas,
       });
       setDerived(res.data.data);
-      notifySuccess(`تم حفظ تفتيش السفينة «${selectedVessel?.vessel_name ?? ''}»`);
+      notifySuccess(t('borders.shipInspection.success.saved', { vessel: selectedVessel?.vessel_name ?? '' }));
       reset();
     } catch {
-      notifyError('تعذر حفظ التفتيش — تحقق من البيانات والصلاحيات');
+      notifyError(t('borders.shipInspection.errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -147,7 +155,7 @@ const ShipInspectionForm = () => {
         <Grid container spacing={2} sx={{ mb: 1 }}>
           <Grid item xs={12} md={6}>
             <TextField
-              select fullWidth required label="السفينة"
+              select fullWidth required label={t('borders.shipInspection.form.vessel')}
               value={vesselId} onChange={(e) => setVesselId(e.target.value)}
             >
               {vessels.map((v) => (
@@ -159,10 +167,10 @@ const ShipInspectionForm = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField
-              select fullWidth label="الزيارة (اختياري)" disabled={!vesselId}
+              select fullWidth label={t('borders.shipInspection.form.visitOptional')} disabled={!vesselId}
               value={visitId} onChange={(e) => setVisitId(e.target.value)}
             >
-              <MenuItem value="">— بدون ربط بزيارة —</MenuItem>
+              <MenuItem value="">{t('borders.shipInspection.form.noVisit')}</MenuItem>
               {visits.map((v) => (
                 <MenuItem key={v.id} value={v.id}>{v.port_name || v.port} — {v.arrival_date}</MenuItem>
               ))}
@@ -172,13 +180,12 @@ const ShipInspectionForm = () => {
 
         {selectedVessel && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            العلم: {selectedVessel.flag_state || '—'} · الشركة: {selectedVessel.shipping_company || '—'}
-            {' '}· آخر ميناء: {selectedVessel.last_port_of_call || '—'}
+            {t('borders.shipInspection.form.vesselMeta', { flag: selectedVessel.flag_state || '—', company: selectedVessel.shipping_company || '—', port: selectedVessel.last_port_of_call || '—' })}
           </Alert>
         )}
 
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>مناطق الفحص الثماني</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{t('borders.shipInspection.sections.areas')}</Typography>
         <Grid container spacing={2}>
           {AREAS.map((a) => (
             <Grid item xs={12} md={6} key={a.field}>
@@ -201,40 +208,40 @@ const ShipInspectionForm = () => {
 
         {nonCompliantCount > 0 && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            توجد {nonCompliantCount} منطقة غير مطابقة — يُنصح بتوثيقها في الملاحظات ومراجعة النتيجة النهائية.
+{t('borders.shipInspection.alerts.nonCompliantWarning', { count: nonCompliantCount })}
           </Alert>
         )}
 
         <TextField
           fullWidth multiline minRows={3} sx={{ mt: 2 }}
-          label="الملاحظات العامة (Findings)"
-          placeholder="وصف المخالفات وموقعها وإجراءات التصحيح المطلوبة..."
+          label={t('borders.shipInspection.form.findings')}
+          placeholder={t('borders.shipInspection.form.findingsPlaceholder')}
           value={findings} onChange={(e) => setFindings(e.target.value)}
         />
 
         <Alert severity="info" sx={{ mt: 2 }}>
-          النتيجة النهائية تُستنتج آلياً من مناطق الفحص الثماني بواسطة الخادم، ولا تُختار يدوياً.
+{t('borders.shipInspection.info.finalResultDerived')}
         </Alert>
 
         <Box sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
           <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>
-            النتيجة النهائية (مستنتجة من الخادم)
+{t('borders.shipInspection.sections.finalResult')}
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
             <Chip
               color={previewStatus === 'FAILED' ? 'error' : previewStatus === 'AMBIGUOUS' ? 'warning' : 'success'}
               label={
                 previewStatus === 'AMBIGUOUS'
-                  ? 'غير قابلة للاستنتاج — الحفظ سيُرفض'
+                  ? t('borders.shipInspection.preview.notDetermined')
                   : DERIVED_STATUS_LABEL[previewStatus]
               }
             />
-            <Chip size="small" variant="outlined" label={`مناطق غير مطابقة: ${nonCompliantCount}`} />
-            <Chip size="small" variant="outlined" label={`مناطق غير متاحة: ${notApplicableCount}`} />
+            <Chip size="small" variant="outlined" label={t('borders.shipInspection.chips.nonCompliant', { count: nonCompliantCount })} />
+            <Chip size="small" variant="outlined" label={t('borders.shipInspection.chips.notApplicable', { count: notApplicableCount })} />
           </Stack>
           {derived && (
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-              آخر نتيجة محفوظة: {DERIVED_STATUS_LABEL[derived.overall_status] ?? derived.overall_status}
+{t('borders.shipInspection.form.lastSaved', { status: DERIVED_STATUS_LABEL[derived.overall_status] ?? derived.overall_status })}
             </Typography>
           )}
         </Box>
@@ -244,10 +251,10 @@ const ShipInspectionForm = () => {
             variant="contained" startIcon={<SaveIcon />} onClick={handleSubmit}
             disabled={saving || !vesselId}
           >
-            {saving ? 'جارٍ الحفظ...' : 'حفظ التفتيش'}
+{saving ? t('borders.shipInspection.actions.saving') : t('borders.shipInspection.actions.save')}
           </Button>
           <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={reset} disabled={saving}>
-            إعادة تعيين
+{t('borders.shipInspection.actions.reset')}
           </Button>
         </Box>
       </CardContent>

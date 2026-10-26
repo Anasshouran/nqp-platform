@@ -44,56 +44,56 @@ import * as Clinical from './screens/clinical';
 import * as InspectionScreens from './screens/inspection';
 import * as AdminScreens from './screens/admin';
 
-const GROUPS: NavGroup[] = [
+const getGroups = (t: (key: string) => string): NavGroup[] => [
   {
-    label: 'التشغيل',
+    label: t('borders.airportHealth.groups.operations'),
     items: [
-      { id: 'dashboard', label: 'مركز القيادة', icon: <DashboardOutlinedIcon fontSize="small" /> },
-      { id: 'flights', label: 'الرحلات', icon: <FlightTakeoffIcon fontSize="small" /> },
-      { id: 'flight-details', label: 'تفاصيل الرحلة', icon: <FlightLandIcon fontSize="small" /> },
-      { id: 'crew', label: 'الطاقم', icon: <GroupsIcon fontSize="small" /> },
+      { id: 'dashboard', label: t('borders.airportHealth.nav.dashboard'), icon: <DashboardOutlinedIcon fontSize="small" /> },
+      { id: 'flights', label: t('borders.airportHealth.nav.flights'), icon: <FlightTakeoffIcon fontSize="small" /> },
+      { id: 'flight-details', label: t('borders.airportHealth.nav.flightDetails'), icon: <FlightLandIcon fontSize="small" /> },
+      { id: 'crew', label: t('borders.airportHealth.nav.crew'), icon: <GroupsIcon fontSize="small" /> },
     ],
   },
   {
-    label: 'صحة المسافرين',
+    label: t('borders.airportHealth.groups.passengerHealth'),
     items: [
-      { id: 'screening', label: 'فحص المسافرين', icon: <ManageSearchIcon fontSize="small" /> },
-      { id: 'declaration', label: 'الإعلان الصحي', icon: <EditNoteIcon fontSize="small" /> },
-      { id: 'risk-assessment', label: 'تقييم المخاطر', icon: <AssessmentIcon fontSize="small" /> },
-      { id: 'vaccination', label: 'التطعيم', icon: <VaccinesIcon fontSize="small" /> },
+      { id: 'screening', label: t('borders.airportHealth.nav.screening'), icon: <ManageSearchIcon fontSize="small" /> },
+      { id: 'declaration', label: t('borders.airportHealth.nav.declaration'), icon: <EditNoteIcon fontSize="small" /> },
+      { id: 'risk-assessment', label: t('borders.airportHealth.nav.riskAssessment'), icon: <AssessmentIcon fontSize="small" /> },
+      { id: 'vaccination', label: t('borders.airportHealth.nav.vaccination'), icon: <VaccinesIcon fontSize="small" /> },
     ],
   },
   {
-    label: 'الحالات والمختبر',
+    label: t('borders.airportHealth.groups.casesLab'),
     items: [
-      { id: 'suspected', label: 'الحالات المشتبهة', icon: <WarningAmberIcon fontSize="small" /> },
-      { id: 'isolation', label: 'إدارة العزل', icon: <HealthAndSafetyOutlinedIcon fontSize="small" /> },
-      { id: 'lab', label: 'المختبر', icon: <BiotechIcon fontSize="small" />, badge: '6' },
-      { id: 'contact-tracing', label: 'تتبع المخالطين', icon: <Groups2Icon fontSize="small" /> },
+      { id: 'suspected', label: t('borders.airportHealth.nav.suspected'), icon: <WarningAmberIcon fontSize="small" /> },
+      { id: 'isolation', label: t('borders.airportHealth.nav.isolation'), icon: <HealthAndSafetyOutlinedIcon fontSize="small" /> },
+      { id: 'lab', label: t('borders.airportHealth.nav.lab'), icon: <BiotechIcon fontSize="small" />, badge: '6' },
+      { id: 'contact-tracing', label: t('borders.airportHealth.nav.contactTracing'), icon: <Groups2Icon fontSize="small" /> },
     ],
   },
   {
-    label: 'عمليات التفتيش',
+    label: t('borders.airportHealth.groups.inspectionOps'),
     items: [
-      { id: 'inspection', label: 'تفتيش الطائرات', icon: <AirplaneTicketIcon fontSize="small" /> },
-      { id: 'analytics', label: 'التحليلات', icon: <BarChartIcon fontSize="small" /> },
-      { id: 'certificates', label: 'الشهادات', icon: <DescriptionIcon fontSize="small" /> },
+      { id: 'inspection', label: t('borders.airportHealth.nav.inspection'), icon: <AirplaneTicketIcon fontSize="small" /> },
+      { id: 'analytics', label: t('borders.airportHealth.nav.analytics'), icon: <BarChartIcon fontSize="small" /> },
+      { id: 'certificates', label: t('borders.airportHealth.nav.certificates'), icon: <DescriptionIcon fontSize="small" /> },
     ],
   },
   {
-    label: 'الطوارئ',
+    label: t('borders.airportHealth.groups.emergency'),
     items: [
-      { id: 'emergency', label: 'غرفة عمليات الطوارئ', icon: <EmergencyIcon fontSize="small" />, badge: '1' },
+      { id: 'emergency', label: t('borders.airportHealth.nav.emergency'), icon: <EmergencyIcon fontSize="small" />, badge: '1' },
     ],
   },
   {
-    label: 'الإدارة',
+    label: t('borders.airportHealth.groups.admin'),
     items: [
-      { id: 'users', label: 'المستخدمون', icon: <AdminPanelSettingsIcon fontSize="small" /> },
-      { id: 'roles', label: 'الأدوار والأذونات', icon: <SecurityIcon fontSize="small" /> },
-      { id: 'audit-logs', label: 'سجل التدقيق', icon: <HistoryIcon fontSize="small" /> },
-      { id: 'settings', label: 'الإعدادات', icon: <SettingsIcon fontSize="small" /> },
-      { id: 'notifications', label: 'الإشعارات', icon: <NotificationsActiveIcon fontSize="small" /> },
+      { id: 'users', label: t('borders.airportHealth.nav.users'), icon: <AdminPanelSettingsIcon fontSize="small" /> },
+      { id: 'roles', label: t('borders.airportHealth.nav.roles'), icon: <SecurityIcon fontSize="small" /> },
+      { id: 'audit-logs', label: t('borders.airportHealth.nav.auditLogs'), icon: <HistoryIcon fontSize="small" /> },
+      { id: 'settings', label: t('borders.airportHealth.nav.settings'), icon: <SettingsIcon fontSize="small" /> },
+      { id: 'notifications', label: t('borders.airportHealth.nav.notifications'), icon: <NotificationsActiveIcon fontSize="small" /> },
     ],
   },
 ];
@@ -131,7 +131,8 @@ const healthTheme = createTheme(baseTheme, {
   },
 });
 
-const Sidebar = ({ active, onSelect, onClose }: { active: string; onSelect: (id: string) => void; onClose?: () => void }) => {
+const Sidebar = ({ active, onSelect, onClose, t }: { active: string; onSelect: (id: string) => void; onClose?: () => void; t: (k: string, o?: any) => string }) => {
+  const GROUPS = getGroups(t);
   const select = (id: string) => {
     onSelect(id);
     onClose?.();
@@ -143,7 +144,7 @@ const Sidebar = ({ active, onSelect, onClose }: { active: string; onSelect: (id:
           <HealthAndSafetyIcon fontSize="small" />
         </Box>
         <Box>
-          <Typography sx={{ fontWeight: 700, color: C.text, fontSize: 15 }}>نظام الصحة بالمطار</Typography>
+          <Typography sx={{ fontWeight: 700, color: C.text, fontSize: 15 }}>{t('borders.airportHealth.sidebar.brand')}</Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Airport Health System</Typography>
         </Box>
       </Stack>
@@ -194,12 +195,12 @@ const AirportHealthPage = () => {
     <ThemeProvider theme={healthTheme}>
       <Box sx={{ minHeight: '100vh', bgcolor: C.bg, direction: 'rtl', color: C.text }}>
         <Stack direction="row" sx={{ position: 'sticky', top: 0, zIndex: 20, bgcolor: '#fff', borderBottom: `1px solid ${C.border}`, px: 2.5, py: 1.5, gap: 1.5, alignItems: 'center' }}>
-          <Tooltip title="العودة إلى المنصة">
-            <IconButton aria-label="الرئيسية" size="small" onClick={() => navigate('/app')} sx={{ border: `1px solid ${C.border}`, color: C.primary }}>
+          <Tooltip title={t("borders.airportHealth.header.back")}>
+            <IconButton aria-label={t("borders.airportHealth.header.home")} size="small" onClick={() => navigate('/app')} sx={{ border: `1px solid ${C.border}`, color: C.primary }}>
               <HomeIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <IconButton aria-label="فتح القائمة" size="small" onClick={() => setDrawer(true)} sx={{ display: { lg: 'none' }, border: `1px solid ${C.border}` }}>
+          <IconButton aria-label={t("borders.airportHealth.header.openMenu")} size="small" onClick={() => setDrawer(true)} sx={{ display: { lg: 'none' }, border: `1px solid ${C.border}` }}>
             <MenuIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
@@ -207,15 +208,15 @@ const AirportHealthPage = () => {
             <Typography variant="caption" color="text.secondary">{t('borders.airportHealth.header.subtitle')}</Typography>
           </Box>
           <Chip label={t('borders.airportHealth.header.station')} size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
-          <OfflinePill state={pillState} />
+          <OfflinePill state={pillState} t={t} />
         </Stack>
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
           <Box sx={{ display: { xs: 'none', lg: 'block' }, width: 268, flexShrink: 0, position: 'sticky', top: 73, maxHeight: 'calc(100vh - 73px)', overflowY: 'auto', borderLeft: `1px solid ${C.border}`, bgcolor: '#fff' }}>
-            <Sidebar active={screen} onSelect={nav} />
+            <Sidebar active={screen} onSelect={nav} t={t} />
           </Box>
           <Drawer anchor="right" open={drawer} onClose={() => setDrawer(false)} PaperProps={{ sx: { width: 280 } }}>
-            <Sidebar active={screen} onSelect={nav} onClose={() => setDrawer(false)} />
+            <Sidebar active={screen} onSelect={nav} onClose={() => setDrawer(false)} t={t} />
           </Drawer>
           <Box sx={{ flex: 1, minWidth: 0, px: { xs: 2, md: 3.5 }, py: 3 }}>
             <Active nav={nav} />

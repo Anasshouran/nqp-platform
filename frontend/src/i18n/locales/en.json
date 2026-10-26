@@ -2036,7 +2036,90 @@
       }
     },
     "shipInspection": {
-      "title": "Ship Inspection Form"
+      "title": "Ship Inspection Form",
+      "areas": {
+        "accommodation": {
+          "label": "Accommodation (Crew Quarters)",
+          "hint": "Clean and suitable, no pests"
+        },
+        "kitchen": {
+          "label": "Galley (Kitchen)",
+          "hint": "Cleanliness, food storage, refrigeration temperatures"
+        },
+        "storeroom": {
+          "label": "Food Stores",
+          "hint": "No expired items, good ventilation"
+        },
+        "waterTank": {
+          "label": "Water Tanks",
+          "hint": "Clean, sealed, no leaks"
+        },
+        "clinic": {
+          "label": "Medical Bay",
+          "hint": "Equipped, medicines valid"
+        },
+        "toilet": {
+          "label": "Toilets & Sanitation",
+          "hint": "Clean and functional"
+        },
+        "ventilation": {
+          "label": "Ventilation",
+          "hint": "Functional and intact"
+        },
+        "cleanliness": {
+          "label": "General Cleanliness",
+          "hint": "Meets standards"
+        }
+      },
+      "compliance": {
+        "compliant": "Compliant",
+        "nonCompliant": "Non-compliant",
+        "notApplicable": "Not applicable"
+      },
+      "derived": {
+        "passed": "Safe — No deficiencies",
+        "failed": "Major deficiencies — Vessel detained",
+        "conditional": "Conditional"
+      },
+      "errors": {
+        "notApplicableNotSupported": "\"Not applicable\" is not supported: all eight areas must be classified before saving",
+        "selectVesselFirst": "Select a vessel first",
+        "saveFailed": "Failed to save inspection — check data and permissions"
+      },
+      "success": {
+        "saved": "Ship inspection for \"{{vessel}}\" saved"
+      },
+      "form": {
+        "vessel": "Vessel",
+        "visitOptional": "Visit (optional)",
+        "noVisit": "— No visit linked —",
+        "vesselMeta": "Flag: {{flag}} · Company: {{company}} · Last port of call: {{port}}",
+        "findings": "General Notes (Findings)",
+        "findingsPlaceholder": "Describe violations, location, and required corrective actions...",
+        "lastSaved": "Last saved result: {{status}}"
+      },
+      "sections": {
+        "areas": "Eight inspection areas",
+        "finalResult": "Final result (derived by server)"
+      },
+      "alerts": {
+        "nonCompliantWarning": "{{count}} area(s) non-compliant — document in notes and review the final result."
+      },
+      "info": {
+        "finalResultDerived": "The final result is automatically derived from the eight areas by the server and cannot be selected manually."
+      },
+      "preview": {
+        "notDetermined": "Cannot be determined — saving will be rejected"
+      },
+      "chips": {
+        "nonCompliant": "Non-compliant areas: {{count}}",
+        "notApplicable": "Not applicable: {{count}}"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save inspection",
+        "reset": "Reset"
+      }
     },
     "airport": {
       "title": "Airport Health",
@@ -2196,9 +2279,64 @@
     "airportHealth": {
       "title": "Airport Health & Aviation",
       "header": {
-        "brand": "Airport Health & Aviation",
-        "subtitle": "Airport Quarantine Management System",
-        "station": "Command Center"
+        "back": "Back to Platform",
+        "home": "Home",
+        "openMenu": "Open Menu"
+      },
+      "groups": {
+        "operations": "Operations",
+        "passengerHealth": "Passenger Health",
+        "casesLab": "Cases & Lab",
+        "inspectionOps": "Inspection Operations",
+        "emergency": "Emergency",
+        "admin": "Administration"
+      },
+      "nav": {
+        "dashboard": "Command Center",
+        "flights": "Flights",
+        "flightDetails": "Flight Details",
+        "crew": "Crew",
+        "screening": "Passenger Screening",
+        "declaration": "Health Declaration",
+        "riskAssessment": "Risk Assessment",
+        "vaccination": "Vaccination",
+        "suspected": "Suspected Cases",
+        "isolation": "Isolation Management",
+        "lab": "Laboratory",
+        "contactTracing": "Contact Tracing",
+        "inspection": "Aircraft Inspection",
+        "analytics": "Analytics",
+        "certificates": "Certificates",
+        "emergency": "Emergency Operations Room",
+        "users": "Users",
+        "roles": "Roles & Permissions",
+        "auditLogs": "Audit Logs",
+        "settings": "Settings",
+        "notifications": "Notifications"
+      },
+      "sidebar": {
+        "brand": "Airport Health System"
+      },
+      "risk": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "assessment": "Under Assessment",
+        "closed": "Closed"
+      },
+      "status": {
+        "cleared": "Cleared",
+        "screening": "Primary Screening",
+        "secondary": "Secondary Screening",
+        "medicalAssessment": "Medical Assessment",
+        "alert": "Alert",
+        "hold": "Hold"
+      },
+      "offline": {
+        "online": "ONLINE — Connected",
+        "offline": "OFFLINE — Disconnected",
+        "syncing": "SYNCING — Syncing",
+        "synced": "SYNC COMPLETE — Complete"
       }
     },
     "common": {
