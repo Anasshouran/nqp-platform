@@ -240,16 +240,17 @@ const renderWithProviders = (ui: React.ReactElement) => {
 };
 
 describe('Borders/Airport language reactivity', () => {
+  // The language-reactivity tests wait for i18n tree re-renders; give them room
+  // locally instead of raising the project-wide timeout.
+  vi.setConfig({ testTimeout: 15000 });
   beforeEach(async () => {
     await i18n.changeLanguage('ar');
     vi.clearAllMocks();
   });
 
-  // TODO(i18n-p3a): re-enable once the EN title match is unique (findByText hits
-  // multiple "Border Health" nodes) — waiting 10s exceeds the 5s test timeout.
-  it.skip('renders BordersHealthPage in Arabic and switches to English', async () => {
+  it('renders BordersHealthPage in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<BordersHealthPage />);
-    expect(await screen.findByText(/صحة المعابر البرية/i, {}, { timeout: 10000 })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /صحة المعابر البرية/i, level: 1 }, { timeout: 10000 })).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -260,7 +261,7 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(await screen.findByText(/Border Health/i, {}, { timeout: 10000 })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Border Health/i, level: 1 }, { timeout: 10000 })).toBeTruthy();
   });
 
   it('renders PortHealthPage in Arabic and switches to English', async () => {
