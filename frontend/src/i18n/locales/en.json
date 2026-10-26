@@ -1440,17 +1440,376 @@
         "title": "Border Facilities",
         "subtitle": "{count} facilities",
         "searchPlaceholder": "Search by facility name...",
-        "filterType": "Facility Type",
+        "filterKind": "Facility Type",
         "emptyTitle": "No facilities",
-        "emptyDescription": "Register border facilities: laboratory, quarantine unit, warehouse.",
+        "emptyDescription": "Register crossing facilities: lab, quarantine unit, store.",
         "cols": {
-          "facility": "Facility",
+          "name": "Facility",
           "type": "Type",
           "crossing": "Crossing",
           "capacity": "Capacity",
           "staff": "Staff",
-          "status": "Operation"
+          "status": "Operational"
         }
+      },
+      "shifts": {
+        "title": "Shifts",
+        "subtitle": "{count} shifts",
+        "searchPlaceholder": "Search in notes...",
+        "filterType": "Shift Type",
+        "emptyTitle": "No shifts",
+        "emptyDescription": "Record daily work shifts for each crossing.",
+        "cols": {
+          "date": "Date",
+          "shift": "Shift",
+          "start": "Start",
+          "end": "End",
+          "crossing": "Crossing",
+          "supervisor": "Supervisor",
+          "staffed": "Staffed"
+        }
+      },
+      "staff": {
+        "title": "Border Staff",
+        "subtitle": "{count} assignments",
+        "searchPlaceholder": "Search by employee name...",
+        "emptyTitle": "No staff registered",
+        "emptyDescription": "Assign staff to crossings from roles and permissions page.",
+        "cols": {
+          "employee": "Employee",
+          "role": "Role",
+          "crossing": "Crossing",
+          "assignment": "Assignment Type",
+          "starts": "Starts",
+          "ends": "Ends",
+          "status": "Status"
+        }
+      },
+      "travelers": {
+        "title": "Travelers",
+        "subtitle": "{count} travelers",
+        "searchPlaceholder": "Search by name or passport...",
+        "filterDirection": "Direction",
+        "filterRisk": "Risk",
+        "emptyTitle": "No travelers",
+        "emptyDescription": "Register travelers from screening page.",
+        "cols": {
+          "traveler": "Traveler",
+          "direction": "Direction",
+          "time": "Time of crossing",
+          "crossing": "Crossing",
+          "risk": "Risk",
+          "decision": "Decision",
+          "assessor": "Assessor",
+          "passport": "Passport"
+        },
+        "exported": "Exported travelers"
+      },
+      "declarations": {
+        "title": "Health Declarations",
+        "subtitle": "{count} declarations",
+        "searchPlaceholder": "Search by name or passport...",
+        "filterStatus": "Status",
+        "emptyTitle": "No declarations",
+        "emptyDescription": "Health declarations registered via traveler portal or at crossing.",
+        "cols": {
+          "traveler": "Traveler",
+          "departureCountry": "Departure Country",
+          "departureDate": "Departure Date",
+          "symptoms": "Symptoms",
+          "status": "Status",
+          "crossing": "Crossing",
+          "declaredAt": "Declared At"
+        }
+      },
+      "screenings": {
+        "title": "Health Screenings",
+        "subtitle": "{count} screenings",
+        "searchPlaceholder": "Search by name or passport...",
+        "filterDecision": "Decision",
+        "emptyTitle": "No screenings",
+        "emptyDescription": "Record thermal screening with release decision.",
+        "reassessTitle": "Reassess Screening",
+        "reassessNote": "Rules are re-evaluated based on measurements below: fever ≥ 38 or oxygen < 92 → high risk/quarantine, symptoms → referral, unverified documents → hold.",
+        "currentDecision": "Current decision",
+        "tempLabel": "Temperature (°C)",
+        "oxygenLabel": "Oxygen saturation (%)",
+        "reassessBtn": "Reassess",
+        "cols": {
+          "traveler": "Traveler",
+          "temp": "Temperature",
+          "oxygen": "Oxygen",
+          "risk": "Risk",
+          "decision": "Decision",
+          "docs": "Documents",
+          "crossing": "Crossing",
+          "time": "Screening Time"
+        },
+        "ruleNote": "Rules re-evaluated: fever ≥ 38 or oxygen < 92 → high risk/quarantine, symptoms → referral, unverified docs → hold.",
+        "reassessBtnLabel": "Reassess",
+        "loading": "Loading...",
+        "fields": {
+          "temp": "Temperature (°C)",
+          "oxygen": "Oxygen saturation (%)"
+        },
+        "reassessed": "Screening reassessed and decision updated",
+        "busy": "Loading..."
+      },
+      "vehicles": {
+        "title": "Vehicles",
+        "subtitle": "{count} vehicles",
+        "searchPlaceholder": "Search by plate/chassis/driver...",
+        "filterType": "Vehicle Type",
+        "emptyTitle": "No vehicles",
+        "emptyDescription": "Register passing vehicles with driver details.",
+        "cols": {
+          "plate": "Plate",
+          "type": "Type",
+          "model": "Model",
+          "driver": "Driver",
+          "status": "Status",
+          "crossing": "Crossing"
+        }
+      },
+      "vehicleInspections": {
+        "title": "Vehicle Inspections",
+        "subtitle": "{count} inspections",
+        "searchPlaceholder": "Search by plate or notes...",
+        "filterOverall": "Overall",
+        "emptyTitle": "No inspections",
+        "emptyDescription": "Record vehicle inspection results.",
+        "cols": {
+          "plate": "Plate",
+          "type": "Inspection Type",
+          "cleanliness": "Cleanliness",
+          "pest": "Pest Control",
+          "overall": "Overall",
+          "date": "Date",
+          "inspector": "Inspector"
+        }
+      },
+      "cargo": {
+        "title": "Cargo Inspections",
+        "subtitle": "{count} shipments",
+        "searchPlaceholder": "Search by declaration/product/origin...",
+        "filterScope": "Scope",
+        "filterStatus": "Status",
+        "emptyTitle": "No shipments",
+        "emptyDescription": "Record general and food cargo inspections.",
+        "dialogTitle": "Record Cargo Decision",
+        "dialogNote": "The system computes decision from linked samples. You may override with an explicit decision.",
+        "declaration": "Declaration",
+        "decisionSamples": "Calculate from samples",
+        "cols": {
+          "declaration": "Declaration No.",
+          "scope": "Scope",
+          "product": "Product",
+          "origin": "Origin",
+          "plate": "Plate",
+          "status": "Status",
+          "decision": "Decision"
+        },
+        "note": "Decision calculated from linked samples. You may override.",
+        "reject": "Reject",
+        "hold": "Hold",
+        "calcFromSamples": "Calculate from samples",
+        "declarationLabel": "Declaration:",
+        "recorded": "Cargo decision recorded",
+        "failed": "Failed to record cargo decision"
+      },
+      "samples": {
+        "title": "Samples",
+        "subtitle": "{count} samples",
+        "searchPlaceholder": "Search by sample code or type...",
+        "filterStatus": "Status",
+        "emptyTitle": "No samples",
+        "emptyDescription": "Record food and water cargo samples.",
+        "cols": {
+          "code": "Sample Code",
+          "type": "Sample Type",
+          "status": "Status",
+          "result": "Result",
+          "crossing": "Crossing",
+          "collectedBy": "Collected By",
+          "collectedAt": "Date"
+        }
+      },
+      "quarantine": {
+        "title": "Quarantine Cases",
+        "subtitle": "{count} cases",
+        "searchPlaceholder": "Search by case number or name...",
+        "filterStatus": "Status",
+        "emptyTitle": "No quarantine cases",
+        "emptyDescription": "Register quarantine cases with follow-up.",
+        "cols": {
+          "caseNo": "Case No.",
+          "person": "Person",
+          "entryAt": "Entry Date",
+          "duration": "Duration",
+          "expectedEnd": "Expected End",
+          "phase": "Phase",
+          "status": "Status",
+          "crossing": "Crossing"
+        }
+      },
+      "isolation": {
+        "title": "Isolation Cases",
+        "subtitle": "{count} cases",
+        "searchPlaceholder": "Search by name or case number...",
+        "filterStatus": "Status",
+        "emptyTitle": "No isolation cases",
+        "emptyDescription": "Manage isolation with daily monitoring.",
+        "cols": {
+          "caseNo": "Case No.",
+          "person": "Patient",
+          "diagnosis": "Diagnosis",
+          "admittedAt": "Admitted At",
+          "facility": "Facility",
+          "status": "Status",
+          "endDate": "Expected Discharge"
+        }
+      },
+      "tracing": {
+        "title": "Contact Tracing",
+        "subtitle": "{count} cases",
+        "searchPlaceholder": "Search by original case...",
+        "emptyTitle": "No tracing cases",
+        "emptyDescription": "Open tracing from registered violations.",
+        "cols": {
+          "case": "Original Case",
+          "exposed": "Contact",
+          "passport": "Passport",
+          "phone": "Phone",
+          "seat": "Seat/Relation",
+          "transport": "Transport",
+          "followUp": "Follow-up Days",
+          "started": "Started At",
+          "status": "Status",
+          "crossing": "Crossing"
+        }
+      },
+      "emergencies": {
+        "title": "Emergencies",
+        "subtitle": "{count} emergencies",
+        "searchPlaceholder": "Search by title/type...",
+        "filterType": "Type",
+        "filterSeverity": "Severity",
+        "emptyTitle": "No emergencies",
+        "emptyDescription": "Report health emergencies immediately.",
+        "cols": {
+          "title": "Title",
+          "type": "Type",
+          "severity": "Severity",
+          "status": "Status",
+          "reportedAt": "Reported At",
+          "crossing": "Crossing",
+          "actionedBy": "Actioned By"
+        }
+      },
+      "certificates": {
+        "title": "Certificates",
+        "subtitle": "{count} certificates",
+        "searchPlaceholder": "Search by certificate number or name...",
+        "filterType": "Type",
+        "filterStatus": "Status",
+        "issue": "Issue Certificate",
+        "emptyTitle": "No certificates",
+        "emptyDescription": "Issue quarantine certificates to travelers or cargo.",
+        "issueDialog": {
+          "title": "Issue Certificate",
+          "type": "Certificate Type",
+          "traveler": "Traveler Name",
+          "passport": "Passport No.",
+          "crossing": "Crossing",
+          "issuedBy": "Issued By",
+          "validDays": "Validity (days)",
+          "reason": "Reason"
+        },
+        "cols": {
+          "number": "Certificate No.",
+          "type": "Type",
+          "holder": "Holder",
+          "passport": "Passport",
+          "issuedAt": "Issued At",
+          "expiresAt": "Expires At",
+          "status": "Status",
+          "crossing": "Crossing"
+        },
+        "exported": "Certificates exported",
+        "selectCrossing": "Select a crossing first",
+        "issued": "Certificate issued {number}",
+        "issueFailed": "Failed to issue certificate"
+      },
+      "decisions": {
+        "title": "Decisions",
+        "subtitle": "{count} decisions",
+        "searchPlaceholder": "Search by subject/decision...",
+        "filterType": "Type",
+        "emptyTitle": "No decisions",
+        "emptyDescription": "Quarantine decisions and appeals.",
+        "cols": {
+          "ref": "Reference No.",
+          "subject": "Subject",
+          "type": "Type",
+          "outcome": "Outcome",
+          "decidedAt": "Decided At",
+          "decidedBy": "Decided By",
+          "crossing": "Crossing"
+        },
+        "exported": "Decisions exported"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "{count} notifications",
+        "searchPlaceholder": "Search by title...",
+        "filterType": "Type",
+        "filterStatus": "Status",
+        "emptyTitle": "No notifications",
+        "emptyDescription": "Emergency and reminder notifications.",
+        "cols": {
+          "title": "Title",
+          "type": "Type",
+          "channel": "Channel",
+          "status": "Status",
+          "sentAt": "Sent At",
+          "recipients": "Recipients"
+        },
+        "exported": "Notifications exported"
+      },
+      "statistics": {
+        "title": "Daily Statistics",
+        "subtitle": "Daily stats by crossing",
+        "filterDate": "Date",
+        "emptyTitle": "No statistics",
+        "emptyDescription": "Daily statistics are generated automatically or manually.",
+        "refresh": "Refresh Statistics",
+        "cols": {
+          "date": "Date",
+          "crossing": "Crossing",
+          "travelers": "Travelers",
+          "vehicles": "Vehicles",
+          "declarations": "Declarations",
+          "screenings": "Screenings",
+          "suspected": "Suspected",
+          "quarantine": "Quarantine",
+          "isolation": "Isolation",
+          "cargo": "Cargo",
+          "certificates": "Certificates"
+        },
+        "refreshing": "Updating...",
+        "emptyRefresh": "Click \"Update today's summary\" to calculate today's numbers from screening and cargo records.",
+        "minutesUnit": "min",
+        "refreshed": "Today's summary updated for all crossings",
+        "refreshFailed": "Failed to update statistics - may need dashboard permissions"
+      },
+      "statusLabels": {
+        "yes": "Yes",
+        "no": "No",
+        "operational": "Operational",
+        "stopped": "Stopped",
+        "active": "Active",
+        "ended": "Ended",
+        "ongoing": "Ongoing"
       }
     },
     "portHealth": {
@@ -1591,6 +1950,10 @@
       "saved": "Saved successfully",
       "error": "An error occurred",
       "exported": "Exported successfully"
+    },
+    "status": {
+      "verified": "Verified",
+      "incomplete": "Incomplete"
     }
   }
 }
