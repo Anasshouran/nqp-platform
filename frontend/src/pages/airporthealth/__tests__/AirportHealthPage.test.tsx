@@ -46,7 +46,7 @@ describe('AirportHealthPage', () => {
 
   it('renders the page header', () => {
     wrap(<AirportHealthPage />);
-    expect(screen.getByText(/صحة المطارات والطيران/)).toBeTruthy();
+    expect(screen.getAllByText(/نظام الصحة بالمطار/).length).toBeGreaterThan(0);
   });
 
   it('shows قيد الإعداد while the dashboard fetches', async () => {
@@ -80,7 +80,7 @@ describe('AirportHealthPage', () => {
   it('degrades gracefully when the dashboard API fails', async () => {
     vi.mocked(getAirportDashboard).mockRejectedValueOnce(new Error('boom'));
     wrap(<AirportHealthPage />);
-    expect(await screen.findByText(/صحة المطارات والطيران/)).toBeTruthy();
+    expect((await screen.findAllByText(/نظام الصحة بالمطار/)).length).toBeGreaterThan(0);
     expect(screen.getByText('رحلات اليوم')).toBeTruthy();
   });
 });

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { labelOf, colorOf } from '../../utils/labels';
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
@@ -36,22 +37,41 @@ export const C = {
 export type RiskKey = 'LOW' | 'MEDIUM' | 'HIGH' | 'ASSESSMENT' | 'CLOSED';
 export type HealthStatus = 'CLEARED' | 'SCREENING' | 'SECONDARY' | 'MEDICAL_ASSESSMENT' | 'ALERT' | 'HOLD';
 
-export const RISK_META: Record<RiskKey, { label: string; color: string; bg: string }> = {
-  LOW: { label: '🟢 منخفض', color: C.success, bg: C.successBg },
-  MEDIUM: { label: '🟡 متوسط', color: C.warning, bg: C.warningBg },
-  HIGH: { label: '🔴 مرتفع', color: C.danger, bg: C.dangerBg },
-  ASSESSMENT: { label: '🔵 قيد التقييم', color: C.medicalBlue, bg: C.infoBg },
-  CLOSED: { label: '⚫ مغلق', color: '#374151', bg: '#F3F4F6' },
-};
+export const getRiskMeta = (t: (key: string) => string): Record<RiskKey, { label: string; color: string; bg: string }> => ({
+  LOW: { label: '🟢 ' + t('borders.airportHealth.risk.low'), color: C.success, bg: C.successBg },
+  MEDIUM: { label: '🟡 ' + t('borders.airportHealth.risk.medium'), color: C.warning, bg: C.warningBg },
+  HIGH: { label: '🔴 ' + t('borders.airportHealth.risk.high'), color: C.danger, bg: C.dangerBg },
+  ASSESSMENT: { label: '🔵 ' + t('borders.airportHealth.risk.assessment'), color: C.medicalBlue, bg: C.infoBg },
+  CLOSED: { label: '⚫ ' + t('borders.airportHealth.risk.closed'), color: '#374151', bg: '#F3F4F6' },
+});
 
-export const STATUS_META: Record<HealthStatus, { label: string; color: string; bg: string }> = {
-  CLEARED: { label: 'صُرف ✓', color: C.success, bg: C.successBg },
-  SCREENING: { label: 'فحص أساسي', color: C.primary, bg: '#EAF2FC' },
-  SECONDARY: { label: 'فحص ثانوي', color: C.medicalBlue, bg: C.infoBg },
-  MEDICAL_ASSESSMENT: { label: 'تقييم طبي', color: C.warning, bg: C.warningBg },
-  ALERT: { label: 'إنذار', color: C.danger, bg: C.dangerBg },
-  HOLD: { label: 'إيقاف مؤقت', color: '#6B7280', bg: '#F3F4F6' },
-};
+export const getStatusMeta = (t: (key: string) => string): Record<HealthStatus, { label: string; color: string; bg: string }> => ({
+  CLEARED: { label: t('borders.airportHealth.status.cleared') + ' ✓', color: C.success, bg: C.successBg },
+  SCREENING: { label: t('borders.airportHealth.status.screening'), color: C.primary, bg: '#EAF2FC' },
+  SECONDARY: { label: t('borders.airportHealth.status.secondary'), color: C.medicalBlue, bg: C.infoBg },
+  MEDICAL_ASSESSMENT: { label: t('borders.airportHealth.status.medicalAssessment'), color: C.warning, bg: C.warningBg },
+  ALERT: { label: t('borders.airportHealth.status.alert'), color: C.danger, bg: C.dangerBg },
+  HOLD: { label: t('borders.airportHealth.status.hold'), color: '#6B7280', bg: '#F3F4F6' },
+});
+
+export const RISK_META: Record<RiskKey, { label: string; color: string; bg: string }> = getRiskMeta((k: string) => {
+  if (k === 'borders.airportHealth.risk.low') return '🟢 Low';
+  if (k === 'borders.airportHealth.risk.medium') return '🟡 Medium';
+  if (k === 'borders.airportHealth.risk.high') return '🔴 High';
+  if (k === 'borders.airportHealth.risk.assessment') return '🔵 Under Assessment';
+  if (k === 'borders.airportHealth.risk.closed') return '⚫ Closed';
+  return k;
+});
+
+export const STATUS_META: Record<HealthStatus, { label: string; color: string; bg: string }> = getStatusMeta((k: string) => {
+  if (k === 'borders.airportHealth.status.cleared') return 'Cleared';
+  if (k === 'borders.airportHealth.status.screening') return 'Primary Screening';
+  if (k === 'borders.airportHealth.status.secondary') return 'Secondary Screening';
+  if (k === 'borders.airportHealth.status.medicalAssessment') return 'Medical Assessment';
+  if (k === 'borders.airportHealth.status.alert') return 'Alert';
+  if (k === 'borders.airportHealth.status.hold') return 'Hold';
+  return k;
+});
 
 export interface NavItem {
   id: string;
@@ -126,13 +146,21 @@ export const KpiCard = ({ icon, value, label, trend, trendLabel, status, statusC
   );
 };
 
-export const RiskBadge = ({ risk }: { risk: RiskKey }) => (
-  <Chip label={labelOf(RISK_META, risk)} size="small" sx={{ bgcolor: colorOf(RISK_META, risk, 'bg'), color: colorOf(RISK_META, risk, 'color'), fontWeight: 700, borderRadius: 2 }} />
-);
+export const RiskBadge = ({ risk }: { risk: RiskKey }) => {
+  const { t } = useTranslation();
+  const meta = getRiskMeta(t);
+  return (
+    <Chip label={labelOf(meta, risk)} size="small" sx={{ bgcolor: colorOf(meta, risk, 'bg'), color: colorOf(meta, risk, 'color'), fontWeight: 700, borderRadius: 2 }} />
+  );
+};
 
-export const StatusBadge = ({ status }: { status: HealthStatus }) => (
-  <Chip label={labelOf(STATUS_META, status)} size="small" sx={{ bgcolor: colorOf(STATUS_META, status, 'bg'), color: colorOf(STATUS_META, status, 'color'), fontWeight: 700, borderRadius: 2 }} />
-);
+export const StatusBadge = ({ status }: { status: HealthStatus }) => {
+  const { t } = useTranslation();
+  const meta = getStatusMeta(t);
+  return (
+    <Chip label={labelOf(meta, status)} size="small" sx={{ bgcolor: colorOf(meta, status, 'bg'), color: colorOf(meta, status, 'color'), fontWeight: 700, borderRadius: 2 }} />
+  );
+};
 
 /* شريط تقدم أفقي ملوّن */
 export const ProgressBar = ({ value, color = C.primary }: { value: number; color?: string }) => (
@@ -164,9 +192,16 @@ export const RiskGauge = ({ score, label, color }: { score: number; label: strin
 );
 
 /* حالة الأنماط التشغيلية */
-export const OFFLINE_PILL = ({ state }: { state: 'ONLINE' | 'OFFLINE' | 'SYNCING' | 'SYNCED' }) => {
+export const OFFLINE_PILL = ({ state, t }: { state: 'ONLINE' | 'OFFLINE' | 'SYNCING' | 'SYNCED'; t?: (k: string, o?: any) => string }) => {
+  const tr = t || ((k: string) => {
+    if (k === 'borders.airportHealth.offline.online') return 'ONLINE — متصل';
+    if (k === 'borders.airportHealth.offline.offline') return 'OFFLINE — غير متصل';
+    if (k === 'borders.airportHealth.offline.syncing') return 'SYNCING — مزامنة';
+    if (k === 'borders.airportHealth.offline.synced') return 'SYNC COMPLETE — اكتمل';
+    return k;
+  });
   const meta = state === 'ONLINE' ? { color: C.success, bg: C.successBg } : state === 'SYNCING' ? { color: C.warning, bg: C.warningBg } : state === 'SYNCED' ? { color: C.primary, bg: '#EAF2FC' } : { color: '#6B7280', bg: '#F3F4F6' };
-  const label = state === 'ONLINE' ? 'ONLINE — متصل' : state === 'OFFLINE' ? 'OFFLINE — غير متصل' : state === 'SYNCING' ? 'SYNCING — مزامنة' : 'SYNC COMPLETE — اكتمل';
+  const label = state === 'ONLINE' ? tr('borders.airportHealth.offline.online') : state === 'OFFLINE' ? tr('borders.airportHealth.offline.offline') : state === 'SYNCING' ? tr('borders.airportHealth.offline.syncing') : tr('borders.airportHealth.offline.synced');
   return (
     <Stack direction="row" alignItems="center" spacing={0.75} sx={{ px: 1.25, py: 0.5, borderRadius: 2, bgcolor: meta.bg }}>
       <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: meta.color, animation: state === 'SYNCING' ? 'pulse 1.4s infinite' : 'none' }} />

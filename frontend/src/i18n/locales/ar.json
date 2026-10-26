@@ -2036,7 +2036,90 @@
       }
     },
     "shipInspection": {
-      "title": "استمارة التفتيش الصحي الميداني"
+      "title": "استمارة التفتيش الصحي الميداني",
+      "areas": {
+        "accommodation": {
+          "label": "أماكن الإقامة (Crew Quarters)",
+          "hint": "نظيفة ومناسبة، لا توجد آفات"
+        },
+        "kitchen": {
+          "label": "المطابخ (Galley)",
+          "hint": "النظافة، تخزين الأغذية، حرارات الثلاجات"
+        },
+        "storeroom": {
+          "label": "مخازن الأغذية (Stores)",
+          "hint": "لا مواد منتهية الصلاحية، تهوية جيدة"
+        },
+        "waterTank": {
+          "label": "خزانات المياه (Water Tanks)",
+          "hint": "نظيفة ومغلقة، لا تسريبات"
+        },
+        "clinic": {
+          "label": "العيادة الطبية (Medical Bay)",
+          "hint": "مجهزة، الأدوية سارية"
+        },
+        "toilet": {
+          "label": "دورات المياه والصرف (Toilets)",
+          "hint": "نظيفة وعاملة"
+        },
+        "ventilation": {
+          "label": "التهوية (Ventilation)",
+          "hint": "عاملة وسليمة"
+        },
+        "cleanliness": {
+          "label": "النظافة العامة (Cleanliness)",
+          "hint": "مطابقة للمعايير"
+        }
+      },
+      "compliance": {
+        "compliant": "مطابق",
+        "nonCompliant": "غير مطابق",
+        "notApplicable": "غير متاح"
+      },
+      "derived": {
+        "passed": "سليمة — لا توجد نواقص",
+        "failed": "نواقص جسيمة — توقيف السفينة",
+        "conditional": "مشروط"
+      },
+      "errors": {
+        "notApplicableNotSupported": "«غير متاح» غير مدعوم: يجب تصنيف كل المناطق الثماني قاطعاً للحفظ",
+        "selectVesselFirst": "اختر السفينة أولاً",
+        "saveFailed": "تعذر حفظ التفتيش — تحقق من البيانات والصلاحيات"
+      },
+      "success": {
+        "saved": "تم حفظ تفتيش السفينة «{{vessel}}»"
+      },
+      "form": {
+        "vessel": "السفينة",
+        "visitOptional": "الزيارة (اختياري)",
+        "noVisit": "— بدون ربط بزيارة —",
+        "vesselMeta": "العلم: {{flag}} · الشركة: {{company}} · آخر ميناء: {{port}}",
+        "findings": "الملاحظات العامة (Findings)",
+        "findingsPlaceholder": "وصف المخالفات وموقعها وإجراءات التصحيح المطلوبة...",
+        "lastSaved": "آخر نتيجة محفوظة: {{status}}"
+      },
+      "sections": {
+        "areas": "مناطق الفحص الثماني",
+        "finalResult": "النتيجة النهائية (مستنتجة من الخادم)"
+      },
+      "alerts": {
+        "nonCompliantWarning": "توجد {{count}} منطقة غير مطابقة — يُنصح بتوثيقها في الملاحظات ومراجعة النتيجة النهائية."
+      },
+      "info": {
+        "finalResultDerived": "النتيجة النهائية تُستنتج آلياً من مناطق الفحص الثماني بواسطة الخادم، ولا تُختار يدوياً."
+      },
+      "preview": {
+        "notDetermined": "غير قابلة للاستنتاج — الحفظ سيُرفض"
+      },
+      "chips": {
+        "nonCompliant": "مناطق غير مطابقة: {{count}}",
+        "notApplicable": "مناطق غير متاحة: {{count}}"
+      },
+      "actions": {
+        "saving": "جارٍ الحفظ...",
+        "save": "حفظ التفتيش",
+        "reset": "إعادة تعيين"
+      }
     },
     "airport": {
       "title": "صحة المطارات",
@@ -2196,9 +2279,64 @@
     "airportHealth": {
       "title": "صحة المطارات والطيران",
       "header": {
-        "brand": "صحة المطارات والطيران",
-        "subtitle": "نظام إدارة الحجر الصحي بالمطار",
-        "station": "مركز القيادة"
+        "back": "العودة إلى المنصة",
+        "home": "الرئيسية",
+        "openMenu": "فتح القائمة"
+      },
+      "groups": {
+        "operations": "التشغيل",
+        "passengerHealth": "صحة المسافرين",
+        "casesLab": "الحالات والمختبر",
+        "inspectionOps": "عمليات التفتيش",
+        "emergency": "الطوارئ",
+        "admin": "الإدارة"
+      },
+      "nav": {
+        "dashboard": "مركز القيادة",
+        "flights": "الرحلات",
+        "flightDetails": "تفاصيل الرحلة",
+        "crew": "الطاقم",
+        "screening": "فحص المسافرين",
+        "declaration": "الإعلان الصحي",
+        "riskAssessment": "تقييم المخاطر",
+        "vaccination": "التطعيم",
+        "suspected": "الحالات المشتبهة",
+        "isolation": "إدارة العزل",
+        "lab": "المختبر",
+        "contactTracing": "تتبع المخالطين",
+        "inspection": "تفتيش الطائرات",
+        "analytics": "التحليلات",
+        "certificates": "الشهادات",
+        "emergency": "غرفة عمليات الطوارئ",
+        "users": "المستخدمون",
+        "roles": "الأدوار والأذونات",
+        "auditLogs": "سجل التدقيق",
+        "settings": "الإعدادات",
+        "notifications": "الإشعارات"
+      },
+      "sidebar": {
+        "brand": "نظام الصحة بالمطار"
+      },
+      "risk": {
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "assessment": "قيد التقييم",
+        "closed": "مغلق"
+      },
+      "status": {
+        "cleared": "صُرف",
+        "screening": "فحص أساسي",
+        "secondary": "فحص ثانوي",
+        "medicalAssessment": "تقييم طبي",
+        "alert": "إنذار",
+        "hold": "إيقاف مؤقت"
+      },
+      "offline": {
+        "online": "ONLINE — متصل",
+        "offline": "OFFLINE — غير متصل",
+        "syncing": "SYNCING — مزامنة",
+        "synced": "SYNC COMPLETE — اكتمل"
       }
     },
     "common": {
