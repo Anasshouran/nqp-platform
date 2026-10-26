@@ -2041,10 +2041,157 @@
     "airport": {
       "title": "صحة المطارات",
       "subtitle": "إدارة فحوصات المسافرين وتفتيش الطائرات وسجلات الأطقم في المطارات",
-      "eyebrow": "العمليات"
+      "eyebrow": "العمليات",
+      "tabs": {
+        "main": "الرئيسية",
+        "screenings": "فحوصات المطارات",
+        "aircraft": "تفتيش الطائرات",
+        "crew": "صحة الأطقم",
+        "terminals": "صالات المطارات",
+        "points": "نقاط الفحص"
+      },
+      "cols": {
+        "traveler": "المسافر",
+        "passport": "جواز السفر",
+        "point": "النقطة",
+        "pointName": "نقطة الفحص",
+        "flight": "الرحلة",
+        "type": "النوع",
+        "risk": "المخاطر",
+        "status": "الحالة",
+        "time": "الوقت",
+        "screenedAt": "وقت الفحص",
+        "aircraftReg": "تسجيل الطائرة",
+        "inspector": "المفتش",
+        "cleanliness": "النظافة",
+        "waterQuality": "جودة المياه",
+        "overallStatus": "الحالة العامة",
+        "inspectionDate": "تاريخ التفتيش",
+        "crewMember": "عضو الطاقم",
+        "healthStatus": "الحالة الصحية",
+        "temperature": "درجة الحرارة",
+        "clearance": "التصريح",
+        "code": "الرمز",
+        "terminal": "الصالة",
+        "port": "المنفذ",
+        "capacity": "السعة",
+        "pointCode": "رمز النقطة",
+        "aircraft": "الطائرة",
+        "certificate": "شهادة"
+      },
+      "export": {
+        "screenings": "تم تصدير الفحوصات",
+        "inspections": "تم تصدير التفتيشات"
+      },
+      "table": {
+        "screenings": {
+          "title": "فحوصات المطارات",
+          "subtitle": "{count} فحص",
+          "searchPlaceholder": "بحث بالاسم أو جواز السفر...",
+          "emptyTitle": "لا توجد فحوصات مطار",
+          "emptyDescription": "فحوصات المسافرين في المطار تظهر هنا"
+        },
+        "aircraft": {
+          "title": "تفتيش الطائرات",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث برقم التسجيل أو الرحلة...",
+          "emptyTitle": "لا توجد تفتيشات",
+          "emptyDescription": "تفتيش الطائرات حسب المعايير الصحية يظهر هنا"
+        },
+        "crew": {
+          "title": "سجلات صحة الأطقم",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالاسم أو الرحلة...",
+          "emptyTitle": "لا توجد سجلات أطقم",
+          "emptyDescription": "سجلات صحة أطقم الطائرات تظهر هنا"
+        },
+        "terminals": {
+          "title": "صالات المطارات",
+          "subtitle": "{count} صالة",
+          "searchPlaceholder": "بحث بالاسم أو الرمز...",
+          "emptyTitle": "لا توجد صالات",
+          "emptyDescription": "صالات المطارات ونقاطها تظهر هنا"
+        },
+        "points": {
+          "title": "نقاط الفحص",
+          "subtitle": "{count} نقطة",
+          "searchPlaceholder": "بحث برمز النقطة...",
+          "emptyTitle": "لا توجد نقاط فحص",
+          "emptyDescription": "نقاط فحص المسافرين في الصالات تظهر هنا"
+        }
+      }
     },
     "inspector": {
-      "role": "مفتش الحجر الصحي — قسم صحة المطار"
+      "role": "مفتش الحجر الصحي — قسم صحة المطار",
+      "shift": {
+        "morning": "الصباحية",
+        "evening": "المسائية",
+        "night": "الليلية"
+      },
+      "quick": {
+        "title": "إجراءات سريعة",
+        "subtitle": "نفّذ المهام الشائعة بضغطة واحدة",
+        "startFlight": "بدء فحص رحلة",
+        "findPassenger": "البحث عن مسافر",
+        "clinicReferral": "إحالة إلى العيادة",
+        "aircraftReport": "تقرير تفتيش الطائرة"
+      },
+      "kpi": {
+        "flights": "الرحلات اليوم",
+        "passengers": "المسافرون",
+        "pending": "بانتظار الفحص",
+        "screened": "تم فحصهم",
+        "referrals": "إحالات للعيادة",
+        "suspected": "حالات مشتبه بها",
+        "vaccinations": "تطعيمات",
+        "completed": "مكتملة"
+      },
+      "error": {
+        "title": "تعذر تحميل لوحة المطار",
+        "body": "حدث خطأ أثناء جلب بيانات اللوحة، حاول مرة أخرى.",
+        "retry": "إعادة المحاولة"
+      },
+      "upcoming": {
+        "title": "الرحلات القادمة",
+        "subtitle": "مواعيد الوصول عبر منافذ المطارات"
+      },
+      "suspected": {
+        "title": "الحالات المشتبه بها",
+        "subtitle": "إحالات تتطلب انتباهاً فورياً"
+      },
+      "tasks": {
+        "title": "المهام المكلف بها",
+        "subtitle": "أولويات الوردية الحالية"
+      },
+      "alerts": {
+        "title": "التنبيهات",
+        "subtitle": "آخر إشعارات النظام"
+      },
+      "report": {
+        "title": "التقرير اليومي",
+        "subtitle": "إحصاءات الفحص المتراكمة",
+        "byFlight": "الفحوصات حسب الرحلة",
+        "flights": "الرحلات",
+        "travelers": "المسافرون",
+        "screened": "المفحوصون",
+        "referrals": "الإحالات",
+        "suspected": "الحالات المشتبه بها"
+      },
+      "empty": {
+        "flights": "لا توجد رحلات قادمة",
+        "suspected": "لا توجد حالات مشتبه بها حالياً",
+        "tasks": "لا توجد مهام معلقة",
+        "alerts": "لا توجد تنبيهات"
+      },
+      "chip": {
+        "dangerous": "خطرة",
+        "referral": "إحالة"
+      },
+      "task": {
+        "urgent": "عاجل",
+        "important": "مهم",
+        "routine": "روتيني"
+      }
     },
     "airportHealth": {
       "title": "صحة المطارات والطيران",

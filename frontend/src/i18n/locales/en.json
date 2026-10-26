@@ -2041,10 +2041,157 @@
     "airport": {
       "title": "Airport Health",
       "subtitle": "Airport health management",
-      "eyebrow": "Operations"
+      "eyebrow": "Operations",
+      "tabs": {
+        "main": "Overview",
+        "screenings": "Airport Screening",
+        "aircraft": "Aircraft Inspection",
+        "crew": "Crew Health",
+        "terminals": "Terminals",
+        "points": "Screening Points"
+      },
+      "cols": {
+        "traveler": "Traveler",
+        "passport": "Passport",
+        "point": "Point",
+        "pointName": "Screening point",
+        "flight": "Flight",
+        "type": "Type",
+        "risk": "Risk",
+        "status": "Status",
+        "time": "Time",
+        "screenedAt": "Screening time",
+        "aircraftReg": "Aircraft registration",
+        "inspector": "Inspector",
+        "cleanliness": "Cleanliness",
+        "waterQuality": "Water quality",
+        "overallStatus": "Overall status",
+        "inspectionDate": "Inspection date",
+        "crewMember": "Crew member",
+        "healthStatus": "Health status",
+        "temperature": "Temperature",
+        "clearance": "Clearance",
+        "code": "Code",
+        "terminal": "Terminal",
+        "port": "Port",
+        "capacity": "Capacity",
+        "pointCode": "Point code",
+        "aircraft": "Aircraft",
+        "certificate": "Certificate"
+      },
+      "export": {
+        "screenings": "Screening data exported",
+        "inspections": "Inspections exported"
+      },
+      "table": {
+        "screenings": {
+          "title": "Airport Screenings",
+          "subtitle": "{count} screenings",
+          "searchPlaceholder": "Search by name or passport...",
+          "emptyTitle": "No airport screenings",
+          "emptyDescription": "Passenger screenings in the airport appear here"
+        },
+        "aircraft": {
+          "title": "Aircraft Inspections",
+          "subtitle": "{count} inspections",
+          "searchPlaceholder": "Search by registration or flight...",
+          "emptyTitle": "No inspections",
+          "emptyDescription": "Aircraft inspections against health standards appear here"
+        },
+        "crew": {
+          "title": "Crew Health Records",
+          "subtitle": "{count} records",
+          "searchPlaceholder": "Search by name or flight...",
+          "emptyTitle": "No crew records",
+          "emptyDescription": "Aircraft crew health records appear here"
+        },
+        "terminals": {
+          "title": "Airport Terminals",
+          "subtitle": "{count} terminals",
+          "searchPlaceholder": "Search by name or code...",
+          "emptyTitle": "No terminals",
+          "emptyDescription": "Airport terminals and their points appear here"
+        },
+        "points": {
+          "title": "Screening Points",
+          "subtitle": "{count} points",
+          "searchPlaceholder": "Search by point code...",
+          "emptyTitle": "No screening points",
+          "emptyDescription": "Passenger screening points in terminals appear here"
+        }
+      }
     },
     "inspector": {
-      "role": "Quarantine Inspector - Airport Health"
+      "role": "Quarantine Inspector - Airport Health",
+      "shift": {
+        "morning": "Morning",
+        "evening": "Evening",
+        "night": "Night"
+      },
+      "quick": {
+        "title": "Quick actions",
+        "subtitle": "Run common tasks with one click",
+        "startFlight": "Start flight screening",
+        "findPassenger": "Find a passenger",
+        "clinicReferral": "Clinic referral",
+        "aircraftReport": "Aircraft inspection report"
+      },
+      "kpi": {
+        "flights": "Today's flights",
+        "passengers": "Passengers",
+        "pending": "Awaiting screening",
+        "screened": "Screened",
+        "referrals": "Clinic referrals",
+        "suspected": "Suspected cases",
+        "vaccinations": "Vaccinations",
+        "completed": "Completed"
+      },
+      "error": {
+        "title": "Failed to load airport dashboard",
+        "body": "An error occurred while fetching dashboard data, try again.",
+        "retry": "Try again"
+      },
+      "upcoming": {
+        "title": "Upcoming flights",
+        "subtitle": "Arrival schedules via airport entry points"
+      },
+      "suspected": {
+        "title": "Suspected cases",
+        "subtitle": "Referrals requiring immediate attention"
+      },
+      "tasks": {
+        "title": "Assigned tasks",
+        "subtitle": "Current shift priorities"
+      },
+      "alerts": {
+        "title": "Alerts",
+        "subtitle": "Latest system notifications"
+      },
+      "report": {
+        "title": "Daily report",
+        "subtitle": "Cumulative screening statistics",
+        "byFlight": "Screenings by flight",
+        "flights": "Flights",
+        "travelers": "Passengers",
+        "screened": "Screened",
+        "referrals": "Referrals",
+        "suspected": "Suspected cases"
+      },
+      "empty": {
+        "flights": "No upcoming flights",
+        "suspected": "No suspected cases right now",
+        "tasks": "No pending tasks",
+        "alerts": "No alerts"
+      },
+      "chip": {
+        "dangerous": "Dangerous",
+        "referral": "Referral"
+      },
+      "task": {
+        "urgent": "Urgent",
+        "important": "Important",
+        "routine": "Routine"
+      }
     },
     "airportHealth": {
       "title": "Airport Health & Aviation",
