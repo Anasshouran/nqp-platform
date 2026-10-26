@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -179,6 +180,7 @@ const Sidebar = ({ active, onSelect, onClose }: { active: string; onSelect: (id:
 };
 
 const AirportHealthPage = () => {
+  const { t } = useTranslation();
   const [screen, setScreen] = useState('dashboard');
   const [drawer, setDrawer] = useState(false);
   const navigate = useNavigate();
@@ -201,10 +203,10 @@ const AirportHealthPage = () => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>صحة المطارات والطيران</Typography>
-            <Typography variant="caption" color="text.secondary">مطار الخرطوم الدولي · محطة الحجر الصحي</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('borders.airportHealth.header.brand')}</Typography>
+            <Typography variant="caption" color="text.secondary">{t('borders.airportHealth.header.subtitle')}</Typography>
           </Box>
-          <Chip label="محطة رئيسية" size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
+          <Chip label={t('borders.airportHealth.header.station')} size="small" sx={{ bgcolor: '#EAF2FC', color: C.primary, fontWeight: 700, display: { xs: 'none', sm: 'flex' } }} />
           <OfflinePill state={pillState} />
         </Stack>
 

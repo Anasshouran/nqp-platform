@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -130,30 +131,31 @@ import {
   borderVehicleType,
 } from '../../utils/status';
 
-const SECTIONS = [
-  { id: 'dashboard', label: 'لوحة القيادة', icon: <PublicIcon fontSize="small" /> },
-  { id: 'crossings', label: 'المعابر', icon: <PublicIcon fontSize="small" /> },
-  { id: 'facilities', label: 'المرافق', icon: <ApartmentIcon fontSize="small" /> },
-  { id: 'shifts', label: 'الورديات', icon: <AssignmentIcon fontSize="small" /> },
-  { id: 'staff', label: 'الكادر', icon: <GroupsIcon fontSize="small" /> },
-  { id: 'travelers', label: 'المسافرون', icon: <GroupsIcon fontSize="small" /> },
-  { id: 'declarations', label: 'الإقرارات', icon: <AssignmentIcon fontSize="small" /> },
-  { id: 'screenings', label: 'الفحوصات', icon: <FactCheckOutlinedIcon fontSize="small" /> },
-  { id: 'vehicles', label: 'المركبات', icon: <DirectionsBusIcon fontSize="small" /> },
-  { id: 'vehicle-inspections', label: 'تفتيش المركبات', icon: <FactCheckIcon fontSize="small" /> },
-  { id: 'cargo', label: 'الشحنات', icon: <LocalShippingIcon fontSize="small" /> },
-  { id: 'samples', label: 'العيّنات', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'quarantine', label: 'الحجر', icon: <HealthAndSafetyIcon fontSize="small" /> },
-  { id: 'isolation', label: 'العزل', icon: <CoronaIcon fontSize="small" /> },
-  { id: 'tracing', label: 'تتبع المخالطين', icon: <ContactMailIcon fontSize="small" /> },
-  { id: 'emergencies', label: 'الطوارئ', icon: <WarningAmberIcon fontSize="small" /> },
-  { id: 'certificates', label: 'الشهادات', icon: <BadgeIcon fontSize="small" /> },
-  { id: 'decisions', label: 'القرارات', icon: <GavelIcon fontSize="small" /> },
-  { id: 'notifications', label: 'الإشعارات', icon: <NotificationsIcon fontSize="small" /> },
-  { id: 'statistics', label: 'الحصيلة اليومية', icon: <TrendingUpIcon fontSize="small" /> },
+const getSections = (t: (key: string) => string) => [
+  { id: 'dashboard', label: t('borders.bordersHealth.sections.dashboard'), icon: <PublicIcon fontSize="small" /> },
+  { id: 'crossings', label: t('borders.bordersHealth.sections.crossings'), icon: <PublicIcon fontSize="small" /> },
+  { id: 'facilities', label: t('borders.bordersHealth.sections.facilities'), icon: <ApartmentIcon fontSize="small" /> },
+  { id: 'shifts', label: t('borders.bordersHealth.sections.shifts'), icon: <AssignmentIcon fontSize="small" /> },
+  { id: 'staff', label: t('borders.bordersHealth.sections.staff'), icon: <GroupsIcon fontSize="small" /> },
+  { id: 'travelers', label: t('borders.bordersHealth.sections.travelers'), icon: <GroupsIcon fontSize="small" /> },
+  { id: 'declarations', label: t('borders.bordersHealth.sections.declarations'), icon: <AssignmentIcon fontSize="small" /> },
+  { id: 'screenings', label: t('borders.bordersHealth.sections.screenings'), icon: <FactCheckOutlinedIcon fontSize="small" /> },
+  { id: 'vehicles', label: t('borders.bordersHealth.sections.vehicles'), icon: <DirectionsBusIcon fontSize="small" /> },
+  { id: 'vehicle-inspections', label: t('borders.bordersHealth.sections.vehicleInspections'), icon: <FactCheckIcon fontSize="small" /> },
+  { id: 'cargo', label: t('borders.bordersHealth.sections.cargo'), icon: <LocalShippingIcon fontSize="small" /> },
+  { id: 'samples', label: t('borders.bordersHealth.sections.samples'), icon: <BiotechIcon fontSize="small" /> },
+  { id: 'quarantine', label: t('borders.bordersHealth.sections.quarantine'), icon: <HealthAndSafetyIcon fontSize="small" /> },
+  { id: 'isolation', label: t('borders.bordersHealth.sections.isolation'), icon: <CoronaIcon fontSize="small" /> },
+  { id: 'tracing', label: t('borders.bordersHealth.sections.tracing'), icon: <ContactMailIcon fontSize="small" /> },
+  { id: 'emergencies', label: t('borders.bordersHealth.sections.emergencies'), icon: <WarningAmberIcon fontSize="small" /> },
+  { id: 'certificates', label: t('borders.bordersHealth.sections.certificates'), icon: <BadgeIcon fontSize="small" /> },
+  { id: 'decisions', label: t('borders.bordersHealth.sections.decisions'), icon: <GavelIcon fontSize="small" /> },
+  { id: 'notifications', label: t('borders.bordersHealth.sections.notifications'), icon: <NotificationsIcon fontSize="small" /> },
+  { id: 'statistics', label: t('borders.bordersHealth.sections.statistics'), icon: <TrendingUpIcon fontSize="small" /> },
 ] as const;
 
 const DashboardTab = () => {
+  const { t } = useTranslation();
   const [overview, setOverview] = useState<BordersHealthOverview | null>(null);
   const [performance, setPerformance] = useState<CrossingPerformanceRow[]>([]);
   const [trend, setTrend] = useState<TrafficTrendRow[]>([]);
@@ -174,55 +176,55 @@ const DashboardTab = () => {
   return (
     <Stack spacing={2.5}>
       <DashboardHero
-        eyebrow="مركز قيادة المعابر البرية"
-        title="الحجر الصحي القومي — المعابر البرية"
-        subtitle="مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر"
-        avatarLabel="المعابر"
+        eyebrow={t('borders.bordersHealth.dashboard.eyebrow')}
+        title={t('borders.bordersHealth.dashboard.title')}
+        subtitle={t('borders.bordersHealth.dashboard.subtitle')}
+        avatarLabel={t('borders.bordersHealth.dashboard.avatarLabel')}
       />
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<PublicIcon />} value={overview?.open_crossings ?? 0} label="معابر عاملة" accent="success.main" hint={`من ${overview?.crossings ?? 0}`} />
+          <KpiCard icon={<PublicIcon />} value={overview?.open_crossings ?? 0} label={t('borders.bordersHealth.dashboard.kpi.openCrossings')} accent="success.main" hint={`${t('borders.bordersHealth.dashboard.kpi.from')} ${overview?.crossings ?? 0}`} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<GroupsIcon />} value={overview?.travelers_today ?? 0} label="مسافرون اليوم" accent="primary.main" />
+          <KpiCard icon={<GroupsIcon />} value={overview?.travelers_today ?? 0} label={t('borders.bordersHealth.dashboard.kpi.travelersToday')} accent="primary.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<DirectionsBusIcon />} value={overview?.vehicles_inspected ?? 0} label="مركبات مفتّشة" accent="info.main" />
+          <KpiCard icon={<DirectionsBusIcon />} value={overview?.vehicles_inspected ?? 0} label={t('borders.bordersHealth.dashboard.kpi.vehiclesInspected')} accent="info.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<LocalShippingIcon />} value={overview?.cargo_inspections ?? 0} label="شحنات مفتّشة" accent="secondary.main" />
+          <KpiCard icon={<LocalShippingIcon />} value={overview?.cargo_inspections ?? 0} label={t('borders.bordersHealth.dashboard.kpi.cargoInspections')} accent="secondary.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<HealthAndSafetyIcon />} value={overview?.active_quarantine ?? 0} label="حالات حجر نشطة" accent="warning.main" />
+          <KpiCard icon={<HealthAndSafetyIcon />} value={overview?.active_quarantine ?? 0} label={t('borders.bordersHealth.dashboard.kpi.activeQuarantine')} accent="warning.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<CoronaIcon />} value={overview?.active_isolation ?? 0} label="حالات عزل" accent="error.main" />
+          <KpiCard icon={<CoronaIcon />} value={overview?.active_isolation ?? 0} label={t('borders.bordersHealth.dashboard.kpi.activeIsolation')} accent="error.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<WarningAmberIcon />} value={overview?.suspected_cases ?? 0} label="حالات مشتبه بها" accent="error.main" />
+          <KpiCard icon={<WarningAmberIcon />} value={overview?.suspected_cases ?? 0} label={t('borders.bordersHealth.dashboard.kpi.suspectedCases')} accent="error.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<BadgeIcon />} value={overview?.certificates_issued ?? 0} label="شهادات صادرة" accent="primary.main" />
+          <KpiCard icon={<BadgeIcon />} value={overview?.certificates_issued ?? 0} label={t('borders.bordersHealth.dashboard.kpi.certificatesIssued')} accent="primary.main" />
         </Grid>
       </Grid>
 
       <DataTable<CrossingPerformanceRow>
         columns={[
-          { key: 'entry_point__name_ar', label: 'المعبر', render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.entry_point__name_ar}</Typography> },
-          { key: 'entry_point__code', label: 'الكود', hideOnMobile: true, render: (r) => (
+          { key: 'entry_point__name_ar', label: t('borders.bordersHealth.dashboard.performance.cols.crossing'), render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.entry_point__name_ar}</Typography> },
+          { key: 'entry_point__code', label: t('borders.bordersHealth.dashboard.performance.cols.code'), hideOnMobile: true, render: (r) => (
             <Typography sx={{ fontFamily: 'monospace', fontSize: 13 }}>{r.entry_point__code}</Typography>
           ) },
-          { key: 'neighbor_country', label: 'الدولة المجاورة', hideOnMobile: true, render: (r) => r.neighbor_country || '—' },
-          { key: 'operating_status', label: 'الحالة', render: (r) => (
+          { key: 'neighbor_country', label: t('borders.bordersHealth.dashboard.performance.cols.neighbor'), hideOnMobile: true, render: (r) => r.neighbor_country || '—' },
+          { key: 'operating_status', label: t('borders.bordersHealth.dashboard.performance.cols.status'), render: (r) => (
             <StatusChip
               label={borderOperatingStatus[r.operating_status]?.label ?? r.operating_status}
               tone={borderOperatingStatus[r.operating_status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'records_count', label: 'حركة المسافرين', align: 'center', render: (r) => r.records_count },
-          { key: 'vehicle_inspections_count', label: 'مركبات', align: 'center', hideOnMobile: true, render: (r) => r.vehicle_inspections_count },
-          { key: 'cargo_count', label: 'شحنات', align: 'center', hideOnMobile: true, render: (r) => r.cargo_count },
-          { key: 'quarantine_count', label: 'حجر', align: 'center', render: (r) => r.quarantine_count },
+          { key: 'records_count', label: t('borders.bordersHealth.dashboard.performance.cols.travelerFlow'), align: 'center', render: (r) => r.records_count },
+          { key: 'vehicle_inspections_count', label: t('borders.bordersHealth.dashboard.performance.cols.vehicles'), align: 'center', hideOnMobile: true, render: (r) => r.vehicle_inspections_count },
+          { key: 'cargo_count', label: t('borders.bordersHealth.dashboard.performance.cols.cargo'), align: 'center', hideOnMobile: true, render: (r) => r.cargo_count },
+          { key: 'quarantine_count', label: t('borders.bordersHealth.dashboard.performance.cols.quarantine'), align: 'center', render: (r) => r.quarantine_count },
         ]}
         rows={performance}
         rowKey={(r) => r.id}
@@ -230,26 +232,26 @@ const DashboardTab = () => {
         page={0}
         rowsPerPage={Math.max(performance.length, 10)}
         hidePagination
-        title="أداء المعابر"
-        subtitle="مقارنة الحركة والتفتيش والحجر بين المعابر"
-        emptyTitle="لا توجد بيانات أداء"
-        emptyDescription="تظهر المقارنة بعد تسجيل حركة عبر المعابر."
+        title={t('borders.bordersHealth.dashboard.performance.title')}
+        subtitle={t('borders.bordersHealth.dashboard.performance.subtitle')}
+        emptyTitle={t('borders.bordersHealth.dashboard.performance.emptyTitle')}
+        emptyDescription={t('borders.bordersHealth.dashboard.performance.emptyDescription')}
       />
 
       {trend.length > 0 && (
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            اتجاه الحركة (7 أيام)
+            {t('borders.bordersHealth.dashboard.trend.title')}
           </Typography>
           <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
             <Typography variant="body2" color="text.secondary">
-              داخل: <b>{inbound.toLocaleString('ar')}</b>
+              {t('borders.bordersHealth.dashboard.trend.inbound')}: <b>{inbound.toLocaleString('ar')}</b>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              خارج: <b>{outbound.toLocaleString('ar')}</b>
+              {t('borders.bordersHealth.dashboard.trend.outbound')}: <b>{outbound.toLocaleString('ar')}</b>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              أيام مسجّلة: <b>{trend.length}</b>
+              {t('borders.bordersHealth.dashboard.trend.daysRecorded')}: <b>{trend.length}</b>
             </Typography>
           </Stack>
         </Box>
@@ -259,8 +261,9 @@ const DashboardTab = () => {
 };
 
 const CrossingsTab = () => {
-  const t = useServerTable<BorderCrossing>({ fetchData: getCrossings });
-  const { exporting, exportAll } = useTableExport(t.fetchAllRows);
+  const { t } = useTranslation();
+  const tt = useServerTable<BorderCrossing>({ fetchData: getCrossings });
+  const { exporting, exportAll } = useTableExport(tt.fetchAllRows);
   const [statusTarget, setStatusTarget] = useState<BorderCrossing | null>(null);
   const [nextStatus, setNextStatus] = useState('CLOSED');
   const [reason, setReason] = useState('');
@@ -271,12 +274,12 @@ const CrossingsTab = () => {
     setSaving(true);
     try {
       await changeCrossingStatus(statusTarget.id, nextStatus, reason || undefined);
-      notifySuccess('تم تحديث حالة المعبر');
+      notifySuccess(t('borders.labels.success') || 'تم تحديث حالة المعبر');
       setStatusTarget(null);
       setReason('');
-      t.refresh();
+      tt.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تحديث حالة المعبر'));
+      notifyError(extractErrorMessage(err, t('borders.labels.error') || 'تعذر تحديث حالة المعبر'));
     } finally {
       setSaving(false);
     }
@@ -286,7 +289,7 @@ const CrossingsTab = () => {
     <>
       <DataTable<BorderCrossing>
         columns={[
-          { key: 'name_ar', label: 'المعبر', render: (v) => (
+          { key: 'name_ar', label: t('borders.bordersHealth.crossings.cols.crossing'), render: (v) => (
             <Stack>
               <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
@@ -294,57 +297,57 @@ const CrossingsTab = () => {
               </Typography>
             </Stack>
           ) },
-          { key: 'neighbor_country', label: 'الدولة المجاورة', hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
-          { key: 'neighbor_state', label: 'الولاية', hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
-          { key: 'operating_status', label: 'الحالة', render: (v) => (
+          { key: 'neighbor_country', label: t('borders.bordersHealth.crossings.cols.neighbor'), hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
+          { key: 'neighbor_state', label: t('borders.bordersHealth.crossings.cols.state'), hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
+          { key: 'operating_status', label: t('borders.bordersHealth.crossings.cols.status'), render: (v) => (
             <StatusChip
               label={borderOperatingStatus[v.operating_status]?.label ?? v.operating_status}
               tone={borderOperatingStatus[v.operating_status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'daily_capacity', label: 'السعة اليومية', align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
-          { key: 'has_laboratory', label: 'مختبر', align: 'center', render: (v) => (
-            <StatusChip label={v.has_laboratory ? 'نعم' : 'لا'} tone={v.has_laboratory ? 'success' : 'neutral'} />
+          { key: 'daily_capacity', label: t('borders.bordersHealth.crossings.cols.capacity'), align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
+          { key: 'has_laboratory', label: t('borders.bordersHealth.crossings.cols.lab'), align: 'center', render: (v) => (
+            <StatusChip label={v.has_laboratory ? t('borders.labels.yes') : t('borders.labels.no')} tone={v.has_laboratory ? 'success' : 'neutral'} />
           ) },
         ]}
-        rows={t.rows}
+        rows={tt.rows}
         rowKey={(v) => v.id}
-        count={t.count}
-        page={t.page}
-        rowsPerPage={t.rowsPerPage}
-        pageSizeOptions={t.pageSizeOptions}
-        loading={t.loading}
-        error={t.error}
-        title="إدارة المعابر"
-        subtitle={`${t.count} معبر`}
-        searchInput={t.searchInput}
-        onSearchChange={t.setSearchInput}
-        searchPlaceholder="بحث باسم المعبر أو كوده أو الدولة المجاورة..."
+        count={tt.count}
+        page={tt.page}
+        rowsPerPage={tt.rowsPerPage}
+        pageSizeOptions={tt.pageSizeOptions}
+        loading={tt.loading}
+        error={tt.error}
+        title={t('borders.bordersHealth.crossings.title')}
+        subtitle={t('borders.bordersHealth.crossings.subtitle').replace('{count}', String(tt.count))}
+        searchInput={tt.searchInput}
+        onSearchChange={tt.setSearchInput}
+        searchPlaceholder={t('borders.bordersHealth.crossings.searchPlaceholder')}
         filters={[
           {
             key: 'operating_status',
-            label: 'الحالة',
+            label: t('borders.bordersHealth.crossings.filterStatus'),
             options: Object.entries(borderOperatingStatus).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
-            onChange: (v) => t.setFilter('operating_status', v),
+            onChange: (v) => tt.setFilter('operating_status', v),
           },
         ]}
-        onPageChange={t.setPage}
-        onRowsPerPageChange={t.setRowsPerPage}
+        onPageChange={tt.setPage}
+        onRowsPerPageChange={tt.setRowsPerPage}
         onExport={() => exportAll({
           filename: 'border-crossings',
-          headers: ['الكود', 'الاسم', 'الدولة', 'الحالة'],
+          headers: [t('borders.bordersHealth.crossings.cols.code') || t('borders.labels.code'), t('borders.bordersHealth.crossings.cols.crossing'), t('borders.bordersHealth.crossings.cols.neighbor'), t('borders.bordersHealth.crossings.cols.status')],
           mapRow: (v) => [v.entry_point_code ?? '', v.name_ar ?? '', v.neighbor_country, v.operating_status],
-          message: 'تم تصدير بيانات المعابر',
+          message: t('borders.labels.export') || t('borders.bordersHealth.crossings.exported'),
         })}
         exporting={exporting}
-        onRefresh={t.refresh}
-        emptyTitle="لا توجد معابر"
-        emptyDescription="شغّل أمر بذر المعابر لإنشاء الملفات التشغيلية."
+        onRefresh={tt.refresh}
+        emptyTitle={t('borders.bordersHealth.crossings.emptyTitle')}
+        emptyDescription={t('borders.bordersHealth.crossings.emptyDescription')}
         actions={(v) => (
-          <Tooltip title="تغيير حالة التشغيل">
+          <Tooltip title={t('borders.actions.changeStatus')}>
             <IconButton
-              aria-label="تغيير حالة المعبر"
+              aria-label={t('borders.actions.changeBorderStatus')}
               size="small"
               color="primary"
               onClick={() => { setStatusTarget(v); setNextStatus(v.operating_status); }}
@@ -357,7 +360,7 @@ const CrossingsTab = () => {
       />
 
       <Dialog open={Boolean(statusTarget)} onClose={() => setStatusTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>تغيير حالة المعبر</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('borders.bordersHealth.dialogs.changeCrossing')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <Typography variant="body2" color="text.secondary">
@@ -366,7 +369,7 @@ const CrossingsTab = () => {
             <TextField
               select
               fullWidth
-              label="الحالة الجديدة"
+              label={t('borders.bordersHealth.dialogs.newStatus')}
               value={nextStatus}
               onChange={(e) => setNextStatus(e.target.value)}
             >
@@ -376,7 +379,7 @@ const CrossingsTab = () => {
             </TextField>
             <TextField
               fullWidth
-              label="سبب الإغلاق / التقييد"
+              label={t('borders.bordersHealth.dialogs.reason')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               multiline
@@ -385,7 +388,7 @@ const CrossingsTab = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>{t('borders.actions.cancel')}</Button>
           <Button
             variant="contained"
             onClick={applyStatus}
@@ -393,7 +396,7 @@ const CrossingsTab = () => {
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ fontWeight: 700 }}
           >
-            حفظ
+            {t('borders.actions.save')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -402,22 +405,23 @@ const CrossingsTab = () => {
 };
 
 const FacilitiesTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderFacility>({ fetchData: getFacilities });
   return (
     <DataTable<BorderFacility>
       columns={[
-        { key: 'name_ar', label: 'المرفق', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
-        { key: 'kind', label: 'النوع', render: (v) => (
+        { key: 'name_ar', label: translate('borders.bordersHealth.facilities.cols.name'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography> },
+        { key: 'kind', label: translate('borders.bordersHealth.facilities.cols.type'), render: (v) => (
           <StatusChip
             label={borderFacilityKind[v.kind]?.label ?? v.kind}
             tone={borderFacilityKind[v.kind]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'capacity', label: 'السعة', align: 'center', render: (v) => v.capacity || '—' },
-        { key: 'staff_count', label: 'الكادر', align: 'center', hideOnMobile: true, render: (v) => v.staff_count || '—' },
-        { key: 'is_operational', label: 'التشغيل', render: (v) => (
-          <StatusChip label={v.is_operational ? 'يعمل' : 'متوقف'} tone={v.is_operational ? 'success' : 'error'} />
+        { key: 'crossing_name', label: translate('borders.bordersHealth.facilities.cols.crossing'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'capacity', label: translate('borders.bordersHealth.facilities.cols.capacity'), align: 'center', render: (v) => v.capacity || '—' },
+        { key: 'staff_count', label: translate('borders.bordersHealth.facilities.cols.staff'), align: 'center', hideOnMobile: true, render: (v) => v.staff_count || '—' },
+        { key: 'is_operational', label: translate('borders.bordersHealth.facilities.cols.status'), render: (v) => (
+          <StatusChip label={v.is_operational ? translate('borders.bordersHealth.common.operational') : translate('borders.bordersHealth.common.stopped')} tone={v.is_operational ? 'success' : 'error'} />
         ) },
       ]}
       rows={t.rows}
@@ -428,15 +432,15 @@ const FacilitiesTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="مرافق المعابر"
-      subtitle={`${t.count} مرفق`}
+      title={translate('borders.bordersHealth.facilities.title')}
+      subtitle={translate('borders.bordersHealth.facilities.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث باسم المرفق..."
+      searchPlaceholder={translate('borders.bordersHealth.facilities.searchPlaceholder')}
       filters={[
         {
           key: 'kind',
-          label: 'نوع المرفق',
+          label: translate('borders.bordersHealth.facilities.filterKind'),
           options: Object.entries(borderFacilityKind).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('kind', v),
@@ -445,13 +449,14 @@ const FacilitiesTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد مرافق"
-      emptyDescription="سجّل مرافق المعبر: مختبر، وحدة حجر، مخزن."
+      emptyTitle={translate('borders.bordersHealth.facilities.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.facilities.emptyDescription')}
     />
   );
 };
 
 const ShiftsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderShift>({ fetchData: getShifts });
   return (
     <DataTable<BorderShift>
@@ -468,7 +473,7 @@ const ShiftsTab = () => {
         { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         { key: 'supervisor_name', label: 'المشرف', render: (v) => v.supervisor_name || '—' },
         { key: 'is_staffed', label: 'مؤمَّنة', render: (v) => (
-          <StatusChip label={v.is_staffed ? 'نعم' : 'لا'} tone={v.is_staffed ? 'success' : 'warning'} />
+          <StatusChip label={v.is_staffed ? translate('borders.labels.yes') : translate('borders.labels.no')} tone={v.is_staffed ? 'success' : 'warning'} />
         ) },
       ]}
       rows={t.rows}
@@ -479,11 +484,11 @@ const ShiftsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="الورديات"
-      subtitle={`${t.count} وردية`}
+      title={translate('borders.bordersHealth.shifts.title')}
+      subtitle={translate('borders.bordersHealth.shifts.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث في الملاحظات..."
+      searchPlaceholder={translate('borders.bordersHealth.shifts.searchPlaceholder')}
       filters={[
         {
           key: 'shift_type',
@@ -496,13 +501,14 @@ const ShiftsTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد ورديات"
-      emptyDescription="سجّل ورديات العمل اليومية لكل معبر."
+      emptyTitle={translate('borders.bordersHealth.shifts.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.shifts.emptyDescription')}
     />
   );
 };
 
 const StaffTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderStaff>({ fetchData: getBorderStaff });
   return (
     <DataTable<BorderStaff>
@@ -512,9 +518,9 @@ const StaffTab = () => {
         { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         { key: 'assignment_type', label: 'نوع الإسناد', hideOnMobile: true, render: (v) => v.assignment_type },
         { key: 'starts_on', label: 'يبدأ', render: (v) => formatDate(v.starts_on) },
-        { key: 'ends_on', label: 'ينتهي', hideOnMobile: true, render: (v) => (v.ends_on ? formatDate(v.ends_on) : 'مستمر') },
+        { key: 'ends_on', label: 'ينتهي', hideOnMobile: true, render: (v) => (v.ends_on ? formatDate(v.ends_on) : translate('borders.bordersHealth.statusLabels.ongoing')) },
         { key: 'is_active', label: 'نشط', render: (v) => (
-          <StatusChip label={v.is_active ? 'نشط' : 'منتهٍ'} tone={v.is_active ? 'success' : 'neutral'} />
+          <StatusChip label={v.is_active ? translate('borders.bordersHealth.common.operational') : translate('borders.bordersHealth.common.ended')} tone={v.is_active ? 'success' : 'neutral'} />
         ) },
       ]}
       rows={t.rows}
@@ -525,21 +531,22 @@ const StaffTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="كادر المعابر"
-      subtitle={`${t.count} إسناد`}
+      title={translate('borders.bordersHealth.staff.title')}
+      subtitle={translate('borders.bordersHealth.staff.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث باسم الموظف..."
+      searchPlaceholder={translate('borders.bordersHealth.staff.searchPlaceholder')}
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا يوجد كادر مسجَّل"
-      emptyDescription="أسند الموظفين إلى المعابر من صفحة الأدوار والصلاحيات."
+      emptyTitle={translate('borders.bordersHealth.staff.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.staff.emptyDescription')}
     />
   );
 };
 
 const TravelersTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<TravelerHealthRecord>({ fetchData: getTravelerRecords });
   const { exporting, exportAll } = useTableExport(t.fetchAllRows);
   return (
@@ -583,8 +590,8 @@ const TravelersTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="المسافرون"
-      subtitle={`${t.count} مسافر`}
+      title={translate('borders.bordersHealth.travelers.title')}
+      subtitle={translate('borders.bordersHealth.travelers.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
       searchPlaceholder="بحث بالاسم أو رقم الجواز..."
@@ -608,19 +615,20 @@ const TravelersTab = () => {
       onRowsPerPageChange={t.setRowsPerPage}
       onExport={() => exportAll({
         filename: 'border-travelers',
-        headers: ['المسافر', 'الجواز', 'الاتجاه', 'الخطورة', 'القرار'],
+        headers: [translate('borders.bordersHealth.travelers.cols.traveler'), translate('borders.bordersHealth.travelers.cols.traveler') === 'المسافر' ? 'الجواز' : 'Passport', translate('borders.bordersHealth.travelers.cols.direction'), translate('borders.bordersHealth.travelers.cols.risk'), translate('borders.bordersHealth.travelers.cols.decision')],
         mapRow: (v) => [v.traveler_name ?? '', v.passport_number ?? '', v.direction, v.risk_level, v.decision],
-        message: 'تم تصدير حركة المسافرين',
+        message: translate('borders.bordersHealth.travelers.exported') || 'تم تصدير حركة المسافرين',
       })}
       exporting={exporting}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد حركة مسافرين"
-      emptyDescription="سجّل حركة المسافرين من صفحة الفحص الصحي."
+      emptyTitle={translate('borders.bordersHealth.travelers.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.travelers.emptyDescription')}
     />
   );
 };
 
 const DeclarationsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<HealthDeclaration>({ fetchData: getDeclarations });
   return (
     <DataTable<HealthDeclaration>
@@ -628,7 +636,7 @@ const DeclarationsTab = () => {
         { key: 'traveler_name', label: 'المسافر', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.traveler_name || '—'}</Typography> },
         { key: 'departure_country', label: 'بلد المغادرة', hideOnMobile: true, render: (v) => v.departure_country || '—' },
         { key: 'departure_date', label: 'تاريخ المغادرة', render: (v) => formatDate(v.departure_date) },
-        { key: 'current_symptoms', label: 'الأعراض', render: (v) => v.current_symptoms || 'لا يوجد' },
+        { key: 'current_symptoms', label: 'الأعراض', render: (v) => v.current_symptoms || translate('borders.labels.none') || 'لا يوجد' },
         { key: 'status', label: 'الحالة', render: (v) => (
           <StatusChip
             label={borderDeclarationStatus[v.status]?.label ?? v.status}
@@ -646,15 +654,15 @@ const DeclarationsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="الإقرارات الصحية"
-      subtitle={`${t.count} إقرار`}
+      title={translate('borders.bordersHealth.declarations.title')}
+      subtitle={translate('borders.bordersHealth.declarations.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث بالاسم أو الجواز..."
+      searchPlaceholder={translate('borders.bordersHealth.declarations.searchPlaceholder')}
       filters={[
         {
           key: 'status',
-          label: 'الحالة',
+          label: translate('borders.bordersHealth.declarations.filterStatus'),
           options: Object.entries(borderDeclarationStatus).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('status', v),
@@ -663,13 +671,14 @@ const DeclarationsTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد إقرارات"
-      emptyDescription="تُسجَّل الإقرارات الصحية من بوابة المسافرين أو عند المعبر."
+      emptyTitle={translate('borders.bordersHealth.declarations.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.declarations.emptyDescription')}
     />
   );
 };
 
 const ScreeningsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderScreening>({ fetchData: getScreenings });
   const [target, setTarget] = useState<BorderScreening | null>(null);
   const [temperature, setTemperature] = useState('');
@@ -685,7 +694,7 @@ const ScreeningsTab = () => {
       if (temperature !== '') body.body_temperature = Number(temperature);
       if (oxygen !== '') body.oxygen_saturation = Number(oxygen);
       await reassessScreening(target.id, body);
-      notifySuccess('أُعيد تقييم الفحص وحُدِّث القرار');
+      notifySuccess(translate('borders.bordersHealth.screenings.reassessed') || 'أُعيد تقييم الفحص وحُدِّث القرار');
       setTarget(null);
       t.refresh();
     } catch (e) {
@@ -693,7 +702,7 @@ const ScreeningsTab = () => {
     } finally {
       setBusy(false);
     }
-  }, [target, temperature, oxygen, t]);
+  }, [target, temperature, oxygen, t, translate]);
 
   return (
     <>
@@ -726,7 +735,7 @@ const ScreeningsTab = () => {
           />
         ) },
         { key: 'document_verified', label: 'الوثائق', align: 'center', hideOnMobile: true, render: (v) => (
-          <StatusChip label={v.document_verified ? 'مُتحقَّق' : 'ناقصة'} tone={v.document_verified ? 'success' : 'warning'} />
+          <StatusChip label={v.document_verified ? translate('borders.status.verified') || 'مُتحقَّق' : translate('borders.status.incomplete') || 'ناقصة'} tone={v.document_verified ? 'success' : 'warning'} />
         ) },
         { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         { key: 'screened_at', label: 'وقت الفحص', hideOnMobile: true, render: (v) => formatDateTime(v.screened_at) },
@@ -739,8 +748,8 @@ const ScreeningsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="الفحص الصحي"
-      subtitle={`${t.count} فحص`}
+      title={translate('borders.bordersHealth.screenings.title')}
+      subtitle={translate('borders.bordersHealth.screenings.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
       searchPlaceholder="بحث بالاسم أو رقم الجواز..."
@@ -782,24 +791,24 @@ const ScreeningsTab = () => {
       <DialogContent dividers>
         <Stack spacing={2}>
           <Typography variant="body2" color="text.secondary">
-            تُعاد قراءة القواعد على القياسات أدناه: حمّى ≥ 38 أو أكسجين &lt; 92
+            {translate('borders.bordersHealth.screenings.ruleNote')}
             ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.
           </Typography>
           {target && (
             <Typography variant="body2">
-              {target.traveler_name || '—'} · القرار الحالي:{' '}
+              {target.traveler_name || '—'} · {translate('borders.bordersHealth.screenings.currentDecision')}{' '}
               <b>{borderScreeningDecision[target.decision]?.label ?? target.decision}</b>
             </Typography>
           )}
           <TextField
-            label="درجة الحرارة (°C)"
+            label={translate('borders.bordersHealth.screenings.fields.temp')}
             type="number"
             value={temperature}
             onChange={(e) => setTemperature(e.target.value)}
             inputProps={{ step: '0.1' }}
           />
           <TextField
-            label="إشباع الأكسجين (%)"
+            label={translate('borders.bordersHealth.screenings.fields.oxygen')}
             type="number"
             value={oxygen}
             onChange={(e) => setOxygen(e.target.value)}
@@ -810,7 +819,7 @@ const ScreeningsTab = () => {
       <DialogActions sx={{ p: 2, gap: 1 }}>
         <Button onClick={() => setTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
         <Button onClick={reassess} disabled={busy} variant="contained" sx={{ fontWeight: 700 }}>
-          {busy ? 'جارٍ...' : 'إعادة التقييم'}
+          {busy ? translate('borders.bordersHealth.screenings.busy') : translate('borders.bordersHealth.screenings.reassessBtn')}
         </Button>
       </DialogActions>
     </Dialog>
@@ -940,6 +949,7 @@ const VehicleInspectionsTab = () => {
 };
 
 const CargoTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<CargoInspection>({ fetchData: getCargoInspections });
   const [target, setTarget] = useState<CargoInspection | null>(null);
   const [busy, setBusy] = useState(false);
@@ -948,15 +958,15 @@ const CargoTab = () => {
     setBusy(true);
     try {
       await decideCargoInspection(id, decision);
-      notifySuccess('تم تسجيل قرار الشحنة');
+      notifySuccess(translate('borders.bordersHealth.cargo.recorded') || 'تم تسجيل قرار الشحنة');
       setTarget(null);
       t.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تسجيل القرار'));
+      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.cargo.failed') || 'تعذر تسجيل القرار'));
     } finally {
       setBusy(false);
     }
-  }, [t]);
+  }, [t, translate]);
 
   return (
     <>
@@ -1026,9 +1036,9 @@ const CargoTab = () => {
         emptyTitle="لا توجد شحنات"
         emptyDescription="سجّل تفتيش الشحنات العامة والغذائية."
         actions={(v) => (
-          <Tooltip title="حساب القرار من العيّنات">
+          <Tooltip title={translate('borders.bordersHealth.cargo.calcFromSamples')}>
             <IconButton
-              aria-label="تسجيل قرار الشحنة"
+              aria-label={translate('borders.bordersHealth.cargo.dialogTitle')}
               size="small"
               color="primary"
               onClick={() => setTarget(v)}
@@ -1041,21 +1051,21 @@ const CargoTab = () => {
       />
 
       <Dialog open={Boolean(target)} onClose={() => setTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>تسجيل قرار الشحنة</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{translate('borders.bordersHealth.cargo.dialogTitle')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={1.5}>
             <Typography variant="body2" color="text.secondary">
-              يجمع النظام القرار من نتائج العيّنات المرتبطة. يمكنك تجاوزه بقرار صريح.
+              {translate('borders.bordersHealth.cargo.note')}
             </Typography>
             {target && (
               <Typography variant="body2">
-                الإقرار: <b>{target.declaration_number || '—'}</b> · {borderCargoScope[target.scope]?.label ?? target.scope}
+                {translate('borders.bordersHealth.cargo.declarationLabel')} <b>{target.declaration_number || '—'}</b> · {borderCargoScope[target.scope]?.label ?? target.scope}
               </Typography>
             )}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2, flexWrap: 'wrap', gap: 1 }}>
-          <Button onClick={() => setTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+          <Button onClick={() => setTarget(null)} sx={{ fontWeight: 700 }}>{translate('borders.actions.cancel')}</Button>
           {target && (
             <>
               <Button
@@ -1065,7 +1075,7 @@ const CargoTab = () => {
                 onClick={() => decide(target.id, 'REJECTED')}
                 sx={{ fontWeight: 700 }}
               >
-                رفض
+                {translate('borders.bordersHealth.cargo.reject')}
               </Button>
               <Button
                 variant="outlined"
@@ -1074,7 +1084,7 @@ const CargoTab = () => {
                 onClick={() => decide(target.id, 'HOLD')}
                 sx={{ fontWeight: 700 }}
               >
-                حجز
+                {translate('borders.bordersHealth.cargo.hold')}
               </Button>
               <Button
                 variant="contained"
@@ -1084,7 +1094,7 @@ const CargoTab = () => {
                 onClick={() => decide(target.id)}
                 sx={{ fontWeight: 700 }}
               >
-                احتساب من العيّنات
+                {translate('borders.bordersHealth.cargo.calcFromSamples')}
               </Button>
             </>
           )}
@@ -1434,6 +1444,7 @@ const EmergenciesTab = () => {
 };
 
 const DecisionsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderDecision>({ fetchData: getDecisions });
   const { exporting, exportAll } = useTableExport(t.fetchAllRows);
 
@@ -1472,7 +1483,7 @@ const DecisionsTab = () => {
         filename: 'border-decisions',
         headers: ['التاريخ', 'الموضوع', 'النتيجة', 'السبب', 'المعبر'],
         mapRow: (v) => [v.decided_at, v.subject_type, v.outcome, v.reason, v.crossing_name ?? ''],
-        message: 'تم تصدير القرارات',
+        message: translate('borders.bordersHealth.decisions.exported') || 'تم تصدير القرارات',
       })}
       exporting={exporting}
       emptyTitle="لا توجد قرارات"
@@ -1482,6 +1493,7 @@ const DecisionsTab = () => {
 };
 
 const NotificationsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderNotification>({ fetchData: getNotifications });
   const { exporting, exportAll } = useTableExport(t.fetchAllRows);
 
@@ -1541,7 +1553,7 @@ const NotificationsTab = () => {
         filename: 'border-notifications',
         headers: ['التاريخ', 'العنوان', 'القناة', 'التسليم', 'المستلم'],
         mapRow: (v) => [v.sent_at ?? '', v.title, v.channel, v.status, v.recipient_role],
-        message: 'تم تصدير الإشعارات',
+        message: translate('borders.bordersHealth.notifications.exported') || 'تم تصدير الإشعارات',
       })}
       exporting={exporting}
       emptyTitle="لا توجد إشعارات"
@@ -1551,6 +1563,7 @@ const NotificationsTab = () => {
 };
 
 const StatisticsTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderDailyStatistics>({ fetchData: getDailyStatistics });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -1558,10 +1571,10 @@ const StatisticsTab = () => {
     setRefreshing(true);
     try {
       await refreshDailyStatistics();
-      notifySuccess('تم تحديثحصيلة اليوم لكل المعابر');
+      notifySuccess(translate('borders.bordersHealth.statistics.refreshed') || 'تم تحديث حصيلة اليوم لكل المعابر');
       t.refresh();
     } catch {
-      notifyError('تعذّر تحديث الإحصاءات — قد تحتاج صلاحية لوحة القيادة');
+      notifyError(translate('borders.bordersHealth.statistics.refreshFailed') || 'تعذّر تحديث الإحصاءات — قد تحتاج صلاحية لوحة القيادة');
     } finally {
       setRefreshing(false);
     }
@@ -1575,7 +1588,7 @@ const StatisticsTab = () => {
         startIcon={<RefreshIcon />}
         sx={{ alignSelf: 'flex-start', fontWeight: 700 }}
       >
-        {refreshing ? 'جارٍ التحديث...' : 'تحديث حصيلة اليوم'}
+        {refreshing ? translate('borders.bordersHealth.statistics.refreshing') : translate('borders.bordersHealth.statistics.refresh')}
       </Button>
 
       <DataTable<BorderDailyStatistics>
@@ -1612,6 +1625,7 @@ const StatisticsTab = () => {
 };
 
 const CertificatesTab = () => {
+  const { t: translate } = useTranslation();
   const t = useServerTable<BorderCertificate>({ fetchData: getCertificates });
   const { exporting, exportAll } = useTableExport(t.fetchAllRows);
   const [issueOpen, setIssueOpen] = useState(false);
@@ -1624,7 +1638,7 @@ const CertificatesTab = () => {
 
   const issue = async () => {
     if (!crossingId) {
-      notifyError('اختر المعبر أولاً');
+      notifyError(translate('borders.bordersHealth.certificates.selectCrossing') || 'اختر المعبر أولاً');
       return;
     }
     setIssuing(true);
@@ -1634,11 +1648,11 @@ const CertificatesTab = () => {
         certificate_type: certType as BorderCertificate['certificate_type'],
         expiry_days: expiryDays,
       });
-      notifySuccess(`صدرت الشهادة ${res.data.data.certificate_number}`);
+      notifySuccess((translate('borders.bordersHealth.certificates.issued') || 'صدرت الشهادة').replace('{number}', res.data.data.certificate_number));
       setIssueOpen(false);
       t.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إصدار الشهادة'));
+      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.certificates.issueFailed') || 'تعذر إصدار الشهادة'));
     } finally {
       setIssuing(false);
     }
@@ -1696,16 +1710,16 @@ const CertificatesTab = () => {
           filename: 'border-certificates',
           headers: ['الرقم', 'النوع', 'الإصدار', 'الانتهاء', 'الحالة'],
           mapRow: (v) => [v.certificate_number, v.certificate_type, v.issue_date, v.expiry_date ?? '', v.status],
-          message: 'تم تصدير الشهادات',
+          message: translate('borders.bordersHealth.certificates.exported') || 'تم تصدير الشهادات',
         })}
         exporting={exporting}
         onRefresh={t.refresh}
         emptyTitle="لا توجد شهادات"
         emptyDescription="أصدر شهادة إفراج أو تصريح عبور من زر الإصدار."
         actions={() => (
-          <Tooltip title="إصدار شهادة">
+          <Tooltip title={translate('borders.bordersHealth.dialogs.issueCert')}>
             <IconButton
-              aria-label="إصدار شهادة"
+              aria-label={translate('borders.bordersHealth.dialogs.issueCert')}
               size="small"
               color="secondary"
               onClick={() => setIssueOpen(true)}
@@ -1722,23 +1736,23 @@ const CertificatesTab = () => {
             onClick={() => setIssueOpen(true)}
             sx={{ fontWeight: 700, textTransform: 'none' }}
           >
-            إصدار شهادة
+            {translate('borders.bordersHealth.dialogs.issueCert')}
           </Button>
         }
       />
 
       <Dialog open={issueOpen} onClose={() => setIssueOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>إصدار شهادة</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{translate('borders.bordersHealth.dialogs.issueCert')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <TextField
               select
               fullWidth
-              label="المعبر *"
+              label={translate('borders.bordersHealth.dialogs.crossingLabel')}
               value={crossingId}
               onChange={(e) => setCrossingId(e.target.value)}
             >
-              {crossings.rows.map((c) => (
+              {(crossings.rows || []).map((c) => (
                 <MenuItem key={c.id} value={c.id}>
                   {c.name_ar} ({c.entry_point_code})
                 </MenuItem>
@@ -1747,7 +1761,7 @@ const CertificatesTab = () => {
             <TextField
               select
               fullWidth
-              label="نوع الشهادة"
+              label={translate('borders.bordersHealth.dialogs.certType')}
               value={certType}
               onChange={(e) => setCertType(e.target.value)}
             >
@@ -1758,14 +1772,14 @@ const CertificatesTab = () => {
             <TextField
               fullWidth
               type="number"
-              label="مدة الصلاحية (يوم)"
+              label={translate('borders.bordersHealth.dialogs.validDays')}
               value={expiryDays}
               onChange={(e) => setExpiryDays(Number(e.target.value))}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setIssueOpen(false)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+          <Button onClick={() => setIssueOpen(false)} sx={{ fontWeight: 700 }}>{translate('borders.actions.cancel')}</Button>
           <Button
             variant="contained"
             onClick={issue}
@@ -1773,7 +1787,7 @@ const CertificatesTab = () => {
             startIcon={issuing ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ fontWeight: 700 }}
           >
-            إصدار
+            {translate('borders.bordersHealth.dialogs.issueBtn')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1782,23 +1796,25 @@ const CertificatesTab = () => {
 };
 
 const BordersHealthPage = () => {
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
+  const { t } = useTranslation();
+  const SECTIONS = useMemo(() => getSections(t) as unknown as CommandSectionDef[], [t]);
+  const { active, register, scrollTo } = useCommandSections(SECTIONS);
 
   return (
     <Box>
       <PageHeader
-        title="صحة المعابر البرية"
-        subtitle="إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، الحجر والعزل، والتتبع"
-        eyebrow="مركز قيادة المعابر"
+        title={t('borders.bordersHealth.title')}
+        subtitle={t('borders.bordersHealth.subtitle')}
+        eyebrow={t('borders.bordersHealth.eyebrow')}
       />
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.4} lg={2}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={SECTIONS}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('borders.bordersHealth.dashboard.eyebrow')}
           />
         </Grid>
         <Grid item xs={12} md={9.6} lg={10}>

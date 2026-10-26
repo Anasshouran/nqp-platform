@@ -2,9 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { I18nextProvider } from 'react-i18next';
 import type { ReactElement } from 'react';
 
 import { getAirportDashboard } from '../../../api/endpoints/airport';
+import i18n from '../../../i18n';
 import AirportHealthPage from '../AirportHealthPage';
 
 vi.mock('../../../api/endpoints/airport');
@@ -12,7 +14,9 @@ vi.mock('../../../api/endpoints/airport');
 const wrap = (ui: ReactElement) =>
   render(
     <MemoryRouter initialEntries={['/app/airport-health']}>
-      <ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>
+      <ThemeProvider theme={createTheme()}>
+        <I18nextProvider i18n={i18n}>{ui}</I18nextProvider>
+      </ThemeProvider>
     </MemoryRouter>,
   );
 

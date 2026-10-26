@@ -1324,5 +1324,819 @@
         "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية"
       }
     }
+  },
+  "borders": {
+    "bordersHealth": {
+      "tabs": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات الصحية",
+        "screening": "الفحص الصحي",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "تفتيش الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "حالات الحجر",
+        "isolation": "حالات العزل",
+        "tracing": "حالات التتبع",
+        "incidents": "الحوادث الصحية",
+        "emergencies": "حالات الطوارئ",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "dailyStats": "الحصيلة اليومية",
+        "certificates": "الشهادات"
+      },
+      "title": "صحة المعابر البرية",
+      "subtitle": "إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، العينات، الحجر، العزل، التتبع، الطوارئ، القرارات، الإشعارات، الشهادات، الحصيلة اليومية",
+      "eyebrow": "مركز قيادة المعابر",
+      "sections": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات",
+        "screenings": "الفحوصات",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "الحجر",
+        "isolation": "العزل",
+        "tracing": "تتبع المخالطين",
+        "emergencies": "الطوارئ",
+        "certificates": "الشهادات",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "statistics": "الحصيلة اليومية"
+      },
+      "dashboard": {
+        "eyebrow": "مركز قيادة المعابر",
+        "title": "الحجر الصحي القومي — المعابر البرية",
+        "subtitle": "مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر",
+        "avatarLabel": "المعابر",
+        "kpi": {
+          "openCrossings": "معابر عاملة",
+          "from": "من",
+          "travelersToday": "مسافرون اليوم",
+          "vehiclesInspected": "مركبات مفتّشة",
+          "cargoInspections": "شحنات مفتّشة",
+          "activeQuarantine": "حالات حجر نشطة",
+          "activeIsolation": "حالات عزل",
+          "suspectedCases": "حالات مشتبه بها",
+          "certificatesIssued": "شهادات صادرة"
+        },
+        "performance": {
+          "title": "أداء المعابر",
+          "subtitle": "مقارنة الحركة والتفتيش والحجر بين المعابر",
+          "emptyTitle": "لا توجد بيانات أداء",
+          "emptyDescription": "تظهر المقارنة بعد تسجيل حركة عبر المعابر.",
+          "cols": {
+            "crossing": "المعبر",
+            "code": "الكود",
+            "neighbor": "الدولة المجاورة",
+            "status": "الحالة",
+            "travelerFlow": "حركة المسافرين",
+            "vehicles": "مركبات",
+            "cargo": "شحنات",
+            "quarantine": "حجر"
+          }
+        },
+        "trend": {
+          "title": "اتجاه الحركة (7 أيام)",
+          "inbound": "داخل",
+          "outbound": "خارج",
+          "daysRecorded": "أيام مسجّلة"
+        }
+      },
+      "crossings": {
+        "title": "إدارة المعابر",
+        "subtitle": "{count} معبر",
+        "searchPlaceholder": "بحث باسم المعبر أو كوده أو الدولة المجاورة...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد معابر",
+        "emptyDescription": "شغّل أمر بذر المعابر لإنشاء الملفات التشغيلية.",
+        "dialogTitle": "تغيير حالة المعبر",
+        "reasonLabel": "سبب الإغلاق / التقييد",
+        "newStatus": "الحالة الجديدة",
+        "cols": {
+          "crossing": "المعبر",
+          "neighbor": "الدولة المجاورة",
+          "state": "الولاية",
+          "status": "الحالة",
+          "capacity": "السعة اليومية",
+          "lab": "مختبر"
+        },
+        "actions": {
+          "changeStatus": "تغيير حالة التشغيل"
+        },
+        "exported": "تم تصدير بيانات المعابر"
+      },
+      "facilities": {
+        "title": "مرافق المعابر",
+        "subtitle": "{count} مرفق",
+        "searchPlaceholder": "بحث باسم المرفق...",
+        "filterKind": "نوع المرفق",
+        "emptyTitle": "لا توجد مرافق",
+        "emptyDescription": "سجّل مرافق المعبر: مختبر، وحدة حجر، مخزن.",
+        "cols": {
+          "name": "المرفق",
+          "type": "النوع",
+          "crossing": "المعبر",
+          "capacity": "السعة",
+          "staff": "الكادر",
+          "status": "التشغيل"
+        }
+      },
+      "shifts": {
+        "title": "الورديات",
+        "subtitle": "{count} وردية",
+        "searchPlaceholder": "بحث في الملاحظات...",
+        "filterType": "نوع الوردية",
+        "emptyTitle": "لا توجد ورديات",
+        "emptyDescription": "سجّل ورديات العمل اليومية لكل معبر.",
+        "cols": {
+          "date": "التاريخ",
+          "shift": "الوردية",
+          "start": "البداية",
+          "end": "النهاية",
+          "crossing": "المعبر",
+          "supervisor": "المشرف",
+          "staffed": "مؤمَّنة"
+        }
+      },
+      "staff": {
+        "title": "كادر المعابر",
+        "subtitle": "{count} إسناد",
+        "searchPlaceholder": "بحث باسم الموظف...",
+        "emptyTitle": "لا يوجد كادر مسجَّل",
+        "emptyDescription": "أسند الموظفين إلى المعابر من صفحة الأدوار والصلاحيات.",
+        "cols": {
+          "employee": "الموظف",
+          "role": "الدور",
+          "crossing": "المعبر",
+          "assignment": "نوع الإسناد",
+          "starts": "يبدأ",
+          "ends": "ينتهي",
+          "status": "نشط"
+        }
+      },
+      "travelers": {
+        "title": "المسافرون",
+        "subtitle": "{count} مسافر",
+        "searchPlaceholder": "بحث بالاسم أو رقم الجواز...",
+        "filterDirection": "الاتجاه",
+        "filterRisk": "الخطورة",
+        "emptyTitle": "لا توجد حركة مسافرين",
+        "emptyDescription": "سجّل حركة المسافرين من صفحة الفحص الصحي.",
+        "cols": {
+          "traveler": "المسافر",
+          "direction": "الاتجاه",
+          "time": "وقت العبور",
+          "crossing": "المعبر",
+          "risk": "الخطورة",
+          "decision": "القرار",
+          "assessor": "المُقيِّم",
+          "passport": "الجواز"
+        },
+        "exported": "تم تصدير حركة المسافرين"
+      },
+      "declarations": {
+        "title": "الإقرارات الصحية",
+        "subtitle": "{count} إقرار",
+        "searchPlaceholder": "بحث بالاسم أو الجواز...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد إقرارات",
+        "emptyDescription": "تُسجَّل الإقرارات الصحية من بوابة المسافرين أو عند المعبر.",
+        "cols": {
+          "traveler": "المسافر",
+          "departureCountry": "بلد المغادرة",
+          "departureDate": "تاريخ المغادرة",
+          "symptoms": "الأعراض",
+          "status": "الحالة",
+          "crossing": "المعبر",
+          "declaredAt": "تاريخ الإقرار"
+        }
+      },
+      "screenings": {
+        "title": "الفحص الصحي",
+        "subtitle": "{count} فحص",
+        "searchPlaceholder": "بحث بالاسم أو رقم الجواز...",
+        "filterDecision": "القرار",
+        "emptyTitle": "لا توجد فحوصات",
+        "emptyDescription": "سجّل الفحص الحراري مع قرار الإفراج.",
+        "reassessTitle": "إعادة تقييم الفحص",
+        "reassessNote": "تُعاد قراءة القواعد على القياسات أدناه: حمّى ≥ 38 أو أكسجين < 92 ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.",
+        "currentDecision": "القرار الحالي",
+        "tempLabel": "درجة الحرارة (°C)",
+        "oxygenLabel": "إشباع الأكسجين (%)",
+        "reassessBtn": "إعادة التقييم",
+        "cols": {
+          "traveler": "المسافر",
+          "temp": "الحرارة",
+          "oxygen": "الأكسجين",
+          "risk": "الخطورة",
+          "decision": "القرار",
+          "docs": "الوثائق",
+          "crossing": "المعبر",
+          "time": "وقت الفحص"
+        },
+        "ruleNote": "تُعاد قراءة القواعد على القياسات أدناه: حمّى ≥ 38 أو أكسجين < 92 ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.",
+        "reassessBtnLabel": "إعادة التقييم",
+        "loading": "جارٍ...",
+        "fields": {
+          "temp": "درجة الحرارة (°C)",
+          "oxygen": "إشباع الأكسجين (%)"
+        },
+        "reassessed": "أُعيد تقييم الفحص وحُدِّث القرار",
+        "busy": "جارٍ..."
+      },
+      "vehicles": {
+        "title": "المركبات",
+        "subtitle": "{count} مركبة",
+        "searchPlaceholder": "بحث باللوحة أو الهيكل أو اسم السائق...",
+        "filterType": "نوع المركبة",
+        "emptyTitle": "لا توجد مركبات",
+        "emptyDescription": "سجّل المركبات العابرة مع بيانات السائق.",
+        "cols": {
+          "plate": "اللوحة",
+          "type": "النوع",
+          "model": "الطراز",
+          "driver": "السائق",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "vehicleInspections": {
+        "title": "تفتيش المركبات",
+        "subtitle": "{count} عملية تفتيش",
+        "searchPlaceholder": "بحث باللوحة أو الملاحظات...",
+        "filterOverall": "الحكم",
+        "emptyTitle": "لا توجد عمليات تفتيش",
+        "emptyDescription": "سجّل نتائج تفتيش المركبات.",
+        "cols": {
+          "plate": "اللوحة",
+          "type": "نوع التفتيش",
+          "cleanliness": "النظافة",
+          "pest": "الحشرات",
+          "overall": "الحكم",
+          "date": "التاريخ",
+          "inspector": "المفتش"
+        }
+      },
+      "cargo": {
+        "title": "تفتيش الشحنات",
+        "subtitle": "{count} شحنة",
+        "searchPlaceholder": "بحث برقم الإقرار أو الصنف أو المنشأ...",
+        "filterScope": "النطاق",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد شحنات",
+        "emptyDescription": "سجّل تفتيش الشحنات العامة والغذائية.",
+        "dialogTitle": "تسجيل قرار الشحنة",
+        "dialogNote": "يجمع النظام القرار من نتائج العيّنات المرتبطة. يمكنك تجاوزه بقرار صريح.",
+        "declaration": "الإقرار",
+        "decisionSamples": "احتساب من العيّنات",
+        "cols": {
+          "declaration": "رقم الإقرار",
+          "scope": "النطاق",
+          "product": "الصنف",
+          "origin": "المنشأ",
+          "plate": "اللوحة",
+          "status": "الحالة",
+          "decision": "القرار"
+        },
+        "note": "يجمع النظام القرار من نتائج العيّنات المرتبطة. يمكنك تجاوزه بقرار صريح.",
+        "reject": "رفض",
+        "hold": "حجز",
+        "calcFromSamples": "احتساب من العيّنات",
+        "declarationLabel": "الإقرار:",
+        "recorded": "تم تسجيل قرار الشحنة",
+        "failed": "تعذر تسجيل القرار"
+      },
+      "samples": {
+        "title": "العيّنات",
+        "subtitle": "{count} عيّنة",
+        "searchPlaceholder": "بحث بكود العيّنة أو نوعها...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد عيّنات",
+        "emptyDescription": "سجّل عيّنات الشحنات الغذائية والمياه.",
+        "cols": {
+          "code": "كود العيّنة",
+          "type": "نوع العيّنة",
+          "status": "الحالة",
+          "result": "النتيجة",
+          "crossing": "المعبر",
+          "collectedBy": "المسحوب",
+          "collectedAt": "التاريخ"
+        }
+      },
+      "quarantine": {
+        "title": "حالات الحجر",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث برقم الحالة أو الاسم...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد حالات حجر",
+        "emptyDescription": "سجّل حالات الحجر الصحي مع المتابعة.",
+        "cols": {
+          "caseNo": "رقم الحالة",
+          "person": "الحالة",
+          "entryAt": "تاريخ الدخول",
+          "duration": "المدة",
+          "expectedEnd": "النهاية المتوقعة",
+          "phase": "المرحلة",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "isolation": {
+        "title": "حالات العزل",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث بالاسم أو رقم الحالة...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد حالات عزل",
+        "emptyDescription": "إدارة العزل الصحي مع المراقبة اليومية.",
+        "cols": {
+          "caseNo": "رقم الحالة",
+          "person": "المريض",
+          "diagnosis": "التشخيص",
+          "admittedAt": "تاريخ الدخول",
+          "facility": "المرفق",
+          "status": "الحالة",
+          "endDate": "تاريخ الخروج المتوقع"
+        }
+      },
+      "tracing": {
+        "title": "حالات التتبع",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث باسم الحالة الأصل...",
+        "emptyTitle": "لا توجد حالات تتبع",
+        "emptyDescription": "تُفتح حالة تتبع من تسجيل مخالفي وسيلة نقل وارد.",
+        "cols": {
+          "case": "الحالة الأصلية",
+          "exposed": "المخاطَب",
+          "passport": "الجواز",
+          "phone": "الهاتف",
+          "seat": "المقعد / الصلة",
+          "transport": "وسيلة النقل",
+          "followUp": "أيام المتابعة",
+          "started": "تاريخ البدء",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "emergencies": {
+        "title": "حالات الطوارئ",
+        "subtitle": "{count} حالة طوارئ",
+        "searchPlaceholder": "بحث بالعنوان أو النوع...",
+        "filterType": "النوع",
+        "filterSeverity": "الخطورة",
+        "emptyTitle": "لا توجد طوارئ",
+        "emptyDescription": "سجّل حالات الطوارئ الصحية على الفور.",
+        "cols": {
+          "title": "العنوان",
+          "type": "النوع",
+          "severity": "الخطورة",
+          "status": "الحالة",
+          "reportedAt": "وقت الإبلاغ",
+          "crossing": "المعبر",
+          "actionedBy": "تم الإجراء بواسطة"
+        }
+      },
+      "certificates": {
+        "title": "الشهادات",
+        "subtitle": "{count} شهادة",
+        "searchPlaceholder": "بحث برقم الشهادة أو الاسم...",
+        "filterType": "النوع",
+        "filterStatus": "الحالة",
+        "issue": "إصدار شهادة",
+        "emptyTitle": "لا توجد شهادات",
+        "emptyDescription": "أصدر شهادات الحجر الصحي للمسافرين أو الشحنات.",
+        "issueDialog": {
+          "title": "إصدار شهادة",
+          "type": "نوع الشهادة",
+          "traveler": "اسم المسافر",
+          "passport": "رقم الجواز",
+          "crossing": "المعبر",
+          "issuedBy": "المصدر",
+          "validDays": "مدة الصلاحية (يوم)",
+          "reason": "سبب الإصدار"
+        },
+        "cols": {
+          "number": "رقم الشهادة",
+          "type": "النوع",
+          "holder": "المُستفيد",
+          "passport": "الجواز",
+          "issuedAt": "تاريخ الإصدار",
+          "expiresAt": "تاريخ الانتهاء",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        },
+        "exported": "تم تصدير الشهادات",
+        "selectCrossing": "اختر المعبر أولاً",
+        "issued": "صدرت الشهادة {number}",
+        "issueFailed": "تعذر إصدار الشهادة"
+      },
+      "decisions": {
+        "title": "القرارات",
+        "subtitle": "{count} قرار",
+        "searchPlaceholder": "بحث بالموضوع أو القرار...",
+        "filterType": "النوع",
+        "emptyTitle": "لا توجد قرارات",
+        "emptyDescription": "قرارات الحجر الصحي ومسارات الاعتراض.",
+        "cols": {
+          "ref": "رقم المرجع",
+          "subject": "الموضوع",
+          "type": "النوع",
+          "outcome": "النتيجة",
+          "decidedAt": "تاريخ القرار",
+          "decidedBy": "صادر عن",
+          "crossing": "المعبر"
+        },
+        "exported": "تم تصدير القرارات"
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "subtitle": "{count} إشعار",
+        "searchPlaceholder": "بحث بالعنوان...",
+        "filterType": "النوع",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد إشعارات",
+        "emptyDescription": "إشعارات الطوارئ والتذكير.",
+        "cols": {
+          "title": "العنوان",
+          "type": "النوع",
+          "channel": "القناة",
+          "status": "الحالة",
+          "sentAt": "وقت الإرسال",
+          "recipients": "المستلمون"
+        },
+        "exported": "تم تصدير الإشعارات"
+      },
+      "statistics": {
+        "title": "الحصيلة اليومية",
+        "subtitle": "إحصائيات يومية حسب المعبر",
+        "filterDate": "التاريخ",
+        "emptyTitle": "لا توجد إحصائيات",
+        "emptyDescription": "يتم توليد الحصيلة اليومية تلقائياً أو يدوياً.",
+        "refresh": "تحديث الحصيلة",
+        "cols": {
+          "date": "التاريخ",
+          "crossing": "المعبر",
+          "travelers": "المسافرون",
+          "vehicles": "المركبات",
+          "declarations": "الإقرارات",
+          "screenings": "الفحوصات",
+          "suspected": "مشتبه به",
+          "quarantine": "حجر",
+          "isolation": "عزل",
+          "cargo": "شحنات",
+          "certificates": "شهادات"
+        },
+        "refreshing": "جارٍ التحديث...",
+        "emptyRefresh": "اضغط «تحديث حصيلة اليوم» لحساب أرقام اليوم من سجلات الفحص والشحنات.",
+        "minutesUnit": "د",
+        "refreshed": "تم تحديث حصيلة اليوم لكل المعابر",
+        "refreshFailed": "تعذّر تحديث الإحصاءات — قد تحتاج صلاحية لوحة القيادة"
+      },
+      "statusLabels": {
+        "yes": "نعم",
+        "no": "لا",
+        "operational": "يعمل",
+        "stopped": "متوقف",
+        "active": "نشط",
+        "ended": "منتهٍ",
+        "ongoing": "مستمر"
+      }
+    },
+    "portHealth": {
+      "nav": {
+        "dashboard": "لوحة المؤشرات",
+        "seaports": "الموانئ",
+        "vessels": "السفن",
+        "crew": "الطاقم",
+        "passengers": "الركاب",
+        "declarations": "الإقرار الصحي",
+        "inspections": "التفتيش الصحي",
+        "shipInspection": "تفتيش ميداني",
+        "foodWater": "الأغذية والمياه",
+        "sanitation": "شهادات صحة السفن",
+        "isolation": "العزل والحجر",
+        "surveillance": "الترصد الوبائي",
+        "vectors": "النواقل",
+        "cargo": "الشحنات",
+        "waste": "النفايات",
+        "emergencies": "الطوارئ",
+        "healthCerts": "الشهادات"
+      },
+      "title": "صحة الموانئ",
+      "subtitle": "إدارة الحجر الصحي في الموانئ البحرية — السفن والطاقم والركاب والشحنات والتفتيش",
+      "eyebrow": "العمليات",
+      "dashboard": {
+        "eyebrow": "لوحة المؤشرات — صحة الموانئ",
+        "welcome": "مرحباً، ",
+        "supervisor": "المشرف",
+        "avatar": "م",
+        "live": "مباشر"
+      },
+      "kpi": {
+        "seaports": "الموانئ البحرية",
+        "totalVessels": "إجمالي السفن",
+        "arrivedVessels": "سفن وصلت",
+        "inspections": "عمليات التفتيش",
+        "certificatesIssued": "شهادات صادرة",
+        "suspectedCases": "حالات مشتبه بها",
+        "activeIsolation": "عزل نشط",
+        "openEmergencies": "طوارئ مفتوحة"
+      },
+      "cols": {
+        "vessel": "السفينة",
+        "vesselName": "اسم السفينة",
+        "imo": "رقم IMO",
+        "flag": "العلم",
+        "company": "الشركة",
+        "type": "النوع",
+        "status": "الحالة",
+        "arrival": "الوصول",
+        "code": "الكود",
+        "port": "الميناء",
+        "location": "الموقع",
+        "capacity": "الطاقة الاستيعابية",
+        "crewMember": "عضو الطاقم",
+        "nationality": "الجنسية",
+        "jobTitle": "الوظيفة",
+        "healthStatus": "الحالة الصحية",
+        "temperature": "الحرارة",
+        "passenger": "الراكب",
+        "cabin": "المقصورة",
+        "captain": "الربان",
+        "date": "التاريخ",
+        "illnesses": "حالات مرضية",
+        "deaths": "الوفيات",
+        "actions": "الإجراءات",
+        "review": "المراجعة",
+        "inspector": "المفتش",
+        "cleanliness": "النظافة",
+        "overallStatus": "الحالة العامة",
+        "certificate": "الشهادة",
+        "inspectionDate": "تاريخ التفتيش",
+        "foodSafety": "سلامة الأغذية",
+        "samples": "العينات",
+        "sampleStatus": "حالة العينات",
+        "certificateNumber": "رقم الشهادة",
+        "issueDate": "الإصدار",
+        "expiryDate": "الانتهاء",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "disease": "المرض",
+        "report": "البلاغ",
+        "internationalAlert": "تنبيه دولي",
+        "evidence": "دلائل",
+        "treatment": "المكافحة",
+        "campaign": "الحملة",
+        "declarationNumber": "رقم الإقرار",
+        "originCountry": "بلد المنشأ",
+        "inspectionStatus": "حالة الفحص",
+        "decision": "القرار",
+        "medicalWaste": "النفايات الطبية",
+        "wastewater": "مياه الصرف",
+        "title": "العنوان",
+        "severity": "الخطورة",
+        "vesselRestricted": "تقييد الحركة"
+      },
+      "tables": {
+        "vessels": {
+          "title": "السفن",
+          "subtitle": "{count} سفينة",
+          "searchPlaceholder": "بحث بالاسم أو رقم IMO أو العلم...",
+          "emptyTitle": "لا توجد سفن",
+          "emptyDescription": "السفن القادمة والمغادرة تظهر هنا",
+          "exported": "تم تصدير السفن"
+        },
+        "seaports": {
+          "title": "الموانئ البحرية",
+          "subtitle": "{count} ميناء",
+          "searchPlaceholder": "بحث بالاسم أو الكود...",
+          "emptyTitle": "لا توجد موانئ",
+          "emptyDescription": "موانئ بورتسودان وسواكن ومحطات الحجر الصحي تظهر هنا"
+        },
+        "crew": {
+          "title": "أفراد الطاقم",
+          "subtitle": "{count} فرد",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد طاقم",
+          "emptyDescription": "أفراد طاقم السفن يظهرون هنا"
+        },
+        "passengers": {
+          "title": "الركاب",
+          "subtitle": "{count} راكب",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد ركاب",
+          "emptyDescription": "ركاب السفن يظهرون هنا"
+        },
+        "declarations": {
+          "title": "الإقرارات الصحية البحرية",
+          "subtitle": "{count} إقرار",
+          "searchPlaceholder": "بحث بالسفينة أو الربان...",
+          "emptyTitle": "لا توجد إقرارات",
+          "emptyDescription": "الإقرارات الصحية (MDH) المقدمة من ربان السفينة تظهر هنا"
+        },
+        "inspections": {
+          "title": "التفتيش الصحي للسفن",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات",
+          "emptyDescription": "تفتيش أماكن الإقامة والمطابخ والمخازن والعيادة تظهر هنا"
+        },
+        "foodWater": {
+          "title": "تفتيش الأغذية والمياه",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات أغذية",
+          "emptyDescription": "تفتيش الأغذية ومياه الشرب على متن السفن يظهر هنا"
+        },
+        "sanitation": {
+          "title": "شهادات صحة السفن",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات SSCC و SSCEC تظهر هنا"
+        },
+        "isolation": {
+          "title": "العزل والحجر الصحي",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالاسم أو السفينة...",
+          "emptyTitle": "لا توجد سجلات عزل",
+          "emptyDescription": "حالات العزل والحجر الصحي على السفن تظهر هنا"
+        },
+        "surveillance": {
+          "title": "الترصد الوبائي",
+          "subtitle": "{count} حالة",
+          "searchPlaceholder": "بحث بالمرض أو الحالة...",
+          "emptyTitle": "لا توجد حالات",
+          "emptyDescription": "حالات الترصد الوبائي في الموانئ تظهر هنا"
+        },
+        "vectors": {
+          "title": "ترصد ومكافحة النواقل",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالسفينة أو الحملة...",
+          "emptyTitle": "لا توجد سجلات نواقل",
+          "emptyDescription": "ترصد ومكافحة البعوض والقوارض والحشرات تظهر هنا"
+        },
+        "cargo": {
+          "title": "تفتيش الشحنات",
+          "subtitle": "{count} شحنة",
+          "searchPlaceholder": "بحث برقم الإقرار أو المنشأ...",
+          "emptyTitle": "لا توجد شحنات",
+          "emptyDescription": "تفتيش الأغذية والأدوية والمواد الكيميائية على السفن يظهر هنا"
+        },
+        "waste": {
+          "title": "تفتيش النفايات",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات نفايات",
+          "emptyDescription": "النفايات الطبية والغذائية ومياه الصرف على السفن تظهر هنا"
+        },
+        "emergencies": {
+          "title": "الطوارئ الصحية",
+          "subtitle": "{count} طوارئ",
+          "searchPlaceholder": "بحث بالعنوان...",
+          "emptyTitle": "لا توجد طوارئ",
+          "emptyDescription": "البلاغات الصحية والاستجابة السريعة في الموانئ تظهر هنا"
+        },
+        "healthCerts": {
+          "title": "الشهادات الصحية",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات صحة السفينة والتفتيش والإفراج الصحي تظهر هنا"
+        }
+      },
+      "labels": {
+        "compliant": "مطابق",
+        "notCompliant": "غير مطابق",
+        "done": "نُنفذت"
+      },
+      "actions": {
+        "startReview": "بدء المراجعة",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "rejectReason": "سبب الرفض (مطلوب)",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "reviewStarted": "تم تحويل الإقرار قيد المراجعة",
+        "approved": "تم اعتماد الإقرار",
+        "rejected": "تم رفض الإقرار",
+        "failed": "تعذّر تنفيذ الإجراء — تحقق من الحالة الحالية والصلاحيات"
+      }
+    },
+    "shipInspection": {
+      "title": "استمارة التفتيش الصحي الميداني"
+    },
+    "airport": {
+      "title": "صحة المطارات",
+      "subtitle": "إدارة فحوصات المسافرين وتفتيش الطائرات وسجلات الأطقم في المطارات",
+      "eyebrow": "العمليات"
+    },
+    "inspector": {
+      "role": "مفتش الحجر الصحي — قسم صحة المطار"
+    },
+    "airportHealth": {
+      "title": "صحة المطارات والطيران",
+      "header": {
+        "brand": "صحة المطارات والطيران",
+        "subtitle": "نظام إدارة الحجر الصحي بالمطار",
+        "station": "مركز القيادة"
+      }
+    },
+    "common": {
+      "dashboard": "لوحة القيادة",
+      "sections": "أقسام اللوحة",
+      "yes": "نعم",
+      "no": "لا",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "search": "بحث",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "status": "الحالة"
+    },
+    "actions": {
+      "changeStatus": "تغيير حالة التشغيل",
+      "changeBorderStatus": "تغيير حالة المعبر",
+      "reassess": "إعادة التقييم بقياسات جديدة",
+      "reassessScreening": "إعادة تقييم الفحص",
+      "reassessDialog": "إعادة تقييم الفحص",
+      "recordCargoDecision": "تسجيل قرار الشحنة",
+      "issueCertificate": "إصدار شهادة"
+    },
+    "labels": {
+      "border": "المعبر",
+      "crossing": "المعبر",
+      "facility": "المرفق",
+      "shift": "الوردية",
+      "staff": "الكادر",
+      "traveler": "المسافر",
+      "declaration": "الإقرار",
+      "screening": "الفحص",
+      "vehicle": "المركبة",
+      "cargo": "الشحنة",
+      "sample": "العيّنة",
+      "quarantine": "الحجر",
+      "isolation": "العزل",
+      "emergency": "الطوارئ",
+      "certificate": "الشهادة",
+      "decision": "القرار",
+      "notification": "الإشعار",
+      "yes": "نعم",
+      "no": "لا",
+      "active": "نشط",
+      "continuous": "مستمر",
+      "all": "الكل",
+      "search": "بحث",
+      "filter": "تصفية",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "add": "إضافة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "view": "عرض",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "hold": "حجز",
+      "issue": "إصدار",
+      "loading": "جارٍ...",
+      "none": "—",
+      "code": "الكود"
+    },
+    "dialogs": {
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "confirm": "تأكيد"
+    },
+    "messages": {
+      "updated": "تم التحديث بنجاح",
+      "saved": "تم الحفظ بنجاح",
+      "error": "حدث خطأ",
+      "exported": "تم التصدير بنجاح"
+    },
+    "status": {
+      "verified": "مُتحقَّق",
+      "incomplete": "ناقصة"
+    }
   }
 }
