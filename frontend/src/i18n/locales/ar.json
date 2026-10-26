@@ -1852,6 +1852,187 @@
         "suspectedCases": "حالات مشتبه بها",
         "activeIsolation": "عزل نشط",
         "openEmergencies": "طوارئ مفتوحة"
+      },
+      "cols": {
+        "vessel": "السفينة",
+        "vesselName": "اسم السفينة",
+        "imo": "رقم IMO",
+        "flag": "العلم",
+        "company": "الشركة",
+        "type": "النوع",
+        "status": "الحالة",
+        "arrival": "الوصول",
+        "code": "الكود",
+        "port": "الميناء",
+        "location": "الموقع",
+        "capacity": "الطاقة الاستيعابية",
+        "crewMember": "عضو الطاقم",
+        "nationality": "الجنسية",
+        "jobTitle": "الوظيفة",
+        "healthStatus": "الحالة الصحية",
+        "temperature": "الحرارة",
+        "passenger": "الراكب",
+        "cabin": "المقصورة",
+        "captain": "الربان",
+        "date": "التاريخ",
+        "illnesses": "حالات مرضية",
+        "deaths": "الوفيات",
+        "actions": "الإجراءات",
+        "review": "المراجعة",
+        "inspector": "المفتش",
+        "cleanliness": "النظافة",
+        "overallStatus": "الحالة العامة",
+        "certificate": "الشهادة",
+        "inspectionDate": "تاريخ التفتيش",
+        "foodSafety": "سلامة الأغذية",
+        "samples": "العينات",
+        "sampleStatus": "حالة العينات",
+        "certificateNumber": "رقم الشهادة",
+        "issueDate": "الإصدار",
+        "expiryDate": "الانتهاء",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "disease": "المرض",
+        "report": "البلاغ",
+        "internationalAlert": "تنبيه دولي",
+        "evidence": "دلائل",
+        "treatment": "المكافحة",
+        "campaign": "الحملة",
+        "declarationNumber": "رقم الإقرار",
+        "originCountry": "بلد المنشأ",
+        "inspectionStatus": "حالة الفحص",
+        "decision": "القرار",
+        "medicalWaste": "النفايات الطبية",
+        "wastewater": "مياه الصرف",
+        "title": "العنوان",
+        "severity": "الخطورة",
+        "vesselRestricted": "تقييد الحركة"
+      },
+      "tables": {
+        "vessels": {
+          "title": "السفن",
+          "subtitle": "{count} سفينة",
+          "searchPlaceholder": "بحث بالاسم أو رقم IMO أو العلم...",
+          "emptyTitle": "لا توجد سفن",
+          "emptyDescription": "السفن القادمة والمغادرة تظهر هنا",
+          "exported": "تم تصدير السفن"
+        },
+        "seaports": {
+          "title": "الموانئ البحرية",
+          "subtitle": "{count} ميناء",
+          "searchPlaceholder": "بحث بالاسم أو الكود...",
+          "emptyTitle": "لا توجد موانئ",
+          "emptyDescription": "موانئ بورتسودان وسواكن ومحطات الحجر الصحي تظهر هنا"
+        },
+        "crew": {
+          "title": "أفراد الطاقم",
+          "subtitle": "{count} فرد",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد طاقم",
+          "emptyDescription": "أفراد طاقم السفن يظهرون هنا"
+        },
+        "passengers": {
+          "title": "الركاب",
+          "subtitle": "{count} راكب",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد ركاب",
+          "emptyDescription": "ركاب السفن يظهرون هنا"
+        },
+        "declarations": {
+          "title": "الإقرارات الصحية البحرية",
+          "subtitle": "{count} إقرار",
+          "searchPlaceholder": "بحث بالسفينة أو الربان...",
+          "emptyTitle": "لا توجد إقرارات",
+          "emptyDescription": "الإقرارات الصحية (MDH) المقدمة من ربان السفينة تظهر هنا"
+        },
+        "inspections": {
+          "title": "التفتيش الصحي للسفن",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات",
+          "emptyDescription": "تفتيش أماكن الإقامة والمطابخ والمخازن والعيادة تظهر هنا"
+        },
+        "foodWater": {
+          "title": "تفتيش الأغذية والمياه",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات أغذية",
+          "emptyDescription": "تفتيش الأغذية ومياه الشرب على متن السفن يظهر هنا"
+        },
+        "sanitation": {
+          "title": "شهادات صحة السفن",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات SSCC و SSCEC تظهر هنا"
+        },
+        "isolation": {
+          "title": "العزل والحجر الصحي",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالاسم أو السفينة...",
+          "emptyTitle": "لا توجد سجلات عزل",
+          "emptyDescription": "حالات العزل والحجر الصحي على السفن تظهر هنا"
+        },
+        "surveillance": {
+          "title": "الترصد الوبائي",
+          "subtitle": "{count} حالة",
+          "searchPlaceholder": "بحث بالمرض أو الحالة...",
+          "emptyTitle": "لا توجد حالات",
+          "emptyDescription": "حالات الترصد الوبائي في الموانئ تظهر هنا"
+        },
+        "vectors": {
+          "title": "ترصد ومكافحة النواقل",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالسفينة أو الحملة...",
+          "emptyTitle": "لا توجد سجلات نواقل",
+          "emptyDescription": "ترصد ومكافحة البعوض والقوارض والحشرات تظهر هنا"
+        },
+        "cargo": {
+          "title": "تفتيش الشحنات",
+          "subtitle": "{count} شحنة",
+          "searchPlaceholder": "بحث برقم الإقرار أو المنشأ...",
+          "emptyTitle": "لا توجد شحنات",
+          "emptyDescription": "تفتيش الأغذية والأدوية والمواد الكيميائية على السفن يظهر هنا"
+        },
+        "waste": {
+          "title": "تفتيش النفايات",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات نفايات",
+          "emptyDescription": "النفايات الطبية والغذائية ومياه الصرف على السفن تظهر هنا"
+        },
+        "emergencies": {
+          "title": "الطوارئ الصحية",
+          "subtitle": "{count} طوارئ",
+          "searchPlaceholder": "بحث بالعنوان...",
+          "emptyTitle": "لا توجد طوارئ",
+          "emptyDescription": "البلاغات الصحية والاستجابة السريعة في الموانئ تظهر هنا"
+        },
+        "healthCerts": {
+          "title": "الشهادات الصحية",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات صحة السفينة والتفتيش والإفراج الصحي تظهر هنا"
+        }
+      },
+      "labels": {
+        "compliant": "مطابق",
+        "notCompliant": "غير مطابق",
+        "done": "نُنفذت"
+      },
+      "actions": {
+        "startReview": "بدء المراجعة",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "rejectReason": "سبب الرفض (مطلوب)",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "reviewStarted": "تم تحويل الإقرار قيد المراجعة",
+        "approved": "تم اعتماد الإقرار",
+        "rejected": "تم رفض الإقرار",
+        "failed": "تعذّر تنفيذ الإجراء — تحقق من الحالة الحالية والصلاحيات"
       }
     },
     "shipInspection": {

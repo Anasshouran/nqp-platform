@@ -1434,7 +1434,8 @@
         },
         "actions": {
           "changeStatus": "Change Status"
-        }
+        },
+        "exported": "Border crossing data exported"
       },
       "facilities": {
         "title": "Border Facilities",
@@ -1814,23 +1815,23 @@
     },
     "portHealth": {
       "nav": {
-        "dashboard": "لوحة المؤشرات",
-        "seaports": "الموانئ",
-        "vessels": "السفن",
-        "crew": "الطاقم",
-        "passengers": "الركاب",
-        "declarations": "الإقرار الصحي",
-        "inspections": "التفتيش الصحي",
-        "shipInspection": "تفتيش ميداني",
-        "foodWater": "الأغذية والمياه",
-        "sanitation": "شهادات صحة السفن",
-        "isolation": "العزل والحجر",
-        "surveillance": "الترصد الوبائي",
-        "vectors": "النواقل",
-        "cargo": "الشحنات",
-        "waste": "النفايات",
-        "emergencies": "الطوارئ",
-        "healthCerts": "الشهادات"
+        "dashboard": "Dashboard",
+        "seaports": "Seaports",
+        "vessels": "Vessels",
+        "crew": "Crew",
+        "passengers": "Passengers",
+        "declarations": "Health Declarations",
+        "inspections": "Health Inspections",
+        "shipInspection": "Field Inspection",
+        "foodWater": "Food & Water",
+        "sanitation": "Sanitation Certificates",
+        "isolation": "Isolation & Quarantine",
+        "surveillance": "Epidemiological Surveillance",
+        "vectors": "Vectors",
+        "cargo": "Cargo",
+        "waste": "Waste",
+        "emergencies": "Emergencies",
+        "healthCerts": "Certificates"
       },
       "title": "Port Health",
       "subtitle": "Port health management",
@@ -1851,6 +1852,187 @@
         "suspectedCases": "Suspected Cases",
         "activeIsolation": "Active Isolation",
         "openEmergencies": "Open Emergencies"
+      },
+      "cols": {
+        "vessel": "Vessel",
+        "vesselName": "Vessel Name",
+        "imo": "IMO No.",
+        "flag": "Flag",
+        "company": "Shipping Company",
+        "type": "Type",
+        "status": "Status",
+        "arrival": "Arrival",
+        "code": "Code",
+        "port": "Port",
+        "location": "Location",
+        "capacity": "Capacity",
+        "crewMember": "Crew Member",
+        "nationality": "Nationality",
+        "jobTitle": "Job Title",
+        "healthStatus": "Health Status",
+        "temperature": "Temperature",
+        "passenger": "Passenger",
+        "cabin": "Cabin",
+        "captain": "Captain",
+        "date": "Date",
+        "illnesses": "Illnesses On Board",
+        "deaths": "Deaths",
+        "actions": "Actions",
+        "review": "Review",
+        "inspector": "Inspector",
+        "cleanliness": "Cleanliness",
+        "overallStatus": "Overall Status",
+        "certificate": "Certificate",
+        "inspectionDate": "Inspection Date",
+        "foodSafety": "Food Safety",
+        "samples": "Samples",
+        "sampleStatus": "Sample Status",
+        "certificateNumber": "Certificate No.",
+        "issueDate": "Issue Date",
+        "expiryDate": "Expiry Date",
+        "startDate": "Start",
+        "endDate": "End",
+        "disease": "Disease",
+        "report": "Report",
+        "internationalAlert": "International Alert",
+        "evidence": "Evidence",
+        "treatment": "Control Applied",
+        "campaign": "Campaign",
+        "declarationNumber": "Declaration No.",
+        "originCountry": "Country of Origin",
+        "inspectionStatus": "Inspection Status",
+        "decision": "Decision",
+        "medicalWaste": "Medical Waste",
+        "wastewater": "Wastewater",
+        "title": "Title",
+        "severity": "Severity",
+        "vesselRestricted": "Movement Restricted"
+      },
+      "tables": {
+        "vessels": {
+          "title": "Vessels",
+          "subtitle": "{count} vessels",
+          "searchPlaceholder": "Search by name, IMO or flag...",
+          "emptyTitle": "No vessels",
+          "emptyDescription": "Departing and arriving vessels appear here",
+          "exported": "Vessels exported"
+        },
+        "seaports": {
+          "title": "Seaports",
+          "subtitle": "{count} ports",
+          "searchPlaceholder": "Search by name or code...",
+          "emptyTitle": "No ports",
+          "emptyDescription": "Port Sudan, Suakin and quarantine stations appear here"
+        },
+        "crew": {
+          "title": "Crew Members",
+          "subtitle": "{count} crew",
+          "searchPlaceholder": "Search by name or passport...",
+          "emptyTitle": "No crew",
+          "emptyDescription": "Ship crew members appear here"
+        },
+        "passengers": {
+          "title": "Passengers",
+          "subtitle": "{count} passengers",
+          "searchPlaceholder": "Search by name or passport...",
+          "emptyTitle": "No passengers",
+          "emptyDescription": "Ship passengers appear here"
+        },
+        "declarations": {
+          "title": "Maritime Health Declarations",
+          "subtitle": "{count} declarations",
+          "searchPlaceholder": "Search by vessel or captain...",
+          "emptyTitle": "No declarations",
+          "emptyDescription": "Health declarations (MDH) submitted by captains appear here"
+        },
+        "inspections": {
+          "title": "Ship Health Inspections",
+          "subtitle": "{count} inspections",
+          "searchPlaceholder": "Search by vessel...",
+          "emptyTitle": "No inspections",
+          "emptyDescription": "Accommodation, kitchen, store and clinic inspections appear here"
+        },
+        "foodWater": {
+          "title": "Food & Water Inspections",
+          "subtitle": "{count} inspections",
+          "searchPlaceholder": "Search by vessel...",
+          "emptyTitle": "No food inspections",
+          "emptyDescription": "Food and drinking water inspections on vessels appear here"
+        },
+        "sanitation": {
+          "title": "Ship Sanitation Certificates",
+          "subtitle": "{count} certificates",
+          "searchPlaceholder": "Search by certificate number...",
+          "emptyTitle": "No certificates",
+          "emptyDescription": "SSCC and SSCEC certificates appear here"
+        },
+        "isolation": {
+          "title": "Isolation & Quarantine",
+          "subtitle": "{count} records",
+          "searchPlaceholder": "Search by name or vessel...",
+          "emptyTitle": "No isolation records",
+          "emptyDescription": "Isolation and quarantine cases on vessels appear here"
+        },
+        "surveillance": {
+          "title": "Epidemiological Surveillance",
+          "subtitle": "{count} cases",
+          "searchPlaceholder": "Search by disease or case...",
+          "emptyTitle": "No cases",
+          "emptyDescription": "Epidemiological surveillance cases in ports appear here"
+        },
+        "vectors": {
+          "title": "Vector Surveillance & Control",
+          "subtitle": "{count} records",
+          "searchPlaceholder": "Search by vessel or campaign...",
+          "emptyTitle": "No vector records",
+          "emptyDescription": "Mosquito, rodent and insect surveillance and control appear here"
+        },
+        "cargo": {
+          "title": "Cargo Inspections",
+          "subtitle": "{count} shipments",
+          "searchPlaceholder": "Search by declaration number or origin...",
+          "emptyTitle": "No shipments",
+          "emptyDescription": "Food, medicine and chemical cargo inspections appear here"
+        },
+        "waste": {
+          "title": "Waste Inspections",
+          "subtitle": "{count} inspections",
+          "searchPlaceholder": "Search by vessel...",
+          "emptyTitle": "No waste inspections",
+          "emptyDescription": "Medical, food waste and wastewater inspections appear here"
+        },
+        "emergencies": {
+          "title": "Health Emergencies",
+          "subtitle": "{count} emergencies",
+          "searchPlaceholder": "Search by title...",
+          "emptyTitle": "No emergencies",
+          "emptyDescription": "Health bulletins and rapid response at ports appear here"
+        },
+        "healthCerts": {
+          "title": "Health Certificates",
+          "subtitle": "{count} certificates",
+          "searchPlaceholder": "Search by certificate number...",
+          "emptyTitle": "No certificates",
+          "emptyDescription": "Vessel health, inspection and sanitary release certificates appear here"
+        }
+      },
+      "labels": {
+        "compliant": "Compliant",
+        "notCompliant": "Non-compliant",
+        "done": "Applied"
+      },
+      "actions": {
+        "startReview": "Start Review",
+        "approve": "Approve",
+        "reject": "Reject",
+        "rejectReason": "Reason for rejection (required)",
+        "confirmReject": "Confirm Rejection"
+      },
+      "messages": {
+        "reviewStarted": "Declaration moved to review",
+        "approved": "Declaration approved",
+        "rejected": "Declaration rejected",
+        "failed": "Failed to perform action — check current status and permissions"
       }
     },
     "shipInspection": {
@@ -1936,7 +2118,8 @@
       "hold": "Hold",
       "issue": "Issue",
       "loading": "Loading...",
-      "none": "—"
+      "none": "—",
+      "code": "Code"
     },
     "dialogs": {
       "close": "Close",
