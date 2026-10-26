@@ -312,9 +312,9 @@ describe('Borders/Airport language reactivity', () => {
     expect(await screen.findAllByText(/Airport Health/i)).toBeTruthy();
   });
 
-  it.skip('renders InspectorDashboard in Arabic and switches to English', async () => {
+  it('renders InspectorDashboard in Arabic and switches to English', async () => {
     const { rerender } = renderWithProviders(<InspectorDashboard />);
-    expect(await screen.findByText(/مفتش الحجر الصحي/i)).toBeTruthy();
+    expect(await screen.findAllByText(/مفتش الحجر الصحي/i)).toBeTruthy();
     await i18n.changeLanguage('en');
     rerender(
       <Provider store={createTestStore()}>
@@ -325,7 +325,7 @@ describe('Borders/Airport language reactivity', () => {
         </MemoryRouter>
       </Provider>,
     );
-    expect(await screen.findByText(/Quarantine Inspector/i)).toBeTruthy();
+    expect(await screen.findAllByText(/Quarantine Inspector/i)).toBeTruthy();
   });
 
   it('renders AirportHealthPage in Arabic and switches to English', async () => {
