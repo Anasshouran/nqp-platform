@@ -11,6 +11,27 @@ import MedicationPage from '../MedicationsPage';
 import RegisterPatientPage from '../RegisterPatientPage';
 import ClinicDashboardPage from '../ClinicDashboardPage';
 import VisitDetailPage from '../VisitDetailPage';
+import LabPage from '../LabPage';
+import { ReferralDecisionDrawer } from '../ReferralDecisionDrawer';
+import CertificatesPage from '../CertificatesPage';
+import HealthDashboardPage from '../../health/HealthDashboardPage';
+import ScreeningPage from '../../screening/ScreeningPage';
+
+vi.mock('../../../api/endpoints/public', async (importOriginal) => ({
+  ...(await importOriginal() as Record<string, unknown>),
+  getPublicStatistics: vi.fn().mockResolvedValue({ data: { data: { screenings: 0, certificates: 0, lab_samples: 0, diseases: 0, entry_points: 0, vector_activities: 0, notices: 0 } } }),
+}));
+vi.mock('../../../api/endpoints/notifications', async (importOriginal) => ({
+  ...(await importOriginal() as Record<string, unknown>),
+  getNotifications: vi.fn().mockResolvedValue({ data: { data: [] } }),
+}));
+vi.mock('../../../api/endpoints/screening', async (importOriginal) => ({
+  ...(await importOriginal() as Record<string, unknown>),
+  getScreenings: vi.fn().mockResolvedValue({ data: { data: { count: 0, results: [] } } }),
+  getLatestRisk: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  referScreening: vi.fn().mockResolvedValue({}),
+  createScreening: vi.fn().mockResolvedValue({}),
+}));
 
 vi.mock('../../../api/endpoints/laboratory', () => ({
   getDiseases: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
@@ -65,6 +86,10 @@ vi.mock('../../../api/endpoints/clinic', () => ({
   closeVisit: vi.fn().mockResolvedValue({}),
   updateIsolationStatus: vi.fn().mockResolvedValue({}),
   releaseIsolation: vi.fn().mockResolvedValue({}),
+  getClinicLabRequests: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  getCertificates: vi.fn().mockResolvedValue({ data: { data: { count: 0, results: [] } } }),
+  getCertificateQr: vi.fn().mockResolvedValue({ data: { data: { qr_png: '' } } }),
+  revokeCertificate: vi.fn().mockResolvedValue({ data: { data: {} } }),
 }));
 
 beforeAll(() => {
@@ -156,5 +181,72 @@ describe('Clinic pages language reactivity', () => {
     await i18n.changeLanguage('en');
     await screen.findByRole('button', { name: /Back to clinic/i });
     await screen.findByText(/Clinic visit/i);
+  });
+
+  it('LabPage renders AR and switches to EN', async () => {
+    render(wrap(<LabPage />));
+    await screen.findByRole('heading', { name: /طلبات المختبر|Lab Requests/i, level: 1 });
+    await i18n.changeLanguage('en');
+    await screen.findByRole('heading', { name: /Lab Requests/i, level: 1 });
+  });
+
+  it('ReferralDecisionDrawer renders AR and switches to EN', async () => {
+    const referral = {
+      id: 'r1',
+      traveler_name: 'مسافر تجريبي',
+      passport_number: 'P999',
+      queue_no: 3,
+      status: 'PRE_ACCEPT',
+      source: 'ENTRY_POINT',
+      body_temperature: null,
+      observed_symptoms: [],
+      officer_notes: '',
+      notes: '',
+      nationality_name: 'سوداني',
+      port_name: 'مطار الخرطوم',
+      created_at: '2026-01-01T08:00:00Z',
+    } as never;
+    render(
+      wrap(
+        <ReferralDecisionDrawer
+          open
+          referral={referral}
+          submitting={false}
+          acceptedVisit={null}
+          hasNext={false}
+          onClose={vi.fn()}
+          onAccept={vi.fn()}
+          onReject={vi.fn()}
+          onHold={vi.fn()}
+          onRelease={vi.fn()}
+          onOpenVisit={vi.fn()}
+          onProcessNext={vi.fn()}
+        />
+      )
+    );
+    await screen.findByText(/قرار الإحالة/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Referral decision/);
+  });
+
+  it('HealthDashboardPage renders AR and switches to EN', async () => {
+    render(wrap(<HealthDashboardPage />));
+    await screen.findByText(/لوحة الرعاية الصحية|Health Care Dashboard/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Health Care Dashboard/);
+  });
+
+  it('ScreeningPage renders AR and switches to EN', async () => {
+    render(wrap(<ScreeningPage />));
+    await screen.findByRole('heading', { name: /الفحوصات الصحية|Health screenings/i, level: 1 });
+    await i18n.changeLanguage('en');
+    await screen.findByRole('heading', { name: /Health screenings/i, level: 1 });
+  });
+
+  it('CertificatesPage renders AR and switches to EN', async () => {
+    render(wrap(<CertificatesPage />));
+    await screen.findByRole('heading', { name: /الشهادات الصحية|Health certificates/i, level: 1 });
+    await i18n.changeLanguage('en');
+    await screen.findByRole('heading', { name: /Health certificates/i, level: 1 });
   });
 });

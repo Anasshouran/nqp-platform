@@ -2428,414 +2428,675 @@
     }
   },
   "clinic": {
-    "common": {
-      "save": "Save",
-      "cancel": "Cancel",
-      "search": "Search",
-      "confirm": "Confirm",
-      "export": "Export",
-      "refresh": "Refresh",
-      "close": "Close",
-      "view": "View"
-    },
-    "clinic": {
-      "header": {
-        "title": "Clinic",
-        "subtitle": "Manage clinic referrals and visits efficiently",
-        "eyebrow": "Operations"
-      },
-      "tabs": {
-        "referrals": "Clinic Referrals",
-        "visits": "Clinic Visits"
-      },
-      "status": {
-        "registered": "Registered",
-        "triaged": "Triaged",
-        "examined": "Examined",
-        "laboratory": "Laboratory",
-        "decision": "Decision",
-        "certificate": "Certificate",
-        "closed": "Closed"
+    "certificates": {
+      "action": {
+        "ariaRevoke": "Revoke certificate",
+        "ariaView": "View certificate",
+        "print": "Print",
+        "revoke": "Revoke certificate",
+        "view": "View certificate"
       },
       "cols": {
-        "traveler": "Traveler",
-        "passport": "Passport",
-        "port": "Port",
+        "issuedAt": "Issued at",
+        "number": "Number",
         "status": "Status",
+        "traveler": "Traveler",
+        "type": "Type",
+        "validUntil": "Valid until"
+      },
+      "filters": {
+        "status": "Status"
+      },
+      "header": {
+        "subtitle": "Health certificates issued by quarantine clinics with managed verification",
+        "title": "Health certificates"
+      },
+      "print": {
+        "h1Suffix": "- Quarantine",
+        "h2": "Health certificate",
+        "orgFallback": "Federal Ministry of Health",
+        "qrAlt": "QR",
+        "rows": {
+          "content": "Contents",
+          "holder": "Certificate holder",
+          "issuedAt": "Issued at",
+          "issuer": "Issuing authority",
+          "no": "Certificate number",
+          "type": "Certificate type",
+          "validUntil": "Valid until",
+          "verdict": "Final recommendation"
+        },
+        "titlePrefix": "Health certificate - ",
+        "verifyPrefix": "Verify at: "
+      },
+      "revoke": {
+        "cancel": "Cancel",
+        "confirm": "Confirm revocation",
+        "confirmMessage": "Are you sure you want to revoke certificate «{{number}}»? It will no longer be valid for verification.",
+        "dialogTitle": "Revoke certificate",
+        "error": "Failed to revoke the certificate",
+        "success": "Certificate revoked"
+      },
+      "table": {
+        "emptyDescription": "Certificates are issued when the medical decision is made for visits",
+        "emptyTitle": "No certificates",
+        "searchPlaceholder": "Search by certificate number, name or passport...",
+        "subtitle": "{{count}} certificates",
+        "title": "Certificates"
+      },
+      "view": {
+        "contentPrefix": "Contents: ",
+        "holderPrefix": "Certificate holder: ",
+        "issuedBy": "Issued by {{clinic}} · {{at}}",
+        "qrAlt": "Verification QR code",
+        "title": "Health certificate {{number}}",
+        "typePrefix": "Type: ",
+        "validUntilPrefix": "Valid until: ",
+        "verdictPrefix": "Recommendation: ",
+        "verifyPrefix": "Verify: "
+      }
+    },
+    "clinic": {
+      "actions": {
+        "acceptReferral": "Accept Referral",
+        "closeVisit": "Close Visit",
+        "openVisit": "Open Visit",
+        "rejectReferral": "Reject Referral"
+      },
+      "cols": {
         "createdAt": "Created At",
         "doctor": "Doctor",
+        "openedAt": "Opened At",
+        "passport": "Passport",
         "phase": "Phase",
-        "openedAt": "Opened At"
+        "port": "Port",
+        "status": "Status",
+        "traveler": "Traveler"
+      },
+      "dialogs": {
+        "acceptReferralConfirm": "Accept Referral",
+        "acceptReferralMessage": "Referral for \"{{traveler}}\" will be accepted and a new clinic visit will be opened.",
+        "acceptReferralTitle": "Accept Referral",
+        "closeVisitConfirm": "Close Visit",
+        "closeVisitMessage": "Are you sure you want to close the visit for \"{{traveler}}\"? Closure will be recorded in the medical record and cannot be undone.",
+        "closeVisitTitle": "Close Visit",
+        "rejectReasonLabel": "Reason for rejection (optional)",
+        "rejectReferralConfirm": "Confirm Rejection",
+        "rejectReferralMessage": "Referral for \"{{traveler}}\" will be rejected. You can add a reason for rejection.",
+        "rejectReferralTitle": "Reject Referral"
+      },
+      "empty": {
+        "referralsDesc": "Clinic referrals from screenings appear here",
+        "referralsTitle": "No referrals",
+        "visitsDesc": "Visits appear when referrals are accepted",
+        "visitsTitle": "No visits"
+      },
+      "header": {
+        "eyebrow": "Operations",
+        "subtitle": "Manage clinic referrals and visits efficiently",
+        "title": "Clinic"
+      },
+      "messages": {
+        "acceptReferralFailed": "Failed to accept referral",
+        "closeVisitFailed": "Failed to close visit",
+        "referralAccepted": "Referral accepted and new clinic visit opened",
+        "referralRejected": "Referral rejected",
+        "referralsExported": "Referrals exported",
+        "rejectReferralFailed": "Failed to reject referral",
+        "visitClosed": "Visit closed"
       },
       "search": {
         "referrals": "Search by name or passport...",
         "visits": "Search by name or passport..."
       },
-      "empty": {
-        "referralsTitle": "No referrals",
-        "referralsDesc": "Clinic referrals from screenings appear here",
-        "visitsTitle": "No visits",
-        "visitsDesc": "Visits appear when referrals are accepted"
-      },
-      "actions": {
-        "acceptReferral": "Accept Referral",
-        "rejectReferral": "Reject Referral",
-        "openVisit": "Open Visit",
-        "closeVisit": "Close Visit"
-      },
-      "messages": {
-        "referralAccepted": "Referral accepted and new clinic visit opened",
-        "referralRejected": "Referral rejected",
-        "acceptReferralFailed": "Failed to accept referral",
-        "rejectReferralFailed": "Failed to reject referral",
-        "visitClosed": "Visit closed",
-        "closeVisitFailed": "Failed to close visit",
-        "referralsExported": "Referrals exported"
-      },
-      "dialogs": {
-        "acceptReferralTitle": "Accept Referral",
-        "acceptReferralMessage": "Referral for \"{{traveler}}\" will be accepted and a new clinic visit will be opened.",
-        "acceptReferralConfirm": "Accept Referral",
-        "rejectReferralTitle": "Reject Referral",
-        "rejectReferralMessage": "Referral for \"{{traveler}}\" will be rejected. You can add a reason for rejection.",
-        "rejectReferralConfirm": "Confirm Rejection",
-        "rejectReasonLabel": "Reason for rejection (optional)",
-        "closeVisitTitle": "Close Visit",
-        "closeVisitMessage": "Are you sure you want to close the visit for \"{{traveler}}\"? Closure will be recorded in the medical record and cannot be undone.",
-        "closeVisitConfirm": "Close Visit"
+      "status": {
+        "certificate": "Certificate",
+        "closed": "Closed",
+        "decision": "Decision",
+        "examined": "Examined",
+        "laboratory": "Laboratory",
+        "registered": "Registered",
+        "triaged": "Triaged"
       },
       "subtitles": {
         "referrals": "{{count}} referral(s)",
         "visits": "{{count}} visit(s)"
+      },
+      "tabs": {
+        "referrals": "Clinic Referrals",
+        "visits": "Clinic Visits"
+      }
+    },
+    "common": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Confirm",
+      "export": "Export",
+      "refresh": "Refresh",
+      "save": "Save",
+      "search": "Search",
+      "view": "View"
+    },
+    "dashboard": {
+      "a11y": {
+        "notifRegion": "Alerts and follow-up area"
+      },
+      "actions": {
+        "allVisits": "All Visits",
+        "manageReferrals": "Manage Referrals",
+        "refresh": "Refresh Data",
+        "registerCase": "Register Case",
+        "viewAll": "View All"
+      },
+      "charts": {
+        "activityAria": "Clinic activity over the last seven days",
+        "activityTitle": "Activity of the Last Seven Days",
+        "emptyActivityDesc": "The chart will update automatically as visits open and close",
+        "emptyActivityTitle": "No activity this week",
+        "emptyDesc": "Clinic referrals will appear here as soon as they arrive from pre-screening",
+        "emptyTitle": "No referrals yet",
+        "funnelAria": "Referral status distribution",
+        "funnelTitle": "Referral Funnel",
+        "lazyHint": "Scroll to it to show the charts linked to the current slice",
+        "lazyNote": "Includes the referral funnel and the last seven days activity",
+        "openedVsClosed": "Open vs closed visits",
+        "referralUnit": "referrals",
+        "srActivity": "Visit activity over the last seven days: {{items}}.",
+        "srActivitySep": ", ",
+        "srDay": "{{label}}: {{opened}} opened and {{closed}} closed",
+        "srDonut": "Referral status distribution — total {{total}}: {{items}}.",
+        "srDonutSep": ", "
+      },
+      "chips": {
+        "fever": "Fever",
+        "queueTurn": "Turn {{no}}"
+      },
+      "dialogs": {
+        "closeQuestion": "Are you sure you want to close visit «{{name}}»? The closure will be recorded in the medical record and cannot be undone.",
+        "closeVisit": "Close visit",
+        "rejectConfirm": "Confirm Rejection",
+        "rejectQuestion": "Are you sure you want to reject referral «{{name}}»? No clinic visit will be opened for this traveler.",
+        "rejectReason": "Reason for rejection (optional)"
+      },
+      "errors": {
+        "acceptReferralFailed": "Failed to accept the referral",
+        "closeVisitFailed": "Failed to close the visit",
+        "holdReferralFailed": "Failed to hold the referral",
+        "loadReportFailed": "Failed to load the clinic report",
+        "rejectReferralFailed": "Failed to reject the referral",
+        "releaseReferralFailed": "Failed to release the referral"
+      },
+      "footer": {
+        "brand": "National Quarantine Platform · Medical Clinic Dashboard",
+        "loading": "Loading...",
+        "updatedPrefix": "Last update: "
+      },
+      "header": {
+        "title": "Medical Clinic Dashboard"
+      },
+      "isolation": {
+        "cols": {
+          "health": "Health Status",
+          "started": "Start",
+          "type": "Isolation Type"
+        },
+        "emptyDesc": "Isolation and quarantine records will appear here",
+        "emptyTitle": "No isolation cases"
+      },
+      "kpi": {
+        "awaitingDecision": "Awaiting medical decision",
+        "closedVisits": "Closed Visits",
+        "completedToday": "Completed today",
+        "openVisits": "Open Visits",
+        "patients": "Patients",
+        "trend": {
+          "inIsolation": "{{count}} in isolation",
+          "inReview": "{{count}} under review",
+          "ofClosed": "{{count}} of them closed"
+        },
+        "yourDecisions": "Decision pending on you"
+      },
+      "messages": {
+        "referralAccepted": "Referral accepted and a new visit was opened",
+        "referralHeld": "Referral put on hold for review",
+        "referralRejected": "Referral rejected",
+        "referralReleased": "Referral returned to the waiting queue",
+        "visitClosed": "Visit closed",
+        "visitClosedBy": "Visit closed from the dashboard, confirmed by {{by}}"
+      },
+      "notif": {
+        "decisionVisits": {
+          "detail": "In the decision or certificate stage",
+          "label": "Visits awaiting the medical decision"
+        },
+        "decisions": {
+          "detail": "Review the screening, then accept, reject or hold",
+          "label": "Referrals awaiting your decision"
+        },
+        "held": {
+          "detail": "Held — returned to the queue or accepted as a visit",
+          "label": "Referrals under review"
+        },
+        "isolation": {
+          "detail": "Needs status reports, follow-up and exit documents",
+          "label": "Active isolation cases"
+        }
+      },
+      "phase": {
+        "certificate": "Certificate",
+        "closed": "Closed",
+        "decision": "Decision",
+        "examined": "Medical Exam",
+        "laboratory": "Laboratory",
+        "registered": "Registered",
+        "triaged": "Triaged"
+      },
+      "rail": {
+        "hintActive": "Active cases",
+        "hintPending": "Awaiting you",
+        "hintProgress": "In follow-up",
+        "isolation": "Isolation",
+        "report": "Units Report"
+      },
+      "referrals": {
+        "acceptAria": "Accept referral {{name}}",
+        "acceptReferral": "Accept referral",
+        "rejectAria": "Reject referral {{name}}",
+        "rejectReferral": "Reject referral",
+        "viewExamination": "View screening details",
+        "viewExaminationAria": "View referral details {{name}}"
+      },
+      "report": {
+        "certificates": "Issued Certificates",
+        "completedToday": "Completed Today",
+        "empty": "No report data for this unit yet.",
+        "isolated": "Isolation Cases",
+        "noData": "No data",
+        "phaseDistribution": "Phases: ",
+        "totalVisits": "Total Visits",
+        "uniquePatients": "Unique Patients"
+      },
+      "sections": {
+        "charts": "Charts & Activity",
+        "isolation": "Isolation & Quarantine",
+        "overview": "Overview",
+        "referrals": "Referral Decisions",
+        "report": "Clinic Units Report",
+        "visits": "Open Visits"
+      },
+      "table": {
+        "cols": {
+          "actions": "Actions",
+          "station": "Station · Time",
+          "status": "Status",
+          "symptoms": "Symptoms & Screening",
+          "traveler": "Traveler"
+        },
+        "completed": "Completed",
+        "emptyDesc": "New referrals arriving from screening stations will appear here",
+        "emptyTitle": "No referrals",
+        "noSymptoms": "No symptoms",
+        "openDecisionAria": "Open referral decision {{name}}"
+      },
+      "visits": {
+        "allChip": "All",
+        "closeVisitAria": "Close visit {{name}}",
+        "emptyNote": "No open visits right now — accepting a referral opens a new visit that appears here",
+        "emptyPhase": "No visits in this stage — choose another stage",
+        "openFile": "Open visit file",
+        "openFileAria": "Open visit {{name}}"
+      }
+    },
+    "healthDashboard": {
+      "chips": {
+        "lastUpdated": "Last updated: {{at}}"
+      },
+      "empty": {
+        "description": "Health indicators appear here when data is available from the platform.",
+        "title": "No indicators yet"
+      },
+      "errors": {
+        "load": "Failed to load health statistics"
+      },
+      "export": {
+        "metric": "Indicator",
+        "value": "Value"
+      },
+      "header": {
+        "subtitle": "Epidemiological surveillance, screening and sample indicators and outbreak registration — real data from the platform",
+        "title": "Health Care Dashboard"
+      },
+      "kpi": {
+        "certificatesHint": "Published",
+        "certificatesLabel": "Health certificates",
+        "diseasesHint": "Active",
+        "diseasesLabel": "Registered diseases",
+        "entryPointsHint": "Ports",
+        "entryPointsLabel": "Active entry points",
+        "labSamplesHint": "Recorded",
+        "labSamplesLabel": "Laboratory samples",
+        "screeningsHint": "Total registered",
+        "screeningsLabel": "Health screenings",
+        "vectorActivitiesHint": "Logged",
+        "vectorActivitiesLabel": "Vector control activities"
+      },
+      "loading": "Loading health indicators…",
+      "notifications": {
+        "subtitle": "Monitoring and sending alerts"
+      },
+      "sections": {
+        "alerts": "Alerts",
+        "cases": "Indicators",
+        "overview": "Overview"
+      },
+      "stats": {
+        "certificates": "Health certificates",
+        "diseases": "Registered diseases",
+        "entryPoints": "Entry points",
+        "labSamples": "Laboratory samples",
+        "notices": "Published notices",
+        "screenings": "Health screenings",
+        "vectorActivities": "Vector control activities"
+      },
+      "table": {
+        "emptyDescription": "No indicators matched the search",
+        "emptyTitle": "No indicators",
+        "metric": "Indicator",
+        "searchPlaceholder": "Search indicators...",
+        "subtitle": "{{count}} indicators",
+        "title": "Health indicators",
+        "value": "Value"
       }
     },
     "isolation": {
-      "header": {
-        "title": "Isolation & Quarantine",
-        "subtitle": "Monitor isolation cases in clinic, hospital and mandatory quarantine",
-        "eyebrow": "Operations"
+      "actions": {
+        "openVisit": "Open Visit",
+        "release": "Release",
+        "releaseAria": "Release",
+        "updateAria": "Update status",
+        "updateStatus": "Update Health Status",
+        "viewAria": "Open visit"
       },
       "chip": {
         "active": "Active"
       },
       "cols": {
-        "traveler": "Traveler",
+        "duration": "Duration (days)",
+        "healthStatus": "Health Status",
         "isolationType": "Isolation Type",
         "severity": "Severity",
-        "healthStatus": "Health Status",
         "startDate": "Start Date",
-        "duration": "Duration (days)",
-        "status": "Status"
+        "status": "Status",
+        "traveler": "Traveler"
       },
-      "search": {
-        "placeholder": "Search by name or passport..."
+      "dialogs": {
+        "checkoutMessage": "Discharging {{name}} and recording actual end date.",
+        "checkoutTitle": "Release from Isolation",
+        "dischargeSummaryLabel": "Discharge Summary",
+        "endDateLabel": "Actual End Date",
+        "releaseConfirm": "Release",
+        "updateStatusLabel": "Health Status",
+        "updateStatusTitle": "Update Health Status"
+      },
+      "empty": {
+        "desc": "Isolation records appear when cases are isolated from visits",
+        "title": "No isolation records"
       },
       "filters": {
         "status": "Status",
         "type": "Type"
       },
-      "empty": {
-        "title": "No isolation records",
-        "desc": "Isolation records appear when cases are isolated from visits"
-      },
-      "actions": {
-        "openVisit": "Open Visit",
-        "updateStatus": "Update Health Status",
-        "release": "Release",
-        "viewAria": "Open visit",
-        "updateAria": "Update status",
-        "releaseAria": "Release"
+      "header": {
+        "eyebrow": "Operations",
+        "subtitle": "Monitor isolation cases in clinic, hospital and mandatory quarantine",
+        "title": "Isolation & Quarantine"
       },
       "messages": {
-        "statusUpdated": "Health status updated",
-        "statusUpdateFailed": "Failed to update health status",
+        "releaseFailed": "Failed to release",
         "released": "Patient released from isolation",
-        "releaseFailed": "Failed to release"
+        "statusUpdateFailed": "Failed to update health status",
+        "statusUpdated": "Health status updated"
       },
-      "dialogs": {
-        "updateStatusTitle": "Update Health Status",
-        "updateStatusLabel": "Health Status",
-        "checkoutTitle": "Release from Isolation",
-        "checkoutMessage": "Discharging {{name}} and recording actual end date.",
-        "endDateLabel": "Actual End Date",
-        "dischargeSummaryLabel": "Discharge Summary",
-        "releaseConfirm": "Release"
+      "search": {
+        "placeholder": "Search by name or passport..."
       },
       "table": {
-        "title": "Isolation Records",
-        "subtitle": "{{count}} record(s)"
+        "subtitle": "{{count}} record(s)",
+        "title": "Isolation Records"
+      }
+    },
+    "lab": {
+      "aria": {
+        "table": "Lab requests"
+      },
+      "empty": {
+        "description": "Lab orders are created from within the clinic visit when a sample test is required",
+        "title": "No lab requests yet"
+      },
+      "errors": {
+        "load": "Failed to load lab requests"
+      },
+      "header": {
+        "subtitle": "Tracking lab requests issued from clinic visits",
+        "title": "Lab Requests"
+      },
+      "section": {
+        "title": "Lab requests"
+      },
+      "table": {
+        "barcode": "Barcode",
+        "disease": "Disease",
+        "open": "Open",
+        "priority": "Priority",
+        "sampleType": "Sample type",
+        "traveler": "Traveler"
+      },
+      "tooltip": {
+        "openVisit": "Open clinic visit"
       }
     },
     "medications": {
-      "header": {
-        "title": "Medications & Stock",
-        "subtitle": "List of medications available for dispensing from the port clinic",
-        "eyebrow": "Clinic"
+      "badges": {
+        "interactions": "{{count}} interactions"
       },
-      "sections": {
-        "items": "Medication Items"
+      "empty": {
+        "desc": "Clinic medications will appear here when added by administration",
+        "title": "No medications registered"
+      },
+      "error": {
+        "desc": "An error occurred while connecting to the server. Please try again later.",
+        "title": "Failed to load medications"
+      },
+      "header": {
+        "eyebrow": "Clinic",
+        "subtitle": "List of medications available for dispensing from the port clinic",
+        "title": "Medications & Stock"
       },
       "messages": {
         "loadFailed": "Failed to load medications"
       },
-      "error": {
-        "title": "Failed to load medications",
-        "desc": "An error occurred while connecting to the server. Please try again later."
+      "sections": {
+        "items": "Medication Items"
+      }
+    },
+    "referral": {
+      "accepted": {
+        "noNext": "No next referral",
+        "openVisit": "Open visit «{{name}}»",
+        "openedText": "A clinic visit was opened for traveler «{{name}}»",
+        "processNext": "Process next referral",
+        "stayInList": "Stay in the queue",
+        "title": "Referral accepted"
       },
-      "empty": {
-        "title": "No medications registered",
-        "desc": "Clinic medications will appear here when added by administration"
+      "actions": {
+        "accept": "Accept and open visit",
+        "hold": "Hold for review",
+        "reject": "Reject referral",
+        "release": "Release to waiting queue"
       },
-      "badges": {
-        "interactions": "{{count}} interactions"
+      "fields": {
+        "nationality": "Nationality",
+        "referredAt": "Referred at",
+        "source": "Source",
+        "temperature": "Temperature at screening"
+      },
+      "header": {
+        "title": "Referral decision"
+      },
+      "noSymptoms": "No symptoms recorded.",
+      "officerNotes": "Screening officer notes",
+      "queueChip": "Queue #{{no}}",
+      "referralNotes": "Referral notes",
+      "rejectReason": "Rejection reason (optional)",
+      "section": {
+        "screeningResults": "Screening results",
+        "traveler": "Traveler details"
+      },
+      "temperature": {
+        "noReading": "No reading"
+      },
+      "vitals": {
+        "fever": "Fever"
+      }
+    },
+    "registerPatient": {
+      "errors": {
+        "loadClinicsFailed": "Failed to load clinics",
+        "registrationFailed": "Failed to register the patient",
+        "searchFailed": "Failed to search for the patient"
+      },
+      "form": {
+        "clinicUnit": "Clinic Unit",
+        "dateOfBirth": "Date of Birth *",
+        "firstName": "First Name *",
+        "lastName": "Family Name *",
+        "mobile": "Mobile",
+        "nationality": "Nationality",
+        "notes": "Notes (reason for visit)",
+        "passport": "Passport Number *",
+        "submit": "Register Case and Add to Queue",
+        "submitting": "Registering…"
+      },
+      "header": {
+        "eyebrow": "Quarantine Clinic",
+        "subtitle": "Register a walk-in or pull up an existing patient file for the quarantine clinic",
+        "title": "Register New Case"
+      },
+      "messages": {
+        "patientRegistered": "{{name}} was registered with file number {{fileNo}}"
+      },
+      "qr": {
+        "alt": "Medical file QR",
+        "goToReferrals": "Go to Referrals",
+        "hint": "Scan the code to retrieve the patient file inside the clinic unit",
+        "print": "Print",
+        "title": "Unified Medical File"
+      },
+      "referral": {
+        "created": "A referral was created and is awaiting acceptance — you can accept it from the Referrals tab"
+      },
+      "search": {
+        "action": "Search",
+        "placeholder": "Passport number, file number MR-… or name",
+        "searching": "Searching…",
+        "select": "Select"
+      },
+      "sections": {
+        "newCase": "New Case Details",
+        "searchPrevious": "Search Previous Patient"
+      }
+    },
+    "screening": {
+      "action": {
+        "newScreening": "New screening",
+        "refer": "Refer",
+        "risk": "Risk",
+        "viewTraveler": "Traveler"
+      },
+      "cols": {
+        "notes": "Notes",
+        "oxygen": "O2 saturation",
+        "pressure": "Blood pressure",
+        "screenedAt": "Screened at",
+        "temperature": "Temperature",
+        "traveler": "Traveler"
+      },
+      "csv": {
+        "notes": "Notes",
+        "oxygen": "Oxygen saturation",
+        "passport": "Passport",
+        "pressure": "Pressure (sys/dia)",
+        "screenedAt": "Screened at",
+        "temperature": "Temperature",
+        "traveler": "Traveler"
+      },
+      "export": {
+        "error": "Failed to export screenings",
+        "success": "Exported {{count}} screenings"
+      },
+      "header": {
+        "subtitle": "Recording and reviewing health screenings at entry points and referral decisions",
+        "title": "Health screenings"
+      },
+      "refer": {
+        "confirm": "Refer",
+        "dialogTitle": "Refer to clinic",
+        "error": "Failed to complete the referral — make sure an entry point is linked to a clinic",
+        "message": "Confirm referring {{name}} to the linked clinic?",
+        "success": "Traveler referred to the clinic",
+        "title": "Refer to clinic"
+      },
+      "risk": {
+        "assessed": "Assessment: {{at}}",
+        "confirm": "OK",
+        "dialogTitle": "Risk assessment",
+        "loading": "Loading…",
+        "message": "Automatic risk assessment for this screening from the risk assessment system.",
+        "noAssessment": "No risk assessment for this screening yet",
+        "noAssessmentHint": "No risk assessment for this screening yet.",
+        "score": "Risk score: {{score}}",
+        "title": "Risk assessment"
+      },
+      "table": {
+        "emptyDescription": "Health screenings appear here when recorded from the screening screen",
+        "emptyTitle": "No screenings",
+        "searchPlaceholder": "Search by traveler name or passport number...",
+        "subtitle": "{{count}} screenings",
+        "title": "Screening log"
+      },
+      "tooltip": {
+        "viewTraveler": "View traveler profile"
       }
     },
     "shared": {
-      "isolationType": {
-        "hospital": "Hospital Transfer",
-        "clinicIsolation": "Clinic Isolation",
-        "quarantine": "Mandatory Quarantine"
+      "healthStatus": {
+        "critical": "Critical",
+        "improving": "Improving",
+        "stable": "Stable",
+        "worsening": "Worsening"
+      },
+      "isoSeverity": {
+        "critical": "Critical",
+        "high": "High",
+        "low": "Low",
+        "medium": "Medium"
       },
       "isolationStatus": {
         "active": "Active",
         "released": "Released",
         "removed": "Terminated/Cancelled"
       },
-      "healthStatus": {
-        "stable": "Stable",
-        "improving": "Improving",
-        "worsening": "Worsening",
-        "critical": "Critical"
+      "isolationType": {
+        "clinicIsolation": "Clinic Isolation",
+        "hospital": "Hospital Transfer",
+        "quarantine": "Mandatory Quarantine"
       },
-      "isoSeverity": {
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High",
-        "critical": "Critical"
+      "notifications": {
+        "empty": "No items require action right now",
+        "title": "Alerts & Follow-up"
       },
       "queueRail": {
         "label": "Dashboard sections"
-      },
-      "notifications": {
-        "title": "Alerts & Follow-up",
-        "empty": "No items require action right now"
-      }
-    },
-    "registerPatient": {
-      "header": {
-        "title": "Register New Case",
-        "subtitle": "Register a walk-in or pull up an existing patient file for the quarantine clinic",
-        "eyebrow": "Quarantine Clinic"
-      },
-      "sections": {
-        "searchPrevious": "Search Previous Patient",
-        "newCase": "New Case Details"
-      },
-      "search": {
-        "placeholder": "Passport number, file number MR-… or name",
-        "action": "Search",
-        "select": "Select",
-        "searching": "Searching…"
-      },
-      "form": {
-        "passport": "Passport Number *",
-        "firstName": "First Name *",
-        "lastName": "Family Name *",
-        "dateOfBirth": "Date of Birth *",
-        "nationality": "Nationality",
-        "clinicUnit": "Clinic Unit",
-        "mobile": "Mobile",
-        "notes": "Notes (reason for visit)",
-        "submitting": "Registering…",
-        "submit": "Register Case and Add to Queue"
-      },
-      "referral": {
-        "created": "A referral was created and is awaiting acceptance — you can accept it from the Referrals tab"
-      },
-      "qr": {
-        "title": "Unified Medical File",
-        "alt": "Medical file QR",
-        "hint": "Scan the code to retrieve the patient file inside the clinic unit",
-        "goToReferrals": "Go to Referrals",
-        "print": "Print"
-      },
-      "messages": {
-        "patientRegistered": "{{name}} was registered with file number {{fileNo}}"
-      },
-      "errors": {
-        "loadClinicsFailed": "Failed to load clinics",
-        "searchFailed": "Failed to search for the patient",
-        "registrationFailed": "Failed to register the patient"
-      }
-    },
-    "dashboard": {
-      "header": {
-        "title": "Medical Clinic Dashboard"
-      },
-      "actions": {
-        "registerCase": "Register Case",
-        "manageReferrals": "Manage Referrals",
-        "refresh": "Refresh Data",
-        "viewAll": "View All",
-        "allVisits": "All Visits"
-      },
-      "phase": {
-        "registered": "Registered",
-        "triaged": "Triaged",
-        "examined": "Medical Exam",
-        "laboratory": "Laboratory",
-        "decision": "Decision",
-        "certificate": "Certificate",
-        "closed": "Closed"
-      },
-      "sections": {
-        "overview": "Overview",
-        "referrals": "Referral Decisions",
-        "visits": "Open Visits",
-        "charts": "Charts & Activity",
-        "isolation": "Isolation & Quarantine",
-        "report": "Clinic Units Report"
-      },
-      "rail": {
-        "isolation": "Isolation",
-        "report": "Units Report",
-        "hintPending": "Awaiting you",
-        "hintProgress": "In follow-up",
-        "hintActive": "Active cases"
-      },
-      "errors": {
-        "loadReportFailed": "Failed to load the clinic report",
-        "acceptReferralFailed": "Failed to accept the referral",
-        "holdReferralFailed": "Failed to hold the referral",
-        "releaseReferralFailed": "Failed to release the referral",
-        "closeVisitFailed": "Failed to close the visit",
-        "rejectReferralFailed": "Failed to reject the referral"
-      },
-      "messages": {
-        "referralAccepted": "Referral accepted and a new visit was opened",
-        "referralHeld": "Referral put on hold for review",
-        "referralReleased": "Referral returned to the waiting queue",
-        "referralRejected": "Referral rejected",
-        "visitClosed": "Visit closed",
-        "visitClosedBy": "Visit closed from the dashboard, confirmed by {{by}}"
-      },
-      "notif": {
-        "decisions": {
-          "label": "Referrals awaiting your decision",
-          "detail": "Review the screening, then accept, reject or hold"
-        },
-        "held": {
-          "label": "Referrals under review",
-          "detail": "Held — returned to the queue or accepted as a visit"
-        },
-        "decisionVisits": {
-          "label": "Visits awaiting the medical decision",
-          "detail": "In the decision or certificate stage"
-        },
-        "isolation": {
-          "label": "Active isolation cases",
-          "detail": "Needs status reports, follow-up and exit documents"
-        }
-      },
-      "kpi": {
-        "yourDecisions": "Decision pending on you",
-        "openVisits": "Open Visits",
-        "closedVisits": "Closed Visits",
-        "awaitingDecision": "Awaiting medical decision",
-        "completedToday": "Completed today",
-        "patients": "Patients",
-        "trend": {
-          "inReview": "{{count}} under review",
-          "ofClosed": "{{count}} of them closed",
-          "inIsolation": "{{count}} in isolation"
-        }
-      },
-      "table": {
-        "emptyTitle": "No referrals",
-        "emptyDesc": "New referrals arriving from screening stations will appear here",
-        "cols": {
-          "traveler": "Traveler",
-          "symptoms": "Symptoms & Screening",
-          "station": "Station · Time",
-          "status": "Status",
-          "actions": "Actions"
-        },
-        "openDecisionAria": "Open referral decision {{name}}",
-        "noSymptoms": "No symptoms",
-        "completed": "Completed"
-      },
-      "chips": {
-        "fever": "Fever",
-        "queueTurn": "Turn {{no}}"
-      },
-      "referrals": {
-        "viewExamination": "View screening details",
-        "viewExaminationAria": "View referral details {{name}}",
-        "acceptReferral": "Accept referral",
-        "acceptAria": "Accept referral {{name}}",
-        "rejectReferral": "Reject referral",
-        "rejectAria": "Reject referral {{name}}"
-      },
-      "visits": {
-        "emptyNote": "No open visits right now — accepting a referral opens a new visit that appears here",
-        "allChip": "All",
-        "emptyPhase": "No visits in this stage — choose another stage",
-        "openFile": "Open visit file",
-        "openFileAria": "Open visit {{name}}",
-        "closeVisitAria": "Close visit {{name}}"
-      },
-      "dialogs": {
-        "closeVisit": "Close visit",
-        "rejectConfirm": "Confirm Rejection",
-        "rejectQuestion": "Are you sure you want to reject referral «{{name}}»? No clinic visit will be opened for this traveler.",
-        "rejectReason": "Reason for rejection (optional)",
-        "closeQuestion": "Are you sure you want to close visit «{{name}}»? The closure will be recorded in the medical record and cannot be undone."
-      },
-      "charts": {
-        "funnelAria": "Referral status distribution",
-        "funnelTitle": "Referral Funnel",
-        "emptyTitle": "No referrals yet",
-        "emptyDesc": "Clinic referrals will appear here as soon as they arrive from pre-screening",
-        "srDonut": "Referral status distribution — total {{total}}: {{items}}.",
-        "srDonutSep": ", ",
-        "referralUnit": "referrals",
-        "activityAria": "Clinic activity over the last seven days",
-        "activityTitle": "Activity of the Last Seven Days",
-        "openedVsClosed": "Open vs closed visits",
-        "emptyActivityTitle": "No activity this week",
-        "emptyActivityDesc": "The chart will update automatically as visits open and close",
-        "srActivity": "Visit activity over the last seven days: {{items}}.",
-        "srActivitySep": ", ",
-        "srDay": "{{label}}: {{opened}} opened and {{closed}} closed",
-        "lazyHint": "Scroll to it to show the charts linked to the current slice",
-        "lazyNote": "Includes the referral funnel and the last seven days activity"
-      },
-      "isolation": {
-        "emptyTitle": "No isolation cases",
-        "emptyDesc": "Isolation and quarantine records will appear here",
-        "cols": {
-          "type": "Isolation Type",
-          "health": "Health Status",
-          "started": "Start"
-        }
-      },
-      "report": {
-        "totalVisits": "Total Visits",
-        "isolated": "Isolation Cases",
-        "certificates": "Issued Certificates",
-        "uniquePatients": "Unique Patients",
-        "completedToday": "Completed Today",
-        "phaseDistribution": "Phases: ",
-        "noData": "No data",
-        "empty": "No report data for this unit yet."
-      },
-      "footer": {
-        "updatedPrefix": "Last update: ",
-        "loading": "Loading...",
-        "brand": "National Quarantine Platform · Medical Clinic Dashboard"
-      },
-      "a11y": {
-        "notifRegion": "Alerts and follow-up area"
       }
     },
     "visitDetail": {
@@ -2874,6 +3135,7 @@
         "typeLine": "Type: {{type}}",
         "validUntilPrefix": "Valid until: ",
         "verdict": {
+          "hospital": "Transfer to hospital",
           "isolation": "Isolation/quarantine",
           "release": "Release/pass"
         },
