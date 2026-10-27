@@ -9,11 +9,18 @@ import ClinicPage from '../ClinicPage';
 import IsolationPage from '../IsolationPage';
 import MedicationPage from '../MedicationsPage';
 import RegisterPatientPage from '../RegisterPatientPage';
+import ClinicDashboardPage from '../ClinicDashboardPage';
 
 vi.mock('../../../api/endpoints/clinic', () => ({
-  getReferrals: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
-  getClinicVisits: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
-  getIsolations: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
+  getReferrals: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getClinicVisits: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getIsolations: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getClinicDashboard: vi.fn().mockResolvedValue({
+    data: { data: { stats: { total_patients: 0, open_visits: 0, closed_visits: 0, completed_today: 0 } } },
+  }),
+  getClinicReport: vi.fn().mockResolvedValue({ data: { data: { stats: { by_phase: {} } } } }),
+  holdReferral: vi.fn().mockResolvedValue({}),
+  releaseReferral: vi.fn().mockResolvedValue({}),
   getClinicMedications: vi.fn().mockResolvedValue({ data: { data: [] } }),
   getClinics: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
   getCountries: vi.fn().mockResolvedValue({ data: { data: [] } }),
@@ -100,5 +107,12 @@ describe('Clinic pages language reactivity', () => {
     await screen.findByRole('heading', { name: /تسجيل حالة جديدة/i, level: 1 });
     await i18n.changeLanguage('en');
     await screen.findByRole('heading', { name: /Register New Case/i, level: 1 });
+  });
+
+  it('ClinicDashboardPage renders AR and switches to EN', async () => {
+    render(wrap(<ClinicDashboardPage />));
+    await screen.findByRole('heading', { name: /لوحة العيادة الطبية/i, level: 1 });
+    await i18n.changeLanguage('en');
+    await screen.findByRole('heading', { name: /Medical Clinic Dashboard/i, level: 1 });
   });
 });
