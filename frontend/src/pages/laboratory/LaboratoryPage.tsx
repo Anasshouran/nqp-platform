@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MoveToInboxIcon from '@mui/icons-material/Inventory2';
@@ -20,6 +20,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import {
   PageHeader,
   PageTabs,
@@ -38,33 +39,34 @@ import NqlisReports from './NqlisReports';
 import NqlisUsers from './NqlisUsers';
 
 const TABS = [
-  { key: '', label: 'لوحة المعلومات', icon: <DashboardIcon /> },
-  { key: 'reception', label: 'استقبال العينات', icon: <MoveToInboxIcon /> },
-  { key: 'samples', label: 'سجل العينات', icon: <ScienceIcon /> },
-  { key: 'worklist', label: 'قائمة العمل', icon: <AssignmentTurnedInIcon /> },
-  { key: 'critical', label: 'النتائج الحرجة', icon: <WarningAmberIcon /> },
-  { key: 'reagents', label: 'المواد والكواشف', icon: <MedicationIcon /> },
-  { key: 'equipment', label: 'الأجهزة', icon: <BiotechIcon /> },
-  { key: 'qc', label: 'مراقبة الجودة', icon: <FactCheckIcon /> },
-  { key: 'quality', label: 'الجودة وعدم المطابقة', icon: <RuleIcon /> },
-  { key: 'reports', label: 'التقارير', icon: <AssessmentIcon /> },
-  { key: 'users', label: 'المستخدمون', icon: <GroupIcon /> },
+  { key: '', labelKey: 'dashboard', icon: <DashboardIcon /> },
+  { key: 'reception', labelKey: 'reception', icon: <MoveToInboxIcon /> },
+  { key: 'samples', labelKey: 'samples', icon: <ScienceIcon /> },
+  { key: 'worklist', labelKey: 'worklist', icon: <AssignmentTurnedInIcon /> },
+  { key: 'critical', labelKey: 'critical', icon: <WarningAmberIcon /> },
+  { key: 'reagents', labelKey: 'reagents', icon: <MedicationIcon /> },
+  { key: 'equipment', labelKey: 'equipment', icon: <BiotechIcon /> },
+  { key: 'qc', labelKey: 'qc', icon: <FactCheckIcon /> },
+  { key: 'quality', labelKey: 'quality', icon: <RuleIcon /> },
+  { key: 'reports', labelKey: 'reports', icon: <AssessmentIcon /> },
+  { key: 'users', labelKey: 'users', icon: <GroupIcon /> },
 ];
 
 const SectorSwitcher = () => {
+  const { t } = useTranslation();
   const { activeSector, allowedSectors, setSector, isNational } = useLabSectors();
   if (!isNational) return null;
   const handleChange = (e: SelectChangeEvent<string>) => setSector(e.target.value);
 
   return (
     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-      <Chip icon={<ApartmentIcon sx={{ fontSize: 16 }} />} label="القطاع النشط" size="small" color="primary" variant="outlined" />
+      <Chip icon={<ApartmentIcon sx={{ fontSize: 16 }} />} label={t('laboratory.laboratoryPage.activeSector')} size="small" color="primary" variant="outlined" />
       <FormControl size="small" sx={{ minWidth: 200 }}>
-        <InputLabel id="lab-sector-label">القطاع</InputLabel>
+        <InputLabel id="lab-sector-label">{t('laboratory.laboratoryPage.sector')}</InputLabel>
         <Select
           labelId="lab-sector-label"
           value={activeSector ?? ''}
-          label="القطاع"
+          label={t('laboratory.laboratoryPage.sector')}
           onChange={handleChange}
         >
           {allowedSectors.map((s) => (
@@ -78,22 +80,23 @@ const SectorSwitcher = () => {
         </Select>
       </FormControl>
       <Typography variant="caption" color="text.secondary">
-        تُعرض البيانات الخاصة بهذا القطاع فقط
+        {t('laboratory.laboratoryPage.sectorOnly')}
       </Typography>
     </Stack>
   );
 };
 
 const LaboratoryPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const hash = location.hash.replace('#', '');
-  const initial = Math.max(0, TABS.findIndex((t) => t.key === hash));
+  const initial = Math.max(0, TABS.findIndex((tb) => tb.key === hash));
   const [tab, setTab] = useState(initial);
   const { activeSector } = useLabSectors();
 
   useEffect(() => {
-    const idx = TABS.findIndex((t) => t.key === hash);
+    const idx = TABS.findIndex((tb) => tb.key === hash);
     if (idx >= 0 && idx !== tab) setTab(idx);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hash]);
@@ -104,10 +107,20 @@ const LaboratoryPage = () => {
     navigate(key ? { hash: `#${key}` } : location.pathname, { replace: true });
   };
 
+  const tabs = useMemo(
+    () =>
+      TABS.map((tb, i) => ({
+        label: t(`laboratory.laboratoryPage.${tb.labelKey}`),
+        icon: tb.icon,
+        panel: PANELS[i],
+      })),
+    [t],
+  );
+
   return (
     <>
       <PageHeader
-        title="المعمل القومي للحجر الصحي"
+        title={t('laboratory.laboratoryPage.title')}
         subtitle="National Quarantine Laboratory Information System — NQLIS"
         eyebrow="NQLIS"
       />
@@ -118,7 +131,7 @@ const LaboratoryPage = () => {
         scrollButtons="auto"
         value={tab}
         onChange={handleChange}
-        tabs={TABS.map((t, i) => ({ label: t.label, icon: t.icon, panel: PANELS[i] }))}
+        tabs={tabs}
       />
     </>
   );
