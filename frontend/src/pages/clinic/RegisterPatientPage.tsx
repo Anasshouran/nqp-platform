@@ -21,9 +21,11 @@ import type { Clinic, ClinicPatient } from '../../types/clinic';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { GlassPanel, PersonAvatar, SectionHeader } from './ui';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RegisterPatientPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [countries, setCountries] = useState<Array<{ code: string; name_ar: string }>>([]);
@@ -52,10 +54,11 @@ const RegisterPatientPage = () => {
         setClinics(res.data.data.results);
         setClinic(res.data.data.results[0] ?? null);
       })
-      .catch((err) => notifyError(extractErrorMessage(err, 'تعذر تحميل العيادات')));
+      .catch((err) => notifyError(extractErrorMessage(err, t('clinic.registerPatient.errors.loadClinicsFailed'))));
     getCountries()
       .then((res) => setCountries(res.data.data))
       .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const countryOptions = useMemo(() => countries, [countries]);
@@ -65,7 +68,7 @@ const RegisterPatientPage = () => {
     setSearching(true);
     searchPatients(query.trim())
       .then((res) => setResults(res.data.data))
-      .catch((err) => notifyError(extractErrorMessage(err, 'تعذر البحث عن المريض')))
+      .catch((err) => notifyError(extractErrorMessage(err, t('clinic.registerPatient.errors.searchFailed'))))
       .finally(() => setSearching(false));
   };
 
@@ -101,38 +104,38 @@ const RegisterPatientPage = () => {
       .then((res) => {
         const traveler = res.data.data.traveler;
         setRegistered(res.data.data.referral.id);
-        notifySuccess(`تم تسجيل ${traveler.full_name} برقم ملف ${traveler.medical_file_no}`);
+        notifySuccess(t('clinic.registerPatient.messages.patientRegistered', { name: traveler.full_name, fileNo: traveler.medical_file_no }));
         getPatientQr(traveler.id)
           .then((qrRes) => setQr(qrRes.data.data))
           .catch(() => undefined);
       })
-      .catch((err) => notifyError(extractErrorMessage(err, 'تعذر تسجيل المريض')))
+      .catch((err) => notifyError(extractErrorMessage(err, t('clinic.registerPatient.errors.registrationFailed'))))
       .finally(() => setSubmitting(false));
   };
 
   return (
     <Box>
       <PageHeader
-        title="تسجيل حالة جديدة"
-        subtitle="تسجيل الحضور المباشر أو استدعاء ملف مريض سابق لعيادة الحجر الصحي"
-        eyebrow="عيادة الحجر الصحي"
+        title={t('clinic.registerPatient.header.title')}
+        subtitle={t('clinic.registerPatient.header.subtitle')}
+        eyebrow={t('clinic.registerPatient.header.eyebrow')}
       />
       <Grid container spacing={2.5}>
         <Grid item xs={12} lg={6}>
           <GlassPanel accent="linear-gradient(90deg, #0e7490, transparent)">
             <Box sx={{ p: { xs: 2, md: 3 } }}>
-              <SectionHeader icon={<PersonSearchIcon fontSize="small" />} title="البحث عن مريض سابق" />
+              <SectionHeader icon={<PersonSearchIcon fontSize="small" />} title={t('clinic.registerPatient.sections.searchPrevious')} />
               <Stack direction="row" spacing={1}>
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="رقم الجواز، رقم الملف MR-… أو الاسم"
+                  placeholder={t('clinic.registerPatient.search.placeholder')}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && doSearch()}
                 />
                 <Button variant="contained" onClick={doSearch} disabled={searching || !query.trim()}>
-                  بحث
+                  {t('clinic.registerPatient.search.action')}
                 </Button>
               </Stack>
               {results.length > 0 && (
@@ -163,7 +166,7 @@ const RegisterPatientPage = () => {
                         </Box>
                       </Stack>
                       <Button size="small" onClick={() => prefill(p)}>
-                        تحديد
+                        {t('clinic.registerPatient.search.select')}
                       </Button>
                     </Box>
                   ))}
@@ -171,7 +174,7 @@ const RegisterPatientPage = () => {
               )}
               {searching && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                  جاري البحث…
+                  {t('clinic.registerPatient.search.searching')}
                 </Typography>
               )}
             </Box>
@@ -181,12 +184,12 @@ const RegisterPatientPage = () => {
         <Grid item xs={12} lg={6}>
           <GlassPanel accent="linear-gradient(90deg, #0c7f6a, transparent)">
             <Box sx={{ p: { xs: 2, md: 3 } }}>
-              <SectionHeader icon={<HowToRegIcon fontSize="small" />} title="بيانات الحالة الجديدة" />
+              <SectionHeader icon={<HowToRegIcon fontSize="small" />} title={t('clinic.registerPatient.sections.newCase')} />
               <Grid container spacing={2}>
                 <Grid item xs={12} md={4}>
                   <TextField
                     size="small"
-                    label="رقم الجواز *"
+                    label={t('clinic.registerPatient.form.passport')}
                     fullWidth
                     value={form.passport_number}
                     onChange={(e) => setForm((f) => ({ ...f, passport_number: e.target.value }))}
@@ -195,7 +198,7 @@ const RegisterPatientPage = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     size="small"
-                    label="الاسم الأول *"
+                    label={t('clinic.registerPatient.form.firstName')}
                     fullWidth
                     value={form.first_name}
                     onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
@@ -204,7 +207,7 @@ const RegisterPatientPage = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     size="small"
-                    label="اسم العائلة *"
+                    label={t('clinic.registerPatient.form.lastName')}
                     fullWidth
                     value={form.last_name}
                     onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
@@ -214,7 +217,7 @@ const RegisterPatientPage = () => {
                   <TextField
                     size="small"
                     type="date"
-                    label="تاريخ الميلاد *"
+                    label={t('clinic.registerPatient.form.dateOfBirth')}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                     value={form.date_of_birth}
@@ -227,7 +230,7 @@ const RegisterPatientPage = () => {
                     options={countryOptions}
                     getOptionLabel={(o) => o.name_ar}
                     onChange={(_, v) => setForm((f) => ({ ...f, nationality: v?.code ?? '' }))}
-                    renderInput={(p) => <TextField {...p} label="الجنسية" fullWidth />}
+                    renderInput={(p) => <TextField {...p} label={t('clinic.registerPatient.form.nationality')} fullWidth />}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -237,13 +240,13 @@ const RegisterPatientPage = () => {
                     getOptionLabel={(c) => c.name_ar}
                     value={clinic}
                     onChange={(_, v) => setClinic(v)}
-                    renderInput={(p) => <TextField {...p} label="وحدة العيادة" fullWidth />}
+                    renderInput={(p) => <TextField {...p} label={t('clinic.registerPatient.form.clinicUnit')} fullWidth />}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <TextField
                     size="small"
-                    label="الجوال"
+                    label={t('clinic.registerPatient.form.mobile')}
                     fullWidth
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -252,7 +255,7 @@ const RegisterPatientPage = () => {
                 <Grid item xs={12} md={8}>
                   <TextField
                     size="small"
-                    label="ملاحظات (سبب الحضور)"
+                    label={t('clinic.registerPatient.form.notes')}
                     fullWidth
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -266,7 +269,9 @@ const RegisterPatientPage = () => {
                 onClick={handleSubmit}
                 disabled={submitting || !canSubmit}
               >
-                {submitting ? 'جاري التسجيل…' : 'تسجيل الحالة وإضافة للطابور'}
+                {submitting
+                  ? t('clinic.registerPatient.form.submitting')
+                  : t('clinic.registerPatient.form.submit')}
               </Button>
             </Box>
           </GlassPanel>
@@ -276,20 +281,20 @@ const RegisterPatientPage = () => {
       {registered && (
         <Box sx={{ mt: 2 }}>
           <Chip
-            label="تم إنشاء إحالة بانتظار القبول — يمكن قبولها من تبويب الإحالات"
+            label={t('clinic.registerPatient.referral.created')}
             sx={{ bgcolor: 'rgba(12,127,106,0.12)', color: '#0a6b58', fontWeight: 700 }}
           />
         </Box>
       )}
 
       <Dialog open={Boolean(qr)} onClose={() => setQr(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ textAlign: 'center' }}>الملف الطبي الموحد</DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center' }}>{t('clinic.registerPatient.qr.title')}</DialogTitle>
         <DialogContent>
           {qr && (
             <Stack alignItems="center" spacing={1.5} sx={{ pt: 1 }}>
               <img
                 src={`data:image/png;base64,${qr.qr_png}`}
-                alt="QR الملف الطبي"
+                alt={t('clinic.registerPatient.qr.alt')}
                 width={220}
                 height={220}
                 style={{ borderRadius: 12, border: '1px solid rgba(16,40,34,0.1)' }}
@@ -305,7 +310,7 @@ const RegisterPatientPage = () => {
                 }}
               >
                 <Typography variant="caption" color="text.secondary">
-                  امسح الرمز لاستدعاء ملف المريض داخل وحدة العيادة
+                  {t('clinic.registerPatient.qr.hint')}
                 </Typography>
               </Box>
             </Stack>
@@ -313,14 +318,14 @@ const RegisterPatientPage = () => {
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
           <Button variant="outlined" onClick={() => navigate('/app/clinic?tab=referrals')}>
-            الذهاب للإحالات
+            {t('clinic.registerPatient.qr.goToReferrals')}
           </Button>
           <Button
             variant="contained"
             startIcon={<QrCode2Icon />}
             onClick={() => window.print()}
           >
-            طباعة
+            {t('clinic.registerPatient.qr.print')}
           </Button>
         </DialogActions>
       </Dialog>

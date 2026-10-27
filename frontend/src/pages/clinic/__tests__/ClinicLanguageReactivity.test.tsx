@@ -8,12 +8,18 @@ import authReducer from '../../../store/slices/authSlice';
 import ClinicPage from '../ClinicPage';
 import IsolationPage from '../IsolationPage';
 import MedicationPage from '../MedicationsPage';
+import RegisterPatientPage from '../RegisterPatientPage';
 
 vi.mock('../../../api/endpoints/clinic', () => ({
   getReferrals: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
   getClinicVisits: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
   getIsolations: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
   getClinicMedications: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getClinics: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  getCountries: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  searchPatients: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  registerWalkInPatient: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getPatientQr: vi.fn().mockResolvedValue({ data: { data: {} } }),
   acceptReferral: vi.fn().mockResolvedValue({}),
   rejectReferral: vi.fn().mockResolvedValue({}),
   closeVisit: vi.fn().mockResolvedValue({}),
@@ -87,5 +93,12 @@ describe('Clinic pages language reactivity', () => {
     await screen.findByRole('heading', { name: /الأدوية|Medications/i, level: 1 });
     await i18n.changeLanguage('en');
     await screen.findByRole('heading', { name: /Medications/i, level: 1 });
+  });
+
+  it('RegisterPatientPage renders AR and switches to EN', async () => {
+    render(wrap(<RegisterPatientPage />));
+    await screen.findByRole('heading', { name: /تسجيل حالة جديدة/i, level: 1 });
+    await i18n.changeLanguage('en');
+    await screen.findByRole('heading', { name: /Register New Case/i, level: 1 });
   });
 });

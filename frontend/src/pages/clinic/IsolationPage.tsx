@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -26,12 +26,8 @@ import { getIsolations, releaseIsolation, updateIsolationStatus } from '../../ap
 import type { IsolationRow } from '../../types/clinic';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
-import { healthStatusMeta, isolationStatusMeta, isolationTypeMeta, isoSeverityMeta } from '../../utils/clinicStatus';
+import { getHealthStatusMeta, getIsoSeverityMeta, getIsolationStatusMeta, getIsolationTypeMeta } from '../../utils/clinicStatus';
 import { PassportChip, PersonAvatar } from './ui';
-
-const statusOptions = Object.entries(isolationStatusMeta).map(([v, m]) => ({ value: v, label: m.label }));
-const isolationOptions = Object.entries(isolationTypeMeta).map(([v, m]) => ({ value: v, label: m.label }));
-const healthOptions = Object.entries(healthStatusMeta).map(([v, m]) => ({ value: v, label: m.label }));
 
 const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) => (
   <Stack direction="row" spacing={1.5} alignItems="center">
@@ -47,6 +43,18 @@ const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) =>
 
 const IsolationPage = () => {
   const { t } = useTranslation();
+  const statusOptions = useMemo(
+    () => Object.entries(getIsolationStatusMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
+  const isolationOptions = useMemo(
+    () => Object.entries(getIsolationTypeMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
+  const healthOptions = useMemo(
+    () => Object.entries(getHealthStatusMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
   const navigate = useNavigate();
   const table = useServerTable<IsolationRow>({ fetchData: getIsolations });
   const { rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder, setSorting, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
@@ -117,7 +125,7 @@ const IsolationPage = () => {
             label: t('clinic.isolation.cols.isolationType'),
             hideOnMobile: true,
             render: (v) => {
-              const m = isolationTypeMeta[v.isolation_type];
+              const m = getIsolationTypeMeta(t)[v.isolation_type];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.isolation_type;
             },
           },
@@ -126,7 +134,7 @@ const IsolationPage = () => {
             label: t('clinic.isolation.cols.severity'),
             hideOnMobile: true,
             render: (v) => {
-              const m = isoSeverityMeta[v.severity];
+              const m = getIsoSeverityMeta(t)[v.severity];
               return m ? <Chip size="small" color={m.color} label={m.label} sx={{ fontWeight: 700 }} /> : (v.severity ?? '—');
             },
           },
@@ -135,7 +143,7 @@ const IsolationPage = () => {
             label: t('clinic.isolation.cols.healthStatus'),
             hideOnMobile: true,
             render: (v) => {
-              const m = healthStatusMeta[v.health_status];
+              const m = getHealthStatusMeta(t)[v.health_status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : (v.health_status ?? '—');
             },
           },
@@ -155,7 +163,7 @@ const IsolationPage = () => {
             key: 'status',
             label: t('clinic.isolation.cols.status'),
             render: (v) => {
-              const m = isolationStatusMeta[v.status];
+              const m = getIsolationStatusMeta(t)[v.status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
             },
           },

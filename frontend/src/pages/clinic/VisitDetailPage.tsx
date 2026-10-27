@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -53,7 +54,7 @@ import {
   updateIsolationStatus,
 } from '../../api/endpoints/clinic';
 import type { ClinicDisposition, ClinicVisitDetail, LabResultSummary } from '../../types/clinic';
-import { healthStatusMeta, isolationTypeMeta, isoSeverityMeta } from '../../utils/clinicStatus';
+import { getHealthStatusMeta, getIsoSeverityMeta, getIsolationTypeMeta } from '../../utils/clinicStatus';
 import { getDiseases } from '../../api/endpoints/laboratory';
 import type { Disease } from '../../types/laboratory';
 import { visitStatus } from '../../utils/status';
@@ -198,6 +199,10 @@ const SectionLabel = ({ children, color = 'primary.main' }: { children: React.Re
 
 const VisitDetailPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const isolationTypeMeta = useMemo(() => getIsolationTypeMeta(t), [t]);
+  const isoSeverityMeta = useMemo(() => getIsoSeverityMeta(t), [t]);
+  const healthStatusMeta = useMemo(() => getHealthStatusMeta(t), [t]);
   const { id = '' } = useParams<{ id: string }>();
   const { user } = useAuth();
 
