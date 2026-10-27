@@ -2423,5 +2423,169 @@
       "verified": "مُتحقَّق",
       "incomplete": "ناقصة"
     }
+  },
+  "clinic": {
+    "common": {
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "search": "بحث",
+      "confirm": "تأكيد",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "close": "إغلاق",
+      "view": "عرض"
+    },
+    "clinic": {
+      "header": {
+        "title": "العيادة",
+        "subtitle": "إدارة إحالات وزيارات العيادات الطبية بسلاسة",
+        "eyebrow": "العمليات"
+      },
+      "tabs": {
+        "referrals": "إحالات العيادة",
+        "visits": "زيارات العيادة"
+      },
+      "status": {
+        "registered": "مسجلة",
+        "triaged": "تم الفرز",
+        "examined": "فحص طبي",
+        "laboratory": "مختبر",
+        "decision": "القرار",
+        "certificate": "الشهادة",
+        "closed": "مغلقة"
+      },
+      "cols": {
+        "traveler": "المسافر",
+        "passport": "جواز السفر",
+        "port": "المنفذ",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "doctor": "الطبيب",
+        "phase": "المرحلة",
+        "openedAt": "وقت الفتح"
+      },
+      "search": {
+        "referrals": "بحث بالاسم أو جواز السفر...",
+        "visits": "بحث بالاسم أو جواز السفر..."
+      },
+      "empty": {
+        "referralsTitle": "لا توجد إحالات",
+        "referralsDesc": "إحالات العيادة من الفحوصات تظهر هنا",
+        "visitsTitle": "لا توجد زيارات",
+        "visitsDesc": "الزيارات تظهر عند قبول الإحالات"
+      },
+      "actions": {
+        "acceptReferral": "قبول الإحالة",
+        "rejectReferral": "رفض الإحالة",
+        "openVisit": "فتح الزيارة",
+        "closeVisit": "إغلاق الزيارة"
+      },
+      "messages": {
+        "referralAccepted": "تم قبول الإحالة وفتح زيارة جديدة",
+        "referralRejected": "تم رفض الإحالة",
+        "acceptReferralFailed": "تعذر قبول الإحالة",
+        "rejectReferralFailed": "تعذر رفض الإحالة",
+        "visitClosed": "تم إغلاق الزيارة",
+        "closeVisitFailed": "تعذر إغلاق الزيارة",
+        "referralsExported": "تم تصدير الإحالات"
+      },
+      "dialogs": {
+        "acceptReferralTitle": "قبول الإحالة",
+        "acceptReferralMessage": "سيتم قبول إحالة «{{traveler}}» وفتح زيارة عيادة جديدة للمسافر.",
+        "acceptReferralConfirm": "قبول الإحالة",
+        "rejectReferralTitle": "رفض الإحالة",
+        "rejectReferralMessage": "سيتم رفض إحالة «{{traveler}}». يمكنك إضافة سبب الرفض.",
+        "rejectReferralConfirm": "تأكيد الرفض",
+        "rejectReasonLabel": "سبب الرفض (اختياري)",
+        "closeVisitTitle": "إغلاق الزيارة",
+        "closeVisitMessage": "هل أنت متأكد من إغلاق زيارة «{{traveler}}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع.",
+        "closeVisitConfirm": "إغلاق الزيارة"
+      },
+      "subtitles": {
+        "referrals": "{{count}} إحالة",
+        "visits": "{{count}} زيارة"
+      }
+    },
+    "isolation": {
+      "header": {
+        "title": "العزل والحجر الصحي",
+        "subtitle": "متابعة حالات العزل داخل العيادة والمستشفى والحجر الإجباري",
+        "eyebrow": "العمليات"
+      },
+      "chip": {
+        "active": "جاري"
+      },
+      "cols": {
+        "traveler": "المسافر",
+        "isolationType": "نوع العزل",
+        "severity": "الخطورة",
+        "healthStatus": "الحالة الصحية",
+        "startDate": "بداية العزل",
+        "duration": "المدة (يوم)",
+        "status": "الحالة"
+      },
+      "search": {
+        "placeholder": "بحث بالاسم أو جواز السفر..."
+      },
+      "filters": {
+        "status": "الحالة",
+        "type": "النوع"
+      },
+      "empty": {
+        "title": "لا توجد سجلات عزل",
+        "desc": "سجلات العزل تظهر عند عزل حالات من الزيارات"
+      },
+      "actions": {
+        "openVisit": "فتح الزيارة",
+        "updateStatus": "تحديث الحالة الصحية",
+        "release": "تسجيل الخروج",
+        "viewAria": "فتح الزيارة",
+        "updateAria": "تحديث الحالة",
+        "releaseAria": "خروج"
+      },
+      "messages": {
+        "statusUpdated": "تم تحديث الحالة الصحية",
+        "statusUpdateFailed": "تعذر تحديث الحالة الصحية",
+        "released": "تم تسجيل خروج المريض من العزل",
+        "releaseFailed": "تعذر تسجيل الخروج"
+      },
+      "dialogs": {
+        "updateStatusTitle": "تحديث الحالة الصحية",
+        "updateStatusLabel": "الحالة الصحية",
+        "checkoutTitle": "تسجيل خروج من العزل",
+        "checkoutMessage": "سيتم توثيق خروج {{name}} وتسجيل تاريخ الانتهاء الفعلي.",
+        "endDateLabel": "تاريخ الانتهاء الفعلي",
+        "dischargeSummaryLabel": "ملخص الخروج",
+        "releaseConfirm": "تسجيل الخروج"
+      },
+      "table": {
+        "title": "سجلات العزل",
+        "subtitle": "{{count}} سجل"
+      }
+    },
+    "medications": {
+      "header": {
+        "title": "الأدوية والمخزون",
+        "subtitle": "سجل الأدوية المتاحة للصرف من عيادة الموانئ الطبية",
+        "eyebrow": "العيادة"
+      },
+      "sections": {
+        "items": "أصناف الأدوية"
+      },
+      "messages": {
+        "loadFailed": "تعذر تحميل الأدوية"
+      },
+      "error": {
+        "title": "تعذر تحميل الأدوية",
+        "desc": "حدث خطأ أثناء الاتصال بالخادم — يرجى المحاولة لاحقاً"
+      },
+      "empty": {
+        "title": "لا توجد أدوية مسجلة",
+        "desc": "أدوية العيادة ستظهر هنا عند إضافتها من الإدارة"
+      },
+      "badges": {
+        "interactions": "{{count}} تفاعلات"
+      }
+    }
   }
 }
