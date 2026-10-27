@@ -2837,6 +2837,274 @@
       "a11y": {
         "notifRegion": "منطقة التنبيهات والمتابعة"
       }
+    },
+    "visitDetail": {
+      "certificate": {
+        "actions": {
+          "issue": "إصدار الشهادة"
+        },
+        "confirmClose": "تأكيد إغلاق الزيارة",
+        "dialogTitle": "إصدار الشهادة الصحية",
+        "errors": {
+          "issueFailed": "تعذر إصدار الشهادة"
+        },
+        "fields": {
+          "decisionText": "مضمون القرار الطبي",
+          "summary": "ملخص التقرير الطبي",
+          "type": "نوع الشهادة",
+          "verdict": "التوصية النهائية"
+        },
+        "issueHint": "ستُمنح الشهادة برقم فريد ورمز تحقق (QR)، وتكون صالحة لمدة 30 يوماً.",
+        "issuedBy": "صادرة عن {{by}} · {{at}}",
+        "messages": {
+          "closed": "تم إغلاق الزيارة وإصدار القرار",
+          "issued": "تم إصدار الشهادة الصحية بنجاح"
+        },
+        "publicVerify": "تحقق علني من الشهادة",
+        "status": {
+          "active": "سارية",
+          "revoked": "ملغاة"
+        },
+        "title": "الشهادة الصحية",
+        "type": {
+          "clearance": "شهادة خلو من الأمراض",
+          "medical": "تقرير طبي",
+          "negative": "شهادة نتيجة سلبية"
+        },
+        "typeLine": "النوع: {{type}}",
+        "validUntilPrefix": "صالحة حتى: ",
+        "verdict": {
+          "isolation": "عزل/حجر صحي",
+          "release": "خروج/إجازة"
+        },
+        "verdictLine": "التوصية: {{verdict}}"
+      },
+      "emr": {
+        "actions": {
+          "saveEmr": "حفظ السجل الطبي"
+        },
+        "errors": {
+          "completePrescription": "يرجى إكمال بيانات الوصفة",
+          "saveFailed": "تعذر حفظ السجل الطبي"
+        },
+        "exam": {
+          "abdomen": "البطن",
+          "chest": "الصدر",
+          "generalCondition": "الحالة العامة",
+          "skin": "الجلد",
+          "throat": "الحلق"
+        },
+        "fields": {
+          "diagnosis": "التشخيص",
+          "severity": "شدة الحالة"
+        },
+        "messages": {
+          "saved": "تم حفظ السجل الطبي"
+        },
+        "prescription": {
+          "added": "تمت إضافة الوصفة الطبية",
+          "failed": "تعذر إضافة الوصفة الطبية"
+        },
+        "prescriptions": {
+          "add": "إضافة الوصفة",
+          "daysUnit": "يوم",
+          "dosage": "الجرعة",
+          "drug": "الدواء",
+          "duration": "المدة (أيام)",
+          "frequency": "التكرار",
+          "frequencyPlaceholder": "كل 8 ساعات",
+          "instructions": "التعليمات",
+          "interactionAlert": "تنبيه تداخلات دوائية: {{items}}",
+          "newDrug": "وصف دواء جديد",
+          "selectDrug": "— اختر الدواء —",
+          "title": "الوصفات الطبية"
+        },
+        "savedChip": {
+          "saved": "محفوظ",
+          "unsaved": "غير محفوظ"
+        },
+        "sections": {
+          "clinicalNotes": "الملاحظات السريرية",
+          "physicalExam": "الفحص البدني",
+          "vitals": "العلامات الحيوية"
+        },
+        "title": "السجل الطبي الإلكتروني (EMR)",
+        "vitals": {
+          "bloodPressure": "ضغط الدم (ملم زئبق)",
+          "heartRate": "نبض القلب (د/دقيقة)",
+          "oxygenSaturation": "تشبع الأكسجين (%)",
+          "respiratoryRate": "معدل التنفس (نفس/دقيقة)",
+          "temperature": "درجة الحرارة (°C)"
+        }
+      },
+      "isolation": {
+        "actions": {
+          "register": "تسجيل العزل"
+        },
+        "dialogTitle": "عزل المريض / حجر صحي",
+        "durationLine": "المدة: {{days}} يوماً",
+        "endedAt": " · انتهى: {{date}}",
+        "errors": {
+          "registerFailed": "تعذر تسجيل العزل",
+          "updateFailed": "تعذر تحديث الحالة"
+        },
+        "expectedEnd": " · متوقع: {{date}}",
+        "fields": {
+          "expectedEnd": "تاريخ الانتهاء المتوقع",
+          "healthStatus": "الحالة الصحية أثناء العزل",
+          "requiredDays": "المدة المطلوبة (أيام)"
+        },
+        "messages": {
+          "healthUpdated": "تم تحديث الحالة الصحية أثناء العزل",
+          "registered": "تم تسجيل العزل / الحجر الصحي"
+        },
+        "releaseConfirm": "سيتم توثيق خروج {{name}} من العزل وتحديث حالة الزيارة.",
+        "releaseTitle": "تسجيل الخروج من العزل",
+        "sinceChip": "منذ {{date}}",
+        "title": "العزل / الحجر الصحي"
+      },
+      "journey": {
+        "completed": "الزيارة مغلقة — أُنجز مسار المعالجة.",
+        "currentChip": "الحالية",
+        "errors": {
+          "transitionFailed": "تعذر تحديث المرحلة"
+        },
+        "messages": {
+          "transitioned": "تم تحديث مرحلة المعالجة"
+        },
+        "steps": {
+          "decision": "تسجيل القرار الطبي",
+          "examined": "بدء الفحص الطبي",
+          "isolation": "عزل / حجر صحي",
+          "laboratory": "إحالة للمختبر"
+        },
+        "title": "مسار المعالجة"
+      },
+      "lab": {
+        "actions": {
+          "request": "إرسال طلب الفحص"
+        },
+        "approval": {
+          "approved": "معتمد",
+          "pending": "قيد الاعتماد"
+        },
+        "errors": {
+          "requestFailed": "تعذر إرسال طلب الفحص المخبري",
+          "selectDisease": "يرجى اختيار المرض"
+        },
+        "fields": {
+          "disease": "المرض (ICD-11)",
+          "priority": "الأولوية",
+          "sampleType": "نوع العينة"
+        },
+        "messages": {
+          "requested": "تم إرسال طلب الفحص المخبري"
+        },
+        "newRequest": "طلب فحص جديد",
+        "result": {
+          "inconclusive": "غير حاسم",
+          "negative": "سلبي",
+          "positive": "إيجابي"
+        },
+        "results": {
+          "approved": " · اعتمد: {{name}}",
+          "defaultName": "فحص مخبري",
+          "entered": "أفاد: {{name}}",
+          "title": "نتائج المختبر"
+        },
+        "selectDisease": "— اختر المرض —",
+        "title": "الفحوصات المخبرية"
+      },
+      "page": {
+        "actions": {
+          "visitClosed": "الزيارة مغلقة"
+        },
+        "back": "العودة إلى العيادة",
+        "closedNotice": "تم إغلاق هذه الزيارة. لا يمكن تعديل السجل الطبي أو إضافة فحوصات أو وصفات جديدة.",
+        "error": {
+          "description": "تأكد من صحة الرابط أو عد إلى قائمة الزيارات.",
+          "title": "تعذر عرض الزيارة"
+        },
+        "errors": {
+          "loadVisit": "تعذر تحميل بيانات الزيارة، حاول مرة أخرى لاحقاً."
+        },
+        "extraActions": "إجراءات إضافية",
+        "finalDecision": "القرار النهائي",
+        "header": {
+          "eyebrow": "بوابة عيادات الحجر الصحي",
+          "loading": "جارٍ تحميل بيانات الزيارة",
+          "title": "زيارة العيادة"
+        },
+        "meta": {
+          "closedAt": "وقت الإغلاق",
+          "closedBy": "بواسطة {{name}} · ",
+          "user": "المستخدم"
+        },
+        "overline": "زيارة عيادة",
+        "passengerFileHint": "لعرض الملف الصحي الكامل للمسافر (البيانات الشخصية، التطعيمات، نتائج الفحوصات) يمكنك الانتقال إلى ملف المسافر.",
+        "viewPassengerFile": "عرض ملف المسافر"
+      },
+      "sections": {
+        "notes": "ملاحظات",
+        "other": "أخرى",
+        "severity": "درجة الخطورة"
+      },
+      "separator": {
+        "list": "، "
+      },
+      "triage": {
+        "actions": {
+          "save": "حفظ الفرز"
+        },
+        "disposition": {
+          "followUp": "متابعة منزلية",
+          "hospital": "إحالة إلى المستشفى",
+          "release": "إفراج المريض"
+        },
+        "errors": {
+          "saveFailed": "تعذر تسجيل الفرز"
+        },
+        "fields": {
+          "chiefComplaint": "الشكوى الرئيسية",
+          "diastolicBp": "الضغط الانبساطي",
+          "heartRate": "نبض القلب",
+          "respiratoryRate": "معدل التنفس",
+          "routing": "التوجيه",
+          "symptomsHint": "الأعراض (افصل بينها بفاصلة)",
+          "systolicBp": "الضغط الانقباضي"
+        },
+        "log": {
+          "symptoms": "الأعراض: {{items}}",
+          "title": "سجل الفرز"
+        },
+        "messages": {
+          "saved": "تم تسجيل الفرز وتصنيف الخطورة"
+        },
+        "priority": {
+          "high": "عالي",
+          "routine": "عادي",
+          "urgent": "عاجل"
+        },
+        "routing": {
+          "clinic": "متابعة في العيادة",
+          "isolation": "حجر صحي / عزل",
+          "release": "خروج"
+        },
+        "sample": {
+          "blood": "دم",
+          "stool": "براز",
+          "swab": "مسحة",
+          "urine": "بول"
+        },
+        "severity": {
+          "emergency": "طوارئ"
+        },
+        "severityOptions": {
+          "low": "بسيط",
+          "severe": "شديد"
+        },
+        "title": "فرز الحالة وتصنيف الخطورة"
+      }
     }
   }
 }
