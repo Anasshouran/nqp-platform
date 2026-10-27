@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -21,12 +22,6 @@ import { getClinicLabRequests } from '../../api/endpoints/clinic';
 import type { ClinicLabRequest } from '../../types/clinic';
 import { extractErrorMessage, notifyError } from '../../utils/toast';
 import { GlassPanel, PersonAvatar, SectionHeader } from './ui';
-
-const priorityMeta: Record<string, { label: string; tone: StatusTone }> = {
-  ROUTINE: { label: 'عادي', tone: 'info' },
-  HIGH: { label: 'عالي', tone: 'warning' },
-  URGENT: { label: 'عاجل', tone: 'error' },
-};
 
 const barcodeChip = (code: string) => (
   <Box
@@ -50,29 +45,39 @@ const barcodeChip = (code: string) => (
 
 const LabPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [items, setItems] = useState<ClinicLabRequest[] | null>(null);
+  const priorityMeta = useMemo<Record<string, { label: string; tone: StatusTone }>>(
+    () => ({
+      ROUTINE: { label: t('clinic.visitDetail.triage.priority.routine'), tone: 'info' },
+      HIGH: { label: t('clinic.visitDetail.triage.priority.high'), tone: 'warning' },
+      URGENT: { label: t('clinic.visitDetail.triage.priority.urgent'), tone: 'error' },
+    }),
+    [t]
+  );
 
   useEffect(() => {
     getClinicLabRequests({ page_size: 200 })
       .then((res) => setItems(res.data.data.results ?? []))
       .catch((err) => {
         setItems([]);
-        notifyError(extractErrorMessage(err, 'تعذر تحميل طلبات المختبر'));
+        notifyError(extractErrorMessage(err, t('clinic.lab.errors.load')));
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Box>
       <PageHeader
-        title="طلبات المختبر"
-        subtitle="متابعة الطلبات المخبرية الصادرة من زيارات العيادة"
-        eyebrow="العيادة"
+        title={t('clinic.lab.header.title')}
+        subtitle={t('clinic.lab.header.subtitle')}
+        eyebrow={t('clinic.clinic.header.title')}
       />
       <GlassPanel accent="linear-gradient(90deg, #2f6dd0, transparent)">
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <SectionHeader
             icon={<ScienceIcon fontSize="small" />}
-            title="الطلبات المخبرية"
+            title={t('clinic.lab.section.title')}
             count={items?.length ?? '…'}
             tone="#2f6dd0"
           />
@@ -85,21 +90,21 @@ const LabPage = () => {
           ) : items.length === 0 ? (
             <EmptyState
               icon={<ScienceIcon sx={{ fontSize: 40 }} />}
-              title="لا توجد طلبات مخبرية"
-              description="الطلبات المختبرية تُنشأ من داخل زيارة العيادة عند الحاجة لفحص عينة"
+              title={t('clinic.lab.empty.title')}
+              description={t('clinic.lab.empty.description')}
             />
           ) : (
             <TableContainer sx={{ borderRadius: 3, '& .MuiTableCell-root': { borderColor: 'rgba(16,40,34,0.08)' } }}>
-              <Table size="small" aria-label="الطلبات المخبرية">
+              <Table size="small" aria-label={t('clinic.lab.aria.table')}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>المسافر</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>نوع العينة</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>المرض</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>الأولوية</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>الباركود</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.lab.table.traveler')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.lab.table.sampleType')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.lab.table.disease')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.lab.table.priority')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.lab.table.barcode')}</TableCell>
                     <TableCell align="center" sx={{ fontWeight: 700, fontSize: 12 }}>
-                      فتح
+                      {t('clinic.lab.table.open')}
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -127,9 +132,9 @@ const LabPage = () => {
                         </TableCell>
                         <TableCell>{barcodeChip(r.barcode)}</TableCell>
                         <TableCell align="center">
-                          <Tooltip title="فتح زيارة العيادة">
+                          <Tooltip title={t('clinic.lab.tooltip.openVisit')}>
                             <IconButton
-                              aria-label="عرض"
+                              aria-label={t('clinic.common.view')}
                               size="small"
                               color="primary"
                               onClick={() => r.visit && navigate(`/app/clinic/visits/${r.visit}`)}

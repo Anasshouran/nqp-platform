@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
@@ -30,7 +31,8 @@ const FEVER_THRESHOLD = 38;
 
 const sourceLabel = (source?: string): string | undefined => referralSource[source ?? '']?.label;
 
-const temperatureLabel = (temp?: number | null): string => (temp == null ? 'لا قياس' : `${temp}°م`);
+const temperatureLabel = (t: (key: string) => string, temp?: number | null): string =>
+  temp == null ? t('clinic.referral.temperature.noReading') : `${temp}°م`;
 
 const MetaItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) => (
   <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ py: 0.75 }}>
@@ -73,6 +75,7 @@ export const ReferralDecisionDrawer = ({
   onOpenVisit,
   onProcessNext,
 }: ReferralDecisionDrawerProps) => {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
 
   const reset = () => {
@@ -111,9 +114,9 @@ export const ReferralDecisionDrawer = ({
           >
             <CheckCircleIcon sx={{ fontSize: 40 }} />
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>تم قبول الإحالة</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('clinic.referral.accepted.title')}</Typography>
           <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>
-            فُتحت زيارة عيادة للمسافر «{acceptedVisit.traveler_name}»
+            {t('clinic.referral.accepted.openedText', { name: acceptedVisit.traveler_name })}
           </Typography>
           <Stack spacing={1.5} sx={{ width: '100%' }}>
             <Button
@@ -122,7 +125,7 @@ export const ReferralDecisionDrawer = ({
               onClick={() => onOpenVisit(acceptedVisit)}
               sx={{ fontWeight: 700 }}
             >
-              فتح زيارة «{acceptedVisit.traveler_name}»
+              {t('clinic.referral.accepted.openVisit', { name: acceptedVisit.traveler_name })}
             </Button>
             <Button
               variant="outlined"
@@ -131,10 +134,10 @@ export const ReferralDecisionDrawer = ({
               onClick={onProcessNext}
               sx={{ fontWeight: 700 }}
             >
-              {hasNext ? 'معالجة الإحالة التالية' : 'لا توجد إحالة تالية'}
+              {hasNext ? t('clinic.referral.accepted.processNext') : t('clinic.referral.accepted.noNext')}
             </Button>
             <Button variant="text" onClick={handleClose} sx={{ fontWeight: 700 }}>
-              البقاء في القائمة
+              {t('clinic.referral.accepted.stayInList')}
             </Button>
           </Stack>
         </Stack>
@@ -142,7 +145,7 @@ export const ReferralDecisionDrawer = ({
         <Stack sx={{ height: '100%' }}>
           <Box sx={{ p: 3, bgcolor: 'rgba(255,255,255,0.8)', borderBottom: '1px solid rgba(16,40,34,0.07)' }}>
             <Typography variant="overline" component="p" sx={{ fontWeight: 700, letterSpacing: '0.12em', color: 'text.secondary', mb: 1 }}>
-              قرار الإحالة
+              {t('clinic.referral.header.title')}
             </Typography>
             <Stack direction="row" spacing={2} alignItems="center">
               <PersonAvatar name={referral.traveler_name} size={56} square />
@@ -150,13 +153,13 @@ export const ReferralDecisionDrawer = ({
                 <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>{referral.traveler_name}</Typography>
                   {showFever && (
-                    <Chip size="small" label="حمّى" color="error" sx={{ fontWeight: 700, height: 22 }} />
+                    <Chip size="small" label={t('clinic.referral.vitals.fever')} color="error" sx={{ fontWeight: 700, height: 22 }} />
                   )}
                 </Stack>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
                   <PassportChip number={referral.passport_number} />
                   {referral.queue_no != null && (
-                    <Chip size="small" label={`دور ${referral.queue_no}`} sx={{ height: 24, fontWeight: 700 }} />
+                    <Chip size="small" label={t('clinic.referral.queueChip', { no: referral.queue_no })} sx={{ height: 24, fontWeight: 700 }} />
                   )}
                   {referral.status && (
                     <Chip
@@ -174,31 +177,31 @@ export const ReferralDecisionDrawer = ({
           <Box sx={{ p: 3, flex: 1, overflowY: 'auto' }}>
             <Stack spacing={2}>
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>بيانات المسافر</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{t('clinic.referral.section.traveler')}</Typography>
                 <Stack spacing={0}>
                   <MetaItem
                     icon={<FlagIcon fontSize="small" />}
-                    label="الجنسية"
+                    label={t('clinic.referral.fields.nationality')}
                     value={referral.nationality_name || '—'}
                   />
                   <MetaItem
                     icon={<ThermostatIcon fontSize="small" />}
-                    label="درجة الحرارة عند الفحص"
-                    value={temperatureLabel(referral.body_temperature)}
+                    label={t('clinic.referral.fields.temperature')}
+                    value={temperatureLabel(t, referral.body_temperature)}
                   />
                   <MetaItem
                     icon={<LocationOnIcon fontSize="small" />}
-                    label="المنفذ"
+                    label={t('clinic.clinic.cols.port')}
                     value={referral.port_name || '—'}
                   />
                   <MetaItem
                     icon={<EventIcon fontSize="small" />}
-                    label="وقت الإحالة"
+                    label={t('clinic.referral.fields.referredAt')}
                     value={formatDateTime(referral.created_at)}
                   />
                   <MetaItem
                     icon={<MonitorHeartIcon fontSize="small" />}
-                    label="المصدر"
+                    label={t('clinic.referral.fields.source')}
                     value={sourceLabel(referral.source) || referral.source || '—'}
                   />
                 </Stack>
@@ -207,7 +210,7 @@ export const ReferralDecisionDrawer = ({
               <Divider />
 
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>نتائج الفحص المبدئي</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t('clinic.referral.section.screeningResults')}</Typography>
                 {symptoms.length > 0 ? (
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
                     {symptoms.map((s) => (
@@ -222,7 +225,7 @@ export const ReferralDecisionDrawer = ({
                     ))}
                   </Stack>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">لا أعراض مسجلة.</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('clinic.referral.noSymptoms')}</Typography>
                 )}
                 {referral.officer_notes ? (
                   <Box
@@ -237,7 +240,7 @@ export const ReferralDecisionDrawer = ({
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
                       <NotesIcon fontSize="small" sx={{ color: 'text.secondary' }} />
                       <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                        ملاحظات موظف الفحص
+                        {t('clinic.referral.officerNotes')}
                       </Typography>
                     </Stack>
                     <Typography variant="body2">{referral.officer_notes}</Typography>
@@ -254,7 +257,7 @@ export const ReferralDecisionDrawer = ({
                     }}
                   >
                     <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                      ملاحظات الإحالة
+                      {t('clinic.referral.referralNotes')}
                     </Typography>
                     <Typography variant="body2">{referral.notes}</Typography>
                   </Box>
@@ -273,7 +276,7 @@ export const ReferralDecisionDrawer = ({
                   onClick={() => onRelease(referral)}
                   sx={{ fontWeight: 700 }}
                 >
-                  إرجاع إلى قائمة الانتظار
+                  {t('clinic.referral.actions.release')}
                 </Button>
               ) : (
                 <Button
@@ -283,12 +286,12 @@ export const ReferralDecisionDrawer = ({
                   onClick={() => onHold(referral)}
                   sx={{ fontWeight: 700 }}
                 >
-                  تأجيل للمراجعة
+                  {t('clinic.referral.actions.hold')}
                 </Button>
               )}
             </Stack>
             <TextField
-              label="سبب الرفض (اختياري)"
+              label={t('clinic.referral.rejectReason')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               fullWidth
@@ -307,7 +310,7 @@ export const ReferralDecisionDrawer = ({
                 onClick={() => onReject(referral, reason.trim())}
                 sx={{ flex: 1, fontWeight: 700 }}
               >
-                رفض الإحالة
+                {t('clinic.referral.actions.reject')}
               </Button>
               <Button
                 variant="contained"
@@ -316,7 +319,7 @@ export const ReferralDecisionDrawer = ({
                 onClick={() => onAccept(referral)}
                 sx={{ flex: 1, fontWeight: 700 }}
               >
-                قبول وفتح زيارة
+                {t('clinic.referral.actions.accept')}
               </Button>
             </Stack>
           </Box>

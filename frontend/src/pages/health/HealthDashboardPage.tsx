@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -18,14 +19,9 @@ import { EmptyState, ErrorState } from '../../components/common';
 import { getPublicStatistics } from '../../api/endpoints/public';
 import { useApi } from '../../hooks/useApi';
 import { formatDateTime } from '../../utils/formatters';
+import i18n from '../../i18n';
 
-const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <MonitorHeartIcon fontSize="small" /> },
-  { id: 'cases', label: 'المؤشرات', icon: <PersonSearchIcon fontSize="small" /> },
-  { id: 'alerts', label: 'التنبيهات', icon: <WarningAmberIcon fontSize="small" /> },
-] as const;
+const todayArabic = () => new Date().toLocaleDateString(i18n.language || 'ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 interface StatRow {
   key: string;
@@ -42,27 +38,37 @@ const statRows = (s: {
   entry_points: number;
   vector_activities: number;
   notices: number;
-}): StatRow[] => [
-  { key: 'screenings', label: 'الفحوصات الصحية', value: s.screenings ?? 0 },
-  { key: 'certificates', label: 'الشهادات الصحية', value: s.certificates ?? 0 },
-  { key: 'lab_samples', label: 'العينات المخبرية', value: s.lab_samples ?? 0 },
-  { key: 'diseases', label: 'الأمراض المُدرجة', value: s.diseases ?? 0 },
-  { key: 'entry_points', label: 'نقاط الدخول', value: s.entry_points ?? 0 },
-  { key: 'vector_activities', label: 'أنشطة مكافحة النواقل', value: s.vector_activities ?? 0 },
-  { key: 'notices', label: 'التنبيهات المنشورة', value: s.notices ?? 0 },
+}, t: (key: string) => string): StatRow[] => [
+  { key: 'screenings', label: t('clinic.healthDashboard.stats.screenings'), value: s.screenings ?? 0 },
+  { key: 'certificates', label: t('clinic.healthDashboard.stats.certificates'), value: s.certificates ?? 0 },
+  { key: 'lab_samples', label: t('clinic.healthDashboard.stats.labSamples'), value: s.lab_samples ?? 0 },
+  { key: 'diseases', label: t('clinic.healthDashboard.stats.diseases'), value: s.diseases ?? 0 },
+  { key: 'entry_points', label: t('clinic.healthDashboard.stats.entryPoints'), value: s.entry_points ?? 0 },
+  { key: 'vector_activities', label: t('clinic.healthDashboard.stats.vectorActivities'), value: s.vector_activities ?? 0 },
+  { key: 'notices', label: t('clinic.healthDashboard.stats.notices'), value: s.notices ?? 0 },
 ];
 
 const HealthDashboardPage = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
+  const sections = useMemo(
+    () => [
+      { id: 'overview', label: t('clinic.healthDashboard.sections.overview'), icon: <MonitorHeartIcon fontSize="small" /> },
+      { id: 'cases', label: t('clinic.healthDashboard.sections.cases'), icon: <PersonSearchIcon fontSize="small" /> },
+      { id: 'alerts', label: t('clinic.healthDashboard.sections.alerts'), icon: <WarningAmberIcon fontSize="small" /> },
+    ],
+    [t]
+  );
+
+  const { active, register, scrollTo } = useCommandSections(sections as unknown as CommandSectionDef[]);
 
   const { data: stats, loading, error, retry } = useApi(async () => (await getPublicStatistics()).data.data);
 
   // وقت آخر تحديث حقيقي — يُستمد من اكتمال الجلب الفعلي.
   const lastUpdated = stats ? new Date() : null;
-  const rows = useMemo(() => (stats ? statRows(stats) : []), [stats]);
+  const rows = useMemo(() => (stats ? statRows(stats, t) : []), [stats, t]);
 
   const filtered = useMemo(
     () =>
@@ -79,29 +85,29 @@ const HealthDashboardPage = () => {
   const kpis = useMemo(() => {
     if (!stats) return [];
     return [
-      { icon: <PersonSearchIcon />, value: stats.screenings ?? 0, label: 'الفحوصات الصحية', accent: 'primary.main', hint: 'إجمالي مُسجَّل' },
-      { icon: <LocalHospitalIcon />, value: stats.certificates ?? 0, label: 'الشهادات الصحية', accent: 'info.main', hint: 'منشورة' },
-      { icon: <BiotechIcon />, value: stats.lab_samples ?? 0, label: 'العينات المخبرية', accent: 'success.main', hint: 'مُدرجة' },
-      { icon: <WarningAmberIcon />, value: stats.vector_activities ?? 0, label: 'أنشطة مكافحة النواقل', accent: 'error.main', hint: 'مُسجّلة' },
-      { icon: <MonitorHeartIcon />, value: stats.diseases ?? 0, label: 'أمراض مُدرجة للترصد', accent: 'warning.main', hint: 'نشطة' },
-      { icon: <TrendingUpIcon />, value: stats.entry_points ?? 0, label: 'نقاط الدخول النشطة', accent: 'secondary.main', hint: 'منافذ' },
+      { icon: <PersonSearchIcon />, value: stats.screenings ?? 0, label: t('clinic.healthDashboard.kpi.screeningsLabel'), accent: 'primary.main', hint: t('clinic.healthDashboard.kpi.screeningsHint') },
+      { icon: <LocalHospitalIcon />, value: stats.certificates ?? 0, label: t('clinic.healthDashboard.kpi.certificatesLabel'), accent: 'info.main', hint: t('clinic.healthDashboard.kpi.certificatesHint') },
+      { icon: <BiotechIcon />, value: stats.lab_samples ?? 0, label: t('clinic.healthDashboard.kpi.labSamplesLabel'), accent: 'success.main', hint: t('clinic.healthDashboard.kpi.labSamplesHint') },
+      { icon: <WarningAmberIcon />, value: stats.vector_activities ?? 0, label: t('clinic.healthDashboard.kpi.vectorActivitiesLabel'), accent: 'error.main', hint: t('clinic.healthDashboard.kpi.vectorActivitiesHint') },
+      { icon: <MonitorHeartIcon />, value: stats.diseases ?? 0, label: t('clinic.healthDashboard.kpi.diseasesLabel'), accent: 'warning.main', hint: t('clinic.healthDashboard.kpi.diseasesHint') },
+      { icon: <TrendingUpIcon />, value: stats.entry_points ?? 0, label: t('clinic.healthDashboard.kpi.entryPointsLabel'), accent: 'secondary.main', hint: t('clinic.healthDashboard.kpi.entryPointsHint') },
     ];
-  }, [stats]);
+  }, [stats, t]);
 
-  const exportRows = stats ? statRows(stats) : [];
+  const exportRows = stats ? statRows(stats, t) : [];
 
   return (
     <Box>
       <DashboardHero
         eyebrow="Health Command Center"
-        title="لوحة الرعاية الصحية"
-        subtitle="مؤشرات المراقبة الوبائية والفحوصات والعينات وتسجيل الأوبئة — بيانات حقيقية من النظام"
+        title={t('clinic.healthDashboard.header.title')}
+        subtitle={t('clinic.healthDashboard.header.subtitle')}
         gradient="emerald"
         avatarLabel="ل"
         action={
           <ExportButton
             filename="health-overview"
-            headers={['المؤشر', 'القيمة']}
+            headers={[t('clinic.healthDashboard.export.metric'), t('clinic.healthDashboard.export.value')]}
             rows={exportRows.map((r) => [r.label, String(r.value)])}
             disabled={loading || Boolean(error)}
           />
@@ -111,7 +117,7 @@ const HealthDashboardPage = () => {
           ...(stats && lastUpdated
             ? [
                 <Box key="updated" component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                  آخر تحديث: {formatDateTime(lastUpdated)}
+                  {t('clinic.healthDashboard.chips.lastUpdated', { at: formatDateTime(lastUpdated) })}
                 </Box>,
               ]
             : []),
@@ -121,16 +127,16 @@ const HealthDashboardPage = () => {
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={sections as unknown as CommandSectionDef[]}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('clinic.shared.queueRail.label')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
           {error ? (
-            <ErrorState message="تعذّر تحميل الإحصائيات الصحية" onRetry={retry} />
+            <ErrorState message={t('clinic.healthDashboard.errors.load')} onRetry={retry} />
           ) : loading && !stats ? (
             <Box component="section" data-section="overview" sx={{ scrollMarginTop: '80px', mb: 3 }}>
               <Grid container spacing={1.5}>
@@ -142,13 +148,13 @@ const HealthDashboardPage = () => {
                   </Grid>
                 ))}
               </Grid>
-              <Typography color="text.secondary" sx={{ mt: 2 }}>جارٍ تحميل المؤشرات الصحية…</Typography>
+              <Typography color="text.secondary" sx={{ mt: 2 }}>{t('clinic.healthDashboard.loading')}</Typography>
             </Box>
           ) : !stats ? (
             <EmptyState
               icon={<MonitorHeartIcon />}
-              title="لا توجد مؤشرات بعد"
-              description="تظهر المؤشرات الصحية هنا عند توافر بيانات من المنصة."
+              title={t('clinic.healthDashboard.empty.title')}
+              description={t('clinic.healthDashboard.empty.description')}
             />
           ) : (
             <>
@@ -169,8 +175,8 @@ const HealthDashboardPage = () => {
                   <Box component="section" ref={register('cases')} data-section="cases" sx={{ scrollMarginTop: '80px' }}>
                     <DataTable<StatRow>
                       columns={[
-                        { key: 'label', label: 'المؤشر', render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.label}</Typography> },
-                        { key: 'value', label: 'القيمة', render: (r) => <StatusChip label={String(r.value)} tone="neutral" /> },
+                        { key: 'label', label: t('clinic.healthDashboard.table.metric'), render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.label}</Typography> },
+                        { key: 'value', label: t('clinic.healthDashboard.table.value'), render: (r) => <StatusChip label={String(r.value)} tone="neutral" /> },
                       ]}
                       rows={filtered}
                       rowKey={(r) => r.key}
@@ -180,17 +186,17 @@ const HealthDashboardPage = () => {
                       onPageChange={setPage}
                       searchInput={search}
                       onSearchChange={setSearch}
-                      searchPlaceholder="بحث في المؤشرات..."
-                      title="المؤشرات الصحية"
-                      subtitle={`${filtered.length} مؤشر`}
-                      emptyTitle="لا توجد مؤشرات"
-                      emptyDescription="لم يتم العثور على مؤشرات تطابق البحث"
+                      searchPlaceholder={t('clinic.healthDashboard.table.searchPlaceholder')}
+                      title={t('clinic.healthDashboard.table.title')}
+                      subtitle={t('clinic.healthDashboard.table.subtitle', { count: filtered.length })}
+                      emptyTitle={t('clinic.healthDashboard.table.emptyTitle')}
+                      emptyDescription={t('clinic.healthDashboard.table.emptyDescription')}
                     />
                   </Box>
                 </Grid>
                 <Grid item xs={12} lg={4}>
                   <Box component="section" ref={register('alerts')} data-section="alerts" sx={{ scrollMarginTop: '80px', position: { lg: 'sticky' }, top: 96 }}>
-                    <NotificationPanel height={460} subtitle="تنبيهات المراقبة والإرسال" />
+                    <NotificationPanel height={460} subtitle={t('clinic.healthDashboard.notifications.subtitle')} />
                   </Box>
                 </Grid>
               </Grid>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -18,6 +18,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BlockIcon from '@mui/icons-material/Block';
 import { PageHeader } from '../../components/common';
 import { DataTable, StatusChip } from '../../components/ui';
+import { useTranslation } from 'react-i18next';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useAuth } from '../../hooks/useAuth';
 import type { AuthUser } from '../../api/endpoints/auth';
@@ -28,34 +29,33 @@ import { escapeHtml, escapeHtmlOr } from '../../utils/escapeHtml';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { PassportChip, PersonAvatar } from './ui';
 
-const certTypeMeta: Record<string, { label: string; tone: 'primary' | 'info' | 'neutral' }> = {
-  CLEARANCE: { label: 'شهادة خلو من الأمراض', tone: 'primary' },
-  NEGATIVE: { label: 'شهادة نتيجة سلبية', tone: 'info' },
-  MEDICAL: { label: 'تقرير طبي', tone: 'neutral' },
+const certTypeKeys: Record<string, string> = {
+  CLEARANCE: 'clinic.visitDetail.certificate.type.clearance',
+  NEGATIVE: 'clinic.visitDetail.certificate.type.negative',
+  MEDICAL: 'clinic.visitDetail.certificate.type.medical',
 };
 
-const certStatusMeta: Record<string, { label: string; tone: 'success' | 'error' }> = {
-  ACTIVE: { label: 'سارية', tone: 'success' },
-  REVOKED: { label: 'ملغاة', tone: 'error' },
-};
-
-const verdictMeta: Record<string, string> = {
-  RELEASE: 'خروج/إجازة',
-  HOSPITAL: 'تحويل للمستشفى',
-  ISOLATION: 'عزل/حجر صحي',
+const verdictKeys: Record<string, string> = {
+  RELEASE: 'clinic.visitDetail.certificate.verdict.release',
+  HOSPITAL: 'clinic.visitDetail.certificate.verdict.hospital',
+  ISOLATION: 'clinic.visitDetail.certificate.verdict.isolation',
 };
 
 type CertDetail = HealthCertificate & { qr_png?: string };
 
-const printCertificate = (cert: CertDetail, qrPng?: string, orgName?: string) => {
+const printCertificate = (cert: CertDetail, qrPng: string | undefined, orgName: string | undefined, t: (key: string) => string) => {
   const win = window.open('', '_blank', 'width=900,height=700');
   if (!win) return;
   const qr = qrPng || cert.qr_png || '';
+  const typeKey = certTypeKeys[cert.certificate_type];
+  const typeLabel = typeKey ? t(typeKey) : cert.certificate_type;
+  const verdictKey = verdictKeys[cert.verdict];
+  const verdictLabel = verdictKey ? t(verdictKey) : cert.verdict;
   win.document.write(`<!doctype html>
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8" />
-<title>شهادة صحية - ${escapeHtml(cert.certificate_number)}</title>
+<title>${t('clinic.certificates.print.titlePrefix')}${escapeHtml(cert.certificate_number)}</title>
 <style>
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; padding: 32px; color: #102822; }
   .sheet { max-width: 720px; margin: 0 auto; border: 3px solid #0e7490; border-radius: 16px; padding: 40px; }
@@ -75,29 +75,29 @@ const printCertificate = (cert: CertDetail, qrPng?: string, orgName?: string) =>
 <div class="sheet">
   <div class="head">
     <div>
-      <h1>${escapeHtml(orgName || 'وزارة الصحة الاتحادية')} - الحجر الصحي</h1>
-      <h2>شهادة صحية</h2>
+      <h1>${escapeHtml(orgName || t('clinic.certificates.print.orgFallback'))} ${t('clinic.certificates.print.h1Suffix')}</h1>
+      <h2>${t('clinic.certificates.print.h2')}</h2>
     </div>
-    <div class="stamp">${cert.status === 'ACTIVE' ? 'سارية' : 'ملغاة'}</div>
+    <div class="stamp">${cert.status === 'ACTIVE' ? t('clinic.visitDetail.certificate.status.active') : t('clinic.visitDetail.certificate.status.revoked')}</div>
   </div>
-  <div class="row"><span>رقم الشهادة</span><b>${escapeHtml(cert.certificate_number)}</b></div>
-  <div class="row"><span>نوع الشهادة</span><b>${escapeHtml(certTypeMeta[cert.certificate_type]?.label || cert.certificate_type)}</b></div>
-  <div class="row"><span>اسم حامل الشهادة</span><b>${escapeHtmlOr(cert.traveler_name)}</b></div>
-  <div class="row"><span>جواز السفر</span><b>${escapeHtmlOr(cert.passport_number)}</b></div>
-  <div class="row"><span>التوصية النهائية</span><b>${escapeHtml(verdictMeta[cert.verdict] || cert.verdict)}</b></div>
-  <div class="row"><span>المضمون</span><b>${escapeHtmlOr(cert.decision)}</b></div>
-  <div class="row"><span>الجهة المصدرة</span><b>${escapeHtmlOr(cert.clinic_name)}</b></div>
-  <div class="row"><span>تاريخ الإصدار</span><b>${escapeHtml(formatDateTime(cert.issued_at))}</b></div>
-  <div class="row"><span>صالحة حتى</span><b>${cert.valid_until ? escapeHtml(formatDate(cert.valid_until)) : '—'}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.no')}</span><b>${escapeHtml(cert.certificate_number)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.type')}</span><b>${escapeHtml(typeLabel)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.holder')}</span><b>${escapeHtmlOr(cert.traveler_name)}</b></div>
+  <div class="row"><span>${t('clinic.clinic.cols.passport')}</span><b>${escapeHtmlOr(cert.passport_number)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.verdict')}</span><b>${escapeHtml(verdictLabel)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.content')}</span><b>${escapeHtmlOr(cert.decision)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.issuer')}</span><b>${escapeHtmlOr(cert.clinic_name)}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.issuedAt')}</span><b>${escapeHtml(formatDateTime(cert.issued_at))}</b></div>
+  <div class="row"><span>${t('clinic.certificates.print.rows.validUntil')}</span><b>${cert.valid_until ? escapeHtml(formatDate(cert.valid_until)) : '—'}</b></div>
   <div class="foot">
     <div>
       <div class="qr">
-        ${qr ? `<img src="data:image/png;base64,${escapeHtml(qr)}" alt="QR" />` : ''}
-        <div class="verify">للتحقق: ${typeof window !== 'undefined' ? window.location.origin : ''}${escapeHtml(cert.verification_path || '')}</div>
+        ${qr ? `<img src="data:image/png;base64,${escapeHtml(qr)}" alt="${t('clinic.certificates.print.qrAlt')}" />` : ''}
+        <div class="verify">${t('clinic.certificates.print.verifyPrefix')}${typeof window !== 'undefined' ? window.location.origin : ''}${escapeHtml(cert.verification_path || '')}</div>
       </div>
     </div>
     <div style="text-align:left">
-      <div style="font-weight:800">الطبيب</div>
+      <div style="font-weight:800">${t('clinic.clinic.cols.doctor')}</div>
       <div>${escapeHtmlOr(cert.issued_by_name)}</div>
     </div>
   </div>
@@ -112,7 +112,31 @@ const printCertificate = (cert: CertDetail, qrPng?: string, orgName?: string) =>
 };
 
 const CertificatesPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const certTypeMeta = useMemo<Record<string, { label: string; tone: 'primary' | 'info' | 'neutral' }>>(
+    () => ({
+      CLEARANCE: { label: t('clinic.visitDetail.certificate.type.clearance'), tone: 'primary' },
+      NEGATIVE: { label: t('clinic.visitDetail.certificate.type.negative'), tone: 'info' },
+      MEDICAL: { label: t('clinic.visitDetail.certificate.type.medical'), tone: 'neutral' },
+    }),
+    [t]
+  );
+  const certStatusMeta = useMemo<Record<string, { label: string; tone: 'success' | 'error' }>>(
+    () => ({
+      ACTIVE: { label: t('clinic.visitDetail.certificate.status.active'), tone: 'success' },
+      REVOKED: { label: t('clinic.visitDetail.certificate.status.revoked'), tone: 'error' },
+    }),
+    [t]
+  );
+  const verdictMeta = useMemo<Record<string, string>>(
+    () => ({
+      RELEASE: t('clinic.visitDetail.certificate.verdict.release'),
+      HOSPITAL: t('clinic.visitDetail.certificate.verdict.hospital'),
+      ISOLATION: t('clinic.visitDetail.certificate.verdict.isolation'),
+    }),
+    [t]
+  );
   const table = useServerTable<HealthCertificate>({ fetchData: getCertificates });
   const { rows, count, loading, error, searchInput, setSearchInput, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
 
@@ -139,11 +163,11 @@ const CertificatesPage = () => {
     setRevoking(true);
     try {
       await revokeCertificate(revokeTarget.id);
-      notifySuccess('تم إلغاء الشهادة');
+      notifySuccess(t('clinic.certificates.revoke.success'));
       setRevokeTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إلغاء الشهادة'));
+      notifyError(extractErrorMessage(err, t('clinic.certificates.revoke.error')));
     } finally {
       setRevoking(false);
     }
@@ -152,15 +176,15 @@ const CertificatesPage = () => {
   return (
     <>
       <PageHeader
-        title="الشهادات الصحية"
-        subtitle="الشهادات الصحية الصادرة عن عيادات الحجر الصحي وإدارة التحقق منها"
-        eyebrow="العمليات"
+        title={t('clinic.certificates.header.title')}
+        subtitle={t('clinic.certificates.header.subtitle')}
+        eyebrow={t('clinic.clinic.header.eyebrow')}
       />
       <DataTable<HealthCertificate>
         columns={[
           {
             key: 'traveler_name',
-            label: 'المسافر',
+            label: t('clinic.certificates.cols.traveler'),
             render: (v) => (
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <PersonAvatar name={v.traveler_name} size={38} />
@@ -175,12 +199,12 @@ const CertificatesPage = () => {
           },
           {
             key: 'certificate_number',
-            label: 'الرقم',
+            label: t('clinic.certificates.cols.number'),
             render: (v) => <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13 }}>{v.certificate_number}</Typography>,
           },
           {
             key: 'certificate_type',
-            label: 'النوع',
+            label: t('clinic.certificates.cols.type'),
             hideOnMobile: true,
             render: (v) => {
               const m = certTypeMeta[v.certificate_type];
@@ -189,7 +213,7 @@ const CertificatesPage = () => {
           },
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('clinic.certificates.cols.status'),
             render: (v) => {
               const m = certStatusMeta[v.status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
@@ -197,13 +221,13 @@ const CertificatesPage = () => {
           },
           {
             key: 'issued_at',
-            label: 'تاريخ الإصدار',
+            label: t('clinic.certificates.cols.issuedAt'),
             sortable: true,
             render: (v) => formatDateTime(v.issued_at),
           },
           {
             key: 'valid_until',
-            label: 'صالحة حتى',
+            label: t('clinic.certificates.cols.validUntil'),
             hideOnMobile: true,
             render: (v) => (v.valid_until ? formatDate(v.valid_until) : '—'),
           },
@@ -216,15 +240,15 @@ const CertificatesPage = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="الشهادات"
-        subtitle={`${count} شهادة`}
+        title={t('clinic.certificates.table.title')}
+        subtitle={t('clinic.certificates.table.subtitle', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث برقم الشهادة أو الاسم أو الجواز..."
+        searchPlaceholder={t('clinic.certificates.table.searchPlaceholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('clinic.certificates.filters.status'),
             options: Object.entries(certStatusMeta).map(([v, m]) => ({ value: v, label: m.label })),
             value: '',
             onChange: (v) => setFilter('status', v),
@@ -233,13 +257,13 @@ const CertificatesPage = () => {
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
-        emptyTitle="لا توجد شهادات"
-        emptyDescription="الشهادات تصدر عند اتخاذ القرار الطبي للزيارات"
+        emptyTitle={t('clinic.certificates.table.emptyTitle')}
+        emptyDescription={t('clinic.certificates.table.emptyDescription')}
         actions={(v) => (
           <>
-            <Tooltip title="عرض الشهادة">
+            <Tooltip title={t('clinic.certificates.action.view')}>
               <IconButton
-                aria-label="عرض الشهادة"
+                aria-label={t('clinic.certificates.action.ariaView')}
                 size="small"
                 color="primary"
                 onClick={() => openView(v)}
@@ -249,9 +273,9 @@ const CertificatesPage = () => {
               </IconButton>
             </Tooltip>
             {v.status === 'ACTIVE' && (
-              <Tooltip title="إلغاء الشهادة">
+              <Tooltip title={t('clinic.certificates.action.revoke')}>
                 <IconButton
-                  aria-label="إلغاء الشهادة"
+                  aria-label={t('clinic.certificates.action.ariaRevoke')}
                   size="small"
                   color="error"
                   onClick={() => setRevokeTarget(v)}
@@ -268,7 +292,7 @@ const CertificatesPage = () => {
       <Dialog open={Boolean(viewTarget)} onClose={() => setViewTarget(null)} maxWidth="sm" fullWidth>
         {viewTarget && (
           <>
-            <DialogTitle sx={{ fontWeight: 700 }}>الشهادة الصحية {viewTarget.certificate_number}</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 700 }}>{t('clinic.certificates.view.title', { number: viewTarget.certificate_number })}</DialogTitle>
             <DialogContent dividers>
               <Stack spacing={1.5}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
@@ -279,22 +303,22 @@ const CertificatesPage = () => {
                     sx={{ fontWeight: 700 }}
                   />
                   <Typography variant="caption" color="text.secondary">
-                    صادرة عن {viewTarget.clinic_name || '—'} · {formatDateTime(viewTarget.issued_at)}
+                    {t('clinic.certificates.view.issuedBy', { clinic: viewTarget.clinic_name || '—', at: formatDateTime(viewTarget.issued_at) })}
                   </Typography>
                 </Stack>
                 <Divider />
                 <Typography variant="body2">
-                  حامل الشهادة: <b>{viewTarget.traveler_name}</b> ({viewTarget.passport_number || '—'})
+                  {t('clinic.certificates.view.holderPrefix')}<b>{viewTarget.traveler_name}</b> ({viewTarget.passport_number || '—'})
                 </Typography>
                 <Typography variant="body2">
-                  النوع: <b>{certTypeMeta[viewTarget.certificate_type]?.label || viewTarget.certificate_type}</b>
+                  {t('clinic.certificates.view.typePrefix')}<b>{certTypeMeta[viewTarget.certificate_type]?.label || viewTarget.certificate_type}</b>
                 </Typography>
                 <Typography variant="body2">
-                  التوصية النهائية: <b>{verdictMeta[viewTarget.verdict] || viewTarget.verdict}</b>
+                  {t('clinic.certificates.view.verdictPrefix')}<b>{verdictMeta[viewTarget.verdict] || viewTarget.verdict}</b>
                 </Typography>
-                {viewTarget.decision && <Typography variant="body2">المضمون: {viewTarget.decision}</Typography>}
+                {viewTarget.decision && <Typography variant="body2">{t('clinic.certificates.view.contentPrefix')}{viewTarget.decision}</Typography>}
                 {viewTarget.valid_until && (
-                  <Typography variant="body2">صالحة حتى: <b>{formatDate(viewTarget.valid_until)}</b></Typography>
+                  <Typography variant="body2">{t('clinic.certificates.view.validUntilPrefix')}<b>{formatDate(viewTarget.valid_until)}</b></Typography>
                 )}
                 {qrLoading ? (
                   <Stack alignItems="center" sx={{ py: 2 }}>
@@ -304,28 +328,28 @@ const CertificatesPage = () => {
                   <Stack alignItems="center" spacing={0.5}>
                     <img
                       src={`data:image/png;base64,${viewTarget.qr_png}`}
-                      alt="رمز التحقق"
+                      alt={t('clinic.certificates.view.qrAlt')}
                       width={150}
                       height={150}
                       style={{ borderRadius: 12, border: '1px solid #dfe5e2' }}
                     />
                     <Typography variant="caption" color="text.secondary">
-                      تحقق: {window.location.origin}{viewTarget.verification_path || ''}
+                      {t('clinic.certificates.view.verifyPrefix')}{window.location.origin}{viewTarget.verification_path || ''}
                     </Typography>
                   </Stack>
                 ) : null}
               </Stack>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
-              <Button onClick={() => setViewTarget(null)} sx={{ fontWeight: 700 }}>إغلاق</Button>
+              <Button onClick={() => setViewTarget(null)} sx={{ fontWeight: 700 }}>{t('clinic.common.close')}</Button>
               {viewTarget.status === 'ACTIVE' && (
                 <Button
                   variant="contained"
                   startIcon={<PrintIcon />}
-                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png, (user as AuthUser | null)?.organization_name ?? undefined)}
+                  onClick={() => printCertificate(viewTarget, viewTarget.qr_png, (user as AuthUser | null)?.organization_name ?? undefined, t)}
                   sx={{ fontWeight: 700 }}
                 >
-                  طباعة
+                  {t('clinic.certificates.action.print')}
                 </Button>
               )}
             </DialogActions>
@@ -334,14 +358,14 @@ const CertificatesPage = () => {
       </Dialog>
 
       <Dialog open={Boolean(revokeTarget)} onClose={() => setRevokeTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>إلغاء الشهادة</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('clinic.certificates.revoke.dialogTitle')}</DialogTitle>
         <DialogContent dividers>
           <Typography variant="body2" color="text.secondary">
-            هل أنت متأكد من إلغاء الشهادة «{revokeTarget?.certificate_number}»؟ لن تكون صالحة بعد الآن لفقد صلاحية التحقق.
+            {t('clinic.certificates.revoke.confirmMessage', { number: revokeTarget?.certificate_number })}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setRevokeTarget(null)} sx={{ fontWeight: 700 }}>تراجع</Button>
+          <Button onClick={() => setRevokeTarget(null)} sx={{ fontWeight: 700 }}>{t('clinic.certificates.revoke.cancel')}</Button>
           <Button
             variant="contained"
             color="error"
@@ -350,7 +374,7 @@ const CertificatesPage = () => {
             disabled={revoking}
             sx={{ fontWeight: 700 }}
           >
-            تأكيد الإلغاء
+            {t('clinic.certificates.revoke.confirm')}
           </Button>
         </DialogActions>
       </Dialog>
