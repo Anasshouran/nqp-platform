@@ -5,6 +5,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme, type Theme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 const resolveTone = (theme: Theme, tone?: string): string => {
   if (!tone || tone === 'primary.main') return theme.palette.primary.main;
@@ -228,102 +229,106 @@ export const QueueRail = ({
   items,
   active,
   onNavigate,
-  label = 'أقسام اللوحة',
+  label,
 }: {
   items: QueueRailItem[];
   active: string;
   onNavigate: (id: string) => void;
   label?: string;
-}) => (
-  <Stack spacing={1} role="navigation" aria-label={label}>
-    <Typography
-      variant="overline"
-      sx={{ color: 'text.disabled', fontWeight: 700, fontSize: 11, letterSpacing: '0.1em', display: 'block', mb: 0.25 }}
-    >
-      {label}
-    </Typography>
-    {items.map((it) => {
-      const current = active === it.id;
-      const tone = it.tone ?? '#0c7f6a';
-      const showCount = it.count !== undefined && it.count > 0;
-      return (
-        <Box
-          key={it.id}
-          role="button"
-          tabIndex={0}
-          aria-pressed={current || undefined}
-          onClick={() => onNavigate(it.id)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate(it.id);
-            }
-          }}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.25,
-            p: 1.1,
-            borderRadius: 2.5,
-            cursor: 'pointer',
-            outline: 'none',
-            bgcolor: current ? `${tone}12` : 'rgba(255,255,255,0.7)',
-            border: `1px solid ${current ? `${tone}55` : 'rgba(16,40,34,0.08)'}`,
-            transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
-            '&:hover, &:focus-visible': {
-              borderColor: tone,
-              boxShadow: `0 6px 18px -10px ${alpha(tone, 0.4)}`,
-              transform: 'translateY(-1px)',
-            },
-          }}
-        >
+}) => {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('clinic.shared.queueRail.label');
+  return (
+    <Stack spacing={1} role="navigation" aria-label={resolvedLabel}>
+      <Typography
+        variant="overline"
+        sx={{ color: 'text.disabled', fontWeight: 700, fontSize: 11, letterSpacing: '0.1em', display: 'block', mb: 0.25 }}
+      >
+        {resolvedLabel}
+      </Typography>
+      {items.map((it) => {
+        const current = active === it.id;
+        const tone = it.tone ?? '#0c7f6a';
+        const showCount = it.count !== undefined && it.count > 0;
+        return (
           <Box
+            key={it.id}
+            role="button"
+            tabIndex={0}
+            aria-pressed={current || undefined}
+            onClick={() => onNavigate(it.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigate(it.id);
+              }
+            }}
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 2,
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0,
-              bgcolor: current ? `${tone}1f` : 'rgba(16,40,34,0.05)',
-              color: current ? tone : 'text.secondary',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              p: 1.1,
+              borderRadius: 2.5,
+              cursor: 'pointer',
+              outline: 'none',
+              bgcolor: current ? `${tone}12` : 'rgba(255,255,255,0.7)',
+              border: `1px solid ${current ? `${tone}55` : 'rgba(16,40,34,0.08)'}`,
+              transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
+              '&:hover, &:focus-visible': {
+                borderColor: tone,
+                boxShadow: `0 6px 18px -10px ${alpha(tone, 0.4)}`,
+                transform: 'translateY(-1px)',
+              },
             }}
           >
-            {it.icon}
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: 12.5, color: current ? tone : 'inherit' }} noWrap>
-              {it.label}
-            </Typography>
-            {it.hint && (
-              <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', fontSize: 10.5, fontWeight: 600 }}>
-                {it.hint}
-              </Typography>
-            )}
-          </Box>
-          {showCount && (
             <Box
               sx={{
-                minWidth: 26,
-                height: 22,
-                px: 0.75,
-                borderRadius: '999px',
+                width: 32,
+                height: 32,
+                borderRadius: 2,
                 display: 'grid',
                 placeItems: 'center',
-                bgcolor: current ? tone : 'rgba(16,40,34,0.08)',
-                color: current ? '#fff' : 'text.secondary',
-                fontWeight: 700,
-                fontSize: 12,
+                flexShrink: 0,
+                bgcolor: current ? `${tone}1f` : 'rgba(16,40,34,0.05)',
+                color: current ? tone : 'text.secondary',
               }}
             >
-              {it.count}
+              {it.icon}
             </Box>
-          )}
-        </Box>
-      );
-    })}
-  </Stack>
-);
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: 12.5, color: current ? tone : 'inherit' }} noWrap>
+                {it.label}
+              </Typography>
+              {it.hint && (
+                <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', fontSize: 10.5, fontWeight: 600 }}>
+                  {it.hint}
+                </Typography>
+              )}
+            </Box>
+            {showCount && (
+              <Box
+                sx={{
+                  minWidth: 26,
+                  height: 22,
+                  px: 0.75,
+                  borderRadius: '999px',
+                  display: 'grid',
+                  placeItems: 'center',
+                  bgcolor: current ? tone : 'rgba(16,40,34,0.08)',
+                  color: current ? '#fff' : 'text.secondary',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                {it.count}
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+    </Stack>
+  );
+};
 
 export interface NotifItem {
   id: string;
@@ -337,102 +342,107 @@ export interface NotifItem {
 
 export const NotificationPanel = ({
   items,
-  title = 'التنبيهات والمتابعة',
-  emptyText = 'لا توجد عناصر بحاجة إلى إجراء حالياً',
+  title,
+  emptyText,
 }: {
   items: NotifItem[];
   title?: string;
   emptyText?: string;
-}) => (
-  <GlassPanel accent="linear-gradient(90deg, #c2410c, transparent)">
-    <Box sx={{ p: 2.25 }}>
-      <Typography
-        variant="overline"
-        sx={{ display: 'block', color: 'text.disabled', fontWeight: 700, fontSize: 11, letterSpacing: '0.1em', mb: 1.25 }}
-      >
-        {title}
-      </Typography>
-      {items.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ py: 1.5, textAlign: 'center' }}>
-          {emptyText}
+}) => {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t('clinic.shared.notifications.title');
+  const resolvedEmpty = emptyText ?? t('clinic.shared.notifications.empty');
+  return (
+    <GlassPanel accent="linear-gradient(90deg, #c2410c, transparent)">
+      <Box sx={{ p: 2.25 }}>
+        <Typography
+          variant="overline"
+          sx={{ display: 'block', color: 'text.disabled', fontWeight: 700, fontSize: 11, letterSpacing: '0.1em', mb: 1.25 }}
+        >
+          {resolvedTitle}
         </Typography>
-      ) : (
-        <Stack spacing={1.1}>
-          {items.map((it) => (
-            <Box
-              key={it.id}
-              role="button"
-              tabIndex={0}
-              onClick={it.onClick}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  it.onClick();
-                }
-              }}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                p: 1.25,
-                borderRadius: 2.5,
-                cursor: 'pointer',
-                outline: 'none',
-                border: `1px solid ${it.tone}2b`,
-                bgcolor: `${it.tone}0d`,
-                transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
-                '&:hover, &:focus-visible': {
-                  borderColor: it.tone,
-                  boxShadow: `0 8px 20px -12px ${alpha(it.tone, 0.45)}`,
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
+        {items.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ py: 1.5, textAlign: 'center' }}>
+            {resolvedEmpty}
+          </Typography>
+        ) : (
+          <Stack spacing={1.1}>
+            {items.map((it) => (
               <Box
+                key={it.id}
+                role="button"
+                tabIndex={0}
+                onClick={it.onClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    it.onClick();
+                  }
+                }}
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 2.25,
-                  display: 'grid',
-                  placeItems: 'center',
-                  flexShrink: 0,
-                  bgcolor: `${it.tone}1c`,
-                  color: it.tone,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.25,
+                  p: 1.25,
+                  borderRadius: 2.5,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  border: `1px solid ${it.tone}2b`,
+                  bgcolor: `${it.tone}0d`,
+                  transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
+                  '&:hover, &:focus-visible': {
+                    borderColor: it.tone,
+                    boxShadow: `0 8px 20px -12px ${alpha(it.tone, 0.45)}`,
+                    transform: 'translateY(-1px)',
+                  },
                 }}
               >
-                {it.icon}
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 2.25,
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0,
+                    bgcolor: `${it.tone}1c`,
+                    color: it.tone,
+                  }}
+                >
+                  {it.icon}
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: 12.5 }}>{it.label}</Typography>
+                  {it.detail && (
+                    <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', fontSize: 10.5, fontWeight: 600 }}>
+                      {it.detail}
+                    </Typography>
+                  )}
+                </Box>
+                <Box
+                  sx={{
+                    minWidth: 28,
+                    height: 24,
+                    px: 0.75,
+                    borderRadius: '999px',
+                    display: 'grid',
+                    placeItems: 'center',
+                    bgcolor: it.tone,
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                  }}
+                >
+                  {it.count}
+                </Box>
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: 12.5 }}>{it.label}</Typography>
-                {it.detail && (
-                  <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', fontSize: 10.5, fontWeight: 600 }}>
-                    {it.detail}
-                  </Typography>
-                )}
-              </Box>
-              <Box
-                sx={{
-                  minWidth: 28,
-                  height: 24,
-                  px: 0.75,
-                  borderRadius: '999px',
-                  display: 'grid',
-                  placeItems: 'center',
-                  bgcolor: it.tone,
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 12.5,
-                }}
-              >
-                {it.count}
-              </Box>
-            </Box>
-          ))}
-        </Stack>
-      )}
-    </Box>
-  </GlassPanel>
-);
+            ))}
+          </Stack>
+        )}
+      </Box>
+    </GlassPanel>
+  );
+};
 
 export const PassportChip = ({ number }: { number?: string }) => (
   <Chip

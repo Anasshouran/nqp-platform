@@ -2586,6 +2586,84 @@
       "badges": {
         "interactions": "{{count}} تفاعلات"
       }
+    },
+    "shared": {
+      "isolationType": {
+        "hospital": "تحويل للمستشفى",
+        "clinicIsolation": "عزل بالعيادة",
+        "quarantine": "حجر صحي إجباري"
+      },
+      "isolationStatus": {
+        "active": "جاري",
+        "released": "خروج",
+        "removed": "إنهاء/إلغاء"
+      },
+      "healthStatus": {
+        "stable": "مستقر",
+        "improving": "أفضل",
+        "worsening": "تدهور",
+        "critical": "حرج"
+      },
+      "isoSeverity": {
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "critical": "حرج"
+      },
+      "queueRail": {
+        "label": "أقسام اللوحة"
+      },
+      "notifications": {
+        "title": "التنبيهات والمتابعة",
+        "empty": "لا توجد عناصر بحاجة إلى إجراء حالياً"
+      }
+    },
+    "registerPatient": {
+      "header": {
+        "title": "تسجيل حالة جديدة",
+        "subtitle": "تسجيل الحضور المباشر أو استدعاء ملف مريض سابق لعيادة الحجر الصحي",
+        "eyebrow": "عيادة الحجر الصحي"
+      },
+      "sections": {
+        "searchPrevious": "البحث عن مريض سابق",
+        "newCase": "بيانات الحالة الجديدة"
+      },
+      "search": {
+        "placeholder": "رقم الجواز، رقم الملف MR-… أو الاسم",
+        "action": "بحث",
+        "select": "تحديد",
+        "searching": "جاري البحث…"
+      },
+      "form": {
+        "passport": "رقم الجواز *",
+        "firstName": "الاسم الأول *",
+        "lastName": "اسم العائلة *",
+        "dateOfBirth": "تاريخ الميلاد *",
+        "nationality": "الجنسية",
+        "clinicUnit": "وحدة العيادة",
+        "mobile": "الجوال",
+        "notes": "ملاحظات (سبب الحضور)",
+        "submitting": "جاري التسجيل…",
+        "submit": "تسجيل الحالة وإضافة للطابور"
+      },
+      "referral": {
+        "created": "تم إنشاء إحالة بانتظار القبول — يمكن قبولها من تبويب الإحالات"
+      },
+      "qr": {
+        "title": "الملف الطبي الموحد",
+        "alt": "QR الملف الطبي",
+        "hint": "امسح الرمز لاستدعاء ملف المريض داخل وحدة العيادة",
+        "goToReferrals": "الذهاب للإحالات",
+        "print": "طباعة"
+      },
+      "messages": {
+        "patientRegistered": "تم تسجيل {{name}} برقم ملف {{fileNo}}"
+      },
+      "errors": {
+        "loadClinicsFailed": "تعذر تحميل العيادات",
+        "searchFailed": "تعذر البحث عن المريض",
+        "registrationFailed": "تعذر تسجيل المريض"
+      }
     }
   }
 }

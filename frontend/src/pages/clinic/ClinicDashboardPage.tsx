@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -56,7 +57,7 @@ import type { Clinic, ClinicDashboard, ClinicReferral, ClinicReport, ClinicVisit
 import { formatDateTime, formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { referralStatus } from '../../utils/status';
-import { healthStatusMeta, isolationStatusMeta, isolationTypeMeta } from '../../utils/clinicStatus';
+import { getHealthStatusMeta, getIsolationTypeMeta } from '../../utils/clinicStatus';
 import { GlassPanel, NotificationPanel, PassportChip, PersonAvatar, QueueRail, type NotifItem, ScreenReaderText, SectionHeader, type QueueRailItem } from './ui';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import { ReferralDecisionDrawer } from './ReferralDecisionDrawer';
@@ -128,6 +129,9 @@ const buildActivity = (visits: ClinicVisit[]) => {
 
 export const ClinicDashboardPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const isolationTypeMeta = useMemo(() => getIsolationTypeMeta(t), [t]);
+  const healthStatusMeta = useMemo(() => getHealthStatusMeta(t), [t]);
   const { user } = useAuth();
   const [data, setData] = useState<ClinicDashboard | null>(null);
   const [referrals, setReferrals] = useState<ClinicReferral[]>([]);

@@ -2586,6 +2586,84 @@
       "badges": {
         "interactions": "{{count}} interactions"
       }
+    },
+    "shared": {
+      "isolationType": {
+        "hospital": "Hospital Transfer",
+        "clinicIsolation": "Clinic Isolation",
+        "quarantine": "Mandatory Quarantine"
+      },
+      "isolationStatus": {
+        "active": "Active",
+        "released": "Released",
+        "removed": "Terminated/Cancelled"
+      },
+      "healthStatus": {
+        "stable": "Stable",
+        "improving": "Improving",
+        "worsening": "Worsening",
+        "critical": "Critical"
+      },
+      "isoSeverity": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "queueRail": {
+        "label": "Dashboard sections"
+      },
+      "notifications": {
+        "title": "Alerts & Follow-up",
+        "empty": "No items require action right now"
+      }
+    },
+    "registerPatient": {
+      "header": {
+        "title": "Register New Case",
+        "subtitle": "Register a walk-in or pull up an existing patient file for the quarantine clinic",
+        "eyebrow": "Quarantine Clinic"
+      },
+      "sections": {
+        "searchPrevious": "Search Previous Patient",
+        "newCase": "New Case Details"
+      },
+      "search": {
+        "placeholder": "Passport number, file number MR-… or name",
+        "action": "Search",
+        "select": "Select",
+        "searching": "Searching…"
+      },
+      "form": {
+        "passport": "Passport Number *",
+        "firstName": "First Name *",
+        "lastName": "Family Name *",
+        "dateOfBirth": "Date of Birth *",
+        "nationality": "Nationality",
+        "clinicUnit": "Clinic Unit",
+        "mobile": "Mobile",
+        "notes": "Notes (reason for visit)",
+        "submitting": "Registering…",
+        "submit": "Register Case and Add to Queue"
+      },
+      "referral": {
+        "created": "A referral was created and is awaiting acceptance — you can accept it from the Referrals tab"
+      },
+      "qr": {
+        "title": "Unified Medical File",
+        "alt": "Medical file QR",
+        "hint": "Scan the code to retrieve the patient file inside the clinic unit",
+        "goToReferrals": "Go to Referrals",
+        "print": "Print"
+      },
+      "messages": {
+        "patientRegistered": "{{name}} was registered with file number {{fileNo}}"
+      },
+      "errors": {
+        "loadClinicsFailed": "Failed to load clinics",
+        "searchFailed": "Failed to search for the patient",
+        "registrationFailed": "Failed to register the patient"
+      }
     }
   }
 }
