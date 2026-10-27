@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
 import PrescriptionIcon from '@mui/icons-material/Inventory2';
+import { useTranslation } from 'react-i18next';
 import {
   PageHeader,
   DataTable,
@@ -21,6 +22,7 @@ import type { Reagent, ReagentLot } from '../../types/laboratory';
 import { notifyError, notifySuccess } from '../../utils/toast';
 
 const NqlisReagents = () => {
+  const { t } = useTranslation();
   const { sector } = useLabScope();
   const reagents = useServerTable<Reagent>({ fetchData: getReagents });
   const lots = useServerTable<ReagentLot>({ fetchData: getReagentLots });
@@ -30,6 +32,15 @@ const NqlisReagents = () => {
     lots.setFilter('sector', sector ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sector]);
+
+  const materialTypeOptions = useMemo(
+    () => [
+      { value: 'REAGENT', label: t('laboratory.nqlisReagents.matReagent') },
+      { value: 'CONTROL', label: t('laboratory.nqlisReagents.matControl') },
+      { value: 'CONSUMABLE', label: t('laboratory.nqlisReagents.matConsumable') },
+    ],
+    [t],
+  );
 
   const [tab, setTab] = useState<'reagents' | 'lots'>('reagents');
   const [open, setOpen] = useState(false);
@@ -44,52 +55,52 @@ const NqlisReagents = () => {
     try {
       if (tab === 'reagents') {
         await createReagent(reagentForm);
-        notifySuccess('تمت إضافة المادة');
+        notifySuccess(t('laboratory.nqlisReagents.materialAdded'));
         setReagentForm({ name_ar: '', material_type: 'REAGENT', unit: '' });
         reagents.refresh();
       } else {
         await createReagentLot({ ...lotForm, quantity: lotForm.quantity ? Number(lotForm.quantity) : 0 });
-        notifySuccess('تمت إضافة الدفعة');
+        notifySuccess(t('laboratory.nqlisReagents.lotAdded'));
         setLotForm({ reagent: '', lot_number: '', quantity: '', unit: '', expiry_date: '' });
         lots.refresh();
         reagents.refresh();
       }
       setOpen(false);
     } catch {
-      notifyError('تعذر الحفظ');
+      notifyError(t('laboratory.shared.saveError'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const reagentColumns: DataTableColumn<Reagent>[] = [
-    { key: 'name_ar', label: 'المادة', render: (r) => <Typography fontWeight={700}>{r.name_ar}</Typography> },
-    { key: 'name_en', label: 'الاسم الإنجليزي', hideOnMobile: true },
-    { key: 'section_name', label: 'القسم', hideOnMobile: true },
-    { key: 'material_type', label: 'النوع', render: (r) => r.material_type },
-    { key: 'total_quantity', label: 'الكمية', render: (r) => `${r.total_quantity} ${r.unit}` },
-    { key: 'low_stock', label: 'المخزون', render: (r) => r.low_stock ? <StatusChip label="منخفض" tone="error" /> : <StatusChip label="كافٍ" tone="success" /> },
-    { key: 'reorder_level', label: 'حد إعادة الطلب', render: (r) => r.reorder_level || '—', hideOnMobile: true },
+    { key: 'name_ar', label: t('laboratory.nqlisReagents.colMaterial'), render: (r) => <Typography fontWeight={700}>{r.name_ar}</Typography> },
+    { key: 'name_en', label: t('laboratory.nqlisReagents.colNameEn'), hideOnMobile: true },
+    { key: 'section_name', label: t('laboratory.shared.colSection'), hideOnMobile: true },
+    { key: 'material_type', label: t('laboratory.shared.colType'), render: (r) => r.material_type },
+    { key: 'total_quantity', label: t('laboratory.nqlisReagents.colQty'), render: (r) => `${r.total_quantity} ${r.unit}` },
+    { key: 'low_stock', label: t('laboratory.nqlisReagents.colStock'), render: (r) => r.low_stock ? <StatusChip label={t('laboratory.nqlisReagents.lowStock')} tone="error" /> : <StatusChip label={t('laboratory.nqlisReagents.sufficient')} tone="success" /> },
+    { key: 'reorder_level', label: t('laboratory.nqlisReagents.colReorder'), render: (r) => r.reorder_level || '—', hideOnMobile: true },
   ];
 
   const lotColumns: DataTableColumn<ReagentLot>[] = [
-    { key: 'reagent_name', label: 'المادة', render: (l) => <Typography fontWeight={700}>{l.reagent_name}</Typography> },
-    { key: 'lot_number', label: 'رقم الدفعة', render: (l) => <Typography sx={{ fontFamily: 'monospace' }}>{l.lot_number}</Typography> },
-    { key: 'batch_number', label: 'رقم التشغيلة', hideOnMobile: true },
-    { key: 'quantity', label: 'الكمية', render: (l) => `${l.quantity} ${l.unit}` },
-    { key: 'expiry_date', label: 'تاريخ الانتهاء', render: (l) => formatDate(l.expiry_date) },
-    { key: 'status', label: 'الحالة', render: (l) => {
-        if (l.is_expired) return <StatusChip label="منتهي" tone="error" />;
-        if (l.status === 'EXPIRING_SOON') return <StatusChip label="قريب الانتهاء" tone="warning" />;
-        return <StatusChip label="سارٍ" tone="success" />;
+    { key: 'reagent_name', label: t('laboratory.nqlisReagents.colMaterial'), render: (l) => <Typography fontWeight={700}>{l.reagent_name}</Typography> },
+    { key: 'lot_number', label: t('laboratory.nqlisReagents.colLotNumber'), render: (l) => <Typography sx={{ fontFamily: 'monospace' }}>{l.lot_number}</Typography> },
+    { key: 'batch_number', label: t('laboratory.shared.batchNumber'), hideOnMobile: true },
+    { key: 'quantity', label: t('laboratory.nqlisReagents.colQty'), render: (l) => `${l.quantity} ${l.unit}` },
+    { key: 'expiry_date', label: t('laboratory.nqlisReagents.colExpiry'), render: (l) => formatDate(l.expiry_date) },
+    { key: 'status', label: t('laboratory.shared.colStatus'), render: (l) => {
+        if (l.is_expired) return <StatusChip label={t('laboratory.nqlisReagents.expired')} tone="error" />;
+        if (l.status === 'EXPIRING_SOON') return <StatusChip label={t('laboratory.nqlisReagents.expiring')} tone="warning" />;
+        return <StatusChip label={t('laboratory.nqlisReagents.valid')} tone="success" />;
       } },
   ];
 
   return (
     <Box>
       <PageHeader
-        title="المواد والكواشف"
-        subtitle="إدارة الكواشف ودفعاتها في مختبرات NQLIS"
+        title={t('laboratory.nqlisReagents.title')}
+        subtitle={t('laboratory.nqlisReagents.subtitle')}
         eyebrow="NQLIS"
       />
       <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
@@ -101,7 +112,7 @@ const NqlisReagents = () => {
             color: tab === 'reagents' ? 'primary.contrastText' : 'inherit',
           }}
         >
-          المواد ({reagents.count})
+          {t('laboratory.nqlisReagents.tabReagents', { count: reagents.count })}
         </Box>
         <Box
           onClick={() => setTab('lots')}
@@ -111,7 +122,7 @@ const NqlisReagents = () => {
             color: tab === 'lots' ? 'primary.contrastText' : 'inherit',
           }}
         >
-          الدفعات ({lots.count})
+          {t('laboratory.nqlisReagents.tabLots', { count: lots.count })}
         </Box>
       </Stack>
 
@@ -126,13 +137,13 @@ const NqlisReagents = () => {
           pageSizeOptions={reagents.pageSizeOptions}
           loading={reagents.loading}
           error={reagents.error}
-          title="المواد"
-          subtitle={`${reagents.count} مادة`}
+          title={t('laboratory.nqlisReagents.tableReagents')}
+          subtitle={t('laboratory.nqlisReagents.tableReagentsSub', { count: reagents.count })}
           onPageChange={reagents.setPage}
           onRowsPerPageChange={reagents.setRowsPerPage}
           onRefresh={reagents.refresh}
           toolbar={
-            <AppButton variant="primary" startIcon={<AddIcon />} onClick={() => setOpen(true)}>مادة جديدة</AppButton>
+            <AppButton variant="primary" startIcon={<AddIcon />} onClick={() => setOpen(true)}>{t('laboratory.nqlisReagents.newMaterial')}</AppButton>
           }
         />
       ) : (
@@ -146,20 +157,20 @@ const NqlisReagents = () => {
           pageSizeOptions={lots.pageSizeOptions}
           loading={lots.loading}
           error={lots.error}
-          title="دفعات المواد"
-          subtitle={`${lots.count} دفعة`}
+          title={t('laboratory.nqlisReagents.tableLots')}
+          subtitle={t('laboratory.nqlisReagents.tableLotsSub', { count: lots.count })}
           onPageChange={lots.setPage}
           onRowsPerPageChange={lots.setRowsPerPage}
           onRefresh={lots.refresh}
           toolbar={
-            <AppButton variant="primary" startIcon={<AddIcon />} onClick={() => setOpen(true)}>دفعة جديدة</AppButton>
+            <AppButton variant="primary" startIcon={<AddIcon />} onClick={() => setOpen(true)}>{t('laboratory.nqlisReagents.newLot')}</AppButton>
           }
         />
       )}
 
       <FormDialog
         open={open}
-        title={tab === 'reagents' ? 'إضافة مادة/كاشف' : 'إضافة دفعة'}
+        title={tab === 'reagents' ? t('laboratory.nqlisReagents.dialogAddMaterial') : t('laboratory.nqlisReagents.dialogAddLot')}
         icon={<PrescriptionIcon />}
         onClose={() => setOpen(false)}
         onSubmit={handleCreate}
@@ -167,24 +178,24 @@ const NqlisReagents = () => {
       >
         {tab === 'reagents' ? (
           <>
-            <FormTextField label="اسم المادة (عربي)" value={reagentForm.name_ar} onChange={(e) => setReagentForm({ ...reagentForm, name_ar: e.target.value })} />
+            <FormTextField label={t('laboratory.nqlisReagents.formName')} value={reagentForm.name_ar} onChange={(e) => setReagentForm({ ...reagentForm, name_ar: e.target.value })} />
             <Box sx={{ height: 16 }} />
-            <FormSelect label="نوع المادة" value={reagentForm.material_type} options={[{ value: 'REAGENT', label: 'كاشف' }, { value: 'CONTROL', label: 'عينة ضبط' }, { value: 'CONSUMABLE', label: 'مستهلك' }]} onChange={(v) => setReagentForm({ ...reagentForm, material_type: v })} />
+            <FormSelect label={t('laboratory.nqlisReagents.formType')} value={reagentForm.material_type} options={materialTypeOptions} onChange={(v) => setReagentForm({ ...reagentForm, material_type: v })} />
             <Box sx={{ height: 16 }} />
-            <FormTextField label="الوحدة" value={reagentForm.unit} onChange={(e) => setReagentForm({ ...reagentForm, unit: e.target.value })} />
+            <FormTextField label={t('laboratory.nqlisReagents.unit')} value={reagentForm.unit} onChange={(e) => setReagentForm({ ...reagentForm, unit: e.target.value })} />
           </>
         ) : (
           <>
-            <FormSelect label="المادة" value={lotForm.reagent} options={reagentOptions} onChange={(v) => setLotForm({ ...lotForm, reagent: v })} placeholder="اختر المادة" />
+            <FormSelect label={t('laboratory.nqlisReagents.colMaterial')} value={lotForm.reagent} options={reagentOptions} onChange={(v) => setLotForm({ ...lotForm, reagent: v })} placeholder={t('laboratory.nqlisReagents.formMaterialPlaceholder')} />
             <Box sx={{ height: 16 }} />
-            <FormTextField label="رقم الدفعة" value={lotForm.lot_number} onChange={(e) => setLotForm({ ...lotForm, lot_number: e.target.value })} />
+            <FormTextField label={t('laboratory.nqlisReagents.colLotNumber')} value={lotForm.lot_number} onChange={(e) => setLotForm({ ...lotForm, lot_number: e.target.value })} />
             <Box sx={{ height: 16 }} />
             <Stack direction="row" spacing={2}>
-              <FormTextField label="الكمية" value={lotForm.quantity} onChange={(e) => setLotForm({ ...lotForm, quantity: e.target.value })} />
-              <FormTextField label="الوحدة" value={lotForm.unit} onChange={(e) => setLotForm({ ...lotForm, unit: e.target.value })} />
+              <FormTextField label={t('laboratory.nqlisReagents.colQty')} value={lotForm.quantity} onChange={(e) => setLotForm({ ...lotForm, quantity: e.target.value })} />
+              <FormTextField label={t('laboratory.nqlisReagents.unit')} value={lotForm.unit} onChange={(e) => setLotForm({ ...lotForm, unit: e.target.value })} />
             </Stack>
             <Box sx={{ height: 16 }} />
-            <FormTextField label="تاريخ الانتهاء" type="date" value={lotForm.expiry_date} onChange={(e) => setLotForm({ ...lotForm, expiry_date: e.target.value })} />
+            <FormTextField label={t('laboratory.nqlisReagents.colExpiry')} type="date" value={lotForm.expiry_date} onChange={(e) => setLotForm({ ...lotForm, expiry_date: e.target.value })} />
           </>
         )}
       </FormDialog>

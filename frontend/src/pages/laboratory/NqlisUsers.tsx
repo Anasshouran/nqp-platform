@@ -13,6 +13,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import KeyIcon from '@mui/icons-material/Key';
 import EditIcon from '@mui/icons-material/Edit';
 import ScienceIcon from '@mui/icons-material/Science';
+import { useTranslation } from 'react-i18next';
 import {
   DataTable,
   StatusChip,
@@ -63,11 +64,6 @@ interface ForState {
 
 const emptyForm: ForState = { id: null, email: '', full_name: '', phone: '', role: 'LAB_TECHNICIAN', password: '' };
 
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <PeopleIcon fontSize="small" /> },
-  { id: 'users', label: 'المستخدمون', icon: <ScienceIcon fontSize="small" /> },
-] as const;
-
 const fetchLabUsersPaginated = async (params: Record<string, unknown>): Promise<{ data: ApiResponse<PaginatedResponse<LabUser>> }> => {
   const res = await getLabUsers(params);
   const results = Array.isArray(res.data.data) ? res.data.data : [];
@@ -81,6 +77,7 @@ const fetchLabUsersPaginated = async (params: Record<string, unknown>): Promise<
 };
 
 const NqlisUsers = () => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const { sector } = useLabScope();
   const table = useServerTable<LabUser>({ fetchData: fetchLabUsersPaginated });
@@ -105,7 +102,15 @@ const NqlisUsers = () => {
   const [resetPassword, setResetPassword] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [loading]);
+  const sections = useMemo<CommandSectionDef[]>(
+    () => [
+      { id: 'overview', label: t('laboratory.shared.overview'), icon: <PeopleIcon fontSize="small" /> },
+      { id: 'users', label: t('laboratory.nqlisUsers.sectionUsers'), icon: <ScienceIcon fontSize="small" /> },
+    ],
+    [t],
+  );
+
+  const { active, register, scrollTo } = useCommandSections(sections, [loading, sections]);
 
   const canManage = !!currentUser && (currentUser.role === 'LAB_DIRECTOR' || currentUser.role === 'LAB_MANAGER');
 
@@ -151,16 +156,16 @@ const NqlisUsers = () => {
       };
       if (form.id) {
         await updateLabUser(form.id, payload);
-        notifySuccess('تم تحديث بيانات المستخدم');
+        notifySuccess(t('laboratory.nqlisUsers.updated'));
       } else {
         await createLabUser(payload);
-        notifySuccess('تم إنشاء المستخدم');
+        notifySuccess(t('laboratory.nqlisUsers.created'));
       }
       setDialogOpen(false);
       refresh();
       loadMeta();
     } catch {
-      notifyError('تعذر حفظ المستخدم');
+      notifyError(t('laboratory.nqlisUsers.saveError'));
     } finally {
       setSubmitting(false);
     }
@@ -171,11 +176,11 @@ const NqlisUsers = () => {
     setBusy(true);
     try {
       await updateLabUser(confirmUser.id, { is_active: !confirmUser.is_active });
-      notifySuccess(confirmUser.is_active ? 'تم تعطيل الحساب' : 'تم تفعيل الحساب');
+      notifySuccess(confirmUser.is_active ? t('laboratory.nqlisUsers.disabledMsg') : t('laboratory.nqlisUsers.enabledMsg'));
       refresh();
       loadMeta();
     } catch {
-      notifyError('تعذر تنفيذ العملية');
+      notifyError(t('laboratory.nqlisUsers.toggleError'));
     } finally {
       setBusy(false);
       setConfirmUser(null);
@@ -185,52 +190,75 @@ const NqlisUsers = () => {
   const handleResetPassword = async () => {
     if (!resetUser) return;
     if (resetPassword.length < 8) {
-      notifyError('كلمة المرور يجب ألا تقل عن 8 أحرف');
+      notifyError(t('laboratory.nqlisUsers.pwdTooShort'));
       return;
     }
     setResetSubmitting(true);
     try {
       await resetLabUserPassword(resetUser.id, resetPassword);
-      notifySuccess('تم إعادة تعيين كلمة المرور');
+      notifySuccess(t('laboratory.nqlisUsers.resetDone'));
       setResetUser(null);
       setResetPassword('');
     } catch {
-      notifyError('تعذر إعادة تعيين كلمة المرور');
+      notifyError(t('laboratory.nqlisUsers.resetError'));
     } finally {
       setResetSubmitting(false);
     }
   };
 
+  const exportHeaders = useMemo(
+    () => [
+      t('laboratory.nqlisUsers.colName'),
+      t('laboratory.nqlisUsers.colEmail'),
+      t('laboratory.nqlisUsers.colPhone'),
+      t('laboratory.nqlisUsers.colRole'),
+      t('laboratory.shared.colStatus'),
+      t('laboratory.nqlisUsers.colLastLogin'),
+      t('laboratory.nqlisUsers.colCreated'),
+    ],
+    [t],
+  );
+
+  const activeLabel = t('laboratory.nqlisUsers.active');
+  const disabledLabel = t('laboratory.nqlisUsers.disabled');
+
   const columns = useMemo<DataTableColumn<LabUser>[]>(
     () => [
-      { key: 'full_name', label: 'الاسم', render: (u) => <Typography fontWeight={700}>{u.full_name}</Typography> },
-      { key: 'email', label: 'البريد الإلكتروني', hideOnMobile: true },
-      { key: 'phone', label: 'الجوال', render: (u) => u.phone || '—', hideOnMobile: true },
-      { key: 'role', label: 'الدور', render: (u) => {
+      { key: 'full_name', label: t('laboratory.nqlisUsers.colName'), render: (u) => <Typography fontWeight={700}>{u.full_name}</Typography> },
+      { key: 'email', label: t('laboratory.nqlisUsers.colEmail'), hideOnMobile: true },
+      { key: 'phone', label: t('laboratory.nqlisUsers.colPhone'), render: (u) => u.phone || '—', hideOnMobile: true },
+      { key: 'role', label: t('laboratory.nqlisUsers.colRole'), render: (u) => {
           if (!u.role) return <StatusChip label="—" tone="neutral" />;
           const r = roles.find((x) => x.code === u.role);
           return <StatusChip label={r ? r.name_ar : u.role} tone={roleTone[u.role] || 'neutral'} />;
         } },
-      { key: 'is_active', label: 'الحالة', render: (u) => (u.is_active ? <StatusChip label="نشط" tone="success" /> : <StatusChip label="معطل" tone="neutral" />) },
-      { key: 'last_login', label: 'آخر دخول', render: (u) => (u.last_login ? formatDateTime(u.last_login) : '—'), hideOnMobile: true },
-      { key: 'created_at', label: 'تاريخ الإنشاء', render: (u) => formatDateTime(u.created_at), hideOnMobile: true },
+      { key: 'is_active', label: t('laboratory.shared.colStatus'), render: (u) => (u.is_active ? <StatusChip label={activeLabel} tone="success" /> : <StatusChip label={disabledLabel} tone="neutral" />) },
+      { key: 'last_login', label: t('laboratory.nqlisUsers.colLastLogin'), render: (u) => (u.last_login ? formatDateTime(u.last_login) : '—'), hideOnMobile: true },
+      { key: 'created_at', label: t('laboratory.nqlisUsers.colCreated'), render: (u) => formatDateTime(u.created_at), hideOnMobile: true },
     ],
-    [roles]
+    [roles, t, activeLabel, disabledLabel]
   );
+
+  const isAdmin = Boolean(confirmUser?.is_active);
+  const confirmTitle = isAdmin ? t('laboratory.nqlisUsers.disableAccount') : t('laboratory.nqlisUsers.enableAccount');
+  const confirmMessage = isAdmin
+    ? t('laboratory.nqlisUsers.confirmDisable', { name: confirmUser?.full_name ?? '' })
+    : t('laboratory.nqlisUsers.confirmEnable', { name: confirmUser?.full_name ?? '' });
+  const confirmLabel = isAdmin ? t('laboratory.nqlisUsers.disable') : t('laboratory.nqlisUsers.enable');
 
   return (
     <Box>
       <DashboardHero
         eyebrow="NQLIS Users"
-        title="مستخدمو المختبر"
-        subtitle="فريق عمل المعمل القومي للحجر الصحي — الحسابات والأدوار والصلاحيات"
+        title={t('laboratory.nqlisUsers.title')}
+        subtitle={t('laboratory.nqlisUsers.subtitle')}
         gradient="emerald"
-        avatarLabel={(currentUser?.full_name || 'م').slice(0, 1)}
+        avatarLabel={(currentUser?.full_name || t('laboratory.nqlisUsers.avatarFallback')).slice(0, 1)}
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('laboratory.shared.live')}
           </Box>,
         ]}
       />
@@ -238,11 +266,11 @@ const NqlisUsers = () => {
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={sections}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام الصفحة"
+            label={t('laboratory.nqlisUsers.railLabel')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -250,10 +278,10 @@ const NqlisUsers = () => {
       <Box component="section" ref={register('overview')} data-section="overview" sx={{ scrollMarginTop: '80px' }}>
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
         {[
-          { icon: <PeopleIcon />, value: stats.total, label: 'إجمالي المستخدمين', accent: 'primary.main' },
-          { icon: <VerifiedUserIcon />, value: stats.active, label: 'حسابات نشطة', accent: 'success.main' },
-          { icon: <BlockIcon />, value: stats.disabled, label: 'حسابات معطلة', accent: 'error.main' },
-          { icon: <ScienceIcon />, value: roles.length, label: 'أدوار المختبر', accent: 'info.main' },
+          { icon: <PeopleIcon />, value: stats.total, label: t('laboratory.nqlisUsers.kpiTotal'), accent: 'primary.main' },
+          { icon: <VerifiedUserIcon />, value: stats.active, label: t('laboratory.nqlisUsers.kpiActive'), accent: 'success.main' },
+          { icon: <BlockIcon />, value: stats.disabled, label: t('laboratory.nqlisUsers.kpiDisabled'), accent: 'error.main' },
+          { icon: <ScienceIcon />, value: roles.length, label: t('laboratory.nqlisUsers.kpiRoles'), accent: 'info.main' },
         ].map((k) => (
           <Grid item xs={12} sm={6} md={3} key={k.label}>
             <KpiCard icon={k.icon} value={k.value} label={k.label} accent={k.accent} />
@@ -273,14 +301,14 @@ const NqlisUsers = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="قائمة مستخدمي المختبر"
-        subtitle={`${count} مستخدم`}
+        title={t('laboratory.nqlisUsers.tableTitle')}
+        subtitle={t('laboratory.nqlisUsers.tableSubtitle', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالاسم أو البريد أو الجوال..."
+        searchPlaceholder={t('laboratory.nqlisUsers.searchPlaceholder')}
         filters={[
-          { key: 'role', label: 'الدور', options: roles.map((r) => ({ value: r.code, label: r.name_ar })), value: '', onChange: (v) => setFilter('role', v) },
-          { key: 'is_active', label: 'الحالة', options: [{ value: 'true', label: 'نشط' }, { value: 'false', label: 'معطل' }], value: '', onChange: (v) => setFilter('is_active', v) },
+          { key: 'role', label: t('laboratory.nqlisUsers.colRole'), options: roles.map((r) => ({ value: r.code, label: r.name_ar })), value: '', onChange: (v) => setFilter('role', v) },
+          { key: 'is_active', label: t('laboratory.shared.colStatus'), options: [{ value: 'true', label: activeLabel }, { value: 'false', label: disabledLabel }], value: '', onChange: (v) => setFilter('is_active', v) },
         ]}
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
@@ -289,31 +317,31 @@ const NqlisUsers = () => {
           <Stack direction="row" spacing={1}>
             <ExportButton
               filename={`nql-users-${new Date().toISOString().slice(0, 10)}`}
-              headers={['الاسم', 'البريد الإلكتروني', 'الجوال', 'الدور', 'الحالة', 'آخر دخول', 'تاريخ الإنشاء']}
-              rows={rows.map((u) => [u.full_name, u.email, u.phone || '', roleName(u.role), u.is_active ? 'نشط' : 'معطل', u.last_login ? formatDateTime(u.last_login) : '', formatDateTime(u.created_at)])}
+              headers={exportHeaders}
+              rows={rows.map((u) => [u.full_name, u.email, u.phone || '', roleName(u.role), u.is_active ? activeLabel : disabledLabel, u.last_login ? formatDateTime(u.last_login) : '', formatDateTime(u.created_at)])}
             />
             {canManage && (
-              <AppButton variant="primary" startIcon={<AddIcon />} onClick={openCreate}>مستخدم جديد</AppButton>
+              <AppButton variant="primary" startIcon={<AddIcon />} onClick={openCreate}>{t('laboratory.nqlisUsers.newUser')}</AppButton>
             )}
           </Stack>
         }
-        emptyTitle="لا يوجد مستخدمو مختبر"
-        emptyDescription="أضف مستخدماً جديداً لفريق المختبر"
+        emptyTitle={t('laboratory.nqlisUsers.emptyTitle')}
+        emptyDescription={t('laboratory.nqlisUsers.emptyDescription')}
         actions={(u) =>
           canManage ? (
             <Stack direction="row" spacing={0.5}>
-              <Tooltip title="إعادة تعيين كلمة المرور">
-                <IconButton aria-label="كلمة المرور" size="small" color="warning" onClick={() => { setResetUser(u); setResetPassword(''); }}>
+              <Tooltip title={t('laboratory.nqlisUsers.resetTip')}>
+                <IconButton aria-label={t('laboratory.nqlisUsers.pwdLabel')} size="small" color="warning" onClick={() => { setResetUser(u); setResetPassword(''); }}>
                   <KeyIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={u.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}>
-                <IconButton aria-label="إيقاف" size="small" color={u.is_active ? 'error' : 'success'} onClick={() => setConfirmUser(u)}>
+              <Tooltip title={u.is_active ? t('laboratory.nqlisUsers.disableAccount') : t('laboratory.nqlisUsers.enableAccount')}>
+                <IconButton aria-label={t('laboratory.nqlisUsers.toggleAria')} size="small" color={u.is_active ? 'error' : 'success'} onClick={() => setConfirmUser(u)}>
                   {u.is_active ? <BlockIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
                 </IconButton>
               </Tooltip>
-              <Tooltip title="تعديل">
-                <IconButton aria-label="تعديل" size="small" onClick={() => openEdit(u)}>
+              <Tooltip title={t('laboratory.nqlisUsers.editTip')}>
+                <IconButton aria-label={t('laboratory.nqlisUsers.editTip')} size="small" onClick={() => openEdit(u)}>
                   <EditIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -328,40 +356,40 @@ const NqlisUsers = () => {
 
       <FormDialog
         open={dialogOpen}
-        title={form.id ? 'تعديل مستخدم' : 'مستخدم جديد'}
+        title={form.id ? t('laboratory.nqlisUsers.dialogEdit') : t('laboratory.nqlisUsers.newUser')}
         icon={<PeopleIcon />}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmit}
         loading={submitting}
-        submitLabel={form.id ? 'حفظ التعديلات' : 'إنشاء المستخدم'}
+        submitLabel={form.id ? t('laboratory.nqlisUsers.submitEdit') : t('laboratory.nqlisUsers.submitCreate')}
       >
-        <FormTextField label="الاسم الكامل" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+        <FormTextField label={t('laboratory.nqlisUsers.lblFullName')} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
         <Box sx={{ height: 16 }} />
-        <FormTextField label="البريد الإلكتروني" value={form.email} type="email" onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+        <FormTextField label={t('laboratory.nqlisUsers.colEmail')} value={form.email} type="email" onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         <Box sx={{ height: 16 }} />
-        <FormTextField label="الجوال" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <FormTextField label={t('laboratory.nqlisUsers.colPhone')} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
         <Box sx={{ height: 16 }} />
         <FormSelect
-          label="الدور"
+          label={t('laboratory.nqlisUsers.colRole')}
           value={form.role}
           options={roles.map((r) => ({ value: r.code, label: r.name_ar }))}
           onChange={(v) => setForm({ ...form, role: v })}
         />
         <Box sx={{ height: 16 }} />
         <FormTextField
-          label={form.id ? 'كلمة مرور جديدة (اختياري)' : 'كلمة المرور'}
+          label={form.id ? t('laboratory.nqlisUsers.pwdNewOptional') : t('laboratory.nqlisUsers.pwdLabel')}
           value={form.password}
           type="password"
           onChange={(e) => setForm({ ...form, password: e.target.value })}
-          helperText="8 أحرف على الأقل"
+          helperText={t('laboratory.nqlisUsers.pwdHint')}
         />
       </FormDialog>
 
       <ConfirmDialog
         open={!!confirmUser}
-        title={confirmUser?.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}
-        message={`هل أنت متأكد من ${confirmUser?.is_active ? 'تعطيل' : 'تفعيل'} حساب "${confirmUser?.full_name}"؟`}
-        confirmLabel={confirmUser?.is_active ? 'تعطيل' : 'تفعيل'}
+        title={confirmTitle}
+        message={confirmMessage}
+        confirmLabel={confirmLabel}
         loading={busy}
         onConfirm={handleToggleActive}
         onClose={() => !busy && setConfirmUser(null)}
@@ -369,22 +397,22 @@ const NqlisUsers = () => {
 
       <FormDialog
         open={!!resetUser}
-        title="إعادة تعيين كلمة المرور"
+        title={t('laboratory.nqlisUsers.resetTip')}
         icon={<KeyIcon />}
         onClose={() => setResetUser(null)}
         onSubmit={handleResetPassword}
         loading={resetSubmitting}
-        submitLabel="إعادة التعيين"
+        submitLabel={t('laboratory.nqlisUsers.resetSubmit')}
       >
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          مستخدم: <strong>{resetUser?.full_name}</strong> ({resetUser?.email})
+          {t('laboratory.nqlisUsers.resetUserPrefix')} <strong>{resetUser?.full_name}</strong> ({resetUser?.email})
         </Typography>
         <FormTextField
-          label="كلمة المرور الجديدة"
+          label={t('laboratory.nqlisUsers.pwdNew')}
           value={resetPassword}
           type="password"
           onChange={(e) => setResetPassword(e.target.value)}
-          helperText="8 أحرف على الأقل"
+          helperText={t('laboratory.nqlisUsers.pwdHint')}
         />
       </FormDialog>
     </Box>
