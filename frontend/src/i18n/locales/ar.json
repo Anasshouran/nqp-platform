@@ -8,7 +8,10 @@
     "success": "تم بنجاح",
     "language": "اللغة",
     "arabic": "العربية",
-    "english": "English"
+    "english": "English",
+    "fallback": {
+      "doctor": "الطبيب"
+    }
   },
   "vaccination": {
     "أخرى": "أخرى",
@@ -2663,6 +2666,176 @@
         "loadClinicsFailed": "تعذر تحميل العيادات",
         "searchFailed": "تعذر البحث عن المريض",
         "registrationFailed": "تعذر تسجيل المريض"
+      }
+    },
+    "dashboard": {
+      "header": {
+        "title": "لوحة العيادة الطبية"
+      },
+      "actions": {
+        "registerCase": "تسجيل حالة",
+        "manageReferrals": "إدارة الإحالات",
+        "refresh": "تحديث البيانات",
+        "viewAll": "عرض الكل",
+        "allVisits": "كل الزيارات"
+      },
+      "phase": {
+        "registered": "مسجلة",
+        "triaged": "تم الفرز",
+        "examined": "فحص طبي",
+        "laboratory": "مختبر",
+        "decision": "القرار",
+        "certificate": "الشهادة",
+        "closed": "مغلقة"
+      },
+      "sections": {
+        "overview": "نظرة عامة",
+        "referrals": "قرارات الإحالة",
+        "visits": "الزيارات المفتوحة",
+        "charts": "المخططات والنشاط",
+        "isolation": "العزل والحجر الصحي",
+        "report": "تقرير وحدات العيادة"
+      },
+      "rail": {
+        "isolation": "العزل والحجر",
+        "report": "تقرير الوحدات",
+        "hintPending": "بانتظار قرارك",
+        "hintProgress": "قيد المتابعة",
+        "hintActive": "حالات نشطة"
+      },
+      "errors": {
+        "loadReportFailed": "تعذر تحميل تقرير العيادة",
+        "acceptReferralFailed": "تعذر قبول الإحالة",
+        "holdReferralFailed": "تعذر تأجيل الإحالة",
+        "releaseReferralFailed": "تعذر إعادة الإحالة",
+        "closeVisitFailed": "تعذر إغلاق الزيارة",
+        "rejectReferralFailed": "تعذر رفض الإحالة"
+      },
+      "messages": {
+        "referralAccepted": "تم قبول الإحالة وفتح زيارة جديدة",
+        "referralHeld": "تم تأجيل الإحالة للمراجعة",
+        "referralReleased": "أُعيدت الإحالة إلى قائمة الانتظار",
+        "referralRejected": "تم رفض الإحالة",
+        "visitClosed": "تم إغلاق الزيارة",
+        "visitClosedBy": "أُغلقت الزيارة من لوحة العيادة بتأكيد {{by}}"
+      },
+      "notif": {
+        "decisions": {
+          "label": "إحالات تنتظر قرارك",
+          "detail": "مراجعة الفحص ثم قبول أو رفض أو تأجيل"
+        },
+        "held": {
+          "label": "إحالات قيد المراجعة",
+          "detail": "مؤجلة — تُعاد للانتظار أو تُقبل كزيارة"
+        },
+        "decisionVisits": {
+          "label": "زيارات بانتظار القرار الطبي",
+          "detail": "في مرحلة القرار أو الشهادة"
+        },
+        "isolation": {
+          "label": "حالات عزل نشطة",
+          "detail": "تحتاج بلاغات حالة ومتابعة ووثائق خروج"
+        }
+      },
+      "kpi": {
+        "yourDecisions": "قرار بانتظارك",
+        "openVisits": "زيارات مفتوحة",
+        "closedVisits": "زيارات مغلقة",
+        "awaitingDecision": "بانتظار القرار الطبي",
+        "completedToday": "مكتملة اليوم",
+        "patients": "المرضى",
+        "trend": {
+          "inReview": "{{count}} قيد المراجعة",
+          "ofClosed": "منها {{count}} مغلقة",
+          "inIsolation": "{{count}} في العزل"
+        }
+      },
+      "table": {
+        "emptyTitle": "لا توجد إحالات",
+        "emptyDesc": "الإحالات الجديدة القادمة من محطات الفحص ستظهر هنا",
+        "cols": {
+          "traveler": "المسافر",
+          "symptoms": "الأعراض والفحص",
+          "station": "المنفذ · الوقت",
+          "status": "الحالة",
+          "actions": "إجراءات"
+        },
+        "openDecisionAria": "فتح قرار إحالة {{name}}",
+        "noSymptoms": "لا أعراض",
+        "completed": "مكتملة"
+      },
+      "chips": {
+        "fever": "حمّى",
+        "queueTurn": "دور {{no}}"
+      },
+      "referrals": {
+        "viewExamination": "عرض تفاصيل الفحص",
+        "viewExaminationAria": "عرض تفاصيل إحالة {{name}}",
+        "acceptReferral": "قبول الإحالة",
+        "acceptAria": "قبول إحالة {{name}}",
+        "rejectReferral": "رفض الإحالة",
+        "rejectAria": "رفض إحالة {{name}}"
+      },
+      "visits": {
+        "emptyNote": "لا توجد زيارات مفتوحة حالياً — عند قبول إحالة تُفتح زيارة جديدة تظهر هنا",
+        "allChip": "الكل",
+        "emptyPhase": "لا توجد زيارات في هذه المرحلة — اختر مرحلة أخرى",
+        "openFile": "فتح ملف الزيارة",
+        "openFileAria": "فتح زيارة {{name}}",
+        "closeVisitAria": "إغلاق زيارة {{name}}"
+      },
+      "dialogs": {
+        "closeVisit": "إغلاق الزيارة",
+        "rejectConfirm": "تأكيد الرفض",
+        "rejectQuestion": "هل أنت متأكد من رفض إحالة «{{name}}»؟ لن يتم فتح زيارة عيادة لهذا المسافر.",
+        "rejectReason": "سبب الرفض (اختياري)",
+        "closeQuestion": "هل أنت متأكد من إغلاق زيارة «{{name}}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع."
+      },
+      "charts": {
+        "funnelAria": "توزيع حالات الإحالات",
+        "funnelTitle": "مسار الإحالات",
+        "emptyTitle": "لا توجد إحالات بعد",
+        "emptyDesc": "ستظهر هنا إحالات العيادة بمجرد وصولها من الفحص المبدئي",
+        "srDonut": "توزيع حالات الإحالات — الإجمالي {{total}}: {{items}}.",
+        "srDonutSep": "، ",
+        "referralUnit": "إحالة",
+        "activityAria": "نشاط العيادة خلال سبعة أيام",
+        "activityTitle": "نشاط الأيام السبعة الأخيرة",
+        "openedVsClosed": "الزيارات المفتوحة مقابل المغلقة",
+        "emptyActivityTitle": "لا يوجد نشاط خلال الأسبوع",
+        "emptyActivityDesc": "سيتحدث الرسم البياني تلقائياً مع فتح وإغلاق الزيارات",
+        "srActivity": "نشاط الزيارات خلال الأيام السبعة: {{items}}.",
+        "srActivitySep": "، ",
+        "srDay": "{{label}}: {{opened}} مفتوحة و{{closed}} مغلقة",
+        "lazyHint": "مرِّر إليه لعرض المخططات المرتبطة بالشريحة الحالية",
+        "lazyNote": "تشمل مسار الإحالات ونشاط الأيام السبعة الأخيرة"
+      },
+      "isolation": {
+        "emptyTitle": "لا توجد حالات عزل",
+        "emptyDesc": "سجلات العزل والحجر الصحي ستظهر هنا",
+        "cols": {
+          "type": "نوع العزل",
+          "health": "الحالة الصحية",
+          "started": "البداية"
+        }
+      },
+      "report": {
+        "totalVisits": "إجمالي الزيارات",
+        "isolated": "حالات عزل",
+        "certificates": "شهادات صادرة",
+        "uniquePatients": "مريض فريد",
+        "completedToday": "أُنجز اليوم",
+        "phaseDistribution": "توزيع المراحل:",
+        "noData": "لا بيانات",
+        "empty": "لا توجد بيانات تقرير لهذه الوحدة بعد."
+      },
+      "footer": {
+        "updatedPrefix": "آخر تحديث: ",
+        "loading": "جاري التحميل…",
+        "brand": "منصة الحجر الصحي القومي · لوحة العيادة الطبية"
+      },
+      "a11y": {
+        "notifRegion": "منطقة التنبيهات والمتابعة"
       }
     }
   }
