@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -68,20 +69,24 @@ const chartTooltipStyle = {
 
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <MonitorHeartIcon fontSize="small" /> },
-  { id: 'tests', label: 'مسار الاختبارات', icon: <ScienceIcon fontSize="small" /> },
-  { id: 'samples', label: 'توزيع العينات', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'alerts', label: 'التنبيهات والمخاطر', icon: <WarningAmberIcon fontSize="small" /> },
-] as const;
-
 const NqlisDashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { sector } = useLabScope();
   const [data, setData] = useState<LabDashboard | null>(null);
   const [recent, setRecent] = useState<LabSample[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const sections = useMemo<CommandSectionDef[]>(
+    () => [
+      { id: 'overview', label: t('laboratory.shared.overview'), icon: <MonitorHeartIcon fontSize="small" /> },
+      { id: 'tests', label: t('laboratory.nqlisDashboard.sectionTests'), icon: <ScienceIcon fontSize="small" /> },
+      { id: 'samples', label: t('laboratory.nqlisDashboard.sectionSamples'), icon: <BiotechIcon fontSize="small" /> },
+      { id: 'alerts', label: t('laboratory.nqlisDashboard.sectionAlerts'), icon: <WarningAmberIcon fontSize="small" /> },
+    ],
+    [t],
+  );
 
   const goTab = useCallback((key: string) => navigate({ hash: `#${key}` }), [navigate]);
 
@@ -96,7 +101,7 @@ const NqlisDashboard = () => {
       setData(d.data.data);
       setRecent(Array.isArray(r.data.data.results) ? r.data.data.results : []);
     } catch {
-      notifyError('تعذر تحميل لوحة المختبر');
+      notifyError(t('laboratory.nqlisDashboard.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -107,7 +112,7 @@ const NqlisDashboard = () => {
     let mounted = true;
     getLabDashboard(sector ?? undefined)
       .then((res) => mounted && setData(res.data.data))
-      .catch(() => mounted && notifyError('تعذر تحميل لوحة المختبر'))
+      .catch(() => mounted && notifyError(t('laboratory.nqlisDashboard.loadError')))
       .finally(() => mounted && setLoading(false));
     getLabSamples({ page_size: 8, ordering: '-received_at', sector: sector ?? undefined })
       .then((r) => mounted && setRecent(Array.isArray(r.data.data.results) ? r.data.data.results : []))
@@ -115,9 +120,10 @@ const NqlisDashboard = () => {
     return () => {
       mounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sector]);
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [loading]);
+  const { active, register, scrollTo } = useCommandSections(sections, [loading, sections]);
 
   const kpis = useMemo(() => {
     if (!data) return [];
@@ -127,28 +133,28 @@ const NqlisDashboard = () => {
       data.quality.equipment.overdue +
       data.quality.non_conformities.open;
     return [
-      { icon: <DashboardIcon />, value: data.totals.samples, label: 'إجمالي العينات', accent: 'primary.main', trend: { label: `+${data.totals.received_today} اليوم`, positive: true }, onClick: () => goTab('samples') },
-      { icon: <PendingIcon />, value: data.totals.pending_reception, label: 'بانتظار الاستقبال', accent: 'warning.main', onClick: () => goTab('reception') },
-      { icon: <ScienceIcon />, value: data.totals.under_testing, label: 'قيد التحليل', accent: 'info.main', onClick: () => goTab('worklist') },
-      { icon: <FactCheckIcon />, value: data.totals.ready_for_approval, label: 'جاهزة للاعتماد', accent: 'info.main', onClick: () => goTab('worklist') },
-      { icon: <VerifiedIcon />, value: data.totals.completed, label: 'مكتملة', accent: 'success.main', onClick: () => goTab('samples') },
-      { icon: <WarningAmberIcon />, value: data.critical.open, label: 'نتائج حرجة مفتوحة', accent: 'error.main', onClick: () => goTab('critical') },
-      { icon: <MonitorHeartIcon />, value: data.tests.submitted, label: 'اختبارات بانتظار المراجعة', accent: 'warning.main', trend: { label: `${data.tests.in_progress} قيد التنفيذ`, positive: true }, onClick: () => goTab('worklist') },
-      { icon: <BuildIcon />, value: qualityIssues, label: 'مؤشرات جودة بانتظار المعالجة', accent: 'error.main', onClick: () => goTab('quality') },
+      { icon: <DashboardIcon />, value: data.totals.samples, label: t('laboratory.nqlisDashboard.kpiSamples'), accent: 'primary.main', trend: { label: t('laboratory.nqlisDashboard.trendToday', { count: data.totals.received_today }), positive: true }, onClick: () => goTab('samples') },
+      { icon: <PendingIcon />, value: data.totals.pending_reception, label: t('laboratory.nqlisDashboard.kpiPending'), accent: 'warning.main', onClick: () => goTab('reception') },
+      { icon: <ScienceIcon />, value: data.totals.under_testing, label: t('laboratory.shared.underTesting'), accent: 'info.main', onClick: () => goTab('worklist') },
+      { icon: <FactCheckIcon />, value: data.totals.ready_for_approval, label: t('laboratory.nqlisDashboard.kpiReady'), accent: 'info.main', onClick: () => goTab('worklist') },
+      { icon: <VerifiedIcon />, value: data.totals.completed, label: t('laboratory.nqlisDashboard.kpiCompleted'), accent: 'success.main', onClick: () => goTab('samples') },
+      { icon: <WarningAmberIcon />, value: data.critical.open, label: t('laboratory.shared.criticalOpenResults'), accent: 'error.main', onClick: () => goTab('critical') },
+      { icon: <MonitorHeartIcon />, value: data.tests.submitted, label: t('laboratory.nqlisDashboard.kpiSubmitted'), accent: 'warning.main', trend: { label: t('laboratory.nqlisDashboard.trendInProgress', { count: data.tests.in_progress }), positive: true }, onClick: () => goTab('worklist') },
+      { icon: <BuildIcon />, value: qualityIssues, label: t('laboratory.nqlisDashboard.kpiQuality'), accent: 'error.main', onClick: () => goTab('quality') },
     ];
-  }, [data, goTab]);
+  }, [data, goTab, t]);
 
   const testsPipeline = useMemo(() => {
     if (!data) return [];
-    const t = data.tests;
+    const tests = data.tests;
     return [
-      { label: 'بانتظار', value: t.pending, fill: WARN },
-      { label: 'قيد التنفيذ', value: t.in_progress, fill: INFO },
-      { label: 'مسودات', value: t.draft, fill: ASH },
-      { label: 'بانتظار المراجعة', value: t.submitted, fill: '#8a5a00' },
-      { label: 'معتمدة', value: t.approved, fill: PRA },
+      { label: t('laboratory.nqlisDashboard.pipePending'), value: tests.pending, fill: WARN },
+      { label: t('laboratory.shared.inProgress'), value: tests.in_progress, fill: INFO },
+      { label: t('laboratory.nqlisDashboard.pipeDraft'), value: tests.draft, fill: ASH },
+      { label: t('laboratory.nqlisDashboard.pipeReview'), value: tests.submitted, fill: '#8a5a00' },
+      { label: t('laboratory.nqlisDashboard.pipeApproved'), value: tests.approved, fill: PRA },
     ];
-  }, [data]);
+  }, [data, t]);
 
   const statusDonut = useMemo(() => {
     if (!data) return { items: [], total: 0 };
@@ -160,9 +166,9 @@ const NqlisDashboard = () => {
       value: v,
       color: toneHex[sampleStatus[k]?.tone || 'neutral'],
     }));
-    if (rest > 0) items.push({ name: 'أخرى', value: rest, color: '#cbd5d1' });
+    if (rest > 0) items.push({ name: t('laboratory.nqlisDashboard.other'), value: rest, color: '#cbd5d1' });
     return { items, total: data.totals.samples };
-  }, [data]);
+  }, [data, t]);
 
   const sourceDonut = useMemo(() => {
     if (!data) return { items: [], total: 0 };
@@ -174,9 +180,9 @@ const NqlisDashboard = () => {
       value: s.count,
       color: PIE_COLORS[i % PIE_COLORS.length],
     }));
-    if (rest > 0) items.push({ name: 'أخرى', value: rest, color: '#cbd5d1' });
+    if (rest > 0) items.push({ name: t('laboratory.nqlisDashboard.other'), value: rest, color: '#cbd5d1' });
     return { items, total: entries.reduce((acc, s) => acc + s.count, 0) };
-  }, [data]);
+  }, [data, t]);
 
   const sectionBars = useMemo(() => {
     if (!data) return [];
@@ -193,43 +199,43 @@ const NqlisDashboard = () => {
     const eqTotal = q.equipment.total || 1;
     const rTotal = q.reagents.total || 1;
     return [
-      { label: 'أجهزة معايرة متأخرة', value: q.equipment.overdue, total: eqTotal, color: DANGER },
-      { label: 'أجهزة معايرة قريبة', value: q.equipment.due_soon, total: eqTotal, color: WARN },
-      { label: 'مواد منتهية الصلاحية', value: q.reagents.expired, total: rTotal, color: DANGER },
-      { label: 'مواد تنتهي قريباً', value: q.reagents.expiring_soon, total: rTotal, color: WARN },
-      { label: 'مواد مخزون منخفض', value: q.reagents.low_stock, total: rTotal, color: INFO },
-      { label: 'فحوصات جودة فاشلة', value: q.qc.failed, total: Math.max(q.qc.pending + q.qc.failed, 1), color: DANGER },
-      { label: 'فحوصات جودة معلقة', value: q.qc.pending, total: Math.max(q.qc.pending + q.qc.failed, 1), color: WARN },
-      { label: 'عدم مطابقة مفتوح', value: q.non_conformities.open, total: 12, color: DANGER },
+      { label: t('laboratory.nqlisDashboard.qCalOverdue'), value: q.equipment.overdue, total: eqTotal, color: DANGER },
+      { label: t('laboratory.nqlisDashboard.qCalDueSoon'), value: q.equipment.due_soon, total: eqTotal, color: WARN },
+      { label: t('laboratory.nqlisDashboard.qReagentExpired'), value: q.reagents.expired, total: rTotal, color: DANGER },
+      { label: t('laboratory.nqlisDashboard.qReagentExpiring'), value: q.reagents.expiring_soon, total: rTotal, color: WARN },
+      { label: t('laboratory.nqlisDashboard.qReagentLowStock'), value: q.reagents.low_stock, total: rTotal, color: INFO },
+      { label: t('laboratory.nqlisDashboard.qQcFailed'), value: q.qc.failed, total: Math.max(q.qc.pending + q.qc.failed, 1), color: DANGER },
+      { label: t('laboratory.nqlisDashboard.qQcPending'), value: q.qc.pending, total: Math.max(q.qc.pending + q.qc.failed, 1), color: WARN },
+      { label: t('laboratory.nqlisDashboard.qOpenNc'), value: q.non_conformities.open, total: 12, color: DANGER },
     ];
-  }, [data]);
+  }, [data, t]);
 
   const alerts = useMemo(() => {
     if (!data) return [];
     const q = data.quality;
     const list: Array<{ icon: React.ReactElement; text: string; sub: string; color: string; bg: string; tab: string }> = [];
-    if (data.critical.open > 0) list.push({ icon: <WarningAmberIcon />, text: `${data.critical.open} نتيجة حرجة مفتوحة`, sub: 'تتطلب إقراراً فورياً', color: DANGER, bg: '#fdeaea', tab: 'critical' });
-    if (q.equipment.overdue > 0) list.push({ icon: <BuildIcon />, text: `${q.equipment.overdue} جهاز متأخر المعايرة`, sub: 'راجع جدول المعايرة', color: DANGER, bg: '#fdeaea', tab: 'equipment' });
-    if (q.reagents.expired > 0) list.push({ icon: <MedicationIcon />, text: `${q.reagents.expired} مادة منتهية الصلاحية`, sub: 'حظر الاستخدام وإتلافها', color: DANGER, bg: '#fdeaea', tab: 'reagents' });
-    if (q.qc.failed > 0) list.push({ icon: <FactCheckIcon />, text: `${q.qc.failed} فحص جودة فاشل`, sub: 'إجراء تصحيحي مطلوب', color: DANGER, bg: '#fdeaea', tab: 'qc' });
-    if (q.non_conformities.open > 0) list.push({ icon: <BuildIcon />, text: `${q.non_conformities.open} عدم مطابقة مفتوح`, sub: 'أغلق منها أو أعد الفحص', color: WARN, bg: '#fdf3e0', tab: 'quality' });
-    if (q.reagents.low_stock > 0) list.push({ icon: <LocalShippingIcon />, text: `${q.reagents.low_stock} مادة منخفضة المخزون`, sub: 'اطلب توريدها قريباً', color: WARN, bg: '#fdf3e0', tab: 'reagents' });
-    if (q.reagents.expiring_soon > 0) list.push({ icon: <MedicationIcon />, text: `${q.reagents.expiring_soon} مادة تنتهي قريباً`, sub: 'استهلكها أولاً (FEFO)', color: WARN, bg: '#fdf3e0', tab: 'reagents' });
-    if (q.equipment.due_soon > 0) list.push({ icon: <BuildIcon />, text: `${q.equipment.due_soon} جهاز معايرة قريبة`, sub: 'حدد موعد المعايرة', color: INFO, bg: '#e7f0fb', tab: 'equipment' });
-    if (q.qc.pending > 0) list.push({ icon: <FactCheckIcon />, text: `${q.qc.pending} فحص جودة معلق`, sub: 'بانتظار التنفيذ', color: INFO, bg: '#e7f0fb', tab: 'qc' });
+    if (data.critical.open > 0) list.push({ icon: <WarningAmberIcon />, text: t('laboratory.nqlisDashboard.aCriticalText', { count: data.critical.open }), sub: t('laboratory.nqlisDashboard.aCriticalSub'), color: DANGER, bg: '#fdeaea', tab: 'critical' });
+    if (q.equipment.overdue > 0) list.push({ icon: <BuildIcon />, text: t('laboratory.nqlisDashboard.aOverdueText', { count: q.equipment.overdue }), sub: t('laboratory.nqlisDashboard.aOverdueSub'), color: DANGER, bg: '#fdeaea', tab: 'equipment' });
+    if (q.reagents.expired > 0) list.push({ icon: <MedicationIcon />, text: t('laboratory.nqlisDashboard.aExpiredText', { count: q.reagents.expired }), sub: t('laboratory.nqlisDashboard.aExpiredSub'), color: DANGER, bg: '#fdeaea', tab: 'reagents' });
+    if (q.qc.failed > 0) list.push({ icon: <FactCheckIcon />, text: t('laboratory.nqlisDashboard.aFailedText', { count: q.qc.failed }), sub: t('laboratory.nqlisDashboard.aFailedSub'), color: DANGER, bg: '#fdeaea', tab: 'qc' });
+    if (q.non_conformities.open > 0) list.push({ icon: <BuildIcon />, text: t('laboratory.nqlisDashboard.aOpenNcText', { count: q.non_conformities.open }), sub: t('laboratory.nqlisDashboard.aOpenNcSub'), color: WARN, bg: '#fdf3e0', tab: 'quality' });
+    if (q.reagents.low_stock > 0) list.push({ icon: <LocalShippingIcon />, text: t('laboratory.nqlisDashboard.aLowStockText', { count: q.reagents.low_stock }), sub: t('laboratory.nqlisDashboard.aLowStockSub'), color: WARN, bg: '#fdf3e0', tab: 'reagents' });
+    if (q.reagents.expiring_soon > 0) list.push({ icon: <MedicationIcon />, text: t('laboratory.nqlisDashboard.aExpiringText', { count: q.reagents.expiring_soon }), sub: t('laboratory.nqlisDashboard.aExpiringSub'), color: WARN, bg: '#fdf3e0', tab: 'reagents' });
+    if (q.equipment.due_soon > 0) list.push({ icon: <BuildIcon />, text: t('laboratory.nqlisDashboard.aDueSoonText', { count: q.equipment.due_soon }), sub: t('laboratory.nqlisDashboard.aDueSoonSub'), color: INFO, bg: '#e7f0fb', tab: 'equipment' });
+    if (q.qc.pending > 0) list.push({ icon: <FactCheckIcon />, text: t('laboratory.nqlisDashboard.aPendingText', { count: q.qc.pending }), sub: t('laboratory.nqlisDashboard.aPendingSub'), color: INFO, bg: '#e7f0fb', tab: 'qc' });
     return list.slice(0, 6);
-  }, [data]);
+  }, [data, t]);
 
   const columns = useMemo<DataTableColumn<LabSample>[]>(
     () => [
-      { key: 'sample_number', label: 'رقم العينة', render: (s) => <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 13 }}>{s.sample_number || s.sample_barcode}</Typography> },
-      { key: 'sample_type', label: 'النوع', render: (s) => <StatusChip label={s.sample_type_label || sampleType[s.sample_type]?.label || s.sample_type} tone="neutral" variant="outlined" />, hideOnMobile: true },
-      { key: 'source', label: 'المصدر', render: (s) => s.source_label || sampleSource[s.source]?.label || s.source, hideOnMobile: true },
-      { key: 'priority', label: 'الأولوية', render: (s) => { const m = samplePriority[s.priority]; return m ? <StatusChip label={m.label} tone={m.tone} /> : <StatusChip label={s.priority} tone="neutral" />; } },
-      { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={s.status_label || sampleStatus[s.status]?.label || s.status} tone={sampleStatus[s.status]?.tone || 'neutral'} /> },
-      { key: 'received_at', label: 'الاستلام', render: (s) => (s.received_at ? formatDateTime(s.received_at) : '—'), hideOnMobile: true },
+      { key: 'sample_number', label: t('laboratory.nqlisDashboard.colSampleNumber'), render: (s) => <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 13 }}>{s.sample_number || s.sample_barcode}</Typography> },
+      { key: 'sample_type', label: t('laboratory.shared.colType'), render: (s) => <StatusChip label={s.sample_type_label || sampleType[s.sample_type]?.label || s.sample_type} tone="neutral" variant="outlined" />, hideOnMobile: true },
+      { key: 'source', label: t('laboratory.nqlisDashboard.colSource'), render: (s) => s.source_label || sampleSource[s.source]?.label || s.source, hideOnMobile: true },
+      { key: 'priority', label: t('laboratory.nqlisDashboard.colPriority'), render: (s) => { const m = samplePriority[s.priority]; return m ? <StatusChip label={m.label} tone={m.tone} /> : <StatusChip label={s.priority} tone="neutral" />; } },
+      { key: 'status', label: t('laboratory.shared.colStatus'), render: (s) => <StatusChip label={s.status_label || sampleStatus[s.status]?.label || s.status} tone={sampleStatus[s.status]?.tone || 'neutral'} /> },
+      { key: 'received_at', label: t('laboratory.nqlisDashboard.colReceived'), render: (s) => (s.received_at ? formatDateTime(s.received_at) : '—'), hideOnMobile: true },
     ],
-    []
+    [t]
   );
 
   if (loading && !data) {
@@ -247,23 +253,23 @@ const NqlisDashboard = () => {
   return (
     <Box>
       <DashboardHero
-        eyebrow="نظام معلومات المختبر القومي — البيانات التشغيلية"
-        title="لوحة قيادة المختبر القومي"
-        subtitle="مراقبة لحظية لسير العينات والتحاليل والجودة — الاستقبال، الفحص، الاعتماد، وعدم المطابقة"
+        eyebrow={t('laboratory.nqlisDashboard.eyebrow')}
+        title={t('laboratory.nqlisDashboard.title')}
+        subtitle={t('laboratory.nqlisDashboard.subtitle')}
         gradient="emerald"
-        avatarLabel="ل"
+        avatarLabel={t('laboratory.nqlisDashboard.avatarFallback')}
         action={
           <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="تحديث البيانات">
+            <Tooltip title={t('laboratory.shared.refreshTip')}>
               <Box component="span" sx={{ display: 'inline-flex' }}>
-                <IconButton aria-label="تحديث" size="small" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} disabled={refreshing} onClick={() => load(true)}>
+                <IconButton aria-label={t('laboratory.shared.refreshAria')} size="small" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} disabled={refreshing} onClick={() => load(true)}>
                   <RefreshIcon fontSize="small" sx={{ animation: refreshing ? 'spin 1s linear infinite' : undefined }} />
                 </IconButton>
               </Box>
             </Tooltip>
             <ExportButton
               filename={`nql-dashboard-${new Date().toISOString().slice(0, 10)}`}
-              headers={['رقم العينة', 'النوع', 'المصدر', 'القسم', 'الأولوية', 'الحالة', 'الاستلام']}
+              headers={[t('laboratory.nqlisDashboard.colSampleNumber'), t('laboratory.shared.colType'), t('laboratory.nqlisDashboard.colSource'), t('laboratory.shared.colSection'), t('laboratory.nqlisDashboard.colPriority'), t('laboratory.shared.colStatus'), t('laboratory.nqlisDashboard.colReceived')]}
               rows={recent.map((s) => [s.sample_number || s.sample_barcode, s.sample_type_label, s.source_label, s.section_name, s.priority_label, s.status_label, s.received_at ? formatDateTime(s.received_at) : ''])}
               disabled={loading || recent.length === 0}
             />
@@ -273,7 +279,7 @@ const NqlisDashboard = () => {
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('laboratory.shared.live')}
           </Box>,
         ]}
       />
@@ -285,25 +291,29 @@ const NqlisDashboard = () => {
           </Box>
           <Box sx={{ flex: 1, minWidth: 220 }}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-              <Chip label={`${criticalCount} إجراء عاجل`} size="small" color="error" />
-              <Typography variant="body2" sx={{ fontWeight: 700 }}>تتطلب النتائج الحرجة وقضايا الجودة اهتماماً فورياً</Typography>
+              <Chip label={t('laboratory.nqlisDashboard.urgentChip', { count: criticalCount })} size="small" color="error" />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('laboratory.nqlisDashboard.bannerTitle')}</Typography>
             </Stack>
             <Typography variant="caption" color="text.secondary">
-              {data.critical.open} نتيجة حرجة مفتوحة · {data.quality.equipment.overdue} جهاز متأخر المعايرة · {data.quality.reagents.expired} مادة منتهية
+              {t('laboratory.nqlisDashboard.bannerLine', {
+                critical: data.critical.open,
+                overdue: data.quality.equipment.overdue,
+                expired: data.quality.reagents.expired,
+              })}
             </Typography>
           </Box>
-          <Chip label="عرض التفاصيل" size="small" color="error" clickable onClick={() => goTab('critical')} />
+          <Chip label={t('laboratory.nqlisDashboard.viewDetails')} size="small" color="error" clickable onClick={() => goTab('critical')} />
         </Box>
       )}
 
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={sections}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('laboratory.shared.sectionsRail')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -319,8 +329,8 @@ const NqlisDashboard = () => {
 
       <Grid container spacing={3} ref={register('tests')} data-section="tests" sx={{ scrollMarginTop: '80px', mb: 3 }}>
         <Grid item xs={12} lg={5}>
-          <SectionCard title="مسار الاختبارات" subtitle={`${data.tests.total} اختباراً في السير`} action={
-            <Chip icon={<TrendingUpIcon sx={{ fontSize: 16 }} />} label="معتمدة وفقاً للحالة" size="small" color="primary" variant="outlined" onClick={() => goTab('worklist')} />
+          <SectionCard title={t('laboratory.nqlisDashboard.sectionTests')} subtitle={t('laboratory.nqlisDashboard.testsSub', { count: data.tests.total })} action={
+            <Chip icon={<TrendingUpIcon sx={{ fontSize: 16 }} />} label={t('laboratory.nqlisDashboard.testsChip')} size="small" color="primary" variant="outlined" onClick={() => goTab('worklist')} />
           }>
             <Box sx={{ width: '100%', height: 232 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -329,7 +339,7 @@ const NqlisDashboard = () => {
                   <XAxis dataKey="label" tick={{ fontSize: 11.5, fontFamily: 'IBM Plex Sans Arabic', fill: ASH }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: ASH }} axisLine={false} tickLine={false} width={28} />
                   <ChartTooltip cursor={{ fill: 'rgba(12,127,106,0.06)' }} contentStyle={chartTooltipStyle} />
-                  <Bar dataKey="value" name="اختبار" radius={[8, 8, 0, 0]} maxBarSize={46}>
+                  <Bar dataKey="value" name={t('laboratory.nqlisDashboard.testUnit')} radius={[8, 8, 0, 0]} maxBarSize={46}>
                     {testsPipeline.map((entry) => (
                       <Cell key={entry.label} fill={entry.fill} />
                     ))}
@@ -341,7 +351,7 @@ const NqlisDashboard = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} lg={4}>
-          <SectionCard title="مصادر العينات" subtitle={`${sourceDonut.total} عينة موزعة حسب المصدر`}>
+          <SectionCard title={t('laboratory.nqlisDashboard.sourcesTitle')} subtitle={t('laboratory.nqlisDashboard.sourcesSub', { count: sourceDonut.total })}>
             <Box sx={{ width: '100%', height: 232, display: 'grid', placeItems: 'center', position: 'relative' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -355,7 +365,7 @@ const NqlisDashboard = () => {
               </ResponsiveContainer>
               <Box sx={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>{sourceDonut.total}</Typography>
-                <Typography variant="caption" color="text.secondary">عينات</Typography>
+                <Typography variant="caption" color="text.secondary">{t('laboratory.shared.samplesUnit')}</Typography>
               </Box>
             </Box>
             <Stack direction="row" flexWrap="wrap" useFlexGap sx={{ mt: 1, gap: 1 }}>
@@ -367,8 +377,8 @@ const NqlisDashboard = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} lg={3}>
-          <SectionCard title="جاهزية الجودة" subtitle="المعايرة والمواد ومراقبة الجودة" action={
-            <Chip label="المزيد" size="small" color="primary" variant="outlined" onClick={() => goTab('quality')} />
+          <SectionCard title={t('laboratory.nqlisDashboard.qualityTitle')} subtitle={t('laboratory.nqlisDashboard.qualitySub')} action={
+            <Chip label={t('laboratory.nqlisDashboard.moreChip')} size="small" color="primary" variant="outlined" onClick={() => goTab('quality')} />
           }>
             <Stack spacing={1.25}>
               {qualityRows.map((r) => (
@@ -381,11 +391,11 @@ const NqlisDashboard = () => {
 
       <Grid container spacing={3} ref={register('samples')} data-section="samples" sx={{ scrollMarginTop: '80px', mb: 3 }}>
         <Grid item xs={12} lg={7}>
-          <SectionCard title="العينات حسب القسم" subtitle="التحميل العملي على أقسام المختبر" action={
-            <Chip label="لوحة المعلومات" size="small" color="primary" variant="outlined" onClick={() => goTab('samples')} />
+          <SectionCard title={t('laboratory.nqlisDashboard.sectionsTitle')} subtitle={t('laboratory.nqlisDashboard.sectionsSub')} action={
+            <Chip label={t('laboratory.nqlisDashboard.dashboardChip')} size="small" color="primary" variant="outlined" onClick={() => goTab('samples')} />
           }>
             {sectionBars.length === 0 ? (
-              <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد بيانات</Typography>
+              <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('laboratory.shared.noData')}</Typography>
             ) : (
               <Box sx={{ width: '100%', height: 248 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -394,7 +404,7 @@ const NqlisDashboard = () => {
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: ASH }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" width={108} tick={{ fontSize: 12, fontFamily: 'IBM Plex Sans Arabic', fill: ASH }} axisLine={false} tickLine={false} />
                     <ChartTooltip cursor={{ fill: 'rgba(12,127,106,0.06)' }} contentStyle={chartTooltipStyle} />
-                    <Bar dataKey="count" name="عينات" fill={PRA} radius={[0, 8, 8, 0]} maxBarSize={22} />
+                    <Bar dataKey="count" name={t('laboratory.shared.samplesUnit')} fill={PRA} radius={[0, 8, 8, 0]} maxBarSize={22} />
                   </BarChart>
                 </ResponsiveContainer>
               </Box>
@@ -403,10 +413,10 @@ const NqlisDashboard = () => {
         </Grid>
 
         <Grid item xs={12} lg={5}>
-          <SectionCard title="حالة العينات" subtitle="التوزيع الكامل لحالة سجل العينات">
+          <SectionCard title={t('laboratory.nqlisDashboard.statusTitle')} subtitle={t('laboratory.nqlisDashboard.statusSub')}>
             <Box sx={{ width: '100%', height: 248, display: 'grid', placeItems: 'center', position: 'relative' }}>
               {statusDonut.items.length === 0 ? (
-                <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>لا توجد بيانات</Typography>
+                <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>{t('laboratory.shared.noData')}</Typography>
               ) : (
                 <>
                   <ResponsiveContainer width="100%" height="100%">
@@ -421,7 +431,7 @@ const NqlisDashboard = () => {
                   </ResponsiveContainer>
                   <Box sx={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>{statusDonut.total}</Typography>
-                    <Typography variant="caption" color="text.secondary">عينة</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('laboratory.shared.sampleUnit')}</Typography>
                   </Box>
                 </>
               )}
@@ -446,29 +456,29 @@ const NqlisDashboard = () => {
             rowsPerPage={recent.length}
             hidePagination
             loading={loading}
-            title="آخر العينات المستلمة"
-            subtitle={`${recent.length} عينة حديثة`}
+            title={t('laboratory.nqlisDashboard.tableTitle')}
+            subtitle={t('laboratory.nqlisDashboard.tableSubtitle', { count: recent.length })}
             onRefresh={() => load(true)}
             refreshing={refreshing}
             toolbar={
-              <Chip label="عرض كل العينات" size="small" color="primary" clickable onClick={() => goTab('samples')} />
+              <Chip label={t('laboratory.nqlisDashboard.showAll')} size="small" color="primary" clickable onClick={() => goTab('samples')} />
             }
-            emptyTitle="لا توجد عينات حديثة"
-            emptyDescription="ستظهر العينات فور استلامها"
+            emptyTitle={t('laboratory.nqlisDashboard.emptyTitle')}
+            emptyDescription={t('laboratory.nqlisDashboard.emptyDescription')}
           />
         </Grid>
 
         <Grid item xs={12} lg={4}>
           <Stack spacing={3}>
             <SectionCard
-              title="مركز التنبيهات والمخاطر"
-              subtitle="أولوية اتخاذ الإجراء حسب الخطورة"
-              action={<Chip label="النتائج الحرجة" size="small" color="error" variant="outlined" onClick={() => goTab('critical')} />}
+              title={t('laboratory.nqlisDashboard.alertsTitle')}
+              subtitle={t('laboratory.nqlisDashboard.alertsSub')}
+              action={<Chip label={t('laboratory.nqlisDashboard.criticalChip')} size="small" color="error" variant="outlined" onClick={() => goTab('critical')} />}
             >
               {alerts.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
                   <VerifiedIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                  <Typography color="text.secondary">لا توجد تنبيهات — كل المؤشرات سليمة</Typography>
+                  <Typography color="text.secondary">{t('laboratory.nqlisDashboard.noAlerts')}</Typography>
                 </Box>
               ) : (
                 <Stack spacing={1.25}>
@@ -481,7 +491,7 @@ const NqlisDashboard = () => {
                         <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>{a.text}</Typography>
                         <Typography variant="caption" color="text.secondary">{a.sub}</Typography>
                       </Box>
-                      <Chip label="فتح" size="small" variant="outlined" sx={{ color: a.color, borderColor: a.color }} onClick={() => goTab(a.tab)} />
+                      <Chip label={t('laboratory.nqlisDashboard.openChip')} size="small" variant="outlined" sx={{ color: a.color, borderColor: a.color }} onClick={() => goTab(a.tab)} />
                     </Stack>
                   ))}
                 </Stack>
@@ -489,7 +499,7 @@ const NqlisDashboard = () => {
             </SectionCard>
 
             <Box>
-              <NotificationPanel title="إشعارات النظام" subtitle="آخر رسائل المنصة" height={260} />
+              <NotificationPanel title={t('laboratory.nqlisDashboard.notifTitle')} subtitle={t('laboratory.nqlisDashboard.notifSub')} height={260} />
             </Box>
           </Stack>
         </Grid>
