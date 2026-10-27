@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -14,6 +15,7 @@ import { extractErrorMessage, notifyError } from '../../utils/toast';
 import { GlassPanel, SectionHeader } from './ui';
 
 const MedicationPage = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<ClinicMedication[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -23,22 +25,23 @@ const MedicationPage = () => {
       .catch((err) => {
         setError(true);
         setItems([]);
-        notifyError(extractErrorMessage(err, 'تعذر تحميل الأدوية'));
+        notifyError(extractErrorMessage(err, t('clinic.medications.messages.loadFailed')));
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Box>
       <PageHeader
-        title="الأدوية والمخزون"
-        subtitle="سجل الأدوية المتاحة للصرف من عيادة الموانئ الطبية"
-        eyebrow="العيادة"
+        title={t('clinic.medications.header.title')}
+        subtitle={t('clinic.medications.header.subtitle')}
+        eyebrow={t('clinic.medications.header.eyebrow')}
       />
       <GlassPanel accent="linear-gradient(90deg, #0c7f6a, transparent)">
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <SectionHeader
             icon={<MedicationIcon fontSize="small" />}
-            title="أصناف الأدوية"
+            title={t('clinic.medications.sections.items')}
             count={items?.length ?? '…'}
           />
           {items === null ? (
@@ -52,14 +55,14 @@ const MedicationPage = () => {
           ) : error && items.length === 0 ? (
             <EmptyState
               icon={<MedicalServicesIcon sx={{ fontSize: 40 }} />}
-              title="تعذر تحميل الأدوية"
-              description="حدث خطأ أثناء الاتصال بالخادم — يرجى المحاولة لاحقاً"
+              title={t('clinic.medications.error.title')}
+              description={t('clinic.medications.error.desc')}
             />
           ) : items.length === 0 ? (
             <EmptyState
               icon={<MedicationIcon sx={{ fontSize: 40 }} />}
-              title="لا توجد أدوية مسجلة"
-              description="أدوية العيادة ستظهر هنا عند إضافتها من الإدارة"
+              title={t('clinic.medications.empty.title')}
+              description={t('clinic.medications.empty.desc')}
             />
           ) : (
             <Grid container spacing={2}>
@@ -117,7 +120,7 @@ const MedicationPage = () => {
                       {(m.interactions ?? []).length > 0 && (
                         <Chip
                           size="small"
-                          label={`${m.interactions!.length} تفاعلات`}
+                          label={t('clinic.medications.badges.interactions', { count: m.interactions!.length })}
                           sx={{ bgcolor: 'rgba(168,100,0,0.1)', color: '#a86400', fontWeight: 700, fontSize: 11 }}
                         />
                       )}

@@ -2423,5 +2423,169 @@
       "verified": "Verified",
       "incomplete": "Incomplete"
     }
+  },
+  "clinic": {
+    "common": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "search": "Search",
+      "confirm": "Confirm",
+      "export": "Export",
+      "refresh": "Refresh",
+      "close": "Close",
+      "view": "View"
+    },
+    "clinic": {
+      "header": {
+        "title": "Clinic",
+        "subtitle": "Manage clinic referrals and visits efficiently",
+        "eyebrow": "Operations"
+      },
+      "tabs": {
+        "referrals": "Clinic Referrals",
+        "visits": "Clinic Visits"
+      },
+      "status": {
+        "registered": "Registered",
+        "triaged": "Triaged",
+        "examined": "Examined",
+        "laboratory": "Laboratory",
+        "decision": "Decision",
+        "certificate": "Certificate",
+        "closed": "Closed"
+      },
+      "cols": {
+        "traveler": "Traveler",
+        "passport": "Passport",
+        "port": "Port",
+        "status": "Status",
+        "createdAt": "Created At",
+        "doctor": "Doctor",
+        "phase": "Phase",
+        "openedAt": "Opened At"
+      },
+      "search": {
+        "referrals": "Search by name or passport...",
+        "visits": "Search by name or passport..."
+      },
+      "empty": {
+        "referralsTitle": "No referrals",
+        "referralsDesc": "Clinic referrals from screenings appear here",
+        "visitsTitle": "No visits",
+        "visitsDesc": "Visits appear when referrals are accepted"
+      },
+      "actions": {
+        "acceptReferral": "Accept Referral",
+        "rejectReferral": "Reject Referral",
+        "openVisit": "Open Visit",
+        "closeVisit": "Close Visit"
+      },
+      "messages": {
+        "referralAccepted": "Referral accepted and new clinic visit opened",
+        "referralRejected": "Referral rejected",
+        "acceptReferralFailed": "Failed to accept referral",
+        "rejectReferralFailed": "Failed to reject referral",
+        "visitClosed": "Visit closed",
+        "closeVisitFailed": "Failed to close visit",
+        "referralsExported": "Referrals exported"
+      },
+      "dialogs": {
+        "acceptReferralTitle": "Accept Referral",
+        "acceptReferralMessage": "Referral for \"{{traveler}}\" will be accepted and a new clinic visit will be opened.",
+        "acceptReferralConfirm": "Accept Referral",
+        "rejectReferralTitle": "Reject Referral",
+        "rejectReferralMessage": "Referral for \"{{traveler}}\" will be rejected. You can add a reason for rejection.",
+        "rejectReferralConfirm": "Confirm Rejection",
+        "rejectReasonLabel": "Reason for rejection (optional)",
+        "closeVisitTitle": "Close Visit",
+        "closeVisitMessage": "Are you sure you want to close the visit for \"{{traveler}}\"? Closure will be recorded in the medical record and cannot be undone.",
+        "closeVisitConfirm": "Close Visit"
+      },
+      "subtitles": {
+        "referrals": "{{count}} referral(s)",
+        "visits": "{{count}} visit(s)"
+      }
+    },
+    "isolation": {
+      "header": {
+        "title": "Isolation & Quarantine",
+        "subtitle": "Monitor isolation cases in clinic, hospital and mandatory quarantine",
+        "eyebrow": "Operations"
+      },
+      "chip": {
+        "active": "Active"
+      },
+      "cols": {
+        "traveler": "Traveler",
+        "isolationType": "Isolation Type",
+        "severity": "Severity",
+        "healthStatus": "Health Status",
+        "startDate": "Start Date",
+        "duration": "Duration (days)",
+        "status": "Status"
+      },
+      "search": {
+        "placeholder": "Search by name or passport..."
+      },
+      "filters": {
+        "status": "Status",
+        "type": "Type"
+      },
+      "empty": {
+        "title": "No isolation records",
+        "desc": "Isolation records appear when cases are isolated from visits"
+      },
+      "actions": {
+        "openVisit": "Open Visit",
+        "updateStatus": "Update Health Status",
+        "release": "Release",
+        "viewAria": "Open visit",
+        "updateAria": "Update status",
+        "releaseAria": "Release"
+      },
+      "messages": {
+        "statusUpdated": "Health status updated",
+        "statusUpdateFailed": "Failed to update health status",
+        "released": "Patient released from isolation",
+        "releaseFailed": "Failed to release"
+      },
+      "dialogs": {
+        "updateStatusTitle": "Update Health Status",
+        "updateStatusLabel": "Health Status",
+        "checkoutTitle": "Release from Isolation",
+        "checkoutMessage": "Discharging {{name}} and recording actual end date.",
+        "endDateLabel": "Actual End Date",
+        "dischargeSummaryLabel": "Discharge Summary",
+        "releaseConfirm": "Release"
+      },
+      "table": {
+        "title": "Isolation Records",
+        "subtitle": "{{count}} record(s)"
+      }
+    },
+    "medications": {
+      "header": {
+        "title": "Medications & Stock",
+        "subtitle": "List of medications available for dispensing from the port clinic",
+        "eyebrow": "Clinic"
+      },
+      "sections": {
+        "items": "Medication Items"
+      },
+      "messages": {
+        "loadFailed": "Failed to load medications"
+      },
+      "error": {
+        "title": "Failed to load medications",
+        "desc": "An error occurred while connecting to the server. Please try again later."
+      },
+      "empty": {
+        "title": "No medications registered",
+        "desc": "Clinic medications will appear here when added by administration"
+      },
+      "badges": {
+        "interactions": "{{count}} interactions"
+      }
+    }
   }
 }
