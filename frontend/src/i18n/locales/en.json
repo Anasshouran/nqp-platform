@@ -2837,6 +2837,274 @@
       "a11y": {
         "notifRegion": "Alerts and follow-up area"
       }
+    },
+    "visitDetail": {
+      "certificate": {
+        "actions": {
+          "issue": "Issue certificate"
+        },
+        "confirmClose": "Confirm closing the visit",
+        "dialogTitle": "Issue health certificate",
+        "errors": {
+          "issueFailed": "Failed to issue the certificate"
+        },
+        "fields": {
+          "decisionText": "Medical decision text",
+          "summary": "Medical report summary",
+          "type": "Certificate type",
+          "verdict": "Final recommendation"
+        },
+        "issueHint": "The certificate will be issued with a unique number and QR verification code, and is valid for 30 days.",
+        "issuedBy": "Issued by {{by}} · {{at}}",
+        "messages": {
+          "closed": "Visit closed and decision issued",
+          "issued": "Health certificate issued successfully"
+        },
+        "publicVerify": "Public certificate verification",
+        "status": {
+          "active": "Active",
+          "revoked": "Revoked"
+        },
+        "title": "Health certificate",
+        "type": {
+          "clearance": "Disease-free certificate",
+          "medical": "Medical report",
+          "negative": "Negative result certificate"
+        },
+        "typeLine": "Type: {{type}}",
+        "validUntilPrefix": "Valid until: ",
+        "verdict": {
+          "isolation": "Isolation/quarantine",
+          "release": "Release/pass"
+        },
+        "verdictLine": "Recommendation: {{verdict}}"
+      },
+      "emr": {
+        "actions": {
+          "saveEmr": "Save record"
+        },
+        "errors": {
+          "completePrescription": "Please complete the prescription details",
+          "saveFailed": "Failed to save the medical record"
+        },
+        "exam": {
+          "abdomen": "Abdomen",
+          "chest": "Chest",
+          "generalCondition": "General condition",
+          "skin": "Skin",
+          "throat": "Throat"
+        },
+        "fields": {
+          "diagnosis": "Diagnosis",
+          "severity": "Severity"
+        },
+        "messages": {
+          "saved": "Medical record saved"
+        },
+        "prescription": {
+          "added": "Prescription added",
+          "failed": "Failed to add the prescription"
+        },
+        "prescriptions": {
+          "add": "Add prescription",
+          "daysUnit": "days",
+          "dosage": "Dosage",
+          "drug": "Drug",
+          "duration": "Duration (days)",
+          "frequency": "Frequency",
+          "frequencyPlaceholder": "Every 8 hours",
+          "instructions": "Instructions",
+          "interactionAlert": "Drug interaction alert: {{items}}",
+          "newDrug": "Prescribe a new drug",
+          "selectDrug": "— Select drug —",
+          "title": "Prescriptions"
+        },
+        "savedChip": {
+          "saved": "Saved",
+          "unsaved": "Not saved"
+        },
+        "sections": {
+          "clinicalNotes": "Clinical notes",
+          "physicalExam": "Physical examination",
+          "vitals": "Vital signs"
+        },
+        "title": "Electronic medical record (EMR)",
+        "vitals": {
+          "bloodPressure": "Blood pressure (mmHg)",
+          "heartRate": "Heart rate (bpm)",
+          "oxygenSaturation": "Oxygen saturation (%)",
+          "respiratoryRate": "Respiratory rate (breaths/min)",
+          "temperature": "Temperature (°C)"
+        }
+      },
+      "isolation": {
+        "actions": {
+          "register": "Register isolation"
+        },
+        "dialogTitle": "Isolate the patient / quarantine",
+        "durationLine": "Duration: {{days}} days",
+        "endedAt": " · Ended: {{date}}",
+        "errors": {
+          "registerFailed": "Failed to register isolation",
+          "updateFailed": "Failed to update the status"
+        },
+        "expectedEnd": " · Expected end: {{date}}",
+        "fields": {
+          "expectedEnd": "Expected end date",
+          "healthStatus": "Health status during isolation",
+          "requiredDays": "Required days (days)"
+        },
+        "messages": {
+          "healthUpdated": "Health status during isolation updated",
+          "registered": "Isolation / quarantine registered"
+        },
+        "releaseConfirm": "{{name}}'s release from isolation will be recorded and the visit status updated.",
+        "releaseTitle": "Record release from isolation",
+        "sinceChip": "Since {{date}}",
+        "title": "Isolation / Quarantine"
+      },
+      "journey": {
+        "completed": "Visit closed — treatment journey completed.",
+        "currentChip": "Current",
+        "errors": {
+          "transitionFailed": "Failed to update the stage"
+        },
+        "messages": {
+          "transitioned": "Treatment stage updated"
+        },
+        "steps": {
+          "decision": "Record medical decision",
+          "examined": "Start medical examination",
+          "isolation": "Isolate / quarantine",
+          "laboratory": "Refer to laboratory"
+        },
+        "title": "Treatment journey"
+      },
+      "lab": {
+        "actions": {
+          "request": "Send lab request"
+        },
+        "approval": {
+          "approved": "Approved",
+          "pending": "Pending approval"
+        },
+        "errors": {
+          "requestFailed": "Failed to send the lab request",
+          "selectDisease": "Please select the disease"
+        },
+        "fields": {
+          "disease": "Disease (ICD-11)",
+          "priority": "Priority",
+          "sampleType": "Sample type"
+        },
+        "messages": {
+          "requested": "Lab test request sent"
+        },
+        "newRequest": "New test request",
+        "result": {
+          "inconclusive": "Inconclusive",
+          "negative": "Negative",
+          "positive": "Positive"
+        },
+        "results": {
+          "approved": " · Approved: {{name}}",
+          "defaultName": "Lab test",
+          "entered": "Entered by: {{name}}",
+          "title": "Lab results"
+        },
+        "selectDisease": "— Select disease —",
+        "title": "Laboratory tests"
+      },
+      "page": {
+        "actions": {
+          "visitClosed": "Visit closed"
+        },
+        "back": "Back to clinic",
+        "closedNotice": "This visit has been closed. The medical record cannot be edited and no new tests or prescriptions can be added.",
+        "error": {
+          "description": "Check the link or return to the visit list.",
+          "title": "Unable to display the visit"
+        },
+        "errors": {
+          "loadVisit": "Failed to load visit data, please try again later."
+        },
+        "extraActions": "Additional actions",
+        "finalDecision": "Final decision",
+        "header": {
+          "eyebrow": "Quarantine clinics gateway",
+          "loading": "Loading visit data",
+          "title": "Clinic visit"
+        },
+        "meta": {
+          "closedAt": "Closed at",
+          "closedBy": "by {{name}} · ",
+          "user": "User"
+        },
+        "overline": "Clinic visit",
+        "passengerFileHint": "To view the traveler's full health file (personal data, vaccinations, test results) you can open the traveler's file.",
+        "viewPassengerFile": "View traveler file"
+      },
+      "sections": {
+        "notes": "Notes",
+        "other": "Other",
+        "severity": "Severity"
+      },
+      "separator": {
+        "list": ", "
+      },
+      "triage": {
+        "actions": {
+          "save": "Save triage"
+        },
+        "disposition": {
+          "followUp": "Home follow-up",
+          "hospital": "Referral to hospital",
+          "release": "Release the patient"
+        },
+        "errors": {
+          "saveFailed": "Failed to save triage"
+        },
+        "fields": {
+          "chiefComplaint": "Chief complaint",
+          "diastolicBp": "Diastolic pressure",
+          "heartRate": "Heart rate",
+          "respiratoryRate": "Respiratory rate",
+          "routing": "Routing",
+          "symptomsHint": "Symptoms (separate with commas)",
+          "systolicBp": "Systolic pressure"
+        },
+        "log": {
+          "symptoms": "Symptoms: {{items}}",
+          "title": "Triage log"
+        },
+        "messages": {
+          "saved": "Triage and severity classification saved"
+        },
+        "priority": {
+          "high": "High",
+          "routine": "Routine",
+          "urgent": "Urgent"
+        },
+        "routing": {
+          "clinic": "Follow-up at clinic",
+          "isolation": "Quarantine / isolation",
+          "release": "Release"
+        },
+        "sample": {
+          "blood": "Blood",
+          "stool": "Stool",
+          "swab": "Swab",
+          "urine": "Urine"
+        },
+        "severity": {
+          "emergency": "Emergency"
+        },
+        "severityOptions": {
+          "low": "Mild",
+          "severe": "Severe"
+        },
+        "title": "Case triage and severity classification"
+      }
     }
   }
 }

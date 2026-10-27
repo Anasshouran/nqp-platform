@@ -10,8 +10,41 @@ import IsolationPage from '../IsolationPage';
 import MedicationPage from '../MedicationsPage';
 import RegisterPatientPage from '../RegisterPatientPage';
 import ClinicDashboardPage from '../ClinicDashboardPage';
+import VisitDetailPage from '../VisitDetailPage';
+
+vi.mock('../../../api/endpoints/laboratory', () => ({
+  getDiseases: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+}));
 
 vi.mock('../../../api/endpoints/clinic', () => ({
+  getClinicVisit: vi.fn().mockResolvedValue({
+    data: {
+      data: {
+        id: 'v1',
+        visit_status: 'OPEN',
+        phase: 'REGISTERED',
+        traveler_name: 'سالم أحمد',
+        passport_number: 'P123456',
+        doctor_name: 'د. نور',
+        opened_at: '2026-01-01T08:00:00Z',
+        allowed_transitions: ['TRIAGED'],
+        triages: [],
+        prescriptions: [],
+        lab_requests: [],
+        isolation: null,
+        health_certificate: null,
+        emr: null,
+      },
+    },
+  }),
+  getVisitLabResults: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  addPrescription: vi.fn().mockResolvedValue({}),
+  isolateVisit: vi.fn().mockResolvedValue({}),
+  issueCertificate: vi.fn().mockResolvedValue({}),
+  requestClinicLab: vi.fn().mockResolvedValue({}),
+  submitEmr: vi.fn().mockResolvedValue({}),
+  submitTriage: vi.fn().mockResolvedValue({}),
+  transitionVisit: vi.fn().mockResolvedValue({}),
   getReferrals: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
   getClinicVisits: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
   getIsolations: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
@@ -114,5 +147,14 @@ describe('Clinic pages language reactivity', () => {
     await screen.findByRole('heading', { name: /لوحة العيادة الطبية/i, level: 1 });
     await i18n.changeLanguage('en');
     await screen.findByRole('heading', { name: /Medical Clinic Dashboard/i, level: 1 });
+  });
+
+  it('VisitDetailPage renders AR and switches to EN', async () => {
+    render(wrap(<VisitDetailPage />));
+    await screen.findByRole('button', { name: /العودة إلى العيادة/i });
+    await screen.findByText(/زيارة عيادة/i);
+    await i18n.changeLanguage('en');
+    await screen.findByRole('button', { name: /Back to clinic/i });
+    await screen.findByText(/Clinic visit/i);
   });
 });
