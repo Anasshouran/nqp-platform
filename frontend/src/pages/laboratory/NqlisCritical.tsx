@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -12,6 +11,7 @@ import {
   StatusChip,
   FormDialog,
   FormTextField,
+  type StatusTone,
 } from '../../components/uikit';
 import type { DataTableColumn } from '../../components/uikit';
 import { useServerTable } from '../../hooks/useServerTable';
@@ -21,11 +21,12 @@ import {
   getCriticalResults,
 } from '../../api/endpoints/laboratory';
 import type { CriticalResultNotification } from '../../types/laboratory';
-import { sampleOutcome } from '../../utils/status';
 import { formatDateTime } from '../../utils/formatters';
 import { notifyError, notifySuccess } from '../../utils/toast';
+import { useTranslation } from 'react-i18next';
 
 const NqlisCritical = () => {
+  const { t } = useTranslation();
   const { sector } = useLabScope();
   const table = useServerTable<CriticalResultNotification>({ fetchData: getCriticalResults });
   const { rows, count, loading, error, refresh, page, rowsPerPage, setPage, setRowsPerPage, pageSizeOptions, setFilter } = table;
@@ -40,32 +41,41 @@ const NqlisCritical = () => {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const outcomeMeta = useMemo<Record<string, { label: string; tone: StatusTone }>>(
+    () => ({
+      POSITIVE: { label: t('laboratory.nqlisCritical.outcomePositive'), tone: 'error' },
+      NEGATIVE: { label: t('laboratory.nqlisCritical.outcomeNegative'), tone: 'success' },
+      INCONCLUSIVE: { label: t('laboratory.nqlisCritical.outcomeInconclusive'), tone: 'warning' },
+    }),
+    [t],
+  );
+
   const handleAck = async () => {
     if (!active) return;
     setSubmitting(true);
     try {
       await acknowledgeCritical(active.id, note || '');
-      notifySuccess('تم الإقرار بالنتيجة الحرجة');
+      notifySuccess(t('laboratory.nqlisCritical.ackSuccess'));
       setOpen(false);
       refresh();
     } catch {
-      notifyError('تعذر الإقرار');
+      notifyError(t('laboratory.nqlisCritical.ackError'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const columns: DataTableColumn<CriticalResultNotification>[] = [
-    { key: 'sample_number', label: 'رقم العينة', render: (c) => <Typography sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{c.sample_number}</Typography> },
-    { key: 'test_name', label: 'الفحص', render: (c) => <Typography fontWeight={700}>{c.test_name}</Typography> },
-    { key: 'outcome', label: 'النتيجة', render: (c) => { const m = sampleOutcome[c.outcome]; return m ? <StatusChip label={m.label} tone="error" /> : null; } },
-    { key: 'channel', label: 'القناة', render: (c) => c.channel, hideOnMobile: true },
-    { key: 'notified_at', label: 'وقت الإخطار', render: (c) => formatDateTime(c.notified_at) },
-    { key: 'acknowledged_name', label: 'أقرّ به', render: (c) => c.acknowledged_name || '—', hideOnMobile: true },
-    { key: 'actions', label: 'إجراء', render: (c) => c.acknowledged_at ? (
-        <StatusChip label="تم الإقرار" tone="success" />
+    { key: 'sample_number', label: t('laboratory.nqlisCritical.colSampleNumber'), render: (c) => <Typography sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{c.sample_number}</Typography> },
+    { key: 'test_name', label: t('laboratory.nqlisCritical.colTestName'), render: (c) => <Typography fontWeight={700}>{c.test_name}</Typography> },
+    { key: 'outcome', label: t('laboratory.nqlisCritical.colOutcome'), render: (c) => { const m = outcomeMeta[c.outcome]; return m ? <StatusChip label={m.label} tone={m.tone} /> : null; } },
+    { key: 'channel', label: t('laboratory.nqlisCritical.colChannel'), render: (c) => c.channel, hideOnMobile: true },
+    { key: 'notified_at', label: t('laboratory.nqlisCritical.colNotifiedAt'), render: (c) => formatDateTime(c.notified_at) },
+    { key: 'acknowledged_name', label: t('laboratory.nqlisCritical.colAcknowledgedBy'), render: (c) => c.acknowledged_name || '—', hideOnMobile: true },
+    { key: 'actions', label: t('laboratory.nqlisCritical.colAction'), render: (c) => c.acknowledged_at ? (
+        <StatusChip label={t('laboratory.nqlisCritical.acknowledged')} tone="success" />
       ) : (
-        <Tooltip title="إقرار">
+        <Tooltip title={t('laboratory.nqlisCritical.tooltipAck')}>
           <IconButton size="small" color="success" onClick={() => { setActive(c); setNote(''); setOpen(true); }}>
             <CheckCircleIcon fontSize="small" />
           </IconButton>
@@ -77,8 +87,8 @@ const NqlisCritical = () => {
   return (
     <Box>
       <PageHeader
-        title="النتائج الحرجة"
-        subtitle="إخطارات النتائج الحرجة واستجابتها"
+        title={t('laboratory.nqlisCritical.pageTitle')}
+        subtitle={t('laboratory.nqlisCritical.pageSubtitle')}
         eyebrow="NQLIS"
       />
       <DataTable<CriticalResultNotification>
@@ -91,25 +101,25 @@ const NqlisCritical = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="إخطارات النتائج الحرجة"
-        subtitle={`${count} إخطار`}
+        title={t('laboratory.nqlisCritical.tableTitle')}
+        subtitle={t('laboratory.nqlisCritical.tableSubtitle', { count })}
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
-        emptyTitle="لا توجد نتائج حرجة"
-        emptyDescription="سيتم إنشاء إخطار تلقائياً عند اعتماد نتيجة حرجة"
+        emptyTitle={t('laboratory.nqlisCritical.emptyTitle')}
+        emptyDescription={t('laboratory.nqlisCritical.emptyDescription')}
       />
 
       <FormDialog
         open={open}
-        title="الإقرار بنتيجة حرجة"
+        title={t('laboratory.nqlisCritical.dialogTitle')}
         subtitle={active ? `${active.sample_number} · ${active.test_name}` : ''}
         icon={<WarningAmberIcon />}
         onClose={() => setOpen(false)}
         onSubmit={handleAck}
         loading={submitting}
       >
-        <FormTextField label="ملاحظة الإقرار" multiline minRows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+        <FormTextField label={t('laboratory.nqlisCritical.dialogNoteLabel')} multiline minRows={3} value={note} onChange={(e) => setNote(e.target.value)} />
       </FormDialog>
     </Box>
   );

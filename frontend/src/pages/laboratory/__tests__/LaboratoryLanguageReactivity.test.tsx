@@ -1,7 +1,7 @@
 /**
- * Laboratory Round 1 — language reactivity (Phase 3c).
+ * Laboratory Round 1 + Round 2 — language reactivity (Phase 3c).
  *
- * Each of the 6 migrated laboratory pages must render in Arabic (default) and
+ * Each of the 13 migrated laboratory pages must render in Arabic (default) and
  * re-render in English after a language switch. Lab API, lab scope and toasts
  * are mocked; the real useServerTable, auth store and i18n instance are used.
  */
@@ -20,6 +20,13 @@ import NqlisUsers from '../NqlisUsers';
 import NqlisQuality from '../NqlisQuality';
 import NationalLabDashboard from '../NationalLabDashboard';
 import NqlisDashboard from '../NqlisDashboard';
+import NqlisReception from '../NqlisReception';
+import NqlisWorklist from '../NqlisWorklist';
+import NqlisReports from '../NqlisReports';
+import NqlisSamples from '../NqlisSamples';
+import NqlisEquipment from '../NqlisEquipment';
+import NqlisCritical from '../NqlisCritical';
+import LaboratoryPage from '../LaboratoryPage';
 
 const fixtures = vi.hoisted(() => {
   const dashboard = {
@@ -107,10 +114,39 @@ vi.mock('../../../api/endpoints/laboratory', async (importOriginal) => ({
   getNationalLabDashboard: vi.fn().mockResolvedValue({ data: { data: fixtures.nationalLab } }),
   getLabDashboard: vi.fn().mockResolvedValue({ data: { data: fixtures.dashboard } }),
   getLabSamples: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  // Round 2 — Reception
+  getReceptionQueue: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  createLabSample: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  acceptSample: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  conditionalAcceptSample: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  rejectSample: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  // Round 2 — Worklist
+  getWorklist: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  startTest: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  enterTestResult: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  reviewTest: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  approveTest: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  reviseTest: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  saveTestResult: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  returnTestResult: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  addSampleTest: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  // Round 2 — Reports
+  getLabReports: vi.fn().mockResolvedValue({ data: { data: { summary: {}, by_section: [], by_disease: [], by_source: [] } } }),
+  // Round 2 — Samples
+  getSampleTrack: vi.fn().mockResolvedValue({ data: { data: { movements: [] } } }),
+  assignSample: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  getSections: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  // Round 2 — Equipment
+  getEquipment: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  createEquipment: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  // Round 2 — Critical
+  getCriticalResults: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  acknowledgeCritical: vi.fn().mockResolvedValue({ data: { data: {} } }),
 }));
 
 vi.mock('../../../hooks/useLabSectors', () => ({
   useLabScope: () => ({ sector: null, isNational: false, allowedSectors: [] }),
+  useLabSectors: () => ({ activeSector: null, allowedSectors: [], setSector: vi.fn(), isNational: false }),
 }));
 
 beforeAll(() => {
@@ -166,6 +202,7 @@ describe('Laboratory pages language reactivity', () => {
     vi.clearAllMocks();
   });
 
+  // Round 1 (6 pages)
   it('NqlisQc renders AR and switches to EN', async () => {
     render(wrap(<NqlisQc />));
     await screen.findByText('مراقبة الجودة');
@@ -206,5 +243,55 @@ describe('Laboratory pages language reactivity', () => {
     await screen.findByText('لوحة قيادة المختبر القومي');
     await i18n.changeLanguage('en');
     await screen.findByText('National laboratory command dashboard');
+  });
+
+  // Round 2 (7 pages)
+  it('NqlisReception renders AR and switches to EN', async () => {
+    render(wrap(<NqlisReception />));
+    await screen.findByText('استقبال العينات');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Sample Reception');
+  });
+
+  it('NqlisWorklist renders AR and switches to EN', async () => {
+    render(wrap(<NqlisWorklist />));
+    await screen.findByText('مهام فحص عينات NQLIS');
+    await i18n.changeLanguage('en');
+    await screen.findByText('NQLIS Sample Test Tasks');
+  });
+
+  it('NqlisReports renders AR and switches to EN', async () => {
+    render(wrap(<NqlisReports />));
+    await screen.findByText('التقارير');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Reports');
+  });
+
+  it('NqlisSamples renders AR and switches to EN', async () => {
+    render(wrap(<NqlisSamples />));
+    await screen.findByText('سجل العينات');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Sample Registry');
+  });
+
+  it('NqlisEquipment renders AR and switches to EN', async () => {
+    render(wrap(<NqlisEquipment />));
+    await screen.findByText('الأجهزة والمعدات');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Equipment & Devices');
+  });
+
+  it('NqlisCritical renders AR and switches to EN', async () => {
+    render(wrap(<NqlisCritical />));
+    await screen.findByText('النتائج الحرجة');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Critical Results');
+  });
+
+  it('LaboratoryPage renders AR and switches to EN', async () => {
+    render(wrap(<LaboratoryPage />));
+    await screen.findByText('المعمل القومي للحجر الصحي');
+    await i18n.changeLanguage('en');
+    await screen.findByText('National Quarantine Laboratory');
   });
 });
