@@ -5,7 +5,7 @@
  * (default) and re-render in English after a language switch.
  */
 import type { ReactNode } from 'react';
-import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -49,7 +49,7 @@ vi.mock('../../../hooks/useTableExport', () => ({
 }));
 
 vi.mock('../../../components/command', () => ({
-  CommandSectionRail: ({ sections, active, onNavigate, accent, label }: any) => null,
+  CommandSectionRail: () => null,
   useCommandSections: () => ({ active: 0, register: vi.fn(), scrollTo: vi.fn() }),
 }));
 
@@ -57,6 +57,7 @@ vi.mock('@mui/material/useMediaQuery', () => ({
   default: () => true,
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mock flexibility for reducer type
 const store = configureStore({ reducer: { auth: authReducer as any } });
 const wrap = (ui: ReactNode) => (
   <Provider store={store}>
