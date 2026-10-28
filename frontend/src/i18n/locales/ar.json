@@ -4354,6 +4354,213 @@
           "text": "دليل استخدام واجهة الجودة."
         }
       }
+    },
+    "standards": {
+      "nav": {
+        "dashboard": "لوحة القيادة",
+        "standards": "المواصفات",
+        "versions": "الإصدارات",
+        "requirements": "المتطلبات",
+        "methods": "الطرق التحليلية",
+        "rules": "قواعد التطبيق",
+        "comparison": "مقارنة المواصفات"
+      },
+      "columns": {
+        "code": "الكود",
+        "title_ar": "العنوان",
+        "source_label": "المصدر",
+        "status_label": "الحالة",
+        "product_name": "المنتج",
+        "mandatory": "إلزامية",
+        "created_at": "تاريخ الإنشاء",
+        "standard_code": "المواصفة",
+        "version": "الإصدار",
+        "effective_from": "سارٍ من",
+        "effective_to": "ينتهي",
+        "standard_source": "المصدر",
+        "version_code": "المواصفة",
+        "parameter_name": "المعامل",
+        "microorganism_name": "الكائن الدقيق",
+        "limit_type_label": "نوع الحد",
+        "label": "الحد",
+        "method_name": "الطريقة",
+        "active": "نشط",
+        "device": "المصفوفة",
+        "name_ar": "الاسم",
+        "validation_status_label": "حالة الاعتماد",
+        "device_code": "كود الجهاز",
+        "manufacturer": "الشركة المصنعة",
+        "model_number": "رقم الموديل",
+        "serial_number": "الرقم التسلسلي",
+        "equipment_type": "نوع الجهاز",
+        "calibration_status": "حالة المعايرة",
+        "last_calibrated": "آخر معايرة",
+        "next_calibration_due": "المعايرة القادمة",
+        "user_name": "المستخدم",
+        "action": "الفعل",
+        "object_type": "نوع الكائن",
+        "object_label": "الوصف"
+      },
+      "dashboard": {
+        "eyebrow": "المواصفات والمعايير",
+        "title": "مراجعة المواصفات والمطابقة",
+        "subtitle": "إدارة المواصفات والمعايير المرجعية، الإصدارات، المتطلبات، الطرق التحليلية، وقواعد التطبيق التنظيمية",
+        "refresh": "تحديث",
+        "liveStatus": "مباشر",
+        "sectionsLabel": "أقسام اللوحة",
+        "kpis": {
+          "title": "مؤشرات الجودة",
+          "total_standards": "إجمالي المواصفات",
+          "active_versions": "الإصدارات السارية",
+          "chemical_requirements": "المتطلبات الكيميائية",
+          "micro_requirements": "المتطلبات الميكروبيولوجية",
+          "validated_methods": "الطرق المعتمدة",
+          "active_rules": "قواعد التطبيق النشطة",
+          "by_source": "المواصفات حسب المصدر"
+        },
+        "alerts": {
+          "title": "تنبيهات الجودة",
+          "loading": "جارٍ التحميل…"
+        },
+        "qcOverview": {
+          "title": "نظرة عامة QC Overview",
+          "microbiology": "الأحياء الدقيقة Microbiology",
+          "chemistry": "الكيمياء Chemistry",
+          "successRate": "معدل النجاح",
+          "tableTitle": "سجلات مراجعة الجودة QC"
+        },
+        "qcFailures": {
+          "openNc": "فتح عدم مطابقة",
+          "warning": "النتائج المدرجة قد تكون متأثرة بفشل الضابط — أعد الفحص قبل اعتماد النتيجة النهائية.",
+          "noFailures": "لا توجد حالات فشل QC حالياً.",
+          "section": "القسم",
+          "officer": "الضابط",
+          "test": "الفحص",
+          "status": "الحالة",
+          "testsAffected": "نتائج متأثرة"
+        },
+        "methods": {
+          "description": "طرق الاختبار المعتمدة — كل طريقة لها إصدار وتاريخ سريان وأجهزة وكواشف وكمية عينة وحدود اكتشاف ومرجع.",
+          "activeCount": "{{active}} من {{total}} طريقة نشطة ({{compliance}}%)."
+        },
+        "documents": {
+          "title": "التحكم في الوثائق Document Control",
+          "description": "كل وثيقة تحمل: كود الوثيقة، الإصدار، المالك، تاريخ السريان، تاريخ المراجعة، الحالة، والمعتمِد.",
+          "sop": "SOP",
+          "workInstructions": "تعليمات العمل",
+          "testMethods": "طرق الاختبار",
+          "qualityGuide": "دليل الجودة",
+          "forms": "النماذج",
+          "specifications": "المواصفات",
+          "calibrationCertificates": "شهادات المعايرة",
+          "qcProcedures": "إجراءات QC"
+        },
+        "reports": {
+          "title": "تقارير الجودة Quality Reports",
+          "qcPerformance": "أداء QC",
+          "nonConformity": "عدم المطابقة",
+          "capa": "CAPA",
+          "equipmentCalibration": "معايرة الأجهزة",
+          "reagentsExpired": "انتهاء الكواشف",
+          "methodCompliance": "امتثال الطرق",
+          "specChanges": "تغييرات المواصفات",
+          "auditTrail": "سجل التدقيق",
+          "documentReview": "مراجعة الوثائق",
+          "labQualityIndicators": "مؤشرات جودة المختبر"
+        },
+        "pages": {
+          "specs": {
+            "micro": {
+              "title": "المواصفات الميكروبيولوجية"
+            },
+            "chemical": {
+              "title": "المواصفات الكيميائية",
+              "text": "حدود التركيز الكيميائي للمنتجات الغذائية — تُدار بنفس منطق الإصدارات."
+            },
+            "plans": {
+              "title": "خطط السحب Sampling Plans",
+              "text": "عدد الوحدات (n) وحدود القبول (c) حسب نظام السحب الثنائي/الثلاثي للدفعة."
+            },
+            "versions": {
+              "title": "إصدارات المواصفات Versions",
+              "text": "لا يُعدَّل الإصدار النشط مباشرة — يُنشأ إصدار جديد ويُؤرشف القديم حفاظاً على تاريخ النتائج."
+            }
+          },
+          "equipment": {
+            "title": "الأجهزة والمعايرة"
+          },
+          "reagents": {
+            "title": "الكواشف Reagents"
+          },
+          "settings": {
+            "title": "الإعدادات",
+            "text": "إعدادات الجودة والامتثال."
+          },
+          "help": {
+            "title": "المساعدة",
+            "text": "دليل استخدام واجهة الجودة."
+          }
+        },
+        "dialogs": {
+          "standard": {
+            "title": "تعديل مواصفة",
+            "new": "إضافة مواصفة",
+            "edit": "تعديل مواصفة",
+            "code": "الكود *",
+            "title_ar": "العنوان (عربي) *",
+            "title_en": "العنوان (إنجليزي)",
+            "source": "المصدر *",
+            "country": "الدولة/الجهة",
+            "document_reference": "المرجع الوثائقي",
+            "mandatory": "إلزامية",
+            "status": "الحالة *"
+          },
+          "version": {
+            "title": "تعديل إصدار",
+            "new": "إضافة إصدار",
+            "edit": "تعديل إصدار",
+            "standard": "المواصفة *",
+            "version": "رقم/سنة الإصدار *",
+            "effective_from": "تاريخ السريان *",
+            "effective_to": "تاريخ الانتهاء",
+            "issue_date": "تاريخ الإصدار",
+            "document_reference": "المرجع الوثائقي",
+            "notes": "ملاحظات"
+          },
+          "requirement": {
+            "title": "تعديل متطلب",
+            "new": "إضافة متطلب",
+            "edit": "تعديل متطلب",
+            "version": "الإصدار *",
+            "parameter": "المعامل",
+            "microorganism": "الكائن الدقيق",
+            "method": "الطريقة",
+            "limit_type": "نوع الحد *",
+            "min_value": "الحد الأدنى",
+            "max_value": "الحد الأقصى",
+            "unit": "الوحدة",
+            "plan": "نوع الخطة",
+            "active": "نشط"
+          },
+          "rule": {
+            "title": "تعديل قاعدة تطبيق",
+            "new": "إضافة قاعدة تطبيق",
+            "edit": "تعديل قاعدة تطبيق",
+            "code": "الكود *",
+            "name_ar": "الاسم (عربي) *",
+            "description": "الوصف",
+            "priority": "ترتيب الأولوية *",
+            "source_type": "نوع المرجع *",
+            "active": "فعالة"
+          },
+          "delete": {
+            "title": "حذف المواصفة",
+            "message": "هل أنت متأكد من حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+            "confirm": "حذف",
+            "cancel": "إلغاء"
+          }
+        }
+      }
     }
   }
 }

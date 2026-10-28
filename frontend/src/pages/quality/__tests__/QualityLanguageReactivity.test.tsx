@@ -1,12 +1,11 @@
 /**
- * Quality Round 3b — language reactivity (Phase 3c).
+ * Quality Round 3c — language reactivity (Phase 3c).
  *
- * QualityAssurancePage must render in Arabic (default) and re-render in English
- * after a language switch. Lab API, lab scope and toasts are mocked; the real
- * useServerTable, auth store and i18n instance are used.
+ * StandardsReviewPage must render in Arabic (default) and re-render in English
+ * after a language switch.
  */
 import type { ReactNode } from 'react';
-import { describe, it, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -20,28 +19,33 @@ import enLocale from '../../../i18n/locales/en.json';
 i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
 
-import QualityAssurancePage from '../QualityAssurancePage';
+import StandardsReviewPage from '../../standards/StandardsReviewPage';
 
 const foodlabApi = vi.hoisted(() => ({
-  getQaDashboard: vi.fn().mockResolvedValue({ data: { data: {
-    specs: { active: 0 },
-    qc: { failed: 0, passed: 0, pending: 0, pass_rate: 0 },
-    compliance: { result_pct: 0 },
-    equipment: { overdue: 0, due_soon: 0, calibration_pct: 0 },
-    nonconformity: { open: 0, capa_open: 0, closed_pct: 0 },
-    reagents: { expired: 0, valid_pct: 0 },
-    audit: { today: 0 },
-    methods: { active: 0, total: 0, compliance_pct: 0 },
-    by_section: [], by_disease: [], by_source: []
+  getStandards: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getStandardVersions: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getStandardRequirements: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getAnalyticalMethods: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getRegulatoryRules: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getStandardsDashboard: vi.fn().mockResolvedValue({ data: { data: {
+    total_standards: 0,
+    active_versions: 0,
+    chemical_requirements: 0,
+    micro_requirements: 0,
+    validated_methods: 0,
+    active_rules: 0
   } } }),
-  getMicroSpecifications: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getQcRecords: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getReagents: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getNonConformities: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getCapaRecords: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getAuditLogs: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getLabSampleTests: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
-  getLabEquipment: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  createStandard: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  updateStandard: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  deleteStandard: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  createStandardVersion: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  updateStandardVersion: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  createStandardRequirement: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  updateStandardRequirement: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  createAnalyticalMethod: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  updateAnalyticalMethod: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  createRegulatoryRule: vi.fn().mockResolvedValue({ data: { data: {} } }),
+  updateRegulatoryRule: vi.fn().mockResolvedValue({ data: { data: {} } }),
 }));
 vi.mock('../../../api/endpoints/foodlab', () => foodlabApi);
 
@@ -65,7 +69,7 @@ vi.mock('../../../components/command', () => ({
   useCommandSections: () => ({ active: 0, register: vi.fn(), scrollTo: vi.fn() }),
 }));
 
-const store = configureStore({ reducer: { auth: authReducer as any } }); // eslint-disable-line @typescript-eslint/no-explicit-any
+const store = configureStore({ reducer: { auth: authReducer as any } });
 const wrap = (ui: ReactNode) => (
   <Provider store={store}>
     <MemoryRouter>{ui}</MemoryRouter>
@@ -80,12 +84,10 @@ describe('Quality pages language reactivity', () => {
     vi.clearAllMocks();
   });
 
-  it('QualityAssurancePage AR→EN', async () => {
-    console.log('i18n title:', i18n.t('quality.qualityAssurance.dashboard.title'));
-    console.log('i18n eyebrow:', i18n.t('quality.qualityAssurance.dashboard.eyebrow'));
-    render(wrap(<QualityAssurancePage />));
-    await screen.findByText('مراقبة الجودة');
+  it('StandardsReviewPage AR→EN', async () => {
+    render(wrap(<StandardsReviewPage />));
+    await screen.findByText('مراجعة المواصفات والمطابقة');
     await i18n.changeLanguage('en');
-    await screen.findByText('Quality Assurance');
+    await screen.findByText('Standards Review Dashboard');
   });
 });
