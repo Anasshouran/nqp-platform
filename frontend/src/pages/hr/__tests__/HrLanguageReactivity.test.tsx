@@ -2,7 +2,7 @@
  * HR Round 1 — language reactivity (Phase 5a).
  */
 import type { ReactNode } from 'react';
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -51,6 +51,7 @@ vi.mock('../../../hooks/useTableExport', () => ({
   useTableExport: () => ({ exporting: false, exportAll: vi.fn() }),
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const store = configureStore({ reducer: { auth: authReducer as any } });
 const wrap = (ui: ReactNode) => (
   <Provider store={store}>
