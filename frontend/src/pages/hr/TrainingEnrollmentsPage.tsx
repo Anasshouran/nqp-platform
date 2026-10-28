@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -18,17 +19,23 @@ import type { TrainingEnrollment } from '../../types/hr';
 import {
   ENROLLMENT_STATUS_LABELS,
   ENROLLMENT_STATUS_TONES,
-  enrollmentStatusLabel,
 } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'كل الحالات' },
-  ...Object.entries(ENROLLMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-];
-
 const TrainingEnrollmentsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { value: '', label: t('hr.trainingEnrollments.filters.allStatuses') },
+      ...Object.entries(ENROLLMENT_STATUS_LABELS).map(([value]) => ({
+        value,
+        label: t(`hr.trainingEnrollments.statusLabels.${value}`),
+      })),
+    ],
+    [t],
+  );
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -44,7 +51,7 @@ const TrainingEnrollmentsPage = () => {
     () => [
       {
         key: 'employee_name',
-        label: 'الموظف',
+        label: t('hr.trainingEnrollments.columns.employee'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
@@ -58,7 +65,7 @@ const TrainingEnrollmentsPage = () => {
       },
       {
         key: 'plan_name',
-        label: 'الدورة',
+        label: t('hr.trainingEnrollments.columns.course'),
         render: (row) => (
           <Box>
             <Typography variant="body2">{row.plan_name}</Typography>
@@ -70,53 +77,53 @@ const TrainingEnrollmentsPage = () => {
       },
       {
         key: 'start_date',
-        label: 'البداية',
+        label: t('hr.trainingEnrollments.columns.startDate'),
         sortable: true,
         render: (row) => formatDate(row.start_date),
       },
       {
         key: 'end_date',
-        label: 'النهاية',
+        label: t('hr.trainingEnrollments.columns.endDate'),
         render: (row) => formatDate(row.end_date),
       },
       {
         key: 'score',
-        label: 'الدرجة',
+        label: t('hr.trainingEnrollments.columns.score'),
         align: 'center' as const,
         render: (row) => row.score ?? '—',
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.trainingEnrollments.columns.status'),
         render: (row) => (
           <StatusChip
-            label={enrollmentStatusLabel(row.status)}
+            label={t(`hr.trainingEnrollments.statusLabels.${row.status}`)}
             tone={ENROLLMENT_STATUS_TONES[row.status] ?? 'neutral'}
           />
         ),
       },
       {
         key: 'decided_by_name',
-        label: 'المعتمد',
+        label: t('hr.trainingEnrollments.columns.approvedBy'),
         hideOnMobile: true,
         render: (row) => row.decided_by_name || '—',
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="تسجيلات التدريب"
-        subtitle="من التسجيل إلى الاعتماد ثم الإتمام — الإتمام مشتق من الدرجة"
+        title={t('hr.trainingEnrollments.header.title')}
+        subtitle={t('hr.trainingEnrollments.header.subtitle')}
         action={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/app/hr/training')}
           >
-            تسجيل جديد
+            {t('hr.trainingEnrollments.actions.new')}
           </Button>
         }
       />
@@ -133,11 +140,11 @@ const TrainingEnrollmentsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم الموظف أو الدورة..."
+        searchPlaceholder={t('hr.trainingEnrollments.searchPlaceholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('hr.trainingEnrollments.columns.status'),
             options: STATUS_OPTIONS,
             value: '',
             onChange: (v) => setFilter('status', v),
@@ -152,7 +159,16 @@ const TrainingEnrollmentsPage = () => {
         onExport={() =>
           exportAll({
             filename: 'hr_training_enrollments.csv',
-            headers: ['الموظف', 'الرقم الوظيفي', 'الدورة', 'البداية', 'النهاية', 'الدرجة', 'الحالة', 'المعتمد'],
+            headers: [
+              t('hr.trainingEnrollments.columns.employee'),
+              t('hr.trainingEnrollments.export.employeeNumber'),
+              t('hr.trainingEnrollments.columns.course'),
+              t('hr.trainingEnrollments.columns.startDate'),
+              t('hr.trainingEnrollments.columns.endDate'),
+              t('hr.trainingEnrollments.columns.score'),
+              t('hr.trainingEnrollments.columns.status'),
+              t('hr.trainingEnrollments.columns.approvedBy'),
+            ],
             mapRow: (r) => [
               r.employee_name,
               r.employee_number,
@@ -163,20 +179,20 @@ const TrainingEnrollmentsPage = () => {
               r.status_display,
               r.decided_by_name ?? '',
             ],
-            message: 'تم تصدير تسجيلات التدريب',
+            message: t('hr.trainingEnrollments.export.message'),
           })
         }
         exporting={exporting}
-        actionsLabel="تفاصيل"
+        actionsLabel={t('hr.trainingEnrollments.actions.details')}
         actions={(row) => (
-          <Tooltip title="تفاصيل التسجيل">
+          <Tooltip title={t('hr.trainingEnrollments.actions.viewEnrollment')}>
             <IconButton onClick={() => navigate(`/app/hr/training/${row.id}`)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>
         )}
-        emptyTitle="لا توجد تسجيلات تدريب"
-        emptyDescription="ستظهر هنا الاشتراكات في الدورات التدريبية."
+        emptyTitle={t('hr.trainingEnrollments.empty.title')}
+        emptyDescription={t('hr.trainingEnrollments.empty.description')}
       />
     </Box>
   );

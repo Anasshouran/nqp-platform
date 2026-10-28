@@ -4562,5 +4562,257 @@
         }
       }
     }
+  },
+  "hr": {
+    "employeeTimeline": {
+      "header": {
+        "title": "Employee Timeline",
+        "subtitle": "Promotion, transfer and leave history for all employees in your scope"
+      },
+      "filters": {
+        "allEvents": "All events",
+        "eventType": "Event type"
+      },
+      "columns": {
+        "startDate": "Date",
+        "employee": "Employee",
+        "event": "Event",
+        "change": "Change",
+        "reason": "Reason",
+        "createdBy": "Recorded by"
+      },
+      "eventLabels": {
+        "HIRE": "Hire",
+        "PROMOTION": "Promotion",
+        "TRANSFER": "Transfer",
+        "DEMOTION": "Demotion",
+        "LEAVE_START": "Leave start",
+        "LEAVE_END": "Leave end",
+        "TERMINATION": "Termination",
+        "SUSPENSION": "Suspension",
+        "RETIREMENT": "Retirement",
+        "APPOINTMENT": "Appointment",
+        "SECONDMENT": "Secondment"
+      },
+      "searchPlaceholder": "Search by employee name or reason...",
+      "export": {
+        "from": "From",
+        "to": "To",
+        "message": "Employee timeline exported"
+      },
+      "actions": {
+        "label": "Actions",
+        "viewProfile": "View profile"
+      },
+      "empty": {
+        "title": "No events",
+        "description": "No promotions, transfers or leave have been recorded yet."
+      }
+    },
+    "trainingEnrollments": {
+      "header": {
+        "title": "Training Enrollments",
+        "subtitle": "From registration to approval to completion — completion derived from score"
+      },
+      "filters": {
+        "allStatuses": "All statuses"
+      },
+      "columns": {
+        "employee": "Employee",
+        "course": "Course",
+        "startDate": "Start",
+        "endDate": "End",
+        "score": "Score",
+        "status": "Status",
+        "approvedBy": "Approved by"
+      },
+      "statusLabels": {
+        "APPLIED": "Applied",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "COMPLETED": "Completed",
+        "CANCELLED": "Cancelled",
+        "WAITLIST": "Waitlist"
+      },
+      "searchPlaceholder": "Search by employee or course...",
+      "actions": {
+        "new": "New enrollment",
+        "details": "Details",
+        "viewEnrollment": "View enrollment"
+      },
+      "export": {
+        "employeeNumber": "Employee number",
+        "message": "Training enrollments exported"
+      },
+      "empty": {
+        "title": "No training enrollments",
+        "description": "Enrollments in training courses will appear here."
+      }
+    },
+    "leaveRequests": {
+      "header": {
+        "title": "Leave Requests",
+        "subtitle": "Approval deducts from balance; submitted request holds days until decided"
+      },
+      "filters": {
+        "allStatuses": "All statuses"
+      },
+      "columns": {
+        "employee": "Employee",
+        "type": "Type",
+        "from": "From",
+        "to": "To",
+        "days": "Days",
+        "status": "Status",
+        "approvedBy": "Approved by"
+      },
+      "statusLabels": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "halfDay": "half",
+      "searchPlaceholder": "Search by employee or number...",
+      "actions": {
+        "new": "New request",
+        "details": "Details",
+        "viewRequest": "View request"
+      },
+      "export": {
+        "employeeNumber": "Employee number",
+        "message": "Leave requests exported"
+      },
+      "empty": {
+        "title": "No leave requests",
+        "description": "Leave requests submitted by employees or HR will appear here."
+      }
+    },
+    "establishments": {
+      "header": {
+        "title": "Establishments",
+        "subtitle": "Organizational structure within your scope — single source of truth for permissions"
+      },
+      "filters": {
+        "allKinds": "All types"
+      },
+      "columns": {
+        "code": "Code",
+        "unit": "Unit",
+        "type": "Type",
+        "sector": "Sector",
+        "parent": "Parent",
+        "manager": "Responsible position",
+        "headcount": "Headcount"
+      },
+      "kindLabels": {
+        "DEPARTMENT": "Department",
+        "UNIT": "Unit",
+        "ENTRY_POINT": "Entry point",
+        "ENTRY_GROUP": "Entry group"
+      },
+      "searchPlaceholder": "Search by code or name...",
+      "actions": {
+        "dashboard": "Dashboard"
+      },
+      "export": {
+        "englishName": "English name",
+        "message": "Establishments exported"
+      },
+      "empty": {
+        "title": "No units",
+        "description": "No organizational units found within your scope or no scope assigned."
+      }
+    },
+    "performanceReviews": {
+      "header": {
+        "title": "Performance Reviews",
+        "subtitle": "Score and rating derived from indicator scores and weights — not sent by client"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "allCycles": "All cycles"
+      },
+      "columns": {
+        "employee": "Employee",
+        "reviewer": "Reviewer",
+        "cycle": "Cycle",
+        "score": "Score",
+        "rating": "Rating",
+        "status": "Status",
+        "approvedBy": "Approved by"
+      },
+      "statusLabels": {
+        "DRAFT": "Draft",
+        "IN_PROGRESS": "In progress",
+        "SUBMITTED": "Submitted",
+        "REVIEWED": "Reviewed",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "searchPlaceholder": "Search by employee or cycle...",
+      "actions": {
+        "cycles": "Cycles",
+        "new": "New review",
+        "details": "Details",
+        "viewReview": "View review"
+      },
+      "alert": {
+        "noOpenCycle": "No open cycle — create and open a cycle before starting reviews."
+      },
+      "export": {
+        "message": "Performance reviews exported"
+      },
+      "empty": {
+        "title": "No reviews",
+        "description": "Performance reviews within open cycles will appear here."
+      }
+    },
+    "postingRequests": {
+      "header": {
+        "title": "Posting Requests",
+        "subtitle": "Approval transfers the employee: closes old assignment, opens new one and records in timeline"
+      },
+      "filters": {
+        "allKinds": "All types",
+        "allStatuses": "All statuses"
+      },
+      "columns": {
+        "employee": "Employee",
+        "kind": "Type",
+        "status": "Status",
+        "destination": "Destination",
+        "effectiveDate": "Effective date",
+        "requestedBy": "Requested by",
+        "approvedBy": "Approved by"
+      },
+      "kindLabels": {
+        "TRANSFER": "Transfer",
+        "PROMOTION": "Promotion",
+        "SECONDMENT": "Secondment",
+        "DEPUTATION": "Deputation"
+      },
+      "statusLabels": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "selfService": "Self service",
+      "searchPlaceholder": "Search by employee or employee number...",
+      "actions": {
+        "new": "New request",
+        "label": "Actions",
+        "viewRequest": "View request"
+      },
+      "export": {
+        "employeeNumber": "Employee number",
+        "message": "Posting requests exported"
+      },
+      "empty": {
+        "title": "No posting requests",
+        "description": "Posting and promotion requests submitted by employees or HR will appear here."
+      }
+    }
   }
 }

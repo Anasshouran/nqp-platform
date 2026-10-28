@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -18,17 +19,23 @@ import type { LeaveRequest } from '../../types/hr';
 import {
   LEAVE_STATUS_LABELS,
   LEAVE_STATUS_TONES,
-  leaveStatusLabel,
 } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'كل الحالات' },
-  ...Object.entries(LEAVE_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-];
-
 const LeaveRequestsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { value: '', label: t('hr.leaveRequests.filters.allStatuses') },
+      ...Object.entries(LEAVE_STATUS_LABELS).map(([value]) => ({
+        value,
+        label: t(`hr.leaveRequests.statusLabels.${value}`),
+      })),
+    ],
+    [t],
+  );
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -44,7 +51,7 @@ const LeaveRequestsPage = () => {
     () => [
       {
         key: 'employee_name',
-        label: 'الموظف',
+        label: t('hr.leaveRequests.columns.employee'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
@@ -58,59 +65,59 @@ const LeaveRequestsPage = () => {
       },
       {
         key: 'leave_type_name',
-        label: 'النوع',
+        label: t('hr.leaveRequests.columns.type'),
         render: (row) => row.leave_type_name,
       },
       {
         key: 'start_date',
-        label: 'من',
+        label: t('hr.leaveRequests.columns.from'),
         sortable: true,
         render: (row) => formatDate(row.start_date),
       },
       {
         key: 'end_date',
-        label: 'إلى',
+        label: t('hr.leaveRequests.columns.to'),
         render: (row) => formatDate(row.end_date),
       },
       {
         key: 'days',
-        label: 'الأيام',
+        label: t('hr.leaveRequests.columns.days'),
         sortable: true,
         align: 'center' as const,
-        render: (row) => `${row.days}${row.is_half_day ? ' (نصف)' : ''}`,
+        render: (row) => `${row.days}${row.is_half_day ? ` (${t('hr.leaveRequests.halfDay')})` : ''}`,
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.leaveRequests.columns.status'),
         render: (row) => (
           <StatusChip
-            label={leaveStatusLabel(row.status)}
+            label={t(`hr.leaveRequests.statusLabels.${row.status}`)}
             tone={LEAVE_STATUS_TONES[row.status] ?? 'neutral'}
           />
         ),
       },
       {
         key: 'decided_by_name',
-        label: 'المعتمد',
+        label: t('hr.leaveRequests.columns.approvedBy'),
         hideOnMobile: true,
         render: (row) => row.decided_by_name || '—',
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="طلبات الإجازات"
-        subtitle="اعتماد الطلب يخصم من الرصيد؛ الطلب المُقدَّم يحجز أيامه حتى يُبتّ"
+        title={t('hr.leaveRequests.header.title')}
+        subtitle={t('hr.leaveRequests.header.subtitle')}
         action={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/app/hr/leave')}
           >
-            طلب جديد
+            {t('hr.leaveRequests.actions.new')}
           </Button>
         }
       />
@@ -127,11 +134,11 @@ const LeaveRequestsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم الموظف أو رقمه..."
+        searchPlaceholder={t('hr.leaveRequests.searchPlaceholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('hr.leaveRequests.columns.status'),
             options: STATUS_OPTIONS,
             value: '',
             onChange: (v) => setFilter('status', v),
@@ -146,7 +153,16 @@ const LeaveRequestsPage = () => {
         onExport={() =>
           exportAll({
             filename: 'hr_leave_requests.csv',
-            headers: ['الموظف', 'الرقم الوظيفي', 'النوع', 'من', 'إلى', 'الأيام', 'الحالة', 'المعتمد'],
+            headers: [
+              t('hr.leaveRequests.columns.employee'),
+              t('hr.leaveRequests.export.employeeNumber'),
+              t('hr.leaveRequests.columns.type'),
+              t('hr.leaveRequests.columns.from'),
+              t('hr.leaveRequests.columns.to'),
+              t('hr.leaveRequests.columns.days'),
+              t('hr.leaveRequests.columns.status'),
+              t('hr.leaveRequests.columns.approvedBy'),
+            ],
             mapRow: (r) => [
               r.employee_name,
               r.employee_number,
@@ -157,20 +173,20 @@ const LeaveRequestsPage = () => {
               r.status_display,
               r.decided_by_name ?? '',
             ],
-            message: 'تم تصدير طلبات الإجازات',
+            message: t('hr.leaveRequests.export.message'),
           })
         }
         exporting={exporting}
-        actionsLabel="تفاصيل"
+        actionsLabel={t('hr.leaveRequests.actions.details')}
         actions={(row) => (
-          <Tooltip title="تفاصيل الطلب">
+          <Tooltip title={t('hr.leaveRequests.actions.viewRequest')}>
             <IconButton onClick={() => navigate(`/app/hr/leave/${row.id}`)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>
         )}
-        emptyTitle="لا توجد طلبات إجازة"
-        emptyDescription="ستظهر هنا الطلبات المرفوعة من الموظفين أو من الموارد البشرية."
+        emptyTitle={t('hr.leaveRequests.empty.title')}
+        emptyDescription={t('hr.leaveRequests.empty.description')}
       />
     </Box>
   );
