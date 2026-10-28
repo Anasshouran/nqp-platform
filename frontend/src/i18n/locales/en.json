@@ -4141,5 +4141,219 @@
       "showAllTasks": "Show All Tasks ←",
       "action": "Action"
     }
+  },
+  "quality": {
+    "nav": {
+      "home": "Comprehensive Quality Dashboard — Technical System Safety Monitoring",
+      "specs": "Approved Specifications (n/c/m/M) — Single Source of Truth",
+      "specs.micro": "Microbiological Specifications — Product, Organism, Sampling Plan (n/c/m/M)",
+      "specs.chemical": "Chemical Specifications — Concentration Limits for Food Products",
+      "specs.plans": "Sampling Plans — Number of Units (n) and Lot Acceptance (c)",
+      "specs.versions": "Specification Version Management — No Direct Active Version Modification",
+      "qc.dashboard": "QC Review Dashboard Overview by Section",
+      "qc.results": "QC Review Records — Controls and Affected Results",
+      "qc.failures": "QC Failures — Results Affected by Officer Failure",
+      "methods": "Approved Test Methods — Version, Validity, Equipment and Reagents Required",
+      "equipment.calibration": "Equipment Calibration — Readiness and Upcoming Dates",
+      "equipment.maintenance": "Equipment Maintenance — Operational Status",
+      "reagents": "Reagents — Validity and Quantity, Prevent Expired Use",
+      "nc.open": "Non-Conformity — Open Cases",
+      "nc.investigation": "Non-Conformity Investigation — Root Cause Identification",
+      "nc.capa": "Corrective and Preventive Actions CAPA",
+      "documents": "Document Control — SOP, Instructions, Test Methods, Quality",
+      "audit": "Audit Log — Who Did What and When (Audit Trail)",
+      "reports": "Advanced Quality Reports",
+      "alerts": "Quality Alerts"
+    },
+    "ncType": {
+      "sample": "Sample",
+      "test": "Test",
+      "qc": "QC",
+      "equipment": "Equipment",
+      "reagent": "Reagent",
+      "method": "Method",
+      "personnel": "Personnel",
+      "documentation": "Documentation",
+      "result": "Result",
+      "sla": "SLA"
+    },
+    "severity": {
+      "minor": "Minor",
+      "major": "Major",
+      "critical": "Critical"
+    },
+    "ncStatus": {
+      "open": "Open",
+      "underInvestigation": "Under Investigation",
+      "awaitingCapa": "Awaiting CAPA",
+      "closed": "Closed"
+    },
+    "capaStatus": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "verification": "Verification",
+      "closed": "Closed"
+    },
+    "sections": {
+      "overview": "Overview",
+      "specs": "Specifications",
+      "qc": "QC Review",
+      "methods": "Test Methods",
+      "equipment": "Equipment",
+      "reagents": "Reagents",
+      "nc": "Non-Conformity",
+      "documents": "Documents",
+      "audit": "Audit Log",
+      "reports": "Reports",
+      "alerts": "Alerts"
+    },
+    "columns": {
+      "code": "Code",
+      "product": "Product",
+      "category": "Category",
+      "status": "Status",
+      "version": "Current Version",
+      "approvalDate": "Approval Date",
+      "qcNumber": "QC Number",
+      "bench": "Section",
+      "controlType": "Officer",
+      "severity": "Severity",
+      "affectedTestsCount": "Affected",
+      "reviewedAt": "Reviewed",
+      "reagent": "Reagent",
+      "lotNumber": "Lot Number",
+      "expiryDate": "Expiry Date",
+      "quantity": "Quantity",
+      "ncNumber": "Number",
+      "ncType": "Type",
+      "title": "Title",
+      "capaCount": "CAPA",
+      "responsibleUserName": "Responsible",
+      "dueDate": "Due Date",
+      "userName": "User",
+      "action": "Action",
+      "objectType": "Object",
+      "objectLabel": "Description",
+      "createdAt": "Time",
+      "device": "Device",
+      "lastCalibrated": "Last Calibrated",
+      "nextCalibrationDue": "Next Calibration Due"
+    },
+    "dashboard": {
+      "eyebrow": "Quality Assurance",
+      "title": "Quality Manager Dashboard",
+      "subtitle": "Quality and Compliance Management",
+      "refresh": "Refresh",
+      "liveStatus": "Live",
+      "sectionsLabel": "Dashboard Sections",
+      "stats": {
+        "specsActive": "Active Specifications",
+        "qcFailed": "QC Failed",
+        "calibrationDue": "Calibration Due",
+        "ncOpen": "Non-Conformity Open",
+        "capaOpen": "CAPA Open",
+        "reagentsExpired": "Reagents Expired",
+        "auditToday": "Audit Events Today",
+        "methodsActive": "Test Methods Active"
+      },
+      "kpis": {
+        "title": "Quality Indicators",
+        "resultCompliance": "Result Compliance",
+        "qcPassRate": "QC Pass Rate",
+        "calibrationPct": "Calibration Rate",
+        "methodCompliance": "Method Compliance",
+        "reagentValidity": "Reagent Validity",
+        "ncClosedPct": "NC Closed Rate"
+      },
+      "alerts": {
+        "title": "Quality Alerts",
+        "qcFailed": "QC Failed — Review Affected Results ({{count}})",
+        "calibrationOverdue": "Calibration Overdue for {{count}} Devices — Usage Prohibited",
+        "reagentsExpired": "Expired Reagents ({{count}}) — Do Not Use for New Tests",
+        "ncOpen": "Open Non-Conformity: {{count}}",
+        "capaOpen": "CAPA In Progress: {{count}}",
+        "noCritical": "No Critical Alerts Currently",
+        "loading": "Loading…"
+      },
+      "qcOverview": {
+        "title": "QC Overview",
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "successRate": "Success Rate",
+        "tableTitle": "QC Review Records"
+      },
+      "qcFailures": {
+        "openNc": "Open Non-Conformity",
+        "warning": "Results listed may be affected by officer failure — retest before approving final result.",
+        "noFailures": "No QC Failures Currently.",
+        "section": "Section",
+        "officer": "Officer",
+        "test": "Test",
+        "status": "Status",
+        "testsAffected": "Results Affected"
+      },
+      "methods": {
+        "description": "Approved test methods — each method has a version, validity date, equipment, reagents, sample quantity, detection limits and reference.",
+        "activeCount": "{{active}} of {{total}} methods active ({{compliance}}%)."
+      },
+      "documents": {
+        "title": "Document Control",
+        "description": "Each document carries: document code, version, owner, effective date, review date, status, and approver.",
+        "sop": "SOP",
+        "workInstructions": "Work Instructions",
+        "testMethods": "Test Methods",
+        "qualityGuide": "Quality Guide",
+        "forms": "Forms",
+        "specifications": "Specifications",
+        "calibrationCertificates": "Calibration Certificates",
+        "qcProcedures": "QC Procedures"
+      },
+      "reports": {
+        "title": "Quality Reports",
+        "qcPerformance": "QC Performance",
+        "nonConformity": "Non-Conformity",
+        "capa": "CAPA",
+        "equipmentCalibration": "Equipment Calibration",
+        "reagentsExpired": "Reagent Expiry",
+        "methodCompliance": "Method Compliance",
+        "specChanges": "Specification Changes",
+        "auditTrail": "Audit Trail",
+        "documentReview": "Document Review",
+        "labQualityIndicators": "Lab Quality Indicators"
+      },
+      "pages": {
+        "specs": {
+          "micro": {
+            "title": "Microbiological Specifications"
+          },
+          "chemical": {
+            "title": "Chemical Specifications",
+            "text": "Chemical concentration limits for food products — managed under the same versioning logic."
+          },
+          "plans": {
+            "title": "Sampling Plans",
+            "text": "Number of units (n) and acceptance limits (c) per double/triple sampling system for the lot."
+          },
+          "versions": {
+            "title": "Specification Versions",
+            "text": "Do not modify the active version directly — create a new version and archive the old one to preserve result history."
+          }
+        },
+        "equipment": {
+          "title": "Equipment and Calibration"
+        },
+        "reagents": {
+          "title": "Reagents"
+        },
+        "settings": {
+          "title": "Settings",
+          "text": "Quality and Compliance Settings."
+        },
+        "help": {
+          "title": "Help",
+          "text": "Quality Interface User Guide."
+        }
+      }
+    }
   }
 }

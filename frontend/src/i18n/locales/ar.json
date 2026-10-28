@@ -4141,5 +4141,219 @@
       "showAllTasks": "عرض كل المهام ←",
       "action": "إجراء"
     }
+  },
+  "quality": {
+    "nav": {
+      "home": "لوحة الجودة الشاملة — رصد سلامة النظام الفني للمختبر",
+      "specs": "المواصفات المعتمدة (n/c/m/M) — المصدر الوحيد للحقيقة",
+      "specs.micro": "المواصفات الميكروبيولوجية — المنتج، الكائن، خطة السحب (n/c/m/M)",
+      "specs.chemical": "المواصفات الكيميائية — حدود التركيز للمنتجات الغذائية",
+      "specs.plans": "خطط السحب Sampling Plans — عدد الوحدات (n) وقبول الدفعة (c)",
+      "specs.versions": "إدارة إصدارات المواصفات — بدون تعديل النسخة النشطة مباشرة",
+      "qc.dashboard": "نظرة عامة على مراجعة الجودة QC حسب الأقسام",
+      "qc.results": "سجلات مراجعة الجودة QC — الضوابط والنتائج المتأثرة",
+      "qc.failures": "فشل الجودة QC Failures — النتائج المتأثرة بفشل ضابط",
+      "methods": "طرق الاختبار المعتمدة — الإصدار، السريان، الأجهزة والكواشف المطلوبة",
+      "equipment.calibration": "معايرة الأجهزة — الجاهزية والمواعيد القادمة",
+      "equipment.maintenance": "صيانة الأجهزة — الحالة التشغيلية",
+      "reagents": "الكواشف — الصلاحية والكمية ومنع استخدام المنتهي",
+      "nc.open": "عدم المطابقة — الحالات المفتوحة",
+      "nc.investigation": "التحقيق في عدم المطابقة — تحديد السبب الجذري",
+      "nc.capa": "الإجراءات التصحيحية والوقائية CAPA",
+      "documents": "التحكم في الوثائق — SOP، التعليمات، طرق الاختبار، الجودة",
+      "audit": "سجل التدقيق — من فعل ماذا ومتى (Audit Trail)",
+      "reports": "تقارير الجودة المتقدمة",
+      "alerts": "تنبيهات الجودة"
+    },
+    "ncType": {
+      "sample": "عينة",
+      "test": "اختبار",
+      "qc": "جودة",
+      "equipment": "جهاز",
+      "reagent": "كاشف",
+      "method": "طريقة",
+      "personnel": "موظف",
+      "documentation": "توثيق",
+      "result": "نتيجة",
+      "sla": "التزام زمني"
+    },
+    "severity": {
+      "minor": "طفيف",
+      "major": "جوهري",
+      "critical": "حرج"
+    },
+    "ncStatus": {
+      "open": "مفتوحة",
+      "underInvestigation": "قيد التحقيق",
+      "awaitingCapa": "بانتظار CAPA",
+      "closed": "مغلقة"
+    },
+    "capaStatus": {
+      "open": "مفتوحة",
+      "inProgress": "قيد التنفيذ",
+      "verification": "قيد التحقق",
+      "closed": "مغلقة"
+    },
+    "sections": {
+      "overview": "نظرة عامة",
+      "specs": "المواصفات",
+      "qc": "مراجعة الجودة",
+      "methods": "طرق الاختبار",
+      "equipment": "الأجهزة",
+      "reagents": "الكواشف",
+      "nc": "عدم المطابقة",
+      "documents": "الوثائق",
+      "audit": "سجل التدقيق",
+      "reports": "التقارير",
+      "alerts": "التنبيهات"
+    },
+    "columns": {
+      "code": "الكود",
+      "product": "المنتج",
+      "category": "الفئة",
+      "status": "الحالة",
+      "version": "الإصدار الحالي",
+      "approvalDate": "الاعتماد",
+      "qcNumber": "رقم QC",
+      "bench": "القسم",
+      "controlType": "الضابط",
+      "severity": "الخطورة",
+      "affectedTestsCount": "متأثر",
+      "reviewedAt": "المراجعة",
+      "reagent": "الكاشف",
+      "lotNumber": "التشغيلة",
+      "expiryDate": "الصلاحية",
+      "quantity": "الكمية",
+      "ncNumber": "الرقم",
+      "ncType": "النوع",
+      "title": "العنوان",
+      "capaCount": "CAPA",
+      "responsibleUserName": "المسؤول",
+      "dueDate": "الاستحقاق",
+      "userName": "المستخدم",
+      "action": "الفعل",
+      "objectType": "الكائن",
+      "objectLabel": "الوصف",
+      "createdAt": "الوقت",
+      "device": "الجهاز",
+      "lastCalibrated": "آخر معايرة",
+      "nextCalibrationDue": "المعايرة القادمة"
+    },
+    "dashboard": {
+      "eyebrow": "مراقبة الجودة",
+      "title": "لوحة مسؤول الجودة",
+      "subtitle": "إدارة الجودة والامتثال الفني",
+      "refresh": "تحديث",
+      "liveStatus": "مباشر",
+      "sectionsLabel": "أقسام اللوحة",
+      "stats": {
+        "specsActive": "مواصفات فعالة",
+        "qcFailed": "QC فاشل",
+        "calibrationDue": "معايرة مستحقة",
+        "ncOpen": "عدم مطابقة مفتوح",
+        "capaOpen": "CAPA مفتوح",
+        "reagentsExpired": "كواشف منتهية",
+        "auditToday": "أحداث تدقيق اليوم",
+        "methodsActive": "طرق اختبار نشطة"
+      },
+      "kpis": {
+        "title": "مؤشرات الجودة Quality Indicators",
+        "resultCompliance": "امتثال النتائج (Result Compliance)",
+        "qcPassRate": "معدل نجاح QC (QC Pass Rate)",
+        "calibrationPct": "معايرة الأجهزة (Calibration)",
+        "methodCompliance": "امتثال طرق الاختبار (Method Compliance)",
+        "reagentValidity": "صلاحية الكواشف (Reagent Validity)",
+        "ncClosedPct": "إغلاق عدم المطابقة (NC Closed)"
+      },
+      "alerts": {
+        "title": "تنبيهات الجودة Quality Alerts",
+        "qcFailed": "فشل QC — راجع النتائج المتأثرة ({{count}})",
+        "calibrationOverdue": "معايرة متأخرة لـ {{count}} جهاز — يُمنع الاستخدام",
+        "reagentsExpired": "كواشف منتهية الصلاحية ({{count}}) — لا تُستخدم في اختبارات جديدة",
+        "ncOpen": "عدم مطابقة مفتوح: {{count}}",
+        "capaOpen": "CAPA قيد التنفيذ: {{count}}",
+        "noCritical": "لا توجد تنبيهات حرجة حالياً",
+        "loading": "جارٍ التحميل…"
+      },
+      "qcOverview": {
+        "title": "نظرة عامة QC Overview",
+        "microbiology": "الأحياء الدقيقة Microbiology",
+        "chemistry": "الكيمياء Chemistry",
+        "successRate": "معدل النجاح",
+        "tableTitle": "سجلات مراجعة الجودة QC"
+      },
+      "qcFailures": {
+        "openNc": "فتح عدم مطابقة",
+        "warning": "النتائج المدرجة قد تكون متأثرة بفشل الضابط — أعد الفحص قبل اعتماد النتيجة النهائية.",
+        "noFailures": "لا توجد حالات فشل QC حالياً.",
+        "section": "القسم",
+        "officer": "الضابط",
+        "test": "الفحص",
+        "status": "الحالة",
+        "testsAffected": "نتائج متأثرة"
+      },
+      "methods": {
+        "description": "طرق الاختبار المعتمدة — كل طريقة لها إصدار وتاريخ سريان وأجهزة وكواشف وكمية عينة وحدود اكتشاف ومرجع.",
+        "activeCount": "{{active}} من {{total}} طريقة نشطة ({{compliance}}%)."
+      },
+      "documents": {
+        "title": "التحكم في الوثائق Document Control",
+        "description": "كل وثيقة تحمل: كود الوثيقة، الإصدار، المالك، تاريخ السريان، تاريخ المراجعة، الحالة، والمعتمِد.",
+        "sop": "SOP",
+        "workInstructions": "تعليمات العمل",
+        "testMethods": "طرق الاختبار",
+        "qualityGuide": "دليل الجودة",
+        "forms": "النماذج",
+        "specifications": "المواصفات",
+        "calibrationCertificates": "شهادات المعايرة",
+        "qcProcedures": "إجراءات QC"
+      },
+      "reports": {
+        "title": "تقارير الجودة Quality Reports",
+        "qcPerformance": "أداء QC",
+        "nonConformity": "عدم المطابقة",
+        "capa": "CAPA",
+        "equipmentCalibration": "معايرة الأجهزة",
+        "reagentsExpired": "انتهاء الكواشف",
+        "methodCompliance": "امتثال الطرق",
+        "specChanges": "تغييرات المواصفات",
+        "auditTrail": "سجل التدقيق",
+        "documentReview": "مراجعة الوثائق",
+        "labQualityIndicators": "مؤشرات جودة المختبر"
+      },
+      "pages": {
+        "specs": {
+          "micro": {
+            "title": "المواصفات الميكروبيولوجية"
+          },
+          "chemical": {
+            "title": "المواصفات الكيميائية",
+            "text": "حدود التركيز الكيميائي للمنتجات الغذائية — تُدار بنفس منطق الإصدارات."
+          },
+          "plans": {
+            "title": "خطط السحب Sampling Plans",
+            "text": "عدد الوحدات (n) وحدود القبول (c) حسب نظام السحب الثنائي/الثلاثي للدفعة."
+          },
+          "versions": {
+            "title": "إصدارات المواصفات Versions",
+            "text": "لا يُعدَّل الإصدار النشط مباشرة — يُنشأ إصدار جديد ويُؤرشف القديم حفاظاً على تاريخ النتائج."
+          }
+        },
+        "equipment": {
+          "title": "الأجهزة والمعايرة"
+        },
+        "reagents": {
+          "title": "الكواشف Reagents"
+        },
+        "settings": {
+          "title": "الإعدادات",
+          "text": "إعدادات الجودة والامتثال."
+        },
+        "help": {
+          "title": "المساعدة",
+          "text": "دليل استخدام واجهة الجودة."
+        }
+      }
+    }
   }
 }
