@@ -4562,5 +4562,257 @@
         }
       }
     }
+  },
+  "hr": {
+    "employeeTimeline": {
+      "header": {
+        "title": "المسار الوظيفي",
+        "subtitle": "سجل الترقية والنقل والإجازات لكل الموظفين في نطاقك"
+      },
+      "filters": {
+        "allEvents": "كل الأحداث",
+        "eventType": "نوع الحدث"
+      },
+      "columns": {
+        "startDate": "التاريخ",
+        "employee": "الموظف",
+        "event": "الحدث",
+        "change": "التغيير",
+        "reason": "السبب",
+        "createdBy": "سُجّل بواسطة"
+      },
+      "eventLabels": {
+        "HIRE": "توظيف",
+        "PROMOTION": "ترقية",
+        "TRANSFER": "نقل",
+        "DEMOTION": "خفض",
+        "LEAVE_START": "بدء إجازة",
+        "LEAVE_END": "انتهاء إجازة",
+        "TERMINATION": "إنهاء الخدمة",
+        "SUSPENSION": "إيقاف",
+        "RETIREMENT": "تقاعد",
+        "APPOINTMENT": "تعيين",
+        "SECONDMENT": "إعارة"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو السبب...",
+      "export": {
+        "from": "من",
+        "to": "إلى",
+        "message": "تم تصدير المسار الوظيفي"
+      },
+      "actions": {
+        "label": "إجراءات",
+        "viewProfile": "عرض الملف"
+      },
+      "empty": {
+        "title": "لا توجد أحداث",
+        "description": "لم يتم تسجيل أي ترقية أو نقل أو إجازة بعد."
+      }
+    },
+    "trainingEnrollments": {
+      "header": {
+        "title": "تسجيلات التدريب",
+        "subtitle": "من التسجيل إلى الاعتماد ثم الإتمام — الإتمام مشتق من الدرجة"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "course": "الدورة",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "score": "الدرجة",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "APPLIED": "مُقدَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "COMPLETED": "مكتمل",
+        "CANCELLED": "ملغى",
+        "WAITLIST": "قائمة انتظار"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو الدورة...",
+      "actions": {
+        "new": "تسجيل جديد",
+        "details": "تفاصيل",
+        "viewEnrollment": "تفاصيل التسجيل"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير تسجيلات التدريب"
+      },
+      "empty": {
+        "title": "لا توجد تسجيلات تدريب",
+        "description": "ستظهر هنا الاشتراكات في الدورات التدريبية."
+      }
+    },
+    "leaveRequests": {
+      "header": {
+        "title": "طلبات الإجازات",
+        "subtitle": "اعتماد الطلب يخصم من الرصيد؛ الطلب المُقدَّم يحجز أيامه حتى يُبتّ"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "type": "النوع",
+        "from": "من",
+        "to": "إلى",
+        "days": "الأيام",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى"
+      },
+      "halfDay": "نصف",
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه...",
+      "actions": {
+        "new": "طلب جديد",
+        "details": "تفاصيل",
+        "viewRequest": "تفاصيل الطلب"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير طلبات الإجازات"
+      },
+      "empty": {
+        "title": "لا توجد طلبات إجازة",
+        "description": "ستظهر هنا الطلبات المرفوعة من الموظفين أو من الموارد البشرية."
+      }
+    },
+    "establishments": {
+      "header": {
+        "title": "الوحدات التأسيسية",
+        "subtitle": "الهيكل التنظيمي داخل نطاق صلاحياتك — مصدر-truth واحد للصلاحيات"
+      },
+      "filters": {
+        "allKinds": "كل الأنواع"
+      },
+      "columns": {
+        "code": "الكود",
+        "unit": "الوحدة",
+        "type": "النوع",
+        "sector": "القطاع",
+        "parent": "يتبع",
+        "manager": "المنصب المسؤول",
+        "headcount": "القوة العاملة"
+      },
+      "kindLabels": {
+        "DEPARTMENT": "قسم رئيسي",
+        "UNIT": "وحدة فرعية",
+        "ENTRY_POINT": "نقطة دخول",
+        "ENTRY_GROUP": "مجموعة نقاط دخول"
+      },
+      "searchPlaceholder": "بحث بالكود أو الاسم...",
+      "actions": {
+        "dashboard": "اللوحة"
+      },
+      "export": {
+        "englishName": "بالإنجليزية",
+        "message": "تم تصدير الوحدات"
+      },
+      "empty": {
+        "title": "لا توجد وحدات",
+        "description": "لم يُسجَّل أي وحدة هيكلية داخل نطاقك، أو لا يوجد نطاق مخصّص لك."
+      }
+    },
+    "performanceReviews": {
+      "header": {
+        "title": "تقييمات الأداء",
+        "subtitle": "الدرجة والتقدير يُشتقّان من درجات المؤشرات وأوزانها — لا يُرسلان من العميل"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات",
+        "allCycles": "كل الدورات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "reviewer": "المُقيِّم",
+        "cycle": "الدورة",
+        "score": "الدرجة",
+        "rating": "التقدير",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "IN_PROGRESS": "قيد التقييم",
+        "SUBMITTED": "مُقدَّم",
+        "REVIEWED": "مُقيَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو الدورة...",
+      "actions": {
+        "cycles": "الدورات",
+        "new": "تقييم جديد",
+        "details": "تفاصيل",
+        "viewReview": "تفاصيل التقييم"
+      },
+      "alert": {
+        "noOpenCycle": "لا توجد دورة مفتوحة — أنشئ دورة وافتحها قبل بدء التقييم."
+      },
+      "export": {
+        "message": "تم تصدير تقييمات الأداء"
+      },
+      "empty": {
+        "title": "لا توجد تقييمات",
+        "description": "ستظهر هنا تقييمات الأداء داخل الدورات المفتوحة."
+      }
+    },
+    "postingRequests": {
+      "header": {
+        "title": "طلبات النقل والترقية",
+        "subtitle": "الاعتماد ينقل الموظف فعلياً: يُغلق تعيينه القديم ويفتح الجديد ويُسجَّل في المسار الوظيفي"
+      },
+      "filters": {
+        "allKinds": "كل الأنواع",
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "kind": "النوع",
+        "status": "الحالة",
+        "destination": "الوجهة",
+        "effectiveDate": "تاريخ النفاذ",
+        "requestedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد"
+      },
+      "kindLabels": {
+        "TRANSFER": "نقل",
+        "PROMOTION": "ترقية",
+        "SECONDMENT": "إعارة",
+        "DEPUTATION": "انتداب"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى"
+      },
+      "selfService": "خدمة ذاتية",
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه الوظيفي...",
+      "actions": {
+        "new": "طلب جديد",
+        "label": "إجراءات",
+        "viewRequest": "تفاصيل الطلب"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير الطلبات"
+      },
+      "empty": {
+        "title": "لا توجد طلبات نقل",
+        "description": "ستظهر هنا طلبات النقل والترقية المرفوعة من الموظفين أو من الموارد البشرية."
+      }
+    }
   }
 }

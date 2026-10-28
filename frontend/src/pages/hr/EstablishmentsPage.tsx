@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -13,16 +14,20 @@ import { useTableExport } from '../../hooks/useTableExport';
 import { getHrEstablishments } from '../../api/endpoints/hr';
 import type { HrEstablishment } from '../../types/hr';
 
-const KIND_OPTIONS = [
-  { value: '', label: 'كل الأنواع' },
-  { value: 'DEPARTMENT', label: 'قسم رئيسي' },
-  { value: 'UNIT', label: 'وحدة فرعية' },
-  { value: 'ENTRY_POINT', label: 'نقطة دخول' },
-  { value: 'ENTRY_GROUP', label: 'مجموعة نقاط دخول' },
-];
-
 const EstablishmentsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const KIND_OPTIONS = useMemo(
+    () => [
+      { value: '', label: t('hr.establishments.filters.allKinds') },
+      { value: 'DEPARTMENT', label: t('hr.establishments.kindLabels.DEPARTMENT') },
+      { value: 'UNIT', label: t('hr.establishments.kindLabels.UNIT') },
+      { value: 'ENTRY_POINT', label: t('hr.establishments.kindLabels.ENTRY_POINT') },
+      { value: 'ENTRY_GROUP', label: t('hr.establishments.kindLabels.ENTRY_GROUP') },
+    ],
+    [t],
+  );
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -38,7 +43,7 @@ const EstablishmentsPage = () => {
     () => [
       {
         key: 'code',
-        label: 'الكود',
+        label: t('hr.establishments.columns.code'),
         sortable: true,
         width: 120,
         render: (row) => (
@@ -49,7 +54,7 @@ const EstablishmentsPage = () => {
       },
       {
         key: 'name_ar',
-        label: 'الوحدة',
+        label: t('hr.establishments.columns.unit'),
         sortable: true,
         render: (row) => (
           <Box>
@@ -66,30 +71,30 @@ const EstablishmentsPage = () => {
       },
       {
         key: 'kind',
-        label: 'النوع',
+        label: t('hr.establishments.columns.type'),
         render: (row) => <StatusChip label={row.kind_display} tone="info" showIcon={false} />,
       },
       {
         key: 'sector_name',
-        label: 'القطاع',
+        label: t('hr.establishments.columns.sector'),
         hideOnMobile: true,
         render: (row) => row.sector_name || '—',
       },
       {
         key: 'parent_name',
-        label: 'يتبع',
+        label: t('hr.establishments.columns.parent'),
         hideOnMobile: true,
         render: (row) => row.parent_name || '—',
       },
       {
         key: 'manager_name',
-        label: 'المنصب المسؤول',
+        label: t('hr.establishments.columns.manager'),
         hideOnMobile: true,
         render: (row) => row.manager_name || '—',
       },
       {
         key: 'headcount',
-        label: 'القوة العاملة',
+        label: t('hr.establishments.columns.headcount'),
         sortable: true,
         align: 'center' as const,
         render: (row) => (
@@ -103,18 +108,18 @@ const EstablishmentsPage = () => {
         ),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="الوحدات التأسيسية"
-        subtitle="الهيكل التنظيمي داخل نطاق صلاحياتك — مصدر-truth واحد للصلاحيات"
+        title={t('hr.establishments.header.title')}
+        subtitle={t('hr.establishments.header.subtitle')}
         action={
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" onClick={() => navigate('/app/hr')}>
-              اللوحة
+              {t('hr.establishments.actions.dashboard')}
             </Button>
           </Stack>
         }
@@ -132,11 +137,11 @@ const EstablishmentsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالكود أو الاسم..."
+        searchPlaceholder={t('hr.establishments.searchPlaceholder')}
         filters={[
           {
             key: 'kind',
-            label: 'النوع',
+            label: t('hr.establishments.columns.type'),
             options: KIND_OPTIONS,
             value: '',
             onChange: (v) => setFilter('kind', v),
@@ -152,8 +157,14 @@ const EstablishmentsPage = () => {
           exportAll({
             filename: 'hr_establishments.csv',
             headers: [
-              'الكود', 'الوحدة', 'بالإنجليزية', 'النوع',
-              'القطاع', 'يتبع', 'المنصب المسؤول', 'القوة العاملة',
+              t('hr.establishments.columns.code'),
+              t('hr.establishments.columns.unit'),
+              t('hr.establishments.export.englishName'),
+              t('hr.establishments.columns.type'),
+              t('hr.establishments.columns.sector'),
+              t('hr.establishments.columns.parent'),
+              t('hr.establishments.columns.manager'),
+              t('hr.establishments.columns.headcount'),
             ],
             mapRow: (r) => [
               r.code,
@@ -165,12 +176,12 @@ const EstablishmentsPage = () => {
               r.manager_name ?? '',
               r.headcount,
             ],
-            message: 'تم تصدير الوحدات',
+            message: t('hr.establishments.export.message'),
           })
         }
         exporting={tableExporting}
-        emptyTitle="لا توجد وحدات"
-        emptyDescription="لم يُسجَّل أي وحدة هيكلية داخل نطاقك، أو لا يوجد نطاق مخصّص لك."
+        emptyTitle={t('hr.establishments.empty.title')}
+        emptyDescription={t('hr.establishments.empty.description')}
       />
     </Box>
   );
