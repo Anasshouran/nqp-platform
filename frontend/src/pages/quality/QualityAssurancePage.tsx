@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -26,9 +27,6 @@ import KpiCard from '../../components/dashboard/KpiCard';
 import {
   AppButton,
   DataTable,
-  FormDialog,
-  FormSelect,
-  FormTextField,
   StatusChip,
   type DataTableColumn,
 } from '../../components/uikit';
@@ -72,72 +70,11 @@ type NavKey =
   | 'reports'
   | 'alerts' | 'settings' | 'help';
 
-const NAV_TITLES: Record<string, string> = {
-  home: 'لوحة الجودة الشاملة — رصد سلامة النظام الفني للمختبر',
-  specs: 'المواصفات المعتمدة (n/c/m/M) — المصدر الوحيد للحقيقة',
-  'specs.micro': 'المواصفات الميكروبيولوجية — المنتج، الكائن، خطة السحب (n/c/m/M)',
-  'specs.chemical': 'المواصفات الكيميائية — حدود التركيز للمنتجات الغذائية',
-  'specs.plans': 'خطط السحب Sampling Plans — عدد الوحدات (n) وقبول الدفعة (c)',
-  'specs.versions': 'إدارة إصدارات المواصفات — بدون تعديل النسخة النشطة مباشرة',
-  'qc.dashboard': 'نظرة عامة على مراجعة الجودة QC حسب الأقسام',
-  'qc.results': 'سجلات مراجعة الجودة QC — الضوابط والنتائج المتأثرة',
-  'qc.failures': 'فشل الجودة QC Failures — النتائج المتأثرة بفشل ضابط',
-  methods: 'طرق الاختبار المعتمدة — الإصدار، السريان، الأجهزة والكواشف المطلوبة',
-  'equipment.calibration': 'معايرة الأجهزة — الجاهزية والمواعيد القادمة',
-  'equipment.maintenance': 'صيانة الأجهزة — الحالة التشغيلية',
-  reagents: 'الكواشف — الصلاحية والكمية ومنع استخدام المنتهي',
-  'nc.open': 'عدم المطابقة — الحالات المفتوحة',
-  'nc.investigation': 'التحقيق في عدم المطابقة — تحديد السبب الجذري',
-  'nc.capa': 'الإجراءات التصحيحية والوقائية CAPA',
-  documents: 'التحكم في الوثائق — SOP، التعليمات، طرق الاختبار، الجودة',
-  audit: 'سجل التدقيق — من فعل ماذا ومتى (Audit Trail)',
-  reports: 'تقارير الجودة المتقدمة',
-  alerts: 'تنبيهات الجودة',
-};
-
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const NC_TYPE_LABELS: Record<string, string> = {
-  SAMPLE: 'عينة', TEST: 'اختبار', QC: 'جودة', EQUIPMENT: 'جهاز',
-  REAGENT: 'كاشف', METHOD: 'طريقة', PERSONNEL: 'موظف',
-  DOCUMENTATION: 'توثيق', RESULT: 'نتيجة', SLA: 'التزام زمني',
-};
-
-const SEVERITY_LABELS: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-  MINOR: { label: 'طفيف', tone: 'success' },
-  MAJOR: { label: 'جوهري', tone: 'warning' },
-  CRITICAL: { label: 'حرج', tone: 'error' },
-};
-
-const NC_STATUS_LABELS: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'primary' }> = {
-  OPEN: { label: 'مفتوحة', tone: 'error' },
-  UNDER_INVESTIGATION: { label: 'قيد التحقيق', tone: 'warning' },
-  AWAITING_CAPA: { label: 'بانتظار CAPA', tone: 'primary' },
-  CLOSED: { label: 'مغلقة', tone: 'success' },
-};
-
-const CAPA_STATUS_LABELS: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'primary' }> = {
-  OPEN: { label: 'مفتوحة', tone: 'error' },
-  IN_PROGRESS: { label: 'قيد التنفيذ', tone: 'warning' },
-  VERIFICATION: { label: 'قيد التحقق', tone: 'primary' },
-  CLOSED: { label: 'مغلقة', tone: 'success' },
-};
-
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <AssessmentIcon fontSize="small" /> },
-  { id: 'specs', label: 'المواصفات', icon: <FindInPageIcon fontSize="small" /> },
-  { id: 'qc', label: 'مراجعة الجودة', icon: <FactCheckIcon fontSize="small" /> },
-  { id: 'methods', label: 'طرق الاختبار', icon: <ScienceIcon fontSize="small" /> },
-  { id: 'equipment', label: 'الأجهزة', icon: <BuildIcon fontSize="small" /> },
-  { id: 'reagents', label: 'الكواشف', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'nc', label: 'عدم المطابقة', icon: <WarningAmberIcon fontSize="small" /> },
-  { id: 'documents', label: 'الوثائق', icon: <FolderSharedIcon fontSize="small" /> },
-  { id: 'audit', label: 'سجل التدقيق', icon: <HistoryIcon fontSize="small" /> },
-  { id: 'reports', label: 'التقارير', icon: <VerifiedIcon fontSize="small" /> },
-  { id: 'alerts', label: 'التنبيهات', icon: <GppBadIcon fontSize="small" /> },
-] as const;
 
 const QualityAssurancePage = () => {
+  const { t } = useTranslation();
   const [dash, setDash] = useState<QaDashboard | null>(null);
   const [nav, setNav] = useState<NavKey>(() =>
     (typeof window !== 'undefined' && window.location.hash.replace('#', '')
@@ -154,6 +91,76 @@ const QualityAssurancePage = () => {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  const navTitles = useMemo<Record<string, string>>(() => ({
+    home: t('quality.nav.home'),
+    specs: t('quality.nav.specs'),
+    'specs.micro': t('quality.nav.specs.micro'),
+    'specs.chemical': t('quality.nav.specs.chemical'),
+    'specs.plans': t('quality.nav.specs.plans'),
+    'specs.versions': t('quality.nav.specs.versions'),
+    'qc.dashboard': t('quality.nav.qc.dashboard'),
+    'qc.results': t('quality.nav.qc.results'),
+    'qc.failures': t('quality.nav.qc.failures'),
+    methods: t('quality.nav.methods'),
+    'equipment.calibration': t('quality.nav.equipment.calibration'),
+    'equipment.maintenance': t('quality.nav.equipment.maintenance'),
+    reagents: t('quality.nav.reagents'),
+    'nc.open': t('quality.nav.nc.open'),
+    'nc.investigation': t('quality.nav.nc.investigation'),
+    'nc.capa': t('quality.nav.nc.capa'),
+    documents: t('quality.nav.documents'),
+    audit: t('quality.nav.audit'),
+    reports: t('quality.nav.reports'),
+    alerts: t('quality.nav.alerts'),
+  }), [t]);
+
+  const ncTypeLabels = useMemo<Record<string, string>>(() => ({
+    SAMPLE: t('quality.ncType.sample'),
+    TEST: t('quality.ncType.test'),
+    QC: t('quality.ncType.qc'),
+    EQUIPMENT: t('quality.ncType.equipment'),
+    REAGENT: t('quality.ncType.reagent'),
+    METHOD: t('quality.ncType.method'),
+    PERSONNEL: t('quality.ncType.personnel'),
+    DOCUMENTATION: t('quality.ncType.documentation'),
+    RESULT: t('quality.ncType.result'),
+    SLA: t('quality.ncType.sla'),
+  }), [t]);
+
+  const severityLabels = useMemo<Record<string, { label: string; tone: 'success' | 'warning' | 'error' }>>(() => ({
+    MINOR: { label: t('quality.severity.minor'), tone: 'success' },
+    MAJOR: { label: t('quality.severity.major'), tone: 'warning' },
+    CRITICAL: { label: t('quality.severity.critical'), tone: 'error' },
+  }), [t]);
+
+  const ncStatusLabels = useMemo<Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'primary' }>>(() => ({
+    OPEN: { label: t('quality.ncStatus.open'), tone: 'error' },
+    UNDER_INVESTIGATION: { label: t('quality.ncStatus.underInvestigation'), tone: 'warning' },
+    AWAITING_CAPA: { label: t('quality.ncStatus.awaitingCapa'), tone: 'primary' },
+    CLOSED: { label: t('quality.ncStatus.closed'), tone: 'success' },
+  }), [t]);
+
+  const capaStatusLabels = useMemo<Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'primary' }>>(() => ({
+    OPEN: { label: t('quality.capaStatus.open'), tone: 'error' },
+    IN_PROGRESS: { label: t('quality.capaStatus.inProgress'), tone: 'warning' },
+    VERIFICATION: { label: t('quality.capaStatus.verification'), tone: 'primary' },
+    CLOSED: { label: t('quality.capaStatus.closed'), tone: 'success' },
+  }), [t]);
+
+  const sections = useMemo(() => [
+    { id: 'overview', label: t('quality.sections.overview'), icon: <AssessmentIcon fontSize="small" /> },
+    { id: 'specs', label: t('quality.sections.specs'), icon: <FindInPageIcon fontSize="small" /> },
+    { id: 'qc', label: t('quality.sections.qc'), icon: <FactCheckIcon fontSize="small" /> },
+    { id: 'methods', label: t('quality.sections.methods'), icon: <ScienceIcon fontSize="small" /> },
+    { id: 'equipment', label: t('quality.sections.equipment'), icon: <BuildIcon fontSize="small" /> },
+    { id: 'reagents', label: t('quality.sections.reagents'), icon: <BiotechIcon fontSize="small" /> },
+    { id: 'nc', label: t('quality.sections.nc'), icon: <WarningAmberIcon fontSize="small" /> },
+    { id: 'documents', label: t('quality.sections.documents'), icon: <FolderSharedIcon fontSize="small" /> },
+    { id: 'audit', label: t('quality.sections.audit'), icon: <HistoryIcon fontSize="small" /> },
+    { id: 'reports', label: t('quality.sections.reports'), icon: <VerifiedIcon fontSize="small" /> },
+    { id: 'alerts', label: t('quality.sections.alerts'), icon: <GppBadIcon fontSize="small" /> },
+  ], [t]);
+
   const selectNav = (key: NavKey) => {
     setNav(key);
     if (typeof window !== 'undefined') window.location.hash = key;
@@ -168,7 +175,7 @@ const QualityAssurancePage = () => {
   const tests = useServerTable<SampleTest>({ fetchData: getLabSampleTests });
   const equipment = useServerTable<LabEquipment>({ fetchData: getLabEquipment });
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [!dash]);
+  const { active, register, scrollTo } = useCommandSections(sections as unknown as CommandSectionDef[], [!dash]);
 
   const refreshDash = useCallback(() => {
     getQaDashboard().then((r) => setDash(r.data.data)).catch(() => undefined);
@@ -197,75 +204,75 @@ const QualityAssurancePage = () => {
   );
 
   const specColumns: DataTableColumn<MicrobiologicalSpecification>[] = useMemo(() => [
-    { key: 'code', label: 'الكود', render: (s) => <b>{s.code}</b> },
-    { key: 'product', label: 'المنتج', render: (s) => s.product_name ?? s.name_ar ?? '—' },
-    { key: 'category', label: 'الفئة', render: (s) => s.product_category_name ?? '—' },
-    { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={s.status_label ?? s.status} tone={s.status === 'ACTIVE' ? 'success' : 'warning'} /> },
-    { key: 'version', label: 'الإصدار الحالي', render: (s) => s.current_version?.label ?? s.current_version?.version ?? '—' },
-    { key: 'approval_date', label: 'الاعتماد', render: (s) => (s.approval_date ? formatDate(s.approval_date) : '—') },
-  ], []);
+    { key: 'code', label: t('quality.columns.code'), render: (s) => <b>{s.code}</b> },
+    { key: 'product', label: t('quality.columns.product'), render: (s) => s.product_name ?? s.name_ar ?? '—' },
+    { key: 'category', label: t('quality.columns.category'), render: (s) => s.product_category_name ?? '—' },
+    { key: 'status', label: t('quality.columns.status'), render: (s) => <StatusChip label={s.status_label ?? s.status} tone={s.status === 'ACTIVE' ? 'success' : 'warning'} /> },
+    { key: 'version', label: t('quality.columns.version'), render: (s) => s.current_version?.label ?? s.current_version?.version ?? '—' },
+    { key: 'approval_date', label: t('quality.columns.approval_date'), render: (s) => (s.approval_date ? formatDate(s.approval_date) : '—') },
+  ], [t]);
 
   const qcColumns: DataTableColumn<QCRecord>[] = useMemo(() => [
-    { key: 'qc_number', label: 'رقم QC', render: (q) => <b>{q.qc_number}</b> },
-    { key: 'bench', label: 'القسم', render: (q) => (labBench[q.bench]?.label ?? q.bench) },
-    { key: 'control_type', label: 'الضابط' },
-    { key: 'status', label: 'الحالة', render: (q) => <StatusChip label={labQc[q.status]?.label ?? q.status} tone={labQc[q.status]?.tone} /> },
-    { key: 'severity', label: 'الخطورة', render: (q) => <StatusChip label={SEVERITY_LABELS[q.severity]?.label ?? q.severity} tone={SEVERITY_LABELS[q.severity]?.tone} /> },
-    { key: 'affected_tests_count', label: 'متأثر', render: (q) => q.affected_tests_count },
-    { key: 'reviewed_at', label: 'المراجعة', render: (q) => (q.reviewed_at ? formatDate(q.reviewed_at) : '—') },
-  ], []);
+    { key: 'qc_number', label: t('quality.columns.qcNumber'), render: (q) => <b>{q.qc_number}</b> },
+    { key: 'bench', label: t('quality.columns.bench'), render: (q) => (labBench[q.bench]?.label ?? q.bench) },
+    { key: 'control_type', label: t('quality.columns.controlType'), render: (q) => q.control_type },
+    { key: 'status', label: t('quality.columns.status'), render: (q) => <StatusChip label={labQc[q.status]?.label ?? q.status} tone={labQc[q.status]?.tone} /> },
+    { key: 'severity', label: t('quality.columns.severity'), render: (q) => <StatusChip label={severityLabels[q.severity]?.label ?? q.severity} tone={severityLabels[q.severity]?.tone} /> },
+    { key: 'affected_tests_count', label: t('quality.columns.affectedTestsCount'), render: (q) => q.affected_tests_count },
+    { key: 'reviewed_at', label: t('quality.columns.reviewedAt'), render: (q) => (q.reviewed_at ? formatDate(q.reviewed_at) : '—') },
+  ], [t, severityLabels]);
 
   const reagentColumns: DataTableColumn<Reagent>[] = useMemo(() => [
-    { key: 'name_ar', label: 'الكاشف', render: (r) => <b>{r.name_ar}</b> },
-    { key: 'bench', label: 'القسم', render: (r) => (labBench[r.bench]?.label ?? r.bench) },
-    { key: 'lot_number', label: 'التشغيلة' },
-    { key: 'expiry_date', label: 'الصلاحية', render: (r) => (r.expiry_date ? formatDate(r.expiry_date) : '—') },
-    { key: 'quantity', label: 'الكمية', render: (r) => `${r.quantity} ${r.unit}` },
-    { key: 'status', label: 'الحالة', render: (r) => (
+    { key: 'name_ar', label: t('quality.columns.reagent'), render: (r) => <b>{r.name_ar}</b> },
+    { key: 'bench', label: t('quality.columns.bench'), render: (r) => (labBench[r.bench]?.label ?? r.bench) },
+    { key: 'lot_number', label: t('quality.columns.lotNumber'), render: (r) => r.lot_number },
+    { key: 'expiry_date', label: t('quality.columns.expiryDate'), render: (r) => (r.expiry_date ? formatDate(r.expiry_date) : '—') },
+    { key: 'quantity', label: t('quality.columns.quantity'), render: (r) => `${r.quantity} ${r.unit}` },
+    { key: 'status', label: t('quality.columns.status'), render: (r) => (
       <StatusChip
-        label={r.status === 'AVAILABLE' ? 'متوفر' : r.status === 'LOW' ? 'منخفض' : r.status === 'EXPIRED' ? 'منتهي' : r.status}
+        label={r.status === 'AVAILABLE' ? t('quality.status.available') : r.status === 'LOW' ? t('quality.status.low') : r.status === 'EXPIRED' ? t('quality.status.expired') : r.status}
         tone={r.status === 'AVAILABLE' ? 'success' : r.status === 'LOW' ? 'warning' : 'error'}
       />
     ) },
-  ], []);
+  ], [t]);
 
   const ncColumns: DataTableColumn<NonConformity>[] = useMemo(() => [
-    { key: 'nc_number', label: 'الرقم', render: (n) => <b>{n.nc_number}</b> },
-    { key: 'nc_type', label: 'النوع', render: (n) => <Chip size="small" label={NC_TYPE_LABELS[n.nc_type] ?? n.nc_type} /> },
-    { key: 'title', label: 'العنوان' },
-    { key: 'severity', label: 'الخطورة', render: (n) => <StatusChip label={SEVERITY_LABELS[n.severity]?.label ?? n.severity} tone={SEVERITY_LABELS[n.severity]?.tone} /> },
-    { key: 'status', label: 'الحالة', render: (n) => <StatusChip label={NC_STATUS_LABELS[n.status]?.label ?? n.status} tone={NC_STATUS_LABELS[n.status]?.tone} /> },
-    { key: 'capa_count', label: 'CAPA', render: (n) => n.capa_count },
-  ], []);
+    { key: 'nc_number', label: t('quality.columns.ncNumber'), render: (n) => <b>{n.nc_number}</b> },
+    { key: 'nc_type', label: t('quality.columns.ncType'), render: (n) => <Chip size="small" label={ncTypeLabels[n.nc_type] ?? n.nc_type} /> },
+    { key: 'title', label: t('quality.columns.title'), render: (n) => <b>{n.title}</b> },
+    { key: 'severity', label: t('quality.columns.severity'), render: (n) => <StatusChip label={severityLabels[n.severity]?.label ?? n.severity} tone={severityLabels[n.severity]?.tone} /> },
+    { key: 'status', label: t('quality.columns.status'), render: (n) => <StatusChip label={ncStatusLabels[n.status]?.label ?? n.status} tone={ncStatusLabels[n.status]?.tone} /> },
+    { key: 'capa_count', label: t('quality.columns.capaCount'), render: (n) => n.capa_count },
+  ], [t, ncTypeLabels, severityLabels, ncStatusLabels]);
 
   const capaColumns: DataTableColumn<CpaRecord>[] = useMemo(() => [
-    { key: 'title', label: 'العنوان', render: (c) => <b>{c.title}</b> },
-    { key: 'nc_number', label: 'عدم المطابقة', render: (c) => c.nc_number ?? '—' },
-    { key: 'responsible_user_name', label: 'المسؤول', render: (c) => c.responsible_user_name ?? '—' },
-    { key: 'due_date', label: 'الاستحقاق', render: (c) => (c.due_date ? formatDate(c.due_date) : '—') },
-    { key: 'status', label: 'الحالة', render: (c) => <StatusChip label={CAPA_STATUS_LABELS[c.status]?.label ?? c.status} tone={CAPA_STATUS_LABELS[c.status]?.tone} /> },
-  ], []);
+    { key: 'title', label: t('quality.columns.title'), render: (c) => <b>{c.title}</b> },
+    { key: 'nc_number', label: t('quality.columns.ncNumber'), render: (c) => c.nc_number ?? '—' },
+    { key: 'responsible_user_name', label: t('quality.columns.responsibleUserName'), render: (c) => c.responsible_user_name ?? '—' },
+    { key: 'due_date', label: t('quality.columns.dueDate'), render: (c) => (c.due_date ? formatDate(c.due_date) : '—') },
+    { key: 'status', label: t('quality.columns.status'), render: (c) => <StatusChip label={capaStatusLabels[c.status]?.label ?? c.status} tone={capaStatusLabels[c.status]?.tone} /> },
+  ], [t, capaStatusLabels]);
 
   const auditColumns: DataTableColumn<AuditLog>[] = useMemo(() => [
-    { key: 'user_name', label: 'المستخدم', render: (a) => a.user_name ?? '—' },
-    { key: 'action', label: 'الفعل', render: (a) => <StatusChip label={a.action} tone={a.action === 'CREATE' ? 'success' : a.action === 'DELETE' ? 'error' : 'primary'} /> },
-    { key: 'object_type', label: 'الكائن' },
-    { key: 'object_label', label: 'الوصف', render: (a) => a.object_label || '—' },
-    { key: 'created_at', label: 'الوقت', render: (a) => formatDate(a.created_at) },
-  ], []);
+    { key: 'user_name', label: t('quality.columns.userName'), render: (a) => a.user_name ?? '—' },
+    { key: 'action', label: t('quality.columns.action'), render: (a) => <StatusChip label={a.action} tone={a.action === 'CREATE' ? 'success' : a.action === 'DELETE' ? 'error' : 'primary'} /> },
+    { key: 'object_type', label: t('quality.columns.objectType'), render: (a) => a.object_label || '—' },
+    { key: 'object_label', label: t('quality.columns.objectLabel'), render: (a) => a.object_label || '—' },
+    { key: 'created_at', label: t('quality.columns.createdAt'), render: (a) => formatDate(a.created_at) },
+  ], [t]);
 
   const equipmentColumns: DataTableColumn<LabEquipment>[] = useMemo(() => [
-    { key: 'name_ar', label: 'الجهاز', render: (e) => <b>{e.name_ar}</b> },
-    { key: 'bench', label: 'القسم', render: (e) => (labBench[e.bench]?.label ?? e.bench) },
-    { key: 'status', label: 'الحالة', render: (e) => <StatusChip label={e.status_label ?? e.status} tone={e.status === 'OPERATIONAL' ? 'success' : e.status === 'UNDER_MAINTENANCE' ? 'warning' : 'error'} /> },
-    { key: 'last_calibrated', label: 'آخر معايرة', render: (e) => (e.last_calibrated ? formatDate(e.last_calibrated) : '—') },
-    { key: 'next_calibration_due', label: 'المعايرة القادمة', render: (e) => (
+    { key: 'name_ar', label: t('quality.columns.device'), render: (e) => <b>{e.name_ar}</b> },
+    { key: 'bench', label: t('quality.columns.bench'), render: (e) => (labBench[e.bench]?.label ?? e.bench) },
+    { key: 'status', label: t('quality.columns.status'), render: (e) => <StatusChip label={e.status_label ?? e.status} tone={e.status === 'OPERATIONAL' ? 'success' : e.status === 'UNDER_MAINTENANCE' ? 'warning' : 'error'} /> },
+    { key: 'last_calibrated', label: t('quality.columns.lastCalibrated'), render: (e) => (e.last_calibrated ? formatDate(e.last_calibrated) : '—') },
+    { key: 'next_calibration_due', label: t('quality.columns.nextCalibrationDue'), render: (e) => (
       <Stack direction="row" spacing={0.5} alignItems="center">
         {e.next_calibration_due ? formatDate(e.next_calibration_due) : '—'}
         {e.calibration_overdue && <GppBadIcon fontSize="small" color="error" />}
       </Stack>
     ) },
-  ], []);
+  ], [t]);
 
   const qcSummary = useMemo(() => {
     const rows = qcRecords.rows;
@@ -288,14 +295,14 @@ const QualityAssurancePage = () => {
   const renderDashboard = () => (
     <Box>
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
-        {stat('مواصفات فعالة', dash?.specs.active ?? '—', <VerifiedIcon />)}
-        {stat('QC فاشل', dash?.qc.failed ?? '—', <GppBadIcon />, 'error.main')}
-        {stat('معايرة مستحقة', (dash?.equipment.overdue ?? 0) + (dash?.equipment.due_soon ?? 0) || '—', <BuildIcon />, 'warning.main')}
-        {stat('عدم مطابقة مفتوح', dash?.nonconformity.open ?? '—', <WarningAmberIcon />, 'error.main')}
-        {stat('CAPA مفتوح', dash?.nonconformity.capa_open ?? '—', <FindInPageIcon />, 'primary.main')}
-        {stat('كواشف منتهية', dash?.reagents.expired ?? '—', <BiotechIcon />, 'error.main')}
-        {stat('أحداث تدقيق اليوم', dash?.audit.today ?? '—', <HistoryIcon />, 'info.main')}
-        {stat('طرق اختبار نشطة', dash?.methods.active ?? '—', <ScienceIcon />)}
+        {stat(t('quality.dashboard.stats.specsActive'), dash?.specs.active ?? '—', <VerifiedIcon />)}
+        {stat(t('quality.dashboard.stats.qcFailed'), dash?.qc.failed ?? '—', <GppBadIcon />, 'error.main')}
+        {stat(t('quality.dashboard.stats.calibrationDue'), (dash?.equipment.overdue ?? 0) + (dash?.equipment.due_soon ?? 0) || '—', <BuildIcon />, 'warning.main')}
+        {stat(t('quality.dashboard.stats.ncOpen'), dash?.nonconformity.open ?? '—', <WarningAmberIcon />, 'error.main')}
+        {stat(t('quality.dashboard.stats.capaOpen'), dash?.nonconformity.capa_open ?? '—', <FindInPageIcon />, 'primary.main')}
+        {stat(t('quality.dashboard.stats.reagentsExpired'), dash?.reagents.expired ?? '—', <BiotechIcon />, 'error.main')}
+        {stat(t('quality.dashboard.stats.auditToday'), dash?.audit.today ?? '—', <HistoryIcon />, 'info.main')}
+        {stat(t('quality.dashboard.stats.methodsActive'), dash?.methods.active ?? '—', <ScienceIcon />)}
       </Grid>
 
       <Grid container spacing={3}>
@@ -303,15 +310,15 @@ const QualityAssurancePage = () => {
           <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <GppGoodIcon color="primary" />
-              <Typography variant="h6">مؤشرات الجودة Quality Indicators</Typography>
+              <Typography variant="h6">{t('quality.kpi.title')}</Typography>
             </Stack>
             {[
-              { label: 'امتثال النتائج (Result Compliance)', value: dash?.compliance.result_pct },
-              { label: 'معدل نجاح QC (QC Pass Rate)', value: dash?.qc.pass_rate },
-              { label: 'معايرة الأجهزة (Calibration)', value: dash?.equipment.calibration_pct },
-              { label: 'امتثال طرق الاختبار (Method Compliance)', value: dash?.methods.compliance_pct },
-              { label: 'صلاحية الكواشف (Reagent Validity)', value: dash?.reagents.valid_pct },
-              { label: 'إغلاق عدم المطابقة (NC Closed)', value: dash?.nonconformity.closed_pct },
+              { label: t('quality.kpi.resultCompliance'), value: dash?.compliance.result_pct },
+              { label: t('quality.kpi.qcPassRate'), value: dash?.qc.pass_rate },
+              { label: t('quality.kpi.calibrationPct'), value: dash?.equipment.calibration_pct },
+              { label: t('quality.kpi.methodCompliance'), value: dash?.methods.compliance_pct },
+              { label: t('quality.kpi.reagentValidity'), value: dash?.reagents.valid_pct },
+              { label: t('quality.kpi.ncClosedPct'), value: dash?.nonconformity.closed_pct },
             ].map((kpi) => {
               const pct = kpi.value ?? 0;
               return (
@@ -338,26 +345,26 @@ const QualityAssurancePage = () => {
           <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <WarningAmberIcon color="warning" />
-              <Typography variant="h6">تنبيهات الجودة Quality Alerts</Typography>
+              <Typography variant="h6">{t('quality.dashboard.alerts.title')}</Typography>
             </Stack>
             <Stack spacing={1}>
               {dash?.qc.failed ? (
-                <AlertRow icon={<GppBadIcon color="error" />} text={`فشل QC — راجع النتائج المتأثرة (${dash.qc.failed})`} onClick={() => selectNav('qc.failures')} />
+                <AlertRow icon={<GppBadIcon color="error" />} text={t('quality.dashboard.alerts.qcFailed', { count: dash.qc.failed })} onClick={() => selectNav('qc.failures')} />
               ) : null}
               {dash?.equipment.overdue ? (
-                <AlertRow icon={<EventBusyIcon color="error" />} text={`معايرة متأخرة لـ ${dash.equipment.overdue} جهاز — يُمنع الاستخدام`} onClick={() => selectNav('equipment.calibration')} />
+                <AlertRow icon={<EventBusyIcon color="error" />} text={t('quality.dashboard.alerts.calibrationOverdue', { count: dash.equipment.overdue })} onClick={() => selectNav('equipment.calibration')} />
               ) : null}
               {dash?.reagents.expired ? (
-                <AlertRow icon={<EventBusyIcon color="error" />} text={`كواشف منتهية الصلاحية (${dash.reagents.expired}) — لا تُستخدم في اختبارات جديدة`} onClick={() => selectNav('reagents')} />
+                <AlertRow icon={<EventBusyIcon color="error" />} text={t('quality.dashboard.alerts.reagentsExpired', { count: dash.reagents.expired })} onClick={() => selectNav('reagents')} />
               ) : null}
               {dash?.nonconformity.open ? (
-                <AlertRow icon={<WarningAmberIcon color="warning" />} text={`عدم مطابقة مفتوح: ${dash.nonconformity.open}`} onClick={() => selectNav('nc.open')} />
+                <AlertRow icon={<WarningAmberIcon color="warning" />} text={t('quality.dashboard.alerts.ncOpen', { count: dash.nonconformity.open })} onClick={() => selectNav('nc.open')} />
               ) : null}
               {dash?.nonconformity.capa_open ? (
-                <AlertRow icon={<FindInPageIcon color="primary" />} text={`CAPA قيد التنفيذ: ${dash.nonconformity.capa_open}`} onClick={() => selectNav('nc.capa')} />
+                <AlertRow icon={<FindInPageIcon color="primary" />} text={t('quality.dashboard.alerts.capaOpen', { count: dash.nonconformity.capa_open })} onClick={() => selectNav('nc.capa')} />
               ) : null}
               {dash && (dash.qc.failed || dash.equipment.overdue || dash.reagents.expired || dash.nonconformity.open || dash.nonconformity.capa_open) === 0 ? (
-                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>✓ لا توجد تنبيهات حرجة حالياً</Typography>
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>✓ {t('quality.dashboard.alerts.noCritical')}</Typography>
               ) : null}
             </Stack>
           </Paper>
@@ -367,17 +374,17 @@ const QualityAssurancePage = () => {
           <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <FactCheckIcon color="primary" />
-              <Typography variant="h6">نظرة عامة QC Overview</Typography>
+              <Typography variant="h6">{t('quality.qcOverview.title')}</Typography>
             </Stack>
             <Box sx={{ mb: 1.5 }}>
-              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>الأحياء الدقيقة Microbiology</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>{t('quality.qcOverview.microbiology')}</Typography>
               <QCBar label="Passed" count={qcSummary.micro.passed} color="success.main" />
               <QCBar label="Failed" count={qcSummary.micro.failed} color="error.main" />
               <QCBar label="Pending" count={qcSummary.micro.pending} color="warning.main" />
             </Box>
             <Divider sx={{ my: 1.5 }} />
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>الكيمياء Chemistry</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>{t('quality.qcOverview.chemistry')}</Typography>
               <QCBar label="Passed" count={qcSummary.chem.passed} color="success.main" />
               <QCBar label="Failed" count={qcSummary.chem.failed} color="error.main" />
               <QCBar label="Pending" count={qcSummary.chem.pending} color="warning.main" />
@@ -389,7 +396,7 @@ const QualityAssurancePage = () => {
           <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <FindInPageIcon color="primary" />
-              <Typography variant="h6">سجل التدقيق Audit Trail</Typography>
+              <Typography variant="h6">{t('quality.audit.title')}</Typography>
             </Stack>
             <Stack spacing={1}>
               {audits.rows.slice(0, 6).map((a) => (
@@ -400,7 +407,7 @@ const QualityAssurancePage = () => {
                 </Stack>
               ))}
               {audits.rows.length === 0 && (
-                <Typography variant="body2" color="text.secondary">لا توجد أحداث تدقيق مسجلة بعد.</Typography>
+                <Typography variant="body2" color="text.secondary">{t('quality.audit.noEvents')}</Typography>
               )}
             </Stack>
           </Paper>
@@ -415,7 +422,7 @@ const QualityAssurancePage = () => {
         {stat('QC Passed', dash?.qc.passed ?? '—', <GppGoodIcon />, 'success.main')}
         {stat('QC Failed', dash?.qc.failed ?? '—', <GppBadIcon />, 'error.main')}
         {stat('QC Pending', dash?.qc.pending ?? '—', <FactCheckIcon />, 'warning.main')}
-        {stat('معدل النجاح', dash?.qc.pass_rate != null ? `${dash.qc.pass_rate}%` : '—', <VerifiedIcon />, 'info.main')}
+        {stat(t('quality.qcOverview.successRate'), dash?.qc.pass_rate != null ? `${dash.qc.pass_rate}%` : '—', <VerifiedIcon />, 'info.main')}
       </Grid>
       <Box sx={{ mt: 2 }}>
         <DataTable<QCRecord>
@@ -428,7 +435,7 @@ const QualityAssurancePage = () => {
           pageSizeOptions={qcRecords.pageSizeOptions}
           loading={qcRecords.loading}
           error={qcRecords.error}
-          title="سجلات مراجعة الجودة QC"
+          title={t('quality.qcOverview.tableTitle')}
           search={qcRecords.search}
           searchInput={qcRecords.searchInput}
           onSearchChange={qcRecords.setSearchInput}
@@ -448,12 +455,12 @@ const QualityAssurancePage = () => {
       <Alert
         severity="error"
         sx={{ mb: 2 }}
-        action={<AppButton size="small" variant="secondary" onClick={() => selectNav('nc.open')}>فتح عدم مطابقة</AppButton>}
+        action={<AppButton size="small" variant="secondary" onClick={() => selectNav('nc.open')}>{t('quality.qcFailures.openNc')}</AppButton>}
       >
-        النتائج المدرجة قد تكون متأثرة بفشل الضابط — أعد الفحص قبل اعتماد النتيجة النهائية.
+        {t('quality.qcFailures.warning')}
       </Alert>
       {qcFailures.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">لا توجد حالات فشل QC حالياً.</Typography>
+        <Typography variant="body2" color="text.secondary">{t('quality.qcFailures.noFailures')}</Typography>
       ) : (
         <Grid container spacing={2}>
           {qcFailures.map((q) => (
@@ -463,14 +470,14 @@ const QualityAssurancePage = () => {
                   <GppBadIcon color="error" />
                   <Typography variant="body1" sx={{ fontWeight: 700 }}>{q.qc_number}</Typography>
                 </Stack>
-                <Typography variant="body2"><b>القسم:</b> {labBench[q.bench]?.label ?? q.bench}</Typography>
-                <Typography variant="body2"><b>الضابط:</b> {q.control_type}</Typography>
-                {q.test_label && <Typography variant="body2"><b>الفحص:</b> {q.test_label}</Typography>}
+                <Typography variant="body2"><b>{t('quality.qcFailures.section')}:</b> {labBench[q.bench]?.label ?? q.bench}</Typography>
+                <Typography variant="body2"><b>{t('quality.qcFailures.officer')}:</b> {q.control_type}</Typography>
+                {q.test_label && <Typography variant="body2"><b>{t('quality.qcFailures.test')}:</b> {q.test_label}</Typography>}
                 <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 700 }}>
-                  <b>الحالة:</b> FAILED — {q.affected_tests_count} نتائج متأثرة
+                  <b>{t('quality.qcFailures.status')}:</b> FAILED — {q.affected_tests_count} {t('quality.qcFailures.testsAffected')}
                 </Typography>
                 <Box sx={{ mt: 1.5 }}>
-                  <AppButton size="small" variant="secondary" onClick={() => selectNav('nc.open')}>فتح NC</AppButton>
+                  <AppButton size="small" variant="secondary" onClick={() => selectNav('nc.open')}>{t('quality.qcFailures.openNc')}</AppButton>
                 </Box>
               </Paper>
             </Grid>
@@ -492,7 +499,7 @@ const QualityAssurancePage = () => {
         pageSizeOptions={ncs.pageSizeOptions}
         loading={ncs.loading}
         error={ncs.error}
-        title="عدم المطابقة Non-Conformity"
+        title={t('quality.nonConformity.title')}
         search={ncs.search}
         searchInput={ncs.searchInput}
         onSearchChange={ncs.setSearchInput}
@@ -518,7 +525,7 @@ const QualityAssurancePage = () => {
         pageSizeOptions={capas.pageSizeOptions}
         loading={capas.loading}
         error={capas.error}
-        title="الإجراءات التصحيحية والوقائية CAPA"
+        title={t('quality.capa.title')}
         search={capas.search}
         searchInput={capas.searchInput}
         onSearchChange={capas.setSearchInput}
@@ -535,10 +542,10 @@ const QualityAssurancePage = () => {
   const renderMethods = () => (
     <Box>
       <Alert severity="info" sx={{ mb: 2 }}>
-        طرق الاختبار المعتمدة — كل طريقة لها إصدار وتاريخ سريان وأجهزة وكواشف وكمية عينة وحدود اكتشاف ومرجع.
+        {t('quality.methods.description')}
       </Alert>
       <Typography variant="body2" color="text.secondary">
-        {dash?.methods.active ?? 0} من {dash?.methods.total ?? 0} طريقة نشطة ({dash?.methods.compliance_pct ?? '—'}%).
+        {t('quality.methods.activeCount', { active: dash?.methods.active ?? 0, total: dash?.methods.total ?? 0, compliance: dash?.methods.compliance_pct ?? '—' })}
       </Typography>
     </Box>
   );
@@ -548,14 +555,21 @@ const QualityAssurancePage = () => {
       <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
           <FolderSharedIcon color="primary" />
-          <Typography variant="h6">التحكم في الوثائق Document Control</Typography>
+          <Typography variant="h6">{t('quality.documents.title')}</Typography>
         </Stack>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          كل وثيقة تحمل: كود الوثيقة، الإصدار، المالك، تاريخ السريان، تاريخ المراجعة، الحالة، والمعتمِد.
+          {t('quality.documents.description')}
         </Typography>
         <Grid container spacing={1.5}>
           {[
-            'SOP', 'تعليمات العمل', 'طرق الاختبار', 'دليل الجودة', 'النماذج', 'المواصفات', 'شهادات المعايرة', 'إجراءات QC',
+            t('quality.documents.sop'),
+            t('quality.documents.workInstructions'),
+            t('quality.documents.testMethods'),
+            t('quality.documents.qualityGuide'),
+            t('quality.documents.forms'),
+            t('quality.documents.specifications'),
+            t('quality.documents.calibrationCertificates'),
+            t('quality.documents.qcProcedures'),
           ].map((d) => (
             <Grid item xs={12} sm={6} md={3} key={d}>
               <Paper sx={{ p: 1.5, textAlign: 'center', border: '1px solid', borderColor: 'divider' }}>
@@ -573,12 +587,20 @@ const QualityAssurancePage = () => {
       <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
           <AssessmentIcon color="primary" />
-          <Typography variant="h6">تقارير الجودة Quality Reports</Typography>
+          <Typography variant="h6">{t('quality.reports.title')}</Typography>
         </Stack>
         <Grid container spacing={1.5}>
           {[
-            'أداء QC', 'عدم المطابقة', 'CAPA', 'معايرة الأجهزة', 'انتهاء الكواشف',
-            'امتثال الطرق', 'تغييرات المواصفات', 'سجل التدقيق', 'مراجعة الوثائق', 'مؤشرات جودة المختبر',
+            t('quality.reports.qcPerformance'),
+            t('quality.reports.nonConformity'),
+            t('quality.reports.capa'),
+            t('quality.reports.equipmentCalibration'),
+            t('quality.reports.reagentsExpired'),
+            t('quality.reports.methodCompliance'),
+            t('quality.reports.specChanges'),
+            t('quality.reports.auditTrail'),
+            t('quality.reports.documentReview'),
+            t('quality.reports.labQualityIndicators'),
           ].map((r) => (
             <Grid item xs={12} sm={6} md={4} key={r}>
               <Paper sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { borderColor: 'primary.main' } }}>
@@ -603,7 +625,7 @@ const QualityAssurancePage = () => {
         pageSizeOptions={audits.pageSizeOptions}
         loading={audits.loading}
         error={audits.error}
-        title="سجل التدقيق Audit Trail"
+        title={t('quality.audit.tableTitle')}
         search={audits.search}
         searchInput={audits.searchInput}
         onSearchChange={audits.setSearchInput}
@@ -622,16 +644,16 @@ const QualityAssurancePage = () => {
       <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
           <WarningAmberIcon color="warning" />
-          <Typography variant="h6">تنبيهات الجودة</Typography>
+          <Typography variant="h6">{t('quality.alerts.title')}</Typography>
         </Stack>
         <Stack spacing={1}>
-          {dash?.qc.failed ? <AlertRow icon={<GppBadIcon color="error" />} text={`فشل QC (${dash.qc.failed})`} onClick={() => selectNav('qc.failures')} /> : null}
-          {dash?.equipment.overdue ? <AlertRow icon={<EventBusyIcon color="error" />} text={`معايرة متأخرة (${dash.equipment.overdue})`} onClick={() => selectNav('equipment.calibration')} /> : null}
-          {dash?.equipment.due_soon ? <AlertRow icon={<BuildIcon color="warning" />} text={`معايرة قريبة (${dash.equipment.due_soon}) خلال 30 يوماً`} onClick={() => selectNav('equipment.calibration')} /> : null}
-          {dash?.reagents.expired ? <AlertRow icon={<BiotechIcon color="error" />} text={`كواشف منتهية (${dash.reagents.expired})`} onClick={() => selectNav('reagents')} /> : null}
-          {dash?.reagents.low ? <AlertRow icon={<BiotechIcon color="warning" />} text={`كواشف بكمية منخفضة (${dash.reagents.low})`} onClick={() => selectNav('reagents')} /> : null}
-          {dash?.nonconformity.open ? <AlertRow icon={<WarningAmberIcon color="error" />} text={`عدم مطابقة مفتوح (${dash.nonconformity.open})`} onClick={() => selectNav('nc.open')} /> : null}
-          {!dash ? <Typography variant="body2" color="text.secondary">جارٍ التحميل…</Typography> : null}
+          {dash?.qc.failed ? <AlertRow icon={<GppBadIcon color="error" />} text={t('quality.alerts.qcFailed', { count: dash.qc.failed })} onClick={() => selectNav('qc.failures')} /> : null}
+          {dash?.equipment.overdue ? <AlertRow icon={<EventBusyIcon color="error" />} text={t('quality.alerts.calibrationOverdue', { count: dash.equipment.overdue })} onClick={() => selectNav('equipment.calibration')} /> : null}
+          {dash?.equipment.due_soon ? <AlertRow icon={<BuildIcon color="warning" />} text={t('quality.alerts.calibrationDueSoon', { count: dash.equipment.due_soon })} onClick={() => selectNav('equipment.calibration')} /> : null}
+          {dash?.reagents.expired ? <AlertRow icon={<BiotechIcon color="error" />} text={t('quality.alerts.reagentsExpired', { count: dash.reagents.expired })} onClick={() => selectNav('reagents')} /> : null}
+          {dash?.reagents.low ? <AlertRow icon={<BiotechIcon color="warning" />} text={t('quality.alerts.reagentsLow', { count: dash.reagents.low })} onClick={() => selectNav('reagents')} /> : null}
+          {dash?.nonconformity.open ? <AlertRow icon={<WarningAmberIcon color="error" />} text={t('quality.alerts.ncOpen', { count: dash.nonconformity.open })} onClick={() => selectNav('nc.open')} /> : null}
+          {!dash ? <Typography variant="body2" color="text.secondary">{t('quality.alerts.loading')}</Typography> : null}
         </Stack>
       </Paper>
     </Box>
@@ -666,7 +688,7 @@ const QualityAssurancePage = () => {
           pageSizeOptions={specs.pageSizeOptions}
           loading={specs.loading}
           error={specs.error}
-          title="المواصفات الميكروبيولوجية"
+          title={t('quality.pages.specs.micro')}
           search={specs.search}
           searchInput={specs.searchInput}
           onSearchChange={specs.setSearchInput}
@@ -678,9 +700,9 @@ const QualityAssurancePage = () => {
           onRefresh={specs.refresh}
         />
       ); break;
-      case 'specs.chemical': content = <SpecsPlaceholder title="المواصفات الكيميائية" text="حدود التركيز الكيميائي للمنتجات الغذائية — تُدار بنفس منطق الإصدارات." />; break;
-      case 'specs.plans': content = <SpecsPlaceholder title="خطط السحب Sampling Plans" text="عدد الوحدات (n) وحدود القبول (c) حسب نظام السحب الثنائي/الثلاثي للدفعة." />; break;
-      case 'specs.versions': content = <SpecsPlaceholder title="إصدارات المواصفات Versions" text="لا يُعدَّل الإصدار النشط مباشرة — يُنشأ إصدار جديد ويُؤرشف القديم حفاظاً على تاريخ النتائج." />; break;
+      case 'specs.chemical': content = <SpecsPlaceholder title={t('quality.pages.specs.chemical.title')} text={t('quality.pages.specs.chemical.text')} />; break;
+      case 'specs.plans': content = <SpecsPlaceholder title={t('quality.pages.specs.plans.title')} text={t('quality.pages.specs.plans.text')} />; break;
+      case 'specs.versions': content = <SpecsPlaceholder title={t('quality.pages.specs.versions.title')} text={t('quality.pages.specs.versions.text')} />; break;
       case 'qc.dashboard': content = renderQcOverview(); break;
       case 'qc.results': content = renderQcOverview(); break;
       case 'qc.failures': content = renderQcFailures(); break;
@@ -697,7 +719,7 @@ const QualityAssurancePage = () => {
           pageSizeOptions={equipment.pageSizeOptions}
           loading={equipment.loading}
           error={equipment.error}
-          title="الأجهزة والمعايرة"
+          title={t('quality.pages.equipment.title')}
           search={equipment.search}
           searchInput={equipment.searchInput}
           onSearchChange={equipment.setSearchInput}
@@ -720,7 +742,7 @@ const QualityAssurancePage = () => {
           pageSizeOptions={reagents.pageSizeOptions}
           loading={reagents.loading}
           error={reagents.error}
-          title="الكواشف Reagents"
+          title={t('quality.pages.reagents.title')}
           search={reagents.search}
           searchInput={reagents.searchInput}
           onSearchChange={reagents.setSearchInput}
@@ -739,8 +761,8 @@ const QualityAssurancePage = () => {
       case 'audit': content = renderAudit(); break;
       case 'reports': content = renderReports(); break;
       case 'alerts': content = renderAlerts(); break;
-      case 'settings': content = <SpecsPlaceholder title="الإعدادات" text="إعدادات الجودة والامتثال." />; break;
-      case 'help': content = <SpecsPlaceholder title="المساعدة" text="دليل استخدام واجهة الجودة." />; break;
+      case 'settings': content = <SpecsPlaceholder title={t('quality.pages.settings.title')} text={t('quality.pages.settings.text')} />; break;
+      case 'help': content = <SpecsPlaceholder title={t('quality.pages.help.title')} text={t('quality.pages.help.text')} />; break;
       default: content = renderDashboard(); break;
     }
 
@@ -754,17 +776,17 @@ const QualityAssurancePage = () => {
   return (
     <Box>
       <DashboardHero
-        eyebrow="مراقبة الجودة"
-        title="لوحة مسؤول الجودة"
-        subtitle={NAV_TITLES[nav] ?? 'إدارة الجودة والامتثال الفني'}
+        eyebrow={t('quality.dashboard.eyebrow')}
+        title={t('quality.dashboard.title')}
+        subtitle={navTitles[nav] ?? t('quality.dashboard.subtitle')}
         gradient="emerald"
         avatarLabel="ل"
-        action={<AppButton variant="secondary" onClick={refreshAll}>🔄 تحديث</AppButton>}
+        action={<AppButton variant="secondary" onClick={refreshAll}>{t('quality.dashboard.refresh')} 🔄</AppButton>}
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('quality.dashboard.liveStatus')}
           </Box>,
         ]}
       />
@@ -772,11 +794,11 @@ const QualityAssurancePage = () => {
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={sections as unknown as CommandSectionDef[]}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('quality.dashboard.sectionsLabel')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
