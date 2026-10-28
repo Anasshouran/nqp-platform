@@ -4813,6 +4813,354 @@
         "title": "No posting requests",
         "description": "Posting and promotion requests submitted by employees or HR will appear here."
       }
+    },
+    "performanceCycle": {
+      "actions": {
+        "back": "Back",
+        "newReview": "New Review",
+        "deleteKpi": "Delete",
+        "add": "Add"
+      },
+      "statusLabels": {
+        "DRAFT": "Draft",
+        "OPEN": "Open",
+        "CLOSED": "Closed",
+        "ARCHIVED": "Archived"
+      },
+      "sections": {
+        "kpis": "Performance KPIs",
+        "addKpi": "Add KPI"
+      },
+      "alerts": {
+        "weightsIncomplete": "Total weight {total}% — needs 100% to close the cycle.",
+        "weightsComplete": "Total weight complete (100%).",
+        "cycleClosed": "Cycle is closed — cannot edit KPIs."
+      },
+      "empty": {
+        "noKpis": "No KPIs yet. Add a KPI with weight; final score derived from (score × weight)."
+      },
+      "form": {
+        "kpiName": "KPI Name",
+        "weight": "Weight",
+        "weightHelper": "Percentage of final score"
+      },
+      "dialogs": {
+        "deleteKpiTitle": "Delete Performance KPI",
+        "deleteKpiMessage": "Are you sure you want to delete KPI «{name}»? This cannot be undone.",
+        "confirmDelete": "Delete"
+      },
+      "errors": {
+        "loadCycle": "Failed to load cycle",
+        "addKpi": "Failed to add KPI",
+        "deleteKpi": "Failed to delete KPI",
+        "cycleNotFound": "Cycle not found"
+      },
+      "messages": {
+        "kpiAdded": "KPI added",
+        "kpiDeleted": "KPI deleted"
+      },
+      "reviewCount": "{approved}/{total} reviews approved"
+    },
+    "postingRequest": {
+      "header": {
+        "prefix": "Posting Request"
+      },
+      "kindLabels": {
+        "TRANSFER": "Transfer",
+        "PROMOTION": "Promotion",
+        "SECONDMENT": "Secondment",
+        "DEPUTATION": "Deputation",
+        "DEMOTION": "Demotion"
+      },
+      "statusLabels": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled",
+        "DRAFT": "Draft",
+        "SUBMITTED": "Submitted"
+      },
+      "actions": {
+        "submit": "Submit for Approval",
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel Request",
+        "confirmReject": "Confirm Reject"
+      },
+      "messages": {
+        "submitted": "Request submitted for approval",
+        "approved": "Request approved and posting applied",
+        "cancelled": "Request cancelled",
+        "rejected": "Request rejected"
+      },
+      "alerts": {
+        "separationOfDuties": "You raised this request yourself and cannot approve it — segregation of duties."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "Rejection Reason (Required)",
+        "rejectReasonPlaceholder": "Enter the reason to be shown to the requester",
+        "rejectionReason": "Rejection reason: {reason}"
+      },
+      "fields": {
+        "employee": "Employee",
+        "employeeNumber": "Employee Number",
+        "email": "Email",
+        "requestType": "Request Type",
+        "destination": "Destination",
+        "effectiveDate": "Effective Date",
+        "justification": "Justification",
+        "submittedBy": "Submitted By",
+        "approvedBy": "Approved By",
+        "decisionNotes": "Decision Notes",
+        "fromStatus": "From {status}"
+      },
+      "chips": {
+        "selfService": "Self Service"
+      },
+      "searchPlaceholder": "Search by employee or employee number...",
+      "sections": {
+        "statusLog": "Status Log"
+      },
+      "empty": {
+        "noLogs": "No logs yet."
+      },
+      "errors": {
+        "loadRequest": "Failed to load request",
+        "actionFailed": "Failed to perform action",
+        "requestNotFound": "Request not found"
+      }
+    },
+    "attendanceRecords": {
+      "columns": {
+        "date": "Date",
+        "employee": "Employee",
+        "status": "Status",
+        "checkIn": "Check In",
+        "checkOut": "Check Out",
+        "workedHours": "Worked Hours",
+        "approval": "Approval",
+        "employeeNumber": "Employee Number",
+        "overtimeMinutes": "Overtime Minutes"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "all": "All",
+        "approved": "Approved",
+        "pendingApproval": "Pending Approval"
+      },
+      "statusLabels": {
+        "PRESENT": "Present",
+        "ABSENT": "Absent",
+        "LATE": "Late",
+        "HALF_DAY": "Half Day",
+        "ON_LEAVE": "On Leave"
+      },
+      "approval": {
+        "approved": "Approved",
+        "pending": "Pending Approval",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "header": {
+        "title": "Attendance Records",
+        "subtitle": "All records within your administrative scope — approved records are locked for editing and deletion"
+      },
+      "actions": {
+        "recordAttendance": "Record Attendance",
+        "approve": "Approve"
+      },
+      "searchPlaceholder": "Search by employee name or number...",
+      "export": {
+        "overtimeMinutes": "Overtime Minutes"
+      },
+      "messages": {
+        "approved": "Attendance record approved",
+        "unapproved": "Approval withdrawn",
+        "exported": "Attendance records exported"
+      },
+      "errors": {
+        "actionFailed": "Failed to perform action"
+      },
+      "tooltips": {
+        "revokeApproval": "Revoke Approval",
+        "cannotApproveOwn": "You cannot approve a record you recorded yourself",
+        "approveRecord": "Approve Record"
+      },
+      "empty": {
+        "title": "No Attendance Records",
+        "description": "Record attendance from the 'Record Attendance' button, or adjust filters."
+      }
+    },
+    "employees": {
+      "filters": {
+        "allTypes": "All types",
+        "allStatuses": "All statuses"
+      },
+      "employmentTypeLabels": {
+        "PERMANENT": "Permanent",
+        "CONTRACT": "Contract",
+        "TEMPORARY": "Temporary",
+        "CONSULTANT": "Consultant",
+        "INTERN": "Intern"
+      },
+      "employmentStatusLabels": {
+        "ACTIVE": "Active",
+        "ON_LEAVE": "On Leave",
+        "SUSPENDED": "Suspended",
+        "TERMINATED": "Terminated"
+      },
+      "columns": {
+        "employeeNumber": "Employee Number",
+        "fullName": "Name",
+        "jobTitle": "Job Title",
+        "position": "Position",
+        "department": "Department",
+        "employmentType": "Employment Type",
+        "status": "Status",
+        "hireDate": "Hire Date"
+      },
+      "header": {
+        "title": "Employee Files",
+        "subtitle": "Employee registry and their job data on the platform"
+      },
+      "actions": {
+        "newFile": "New File",
+        "label": "Actions"
+      },
+      "searchPlaceholder": "Search by name, employee number or email...",
+      "export": {
+        "email": "Email",
+        "sector": "Sector"
+      },
+      "messages": {
+        "exported": "Employee files exported"
+      },
+      "tooltips": {
+        "viewProfile": "View Profile",
+        "timeline": "Career Timeline"
+      },
+      "empty": {
+        "title": "No Employee Files",
+        "description": "No employees found matching filter criteria."
+      }
+    },
+    "performanceReview": {
+      "errors": {
+        "loadReview": "Failed to load review",
+        "actionFailed": "Failed to perform action",
+        "reviewNotFound": "Review not found"
+      },
+      "header": {
+        "prefix": "Review"
+      },
+      "actions": {
+        "back": "Back",
+        "submit": "Submit for Approval",
+        "approve": "Approve",
+        "reject": "Reject",
+        "return": "Return",
+        "cancel": "Cancel",
+        "saveScores": "Save Scores"
+      },
+      "sections": {
+        "kpiScores": "KPI Scores",
+        "actions": "Actions"
+      },
+      "alerts": {
+        "noKpis": "No KPIs in this cycle — define KPIs with total weight 100 before reviewing."
+      },
+      "fields": {
+        "score": "Score",
+        "strengths": "Strengths",
+        "improvements": "Improvements",
+        "comments": "Comments",
+        "reviewer": "Reviewer",
+        "approvedBy": "Approved By",
+        "decisionTime": "Decision Time",
+        "fromStatus": "From {status}"
+      },
+      "dialogs": {
+        "rejectTitle": "Reject Review",
+        "rejectReasonLabel": "Rejection Reason",
+        "returnTitle": "Return Review for Edit",
+        "returnNoteLabel": "Note to Reviewer"
+      },
+      "messages": {
+        "submitted": "Submitted for approval",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "returned": "Returned for edit",
+        "scoresSaved": "KPI scores saved"
+      },
+      "statusLabels": {
+        "DRAFT": "Draft",
+        "IN_PROGRESS": "In Progress",
+        "SUBMITTED": "Submitted",
+        "REVIEWED": "Reviewed",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    },
+    "leaveRequest": {
+      "errors": {
+        "loadRequest": "Failed to load request",
+        "actionFailed": "Failed to perform action",
+        "requestNotFound": "Request not found"
+      },
+      "header": {
+        "prefix": "Leave Request",
+        "subtitle": "{employeeName} — {days} day(s) ({startDate} → {endDate})"
+      },
+      "actions": {
+        "submit": "Submit for Approval",
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel Request",
+        "confirmReject": "Confirm Reject"
+      },
+      "messages": {
+        "submitted": "Request submitted",
+        "approved": "Leave approved",
+        "rejected": "Request rejected",
+        "cancelled": "Request cancelled"
+      },
+      "alerts": {
+        "documentRequired": "This leave type requires a document and cannot be approved before attaching it.",
+        "cannotApproveOwn": "You raised this request yourself and cannot approve it — segregation of duties."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "Rejection Reason (Required)",
+        "rejectReasonPlaceholder": "Enter the reason to be shown to the requester",
+        "rejectionReason": "Rejection reason: {reason}"
+      },
+      "chips": {
+        "selfService": "Self Service",
+        "halfDay": "Half Day",
+        "unpaid": "Unpaid"
+      },
+      "fields": {
+        "employee": "Employee",
+        "employeeNumber": "Employee Number",
+        "leaveType": "Leave Type",
+        "duration": "Duration",
+        "durationValue": "{days} day(s) ({startDate} → {endDate})",
+        "attachment": "Attachment",
+        "justification": "Justification",
+        "submittedBy": "Submitted By",
+        "approvedBy": "Approved By",
+        "decisionNotes": "Decision Notes",
+        "fromStatus": "From {status}"
+      },
+      "sections": {
+        "statusLog": "Status Log"
+      },
+      "empty": {
+        "noLogs": "No logs yet."
+      },
+      "statusLabels": {
+        "DRAFT": "Draft",
+        "SUBMITTED": "Submitted"
+      }
     }
   }
 }

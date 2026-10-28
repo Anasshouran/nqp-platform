@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -24,28 +25,31 @@ import type { AttendanceRecord } from '../../types/hr';
 import {
   ATTENDANCE_STATUS_LABELS,
   ATTENDANCE_STATUS_TONES,
-  attendanceStatusLabel,
 } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifySuccess, notifyError } from '../../utils/toast';
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'كل الحالات' },
-  ...Object.entries(ATTENDANCE_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-];
-
-const APPROVAL_OPTIONS = [
-  { value: '', label: 'الكل' },
-  { value: 'true', label: 'معتمد' },
-  { value: 'false', label: 'بانتظار الاعتماد' },
-];
-
 const hhmm = (t: string | null) => (t ? t.slice(0, 5) : '—');
 
 const AttendanceRecordsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const isApprover = user?.role === 'HR_APPROVER';
+
+  const STATUS_OPTIONS_LOCAL = [
+    { value: '', label: t('hr.attendanceRecords.filters.allStatuses') },
+    ...Object.entries(ATTENDANCE_STATUS_LABELS).map(([value]) => ({
+      value,
+      label: t(`hr.attendanceRecords.statusLabels.${value}`),
+    })),
+  ];
+
+  const APPROVAL_OPTIONS_LOCAL = [
+    { value: '', label: t('hr.attendanceRecords.filters.all') },
+    { value: 'true', label: t('hr.attendanceRecords.filters.approved') },
+    { value: 'false', label: t('hr.attendanceRecords.filters.pendingApproval') },
+  ];
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -61,14 +65,14 @@ const AttendanceRecordsPage = () => {
     try {
       if (approve) {
         await approveAttendanceRecord(row.id);
-        notifySuccess('تم اعتماد سجل الحضور');
+        notifySuccess(t('hr.attendanceRecords.messages.approved'));
       } else {
         await unapproveAttendanceRecord(row.id);
-        notifySuccess('تم سحب اعتماد السجل');
+        notifySuccess(t('hr.attendanceRecords.messages.unapproved'));
       }
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تنفيذ الإجراء'));
+      notifyError(extractErrorMessage(err, t('hr.attendanceRecords.errors.actionFailed')));
     }
   };
 
@@ -76,13 +80,13 @@ const AttendanceRecordsPage = () => {
     () => [
       {
         key: 'date',
-        label: 'التاريخ',
+        label: t('hr.attendanceRecords.columns.date'),
         sortable: true,
         render: (row) => formatDate(row.date),
       },
       {
         key: 'employee_name',
-        label: 'الموظف',
+        label: t('hr.attendanceRecords.columns.employee'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
@@ -96,57 +100,57 @@ const AttendanceRecordsPage = () => {
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.attendanceRecords.columns.status'),
         render: (row) => (
           <StatusChip
-            label={attendanceStatusLabel(row.status)}
+            label={t(`hr.attendanceRecords.statusLabels.${row.status}`)}
             tone={ATTENDANCE_STATUS_TONES[row.status] ?? 'neutral'}
           />
         ),
       },
       {
         key: 'check_in',
-        label: 'الدخول',
+        label: t('hr.attendanceRecords.columns.checkIn'),
         render: (row) => hhmm(row.check_in),
       },
       {
         key: 'check_out',
-        label: 'الانصراف',
+        label: t('hr.attendanceRecords.columns.checkOut'),
         render: (row) => hhmm(row.check_out),
       },
       {
         key: 'worked_minutes',
-        label: 'ساعات العمل',
+        label: t('hr.attendanceRecords.columns.workedHours'),
         hideOnMobile: true,
         render: (row) => (row.worked_minutes ? `${Math.floor(row.worked_minutes / 60)}س ${row.worked_minutes % 60}د` : '—'),
       },
       {
         key: 'is_approved',
-        label: 'الاعتماد',
+        label: t('hr.attendanceRecords.columns.approval'),
         render: (row) => (
           <StatusChip
-            label={row.is_approved ? 'معتمد' : 'بانتظار الاعتماد'}
+            label={row.is_approved ? t('hr.attendanceRecords.approval.approved') : t('hr.attendanceRecords.approval.pending')}
             tone={row.is_approved ? 'success' : 'warning'}
             showIcon={false}
           />
         ),
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="سجلات الحضور"
-        subtitle="كل السجلات ضمن نطاقك الإداري — السجل المعتمد يُقفل أمام التعديل والحذف"
+        title={t('hr.attendanceRecords.header.title')}
+        subtitle={t('hr.attendanceRecords.header.subtitle')}
         action={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/app/hr/attendance')}
           >
-            تسجيل حضور
+            {t('hr.attendanceRecords.actions.recordAttendance')}
           </Button>
         }
       />
@@ -163,10 +167,10 @@ const AttendanceRecordsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم الموظف أو رقمه..."
+        searchPlaceholder={t('hr.attendanceRecords.searchPlaceholder')}
         filters={[
-          { key: 'status', label: 'الحالة', options: STATUS_OPTIONS, value: '', onChange: (v) => setFilter('status', v) },
-          { key: 'is_approved', label: 'الاعتماد', options: APPROVAL_OPTIONS, value: '', onChange: (v) => setFilter('is_approved', v) },
+          { key: 'status', label: t('hr.attendanceRecords.columns.status'), options: STATUS_OPTIONS_LOCAL, value: '', onChange: (v) => setFilter('status', v) },
+          { key: 'is_approved', label: t('hr.attendanceRecords.columns.approval'), options: APPROVAL_OPTIONS_LOCAL, value: '', onChange: (v) => setFilter('is_approved', v) },
         ]}
         sortBy={sortBy}
         sortOrder={sortOrder}
@@ -177,7 +181,16 @@ const AttendanceRecordsPage = () => {
         onExport={() =>
           exportAll({
             filename: 'hr_attendance.csv',
-            headers: ['التاريخ', 'الموظف', 'الرقم الوظيفي', 'الحالة', 'الدخول', 'الانصراف', 'دقائق إضافية', 'معتمد'],
+            headers: [
+              t('hr.attendanceRecords.columns.date'),
+              t('hr.attendanceRecords.columns.employee'),
+              t('hr.attendanceRecords.columns.employeeNumber'),
+              t('hr.attendanceRecords.columns.status'),
+              t('hr.attendanceRecords.columns.checkIn'),
+              t('hr.attendanceRecords.columns.checkOut'),
+              t('hr.attendanceRecords.export.overtimeMinutes'),
+              t('hr.attendanceRecords.columns.approval'),
+            ],
             mapRow: (r) => [
               r.date,
               r.employee_name,
@@ -186,20 +199,19 @@ const AttendanceRecordsPage = () => {
               hhmm(r.check_in),
               hhmm(r.check_out),
               r.overtime_minutes,
-              r.is_approved ? 'نعم' : 'لا',
+              r.is_approved ? t('hr.attendanceRecords.approval.yes') : t('hr.attendanceRecords.approval.no'),
             ],
-            message: 'تم تصدير سجلات الحضور',
+            message: t('hr.attendanceRecords.messages.exported'),
           })
         }
         exporting={exporting}
-        actionsLabel="اعتماد"
+        actionsLabel={t('hr.attendanceRecords.actions.approve')}
         actions={(row) => {
           if (!isApprover) return null;
-          // من يُسجّل حضور يوم لا يوثّقه: الاعتماد هنا لمن لم يُسجّل السجل.
           const isRecorder = row.recorded_by === user?.id;
           if (row.is_approved) {
             return (
-              <Tooltip title="سحب الاعتماد">
+              <Tooltip title={t('hr.attendanceRecords.tooltips.revokeApproval')}>
                 <IconButton onClick={() => act(row, false)}>
                   <UndoIcon />
                 </IconButton>
@@ -208,7 +220,7 @@ const AttendanceRecordsPage = () => {
           }
           if (isRecorder) {
             return (
-              <Tooltip title="لا يمكنك اعتماد سجل سجّلته بنفسك">
+              <Tooltip title={t('hr.attendanceRecords.tooltips.cannotApproveOwn')}>
                 <span>
                   <IconButton disabled>
                     <CheckIcon />
@@ -218,15 +230,15 @@ const AttendanceRecordsPage = () => {
             );
           }
           return (
-            <Tooltip title="اعتماد السجل">
+            <Tooltip title={t('hr.attendanceRecords.tooltips.approveRecord')}>
               <IconButton onClick={() => act(row, true)}>
                 <CheckIcon />
               </IconButton>
             </Tooltip>
           );
         }}
-        emptyTitle="لا توجد سجلات حضور"
-        emptyDescription="سجّل الحضور من زر «تسجيل حضور»، أو عدّل عوامل التصفية."
+        emptyTitle={t('hr.attendanceRecords.empty.title')}
+        emptyDescription={t('hr.attendanceRecords.empty.description')}
       />
     </Box>
   );

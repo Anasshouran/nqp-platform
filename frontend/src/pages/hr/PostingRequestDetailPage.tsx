@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -27,8 +28,6 @@ import {
 } from '../../api/endpoints/hr';
 import type { PostingRequest } from '../../types/hr';
 import {
-  postingKindLabel,
-  postingStatusLabel,
   POSTING_STATUS_TONES,
 } from '../../utils/hrLabels';
 import { formatDate, formatDateTime } from '../../utils/formatters';
@@ -44,6 +43,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 );
 
 const PostingRequestDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
@@ -61,11 +61,11 @@ const PostingRequestDetailPage = () => {
       setPosting(data.data);
       setError(null);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر تحميل الطلب'));
+      setError(extractErrorMessage(err, t('hr.postingRequest.errors.loadRequest')));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -80,7 +80,7 @@ const PostingRequestDetailPage = () => {
       setReason('');
       await load();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تنفيذ الإجراء'));
+      notifyError(extractErrorMessage(err, t('hr.postingRequest.errors.actionFailed')));
     } finally {
       setBusy(false);
     }
@@ -94,7 +94,7 @@ const PostingRequestDetailPage = () => {
     );
   }
   if (error || !posting) {
-    return <ErrorState message={error ?? 'الطلب غير موجود'} onRetry={load} />;
+    return <ErrorState message={error ?? t('hr.postingRequest.errors.requestNotFound')} onRetry={load} />;
   }
 
   const isSubmitter = posting.requested_by === user?.id;
@@ -104,7 +104,7 @@ const PostingRequestDetailPage = () => {
   return (
     <Box>
       <PageHeader
-        title={`طلب ${postingKindLabel(posting.kind)}`}
+        title={`${t('hr.postingRequest.header.prefix')} ${t(`hr.postingRequest.kindLabels.${posting.kind}`) ?? posting.kind}`}
         subtitle={`${posting.employee_name} — ${posting.target_summary}`}
         action={
           <Stack direction="row" spacing={1}>
@@ -113,9 +113,9 @@ const PostingRequestDetailPage = () => {
                 variant="contained"
                 startIcon={<SendIcon />}
                 disabled={busy}
-                onClick={() => run(() => submitPostingRequest(posting.id), 'تم إرسال الطلب للاعتماد')}
+                onClick={() => run(() => submitPostingRequest(posting.id), t('hr.postingRequest.messages.submitted'))}
               >
-                إرسال للاعتماد
+                {t('hr.postingRequest.actions.submit')}
               </Button>
             )}
             {canDecide && (
@@ -125,9 +125,9 @@ const PostingRequestDetailPage = () => {
                   color="success"
                   startIcon={<CheckIcon />}
                   disabled={busy}
-                  onClick={() => run(() => approvePostingRequest(posting.id), 'تم اعتماد الطلب وتطبيق النقل')}
+                  onClick={() => run(() => approvePostingRequest(posting.id), t('hr.postingRequest.messages.approved'))}
                 >
-                  اعتماد
+                  {t('hr.postingRequest.actions.approve')}
                 </Button>
                 <Button
                   variant="outlined"
@@ -136,7 +136,7 @@ const PostingRequestDetailPage = () => {
                   disabled={busy}
                   onClick={() => setRejecting((v) => !v)}
                 >
-                  رفض
+                  {t('hr.postingRequest.actions.reject')}
                 </Button>
               </>
             )}
@@ -145,9 +145,9 @@ const PostingRequestDetailPage = () => {
                 variant="outlined"
                 color="error"
                 disabled={busy}
-                onClick={() => run(() => cancelPostingRequest(posting.id), 'تم إلغاء الطلب')}
+                onClick={() => run(() => cancelPostingRequest(posting.id), t('hr.postingRequest.messages.cancelled'))}
               >
-                إلغاء الطلب
+                {t('hr.postingRequest.actions.cancel')}
               </Button>
             )}
           </Stack>
@@ -156,7 +156,7 @@ const PostingRequestDetailPage = () => {
 
       {posting.status === 'SUBMITTED' && isSubmitter && isApprover && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام.
+          {t('hr.postingRequest.alerts.separationOfDuties')}
         </Alert>
       )}
 
@@ -164,7 +164,7 @@ const PostingRequestDetailPage = () => {
         <Card sx={{ mb: 2, borderColor: 'error.main' }}>
           <CardContent>
             <Typography variant="subtitle2" gutterBottom>
-              سبب الرفض (مطلوب)
+              {t('hr.postingRequest.dialogs.rejectReasonLabel')}
             </Typography>
             <TextField
               fullWidth
@@ -172,7 +172,7 @@ const PostingRequestDetailPage = () => {
               minRows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="اذكر السبب الذي سيُعرض لمقدّم الطلب"
+              placeholder={t('hr.postingRequest.dialogs.rejectReasonPlaceholder')}
             />
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button
@@ -180,13 +180,13 @@ const PostingRequestDetailPage = () => {
                 color="error"
                 disabled={busy || !reason.trim()}
                 onClick={() =>
-                  run(() => rejectPostingRequest(posting.id, reason.trim()), 'تم رفض الطلب')
+                  run(() => rejectPostingRequest(posting.id, reason.trim()), t('hr.postingRequest.messages.rejected'))
                 }
               >
-                تأكيد الرفض
+                {t('hr.postingRequest.actions.confirmReject')}
               </Button>
               <Button onClick={() => setRejecting(false)} disabled={busy}>
-                إلغاء
+                {t('hr.postingRequest.actions.cancel')}
               </Button>
             </Stack>
           </CardContent>
@@ -195,7 +195,7 @@ const PostingRequestDetailPage = () => {
 
       {posting.status === 'REJECTED' && posting.rejection_reason && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          سبب الرفض: {posting.rejection_reason}
+          {t('hr.postingRequest.dialogs.rejectionReason', { reason: posting.rejection_reason })}
         </Alert>
       )}
 
@@ -205,33 +205,33 @@ const PostingRequestDetailPage = () => {
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
                 <StatusChip
-                  label={postingStatusLabel(posting.status)}
+                  label={t(`hr.postingRequest.statusLabels.${posting.status}`) ?? posting.status}
                   tone={POSTING_STATUS_TONES[posting.status] ?? 'neutral'}
                 />
-                {posting.is_self_service && <Chip size="small" label="خدمة ذاتية" />}
+                {posting.is_self_service && <Chip size="small" label={t('hr.postingRequest.chips.selfService')} />}
               </Stack>
               <Divider sx={{ mb: 1 }} />
-              <Row label="الموظف" value={posting.employee_name} />
-              <Row label="الرقم الوظيفي" value={posting.employee_number} />
-              {posting.employee_email && <Row label="البريد" value={posting.employee_email} />}
-              <Row label="نوع الطلب" value={posting.kind_display} />
-              <Row label="الوجهة" value={posting.target_summary} />
+              <Row label={t('hr.postingRequest.fields.employee')} value={posting.employee_name} />
+              <Row label={t('hr.postingRequest.fields.employeeNumber')} value={posting.employee_number} />
+              {posting.employee_email && <Row label={t('hr.postingRequest.fields.email')} value={posting.employee_email} />}
+              <Row label={t('hr.postingRequest.fields.requestType')} value={posting.kind_display} />
+              <Row label={t('hr.postingRequest.fields.destination')} value={posting.target_summary} />
               <Row
-                label="تاريخ النفاذ"
+                label={t('hr.postingRequest.fields.effectiveDate')}
                 value={posting.effective_date ? formatDate(posting.effective_date) : '—'}
               />
-              <Row label="المبرِّر" value={posting.reason} />
+              <Row label={t('hr.postingRequest.fields.justification')} value={posting.reason} />
               <Divider sx={{ my: 1 }} />
-              <Row label="مقدّم الطلب" value={posting.requested_by_name} />
+              <Row label={t('hr.postingRequest.fields.submittedBy')} value={posting.requested_by_name} />
               <Row
-                label="المعتمد"
+                label={t('hr.postingRequest.fields.approvedBy')}
                 value={
                   posting.decided_by_name
                     ? `${posting.decided_by_name} — ${formatDateTime(posting.decided_at!)}`
                     : '—'
                 }
               />
-              {posting.decision_note && <Row label="ملاحظات القرار" value={posting.decision_note} />}
+              {posting.decision_note && <Row label={t('hr.postingRequest.fields.decisionNotes')} value={posting.decision_note} />}
             </CardContent>
           </Card>
         </Grid>
@@ -240,25 +240,25 @@ const PostingRequestDetailPage = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                سجل الحالة
+                {t('hr.postingRequest.sections.statusLog')}
               </Typography>
               <Divider sx={{ mb: 1 }} />
               {(posting.status_logs ?? []).length === 0 && (
                 <Typography variant="body2" color="text.secondary">
-                  لا توجد قيود بعد.
+                  {t('hr.postingRequest.empty.noLogs')}
                 </Typography>
               )}
               {(posting.status_logs ?? []).map((log) => (
                 <Box key={log.id} sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <StatusChip
-                      label={postingStatusLabel(log.to_status)}
+                      label={t(`hr.postingRequest.statusLabels.${log.to_status}`) ?? log.to_status}
                       tone={POSTING_STATUS_TONES[log.to_status] ?? 'neutral'}
                       showIcon={false}
                     />
                     {log.from_status && (
                       <Typography variant="caption" color="text.secondary">
-                        من {postingStatusLabel(log.from_status)}
+                        {t('hr.postingRequest.fields.fromStatus', { status: t(`hr.postingRequest.statusLabels.${log.from_status}`) })}
                       </Typography>
                     )}
                   </Stack>

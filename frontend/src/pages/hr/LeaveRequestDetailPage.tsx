@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -26,7 +27,7 @@ import {
   submitLeaveRequest,
 } from '../../api/endpoints/hr';
 import type { LeaveRequest } from '../../types/hr';
-import { LEAVE_STATUS_TONES, leaveStatusLabel } from '../../utils/hrLabels';
+import { LEAVE_STATUS_TONES } from '../../utils/hrLabels';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage, notifySuccess, notifyError } from '../../utils/toast';
 
@@ -40,6 +41,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 );
 
 const LeaveRequestDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
@@ -57,11 +59,11 @@ const LeaveRequestDetailPage = () => {
       setLeave(data.data);
       setError(null);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر تحميل الطلب'));
+      setError(extractErrorMessage(err, t('hr.leaveRequest.errors.loadRequest')));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -76,7 +78,7 @@ const LeaveRequestDetailPage = () => {
       setReason('');
       await load();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تنفيذ الإجراء'));
+      notifyError(extractErrorMessage(err, t('hr.leaveRequest.errors.actionFailed')));
     } finally {
       setBusy(false);
     }
@@ -90,7 +92,7 @@ const LeaveRequestDetailPage = () => {
     );
   }
   if (error || !leave) {
-    return <ErrorState message={error ?? 'الطلب غير موجود'} onRetry={load} />;
+    return <ErrorState message={error ?? t('hr.leaveRequest.errors.requestNotFound')} onRetry={load} />;
   }
 
   const isSubmitter = leave.requested_by === user?.id;
@@ -101,8 +103,13 @@ const LeaveRequestDetailPage = () => {
   return (
     <Box>
       <PageHeader
-        title={`طلب ${leave.leave_type_name}`}
-        subtitle={`${leave.employee_name} — ${leave.days} يوم (${formatDate(leave.start_date)} → ${formatDate(leave.end_date)})`}
+        title={`${t('hr.leaveRequest.header.prefix')} ${leave.leave_type_name}`}
+        subtitle={t('hr.leaveRequest.header.subtitle', {
+          employeeName: leave.employee_name,
+          days: leave.days,
+          startDate: formatDate(leave.start_date),
+          endDate: formatDate(leave.end_date),
+        })}
         action={
           <Stack direction="row" spacing={1}>
             {leave.status === 'DRAFT' && (
@@ -110,9 +117,9 @@ const LeaveRequestDetailPage = () => {
                 variant="contained"
                 startIcon={<SendIcon />}
                 disabled={busy}
-                onClick={() => run(() => submitLeaveRequest(leave.id), 'تم إرسال الطلب')}
+                onClick={() => run(() => submitLeaveRequest(leave.id), t('hr.leaveRequest.messages.submitted'))}
               >
-                إرسال للاعتماد
+                {t('hr.leaveRequest.actions.submit')}
               </Button>
             )}
             {canDecide && (
@@ -122,9 +129,9 @@ const LeaveRequestDetailPage = () => {
                   color="success"
                   startIcon={<CheckIcon />}
                   disabled={busy || needsDocument}
-                  onClick={() => run(() => approveLeaveRequest(leave.id), 'تم اعتماد الإجازة')}
+                  onClick={() => run(() => approveLeaveRequest(leave.id), t('hr.leaveRequest.messages.approved'))}
                 >
-                  اعتماد
+                  {t('hr.leaveRequest.actions.approve')}
                 </Button>
                 <Button
                   variant="outlined"
@@ -133,7 +140,7 @@ const LeaveRequestDetailPage = () => {
                   disabled={busy}
                   onClick={() => setRejecting((v) => !v)}
                 >
-                  رفض
+                  {t('hr.leaveRequest.actions.reject')}
                 </Button>
               </>
             )}
@@ -142,9 +149,9 @@ const LeaveRequestDetailPage = () => {
                 variant="outlined"
                 color="error"
                 disabled={busy}
-                onClick={() => run(() => cancelLeaveRequest(leave.id), 'تم إلغاء الطلب')}
+                onClick={() => run(() => cancelLeaveRequest(leave.id), t('hr.leaveRequest.messages.cancelled'))}
               >
-                إلغاء الطلب
+                {t('hr.leaveRequest.actions.cancel')}
               </Button>
             )}
           </Stack>
@@ -153,12 +160,12 @@ const LeaveRequestDetailPage = () => {
 
       {canDecide && needsDocument && (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          هذا النوع من الإجازات يطلب مستنداً، ولا يُعتمد قبل إرفاقه.
+          {t('hr.leaveRequest.alerts.documentRequired')}
         </Alert>
       )}
       {leave.status === 'SUBMITTED' && isSubmitter && isApprover && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام.
+          {t('hr.leaveRequest.alerts.cannotApproveOwn')}
         </Alert>
       )}
 
@@ -166,7 +173,7 @@ const LeaveRequestDetailPage = () => {
         <Card sx={{ mb: 2, borderColor: 'error.main' }}>
           <CardContent>
             <Typography variant="subtitle2" gutterBottom>
-              سبب الرفض (مطلوب)
+              {t('hr.leaveRequest.dialogs.rejectReasonLabel')}
             </Typography>
             <TextField
               fullWidth
@@ -174,7 +181,7 @@ const LeaveRequestDetailPage = () => {
               minRows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="اذكر السبب الذي سيُعرض لمقدّم الطلب"
+              placeholder={t('hr.leaveRequest.dialogs.rejectReasonPlaceholder')}
             />
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button
@@ -182,13 +189,13 @@ const LeaveRequestDetailPage = () => {
                 color="error"
                 disabled={busy || !reason.trim()}
                 onClick={() =>
-                  run(() => rejectLeaveRequest(leave.id, reason.trim()), 'تم رفض الطلب')
+                  run(() => rejectLeaveRequest(leave.id, reason.trim()), t('hr.leaveRequest.messages.rejected'))
                 }
               >
-                تأكيد الرفض
+                {t('hr.leaveRequest.actions.confirmReject')}
               </Button>
               <Button onClick={() => setRejecting(false)} disabled={busy}>
-                إلغاء
+                {t('hr.leaveRequest.actions.cancel')}
               </Button>
             </Stack>
           </CardContent>
@@ -197,7 +204,7 @@ const LeaveRequestDetailPage = () => {
 
       {leave.status === 'REJECTED' && leave.rejection_reason && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          سبب الرفض: {leave.rejection_reason}
+          {t('hr.leaveRequest.dialogs.rejectionReason', { reason: leave.rejection_reason })}
         </Alert>
       )}
 
@@ -207,36 +214,36 @@ const LeaveRequestDetailPage = () => {
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }} flexWrap="wrap">
                 <StatusChip
-                  label={leaveStatusLabel(leave.status)}
+                  label={t(`hr.leaveRequest.statusLabels.${leave.status}`) ?? leave.status}
                   tone={LEAVE_STATUS_TONES[leave.status] ?? 'neutral'}
                 />
-                {leave.is_self_service && <Chip size="small" label="خدمة ذاتية" />}
-                {leave.is_half_day && <Chip size="small" label="نصف يوم" />}
+                {leave.is_self_service && <Chip size="small" label={t('hr.leaveRequest.chips.selfService')} />}
+                {leave.is_half_day && <Chip size="small" label={t('hr.leaveRequest.chips.halfDay')} />}
                 {leave.leave_type_is_paid === false && (
-                  <Chip size="small" color="warning" label="بلا راتب" />
+                  <Chip size="small" color="warning" label={t('hr.leaveRequest.chips.unpaid')} />
                 )}
               </Stack>
               <Divider sx={{ mb: 1 }} />
-              <Row label="الموظف" value={leave.employee_name} />
-              <Row label="الرقم الوظيفي" value={leave.employee_number} />
-              <Row label="نوع الإجازة" value={leave.leave_type_name} />
+              <Row label={t('hr.leaveRequest.fields.employee')} value={leave.employee_name} />
+              <Row label={t('hr.leaveRequest.fields.employeeNumber')} value={leave.employee_number} />
+              <Row label={t('hr.leaveRequest.fields.leaveType')} value={leave.leave_type_name} />
               <Row
-                label="المدة"
-                value={`${leave.days} يوم — ${formatDate(leave.start_date)} → ${formatDate(leave.end_date)}`}
+                label={t('hr.leaveRequest.fields.duration')}
+                value={t('hr.leaveRequest.fields.durationValue', { days: leave.days, startDate: formatDate(leave.start_date), endDate: formatDate(leave.end_date) })}
               />
-              <Row label="المرفق" value={leave.document} />
-              <Row label="المبرِّر" value={leave.reason} />
+              <Row label={t('hr.leaveRequest.fields.attachment')} value={leave.document} />
+              <Row label={t('hr.leaveRequest.fields.justification')} value={leave.reason} />
               <Divider sx={{ my: 1 }} />
-              <Row label="مقدّم الطلب" value={leave.requested_by_name} />
+              <Row label={t('hr.leaveRequest.fields.submittedBy')} value={leave.requested_by_name} />
               <Row
-                label="المعتمد"
+                label={t('hr.leaveRequest.fields.approvedBy')}
                 value={
                   leave.decided_by_name
                     ? `${leave.decided_by_name} — ${formatDateTime(leave.decided_at!)}`
                     : '—'
                 }
               />
-              {leave.decision_note && <Row label="ملاحظات القرار" value={leave.decision_note} />}
+              {leave.decision_note && <Row label={t('hr.leaveRequest.fields.decisionNotes')} value={leave.decision_note} />}
             </CardContent>
           </Card>
         </Grid>
@@ -245,25 +252,25 @@ const LeaveRequestDetailPage = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                سجل الحالة
+                {t('hr.leaveRequest.sections.statusLog')}
               </Typography>
               <Divider sx={{ mb: 1 }} />
               {(leave.status_logs ?? []).length === 0 && (
                 <Typography variant="body2" color="text.secondary">
-                  لا توجد قيود بعد.
+                  {t('hr.leaveRequest.empty.noLogs')}
                 </Typography>
               )}
               {(leave.status_logs ?? []).map((log) => (
                 <Box key={log.id} sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <StatusChip
-                      label={leaveStatusLabel(log.to_status)}
+                      label={t(`hr.leaveRequest.statusLabels.${log.to_status}`) ?? log.to_status}
                       tone={LEAVE_STATUS_TONES[log.to_status] ?? 'neutral'}
                       showIcon={false}
                     />
                     {log.from_status && (
                       <Typography variant="caption" color="text.secondary">
-                        من {leaveStatusLabel(log.from_status)}
+                        {t('hr.leaveRequest.fields.fromStatus', { status: t(`hr.leaveRequest.statusLabels.${log.from_status}`) })}
                       </Typography>
                     )}
                   </Stack>

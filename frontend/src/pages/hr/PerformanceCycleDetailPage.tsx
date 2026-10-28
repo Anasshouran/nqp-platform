@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -23,12 +24,12 @@ import {
   getPerformanceCycle,
 } from '../../api/endpoints/hr';
 import type { PerformanceKPI } from '../../types/hr';
-import { CYCLE_STATUS_LABELS } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifySuccess, notifyError } from '../../utils/toast';
 import { ConfirmDialog } from '../../components/uikit';
 
 const PerformanceCycleDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -52,14 +53,14 @@ const PerformanceCycleDetailPage = () => {
       if (cycleRes.status === 'fulfilled') setCycle(cycleRes.value.data.data);
       if (kpiRes.status === 'fulfilled') setKpis(kpiRes.value.data.data ?? []);
       if (cycleRes.status === 'rejected') {
-        setError(extractErrorMessage(cycleRes.reason, 'تعذر تحميل الدورة'));
+        setError(extractErrorMessage(cycleRes.reason, t('hr.performanceCycle.errors.loadCycle')));
       } else {
         setError(null);
       }
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -79,10 +80,10 @@ const PerformanceCycleDetailPage = () => {
       });
       setName('');
       setWeight('');
-      notifySuccess('تمت إضافة المؤشر');
+      notifySuccess(t('hr.performanceCycle.messages.kpiAdded'));
       await load();
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر إضافة المؤشر'));
+      setFormError(extractErrorMessage(err, t('hr.performanceCycle.errors.addKpi')));
     } finally {
       setBusy(false);
     }
@@ -93,11 +94,11 @@ const PerformanceCycleDetailPage = () => {
     setBusy(true);
     try {
       await deleteCycleKpi(deleteTarget.id);
-      notifySuccess('تم حذف المؤشر');
+      notifySuccess(t('hr.performanceCycle.messages.kpiDeleted'));
       setDeleteTarget(null);
       await load();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر حذف المؤشر'));
+      notifyError(extractErrorMessage(err, t('hr.performanceCycle.errors.deleteKpi')));
     } finally {
       setBusy(false);
     }
@@ -110,7 +111,7 @@ const PerformanceCycleDetailPage = () => {
       </Box>
     );
   }
-  if (!cycle) return <ErrorState message={error ?? 'الدورة غير موجودة'} />;
+  if (!cycle) return <ErrorState message={error ?? t('hr.performanceCycle.errors.cycleNotFound')} />;
 
   const editable = cycle.status === 'DRAFT' || cycle.status === 'OPEN';
   const balanced = Math.round(total) === 100;
@@ -122,12 +123,14 @@ const PerformanceCycleDetailPage = () => {
         subtitle={`${formatDate(cycle.period_start)} ← ${formatDate(cycle.period_end)}`}
         action={
           <Stack direction="row" spacing={1}>
-            <Button onClick={() => navigate('/app/hr/performance/cycles')}>رجوع</Button>
+            <Button onClick={() => navigate('/app/hr/performance/cycles')}>
+              {t('hr.performanceCycle.actions.back')}
+            </Button>
             <Button
               variant="contained"
               onClick={() => navigate(`/app/hr/performance/reviews/new?cycle=${cycle.id}`)}
             >
-              تقييم جديد
+              {t('hr.performanceCycle.actions.newReview')}
             </Button>
           </Stack>
         }
@@ -139,28 +142,28 @@ const PerformanceCycleDetailPage = () => {
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                 <StatusChip
-                  label={CYCLE_STATUS_LABELS[cycle.status] ?? cycle.status}
+                  label={t(`hr.performanceCycle.statusLabels.${cycle.status}`) ?? cycle.status}
                   tone={cycle.status === 'OPEN' ? 'info' : cycle.status === 'CLOSED' ? 'success' : 'neutral'}
                 />
                 {cycle.review_count !== null && cycle.approved_count !== null && (
                   <Typography variant="caption" color="text.secondary">
-                    {cycle.approved_count}/{cycle.review_count} تقييم معتمد
+                    {t('hr.performanceCycle.reviewCount', { approved: cycle.approved_count, total: cycle.review_count })}
                   </Typography>
                 )}
               </Stack>
               <Divider sx={{ mb: 2 }} />
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                مؤشرات الأداء
+                {t('hr.performanceCycle.sections.kpis')}
               </Typography>
 
               {!balanced && (
                 <Alert severity={total > 100 ? 'error' : 'warning'} sx={{ mb: 2 }}>
-                  مجموع الأوزان {total}% — يلزم 100% لإغلاق الدورة.
+                  {t('hr.performanceCycle.alerts.weightsIncomplete', { total })}
                 </Alert>
               )}
               {balanced && (
                 <Alert severity="success" sx={{ mb: 2 }}>
-                  مجموع الأوزان مكتمل (100%).
+                  {t('hr.performanceCycle.alerts.weightsComplete')}
                 </Alert>
               )}
               <LinearProgress
@@ -172,8 +175,7 @@ const PerformanceCycleDetailPage = () => {
 
               {kpis.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
-                  لا توجد مؤشرات بعد. أضف مؤشراً بوزن؛ الدرجة النهائية تُشتق من
-                  مجموع (الدرجة × الوزن).
+                  {t('hr.performanceCycle.empty.noKpis')}
                 </Typography>
               ) : (
                 kpis.map((kpi) => (
@@ -199,7 +201,7 @@ const PerformanceCycleDetailPage = () => {
                         size="small"
                         color="error"
                         disabled={busy}
-                        aria-label="حذف"
+                        aria-label={t('hr.performanceCycle.actions.deleteKpi')}
                         onClick={() => setDeleteTarget(kpi)}
                       >
                         <DeleteIcon fontSize="small" />
@@ -222,31 +224,33 @@ const PerformanceCycleDetailPage = () => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                إضافة مؤشر
+                {t('hr.performanceCycle.sections.addKpi')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               {!editable ? (
-                <Alert severity="info">الدورة مغلقة — لا يمكن تعديل المؤشرات.</Alert>
+                <Alert severity="info">
+                  {t('hr.performanceCycle.alerts.cycleClosed')}
+                </Alert>
               ) : (
                 <Box component="form" onSubmit={onAdd}>
                   <Stack spacing={2}>
                     <FormTextField
-                      label="اسم المؤشر"
+                      label={t('hr.performanceCycle.form.kpiName')}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                     />
                     <FormTextField
-                      label="الوزن"
+                      label={t('hr.performanceCycle.form.weight')}
                       type="number"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                       required
                       inputProps={{ min: 1, max: 100, step: 1 }}
-                      helperText="نسبة مئوية من الدرجة النهائية"
+                      helperText={t('hr.performanceCycle.form.weightHelper')}
                     />
                     <Button type="submit" variant="contained" startIcon={<AddIcon />} disabled={busy}>
-                      إضافة
+                      {t('hr.performanceCycle.actions.add')}
                     </Button>
                   </Stack>
                 </Box>
@@ -258,9 +262,13 @@ const PerformanceCycleDetailPage = () => {
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="حذف مؤشر الأداء"
-        message={`هل تريد حذف المؤشر «${deleteTarget?.name}»؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف"
+        title={t('hr.performanceCycle.dialogs.deleteKpiTitle')}
+        message={
+          deleteTarget
+            ? t('hr.performanceCycle.dialogs.deleteKpiMessage', { name: deleteTarget.name })
+            : ''
+        }
+        confirmLabel={t('hr.performanceCycle.dialogs.confirmDelete')}
         tone="error"
         loading={busy}
         onClose={() => {

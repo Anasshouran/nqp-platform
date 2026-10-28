@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -45,6 +46,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 );
 
 const PerformanceReviewDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -71,11 +73,11 @@ const PerformanceReviewDetailPage = () => {
       setScores(next);
       setError(null);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر تحميل التقييم'));
+      setError(extractErrorMessage(err, t('hr.performanceReview.errors.loadReview')));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -88,7 +90,7 @@ const PerformanceReviewDetailPage = () => {
       notifySuccess(ok);
       await load();
     } catch (err) {
-      notifySuccess(extractErrorMessage(err, 'تعذر تنفيذ الإجراء'));
+      notifySuccess(extractErrorMessage(err, t('hr.performanceReview.errors.actionFailed')));
       await load();
     } finally {
       setBusy(false);
@@ -102,7 +104,7 @@ const PerformanceReviewDetailPage = () => {
       </Box>
     );
   }
-  if (error || !review) return <ErrorState message={error ?? 'التقييم غير موجود'} />;
+  if (error || !review) return <ErrorState message={error ?? t('hr.performanceReview.errors.reviewNotFound')} />;
 
   const kpis: CycleKPIWithScore[] = review.cycle_kpis ?? [];
   const editable = review.status === 'DRAFT' || review.status === 'RETURNED';
@@ -116,16 +118,16 @@ const PerformanceReviewDetailPage = () => {
       .map(([kpi, score]) => ({ kpi, score: Number(score) }));
     await run(
       () => updatePerformanceReview(id, { kpi_scores: payload }),
-      'حُفظت درجات المؤشرات',
+      t('hr.performanceReview.messages.scoresSaved'),
     );
   };
 
   return (
     <Box>
       <PageHeader
-        title={`تقييم — ${review.employee_name}`}
+        title={`${t('hr.performanceReview.header.prefix')} — ${review.employee_name}`}
         subtitle={review.cycle_name}
-        action={<Button onClick={() => navigate('/app/hr/performance/reviews')}>رجوع</Button>}
+        action={<Button onClick={() => navigate('/app/hr/performance/reviews')}>{t('hr.performanceReview.actions.back')}</Button>}
       />
 
       <Grid container spacing={2}>
@@ -149,11 +151,11 @@ const PerformanceReviewDetailPage = () => {
               <Divider sx={{ mb: 2 }} />
 
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                درجات المؤشرات
+                {t('hr.performanceReview.sections.kpiScores')}
               </Typography>
               {kpis.length === 0 ? (
                 <Alert severity="warning">
-                  لا توجد مؤشرات في هذه الدورة — عرّف مؤشرات مجموع أوزانها 100 قبل التقييم.
+                  {t('hr.performanceReview.alerts.noKpis')}
                 </Alert>
               ) : (
                 <>
@@ -176,14 +178,14 @@ const PerformanceReviewDetailPage = () => {
                           }
                           disabled={!editable}
                           inputProps={{ min: 0, max: 100, step: 0.5 }}
-                          label="الدرجة"
+                          label={t('hr.performanceReview.fields.score')}
                         />
                       </Grid>
                     </Grid>
                   ))}
                   {editable && (
                     <Button variant="outlined" disabled={busy} onClick={saveScores}>
-                      حفظ الدرجات
+                      {t('hr.performanceReview.actions.saveScores')}
                     </Button>
                   )}
                 </>
@@ -191,14 +193,14 @@ const PerformanceReviewDetailPage = () => {
 
               {review.strengths && (
                 <Box sx={{ mt: 2 }}>
-                  <Row label="نقاط القوة" value={review.strengths} />
-                  <Row label="نقاط التحسين" value={review.improvements} />
-                  <Row label="ملاحظات" value={review.comments} />
+                  <Row label={t('hr.performanceReview.fields.strengths')} value={review.strengths} />
+                  <Row label={t('hr.performanceReview.fields.improvements')} value={review.improvements} />
+                  <Row label={t('hr.performanceReview.fields.comments')} value={review.comments} />
                 </Box>
               )}
               {review.rejection_reason && (
                 <Alert severity="error" sx={{ mt: 2 }}>
-                  سبب الرفض: {review.rejection_reason}
+                  {t('hr.performanceReview.dialogs.rejectionReason', { reason: review.rejection_reason })}
                 </Alert>
               )}
             </CardContent>
@@ -209,7 +211,7 @@ const PerformanceReviewDetailPage = () => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                الإجراءات
+                {t('hr.performanceReview.sections.actions')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Stack spacing={1}>
@@ -218,9 +220,9 @@ const PerformanceReviewDetailPage = () => {
                     variant="contained"
                     startIcon={<SendIcon />}
                     disabled={busy}
-                    onClick={() => run(() => submitPerformanceReview(review.id), 'تم الإرسال للاعتماد')}
+                    onClick={() => run(() => submitPerformanceReview(review.id), t('hr.performanceReview.messages.submitted'))}
                   >
-                    إرسال للاعتماد
+                    {t('hr.performanceReview.actions.submit')}
                   </Button>
                 )}
                 {canDecide && (
@@ -230,9 +232,9 @@ const PerformanceReviewDetailPage = () => {
                       color="success"
                       startIcon={<CheckIcon />}
                       disabled={busy}
-                      onClick={() => run(() => approvePerformanceReview(review.id), 'تم الاعتماد')}
+                      onClick={() => run(() => approvePerformanceReview(review.id), t('hr.performanceReview.messages.approved'))}
                     >
-                      اعتماد
+                      {t('hr.performanceReview.actions.approve')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -240,7 +242,7 @@ const PerformanceReviewDetailPage = () => {
                       disabled={busy}
                       onClick={() => setReturning(true)}
                     >
-                      إعادة
+                      {t('hr.performanceReview.actions.return')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -249,26 +251,26 @@ const PerformanceReviewDetailPage = () => {
                       disabled={busy}
                       onClick={() => setRejecting(true)}
                     >
-                      رفض
+                      {t('hr.performanceReview.actions.reject')}
                     </Button>
                   </Stack>
                 )}
               </Stack>
 
               <Divider sx={{ my: 2 }} />
-              <Row label="المُقيِّم" value={review.reviewed_by_name} />
-              <Row label="المعتمد" value={review.decided_by_name} />
-              <Row label="وقت القرار" value={formatDateTime(review.decided_at)} />
+              <Row label={t('hr.performanceReview.fields.reviewer')} value={review.reviewed_by_name} />
+              <Row label={t('hr.performanceReview.fields.approvedBy')} value={review.decided_by_name} />
+              <Row label={t('hr.performanceReview.fields.decisionTime')} value={formatDateTime(review.decided_at)} />
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       <Dialog open={rejecting} onClose={() => setRejecting(false)} fullWidth maxWidth="sm">
-        <DialogTitle>رفض التقييم</DialogTitle>
+        <DialogTitle>{t('hr.performanceReview.dialogs.rejectTitle')}</DialogTitle>
         <DialogContent>
           <FormTextField
-            label="سبب الرفض"
+            label={t('hr.performanceReview.dialogs.rejectReasonLabel')}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             multiline
@@ -277,27 +279,29 @@ const PerformanceReviewDetailPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRejecting(false)}>إلغاء</Button>
+          <Button onClick={() => setRejecting(false)}>
+            {t('hr.performanceReview.actions.cancel')}
+          </Button>
           <Button
             color="error"
             variant="contained"
             disabled={busy || !reason.trim()}
             onClick={async () => {
-              await run(() => rejectPerformanceReview(review.id, reason), 'تم الرفض');
+              await run(() => rejectPerformanceReview(review.id, reason), t('hr.performanceReview.messages.rejected'));
               setRejecting(false);
               setReason('');
             }}
           >
-            رفض
+            {t('hr.performanceReview.actions.reject')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={returning} onClose={() => setReturning(false)} fullWidth maxWidth="sm">
-        <DialogTitle>إعادة التقييم للتعديل</DialogTitle>
+        <DialogTitle>{t('hr.performanceReview.dialogs.returnTitle')}</DialogTitle>
         <DialogContent>
           <FormTextField
-            label="ملاحظة للمُقيِّم"
+            label={t('hr.performanceReview.dialogs.returnNoteLabel')}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             multiline
@@ -306,17 +310,19 @@ const PerformanceReviewDetailPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setReturning(false)}>إلغاء</Button>
+          <Button onClick={() => setReturning(false)}>
+            {t('hr.performanceReview.actions.cancel')}
+          </Button>
           <Button
             variant="contained"
             disabled={busy || !reason.trim()}
             onClick={async () => {
-              await run(() => returnPerformanceReview(review.id, reason), 'أُعيد للتعديل');
+              await run(() => returnPerformanceReview(review.id, reason), t('hr.performanceReview.messages.returned'));
               setReturning(false);
               setReason('');
             }}
           >
-            إعادة
+            {t('hr.performanceReview.actions.return')}
           </Button>
         </DialogActions>
       </Dialog>
