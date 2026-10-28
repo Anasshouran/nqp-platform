@@ -4354,6 +4354,213 @@
           "text": "Quality Interface User Guide."
         }
       }
+    },
+    "standards": {
+      "nav": {
+        "dashboard": "Dashboard",
+        "standards": "Standards",
+        "versions": "Versions",
+        "requirements": "Requirements",
+        "methods": "Analytical Methods",
+        "rules": "Regulatory Rules",
+        "comparison": "Compare Standards"
+      },
+      "columns": {
+        "code": "Code",
+        "title_ar": "Title (Arabic)",
+        "source_label": "Source",
+        "status_label": "Status",
+        "product_name": "Product Name",
+        "mandatory": "Mandatory",
+        "created_at": "Created At",
+        "standard_code": "Standard Code",
+        "version": "Version",
+        "effective_from": "Effective From",
+        "effective_to": "Effective To",
+        "standard_source": "Source",
+        "version_code": "Version Code",
+        "parameter_name": "Parameter Name",
+        "microorganism_name": "Microorganism",
+        "limit_type_label": "Limit Type",
+        "label": "Limit",
+        "method_name": "Method",
+        "active": "Active",
+        "device": "Device",
+        "name_ar": "Name (Arabic)",
+        "validation_status_label": "Validation Status",
+        "device_code": "Device Code",
+        "manufacturer": "Manufacturer",
+        "model_number": "Model Number",
+        "serial_number": "Serial Number",
+        "equipment_type": "Equipment Type",
+        "calibration_status": "Calibration Status",
+        "last_calibrated": "Last Calibrated",
+        "next_calibration_due": "Next Calibration Due",
+        "user_name": "User",
+        "action": "Action",
+        "object_type": "Object Type",
+        "object_label": "Object Label"
+      },
+      "dashboard": {
+        "eyebrow": "Standards and Compliance",
+        "title": "Standards Review Dashboard",
+        "subtitle": "Standards Management — Versions, Requirements, Analytical Methods, and Regulatory Rules",
+        "refresh": "Refresh",
+        "liveStatus": "Live",
+        "sectionsLabel": "Dashboard Sections",
+        "kpis": {
+          "title": "Quality Indicators",
+          "total_standards": "Total Standards",
+          "active_versions": "Active Versions",
+          "chemical_requirements": "Chemical Requirements",
+          "micro_requirements": "Microbiological Requirements",
+          "validated_methods": "Validated Methods",
+          "active_rules": "Active Rules",
+          "by_source": "Standards by Source"
+        },
+        "alerts": {
+          "title": "Quality Alerts",
+          "loading": "Loading…"
+        },
+        "qcOverview": {
+          "title": "QC Overview",
+          "microbiology": "Microbiology",
+          "chemistry": "Chemistry",
+          "successRate": "Success Rate",
+          "tableTitle": "QC Review Records"
+        },
+        "qcFailures": {
+          "openNc": "Open Non-Conformity",
+          "warning": "Results listed may be affected by officer failure — retest before approving final result.",
+          "noFailures": "No QC Failures Currently.",
+          "section": "Section",
+          "officer": "Officer",
+          "test": "Test",
+          "status": "Status",
+          "testsAffected": "Results Affected"
+        },
+        "methods": {
+          "description": "Approved test methods — each method has a version, validity date, equipment, reagents, sample quantity, detection limits and reference.",
+          "activeCount": "{{active}} of {{total}} methods active ({{compliance}}%)."
+        },
+        "documents": {
+          "title": "Document Control",
+          "description": "Each document carries: document code, version, owner, effective date, review date, status, and approver.",
+          "sop": "SOP",
+          "workInstructions": "Work Instructions",
+          "testMethods": "Test Methods",
+          "qualityGuide": "Quality Guide",
+          "forms": "Forms",
+          "specifications": "Specifications",
+          "calibrationCertificates": "Calibration Certificates",
+          "qcProcedures": "QC Procedures"
+        },
+        "reports": {
+          "title": "Quality Reports",
+          "qcPerformance": "QC Performance",
+          "nonConformity": "Non-Conformity",
+          "capa": "CAPA",
+          "equipmentCalibration": "Equipment Calibration",
+          "reagentsExpired": "Reagent Expiry",
+          "methodCompliance": "Method Compliance",
+          "specChanges": "Specification Changes",
+          "auditTrail": "Audit Trail",
+          "documentReview": "Document Review",
+          "labQualityIndicators": "Lab Quality Indicators"
+        },
+        "pages": {
+          "specs": {
+            "micro": {
+              "title": "Microbiological Specifications"
+            },
+            "chemical": {
+              "title": "Chemical Specifications",
+              "text": "Chemical concentration limits for food products — managed under the same versioning logic."
+            },
+            "plans": {
+              "title": "Sampling Plans",
+              "text": "Number of units (n) and acceptance limits (c) per double/triple sampling system for the lot."
+            },
+            "versions": {
+              "title": "Specification Versions",
+              "text": "Do not modify the active version directly — create a new version and archive the old one to preserve result history."
+            }
+          },
+          "equipment": {
+            "title": "Equipment and Calibration"
+          },
+          "reagents": {
+            "title": "Reagents"
+          },
+          "settings": {
+            "title": "Settings",
+            "text": "Quality and Compliance Settings."
+          },
+          "help": {
+            "title": "Help",
+            "text": "Quality Interface User Guide."
+          }
+        },
+        "dialogs": {
+          "standard": {
+            "title": "Standard Management",
+            "new": "Add New Standard",
+            "edit": "Edit Standard",
+            "code": "Standard Code *",
+            "title_ar": "Standard Title (Arabic) *",
+            "title_en": "Standard Title (English)",
+            "source": "Standard Source *",
+            "country": "Country / Authority",
+            "document_reference": "Document Reference",
+            "mandatory": "Mandatory",
+            "status": "Status *"
+          },
+          "version": {
+            "title": "Standard Version",
+            "new": "Add New Standard Version",
+            "edit": "Edit Standard Version",
+            "standard": "Standard *",
+            "version": "Version Number / Year *",
+            "effective_from": "Effective From Date *",
+            "effective_to": "Effective To Date",
+            "issue_date": "Issue Date",
+            "document_reference": "Document Reference",
+            "notes": "Notes"
+          },
+          "requirement": {
+            "title": "Requirement",
+            "new": "Add New Requirement",
+            "edit": "Edit Requirement",
+            "version": "Standard Version *",
+            "parameter": "Parameter",
+            "microorganism": "Microorganism",
+            "method": "Method",
+            "limit_type": "Limit Type *",
+            "min_value": "Min Value",
+            "max_value": "Max Value",
+            "unit": "Unit",
+            "plan": "Plan Type",
+            "active": "Active"
+          },
+          "rule": {
+            "title": "Regulatory Rule",
+            "new": "Add New Rule",
+            "edit": "Edit Rule",
+            "code": "Rule Code *",
+            "name_ar": "Rule Name (Arabic) *",
+            "description": "Description",
+            "priority": "Priority *",
+            "source_type": "Source Type *",
+            "active": "Active"
+          },
+          "delete": {
+            "title": "Delete Standard",
+            "message": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+            "confirm": "Delete",
+            "cancel": "Cancel"
+          }
+        }
+      }
     }
   }
 }
