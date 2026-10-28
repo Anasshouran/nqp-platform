@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -9,8 +8,6 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
@@ -161,6 +158,7 @@ const InspectorDashboardPage = () => {
     } finally {
       setLoadingData(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t from useTranslation has stable identity; adding it causes unnecessary refetches
   }, [user?.id]);
 
   useEffect(() => {
@@ -250,7 +248,6 @@ const InspectorDashboardPage = () => {
     }
   };
 
-  const firstName = (user?.full_name || t('inspector.dashboard.inspectorFallback')).split(' ')[0];
   const headerTitle = t(`inspector.dashboard.tab.${activeView}`) ?? t('inspector.dashboard.inspectionDashboard');
 
   const handleLogout = async () => {
