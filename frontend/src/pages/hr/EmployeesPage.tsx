@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -18,32 +19,35 @@ import { useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
 import { getEmployees } from '../../api/endpoints/hr';
 import type { Employee } from '../../types/hr';
-import {
-  employmentStatusLabel,
-  employmentStatusTone,
-  employmentTypeLabel,
-} from '../../utils/hrLabels';
+import { employmentStatusTone } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 
-const EMPLOYMENT_TYPE_OPTIONS = [
-  { value: '', label: 'كل الأنواع' },
-  { value: 'PERMANENT', label: 'دائم' },
-  { value: 'CONTRACT', label: 'بعقد' },
-  { value: 'TEMPORARY', label: 'مؤقت' },
-  { value: 'CONSULTANT', label: 'استشاري' },
-  { value: 'INTERN', label: 'تدريب' },
-];
-
-const EMPLOYMENT_STATUS_OPTIONS = [
-  { value: '', label: 'كل الحالات' },
-  { value: 'ACTIVE', label: 'على رأس العمل' },
-  { value: 'ON_LEAVE', label: 'في إجازة' },
-  { value: 'SUSPENDED', label: 'موقوف' },
-  { value: 'TERMINATED', label: 'منتهي الخدمة' },
-];
-
 const EmployeesPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const EMPLOYMENT_TYPE_OPTIONS_LOCAL = useMemo(
+    () => [
+      { value: '', label: t('hr.employees.filters.allTypes') },
+      { value: 'PERMANENT', label: t('hr.employees.employmentTypeLabels.PERMANENT') },
+      { value: 'CONTRACT', label: t('hr.employees.employmentTypeLabels.CONTRACT') },
+      { value: 'TEMPORARY', label: t('hr.employees.employmentTypeLabels.TEMPORARY') },
+      { value: 'CONSULTANT', label: t('hr.employees.employmentTypeLabels.CONSULTANT') },
+      { value: 'INTERN', label: t('hr.employees.employmentTypeLabels.INTERN') },
+    ],
+    [t],
+  );
+
+  const EMPLOYMENT_STATUS_OPTIONS_LOCAL = useMemo(
+    () => [
+      { value: '', label: t('hr.employees.filters.allStatuses') },
+      { value: 'ACTIVE', label: t('hr.employees.employmentStatusLabels.ACTIVE') },
+      { value: 'ON_LEAVE', label: t('hr.employees.employmentStatusLabels.ON_LEAVE') },
+      { value: 'SUSPENDED', label: t('hr.employees.employmentStatusLabels.SUSPENDED') },
+      { value: 'TERMINATED', label: t('hr.employees.employmentStatusLabels.TERMINATED') },
+    ],
+    [t],
+  );
 
   const { rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
     setSearchInput, setPage, setRowsPerPage, sortBy, sortOrder,
@@ -57,14 +61,14 @@ const EmployeesPage = () => {
     () => [
       {
         key: 'employee_number',
-        label: 'الرقم الوظيفي',
+        label: t('hr.employees.columns.employeeNumber'),
         sortable: true,
         width: 130,
         render: (row) => row.employee_number || '—',
       },
       {
         key: 'full_name',
-        label: 'الاسم',
+        label: t('hr.employees.columns.fullName'),
         sortable: true,
         render: (row) => (
           <Stack direction="row" spacing={1.5} alignItems="center">
@@ -84,83 +88,87 @@ const EmployeesPage = () => {
       },
       {
         key: 'job_title',
-        label: 'المسمى الوظيفي',
+        label: t('hr.employees.columns.jobTitle'),
         hideOnMobile: true,
         render: (row) => row.job_title || '—',
       },
       {
         key: 'position_name',
-        label: 'الموقع',
+        label: t('hr.employees.columns.position'),
         hideOnMobile: true,
         render: (row) => row.position_name || '—',
       },
       {
         key: 'department_name',
-        label: 'القسم',
+        label: t('hr.employees.columns.department'),
         hideOnMobile: true,
         render: (row) => row.department_name || '—',
       },
       {
         key: 'employment_type',
-        label: 'نوع التعيين',
+        label: t('hr.employees.columns.employmentType'),
         render: (row) => (
-          <StatusChip label={employmentTypeLabel(row.employment_type)} tone="info" showIcon={false} />
+          <StatusChip
+            label={t(`hr.employees.employmentTypeLabels.${row.employment_type}`)}
+            tone="info"
+            showIcon={false}
+          />
         ),
       },
       {
         key: 'employment_status',
-        label: 'الحالة',
+        label: t('hr.employees.columns.status'),
         sortable: true,
         render: (row) => (
           <StatusChip
-            label={employmentStatusLabel(row.employment_status)}
+            label={t(`hr.employees.employmentStatusLabels.${row.employment_status}`)}
             tone={employmentStatusTone(row.employment_status)}
           />
         ),
       },
       {
         key: 'hire_date',
-        label: 'تاريخ التعيين',
+        label: t('hr.employees.columns.hireDate'),
         sortable: true,
         hideOnMobile: true,
         render: (row) => (row.hire_date ? formatDate(row.hire_date) : '—'),
       },
     ],
-    [],
+    [t],
   );
 
   const filters = useMemo(
     () => [
       {
         key: 'employment_type',
-        label: 'نوع التعيين',
-        options: EMPLOYMENT_TYPE_OPTIONS,
+        label: t('hr.employees.columns.employmentType'),
+        options: EMPLOYMENT_TYPE_OPTIONS_LOCAL,
         value: '',
         onChange: (value: string) => setFilter('employment_type', value),
       },
       {
         key: 'employment_status',
-        label: 'الحالة',
-        options: EMPLOYMENT_STATUS_OPTIONS,
+        label: t('hr.employees.columns.status'),
+        options: EMPLOYMENT_STATUS_OPTIONS_LOCAL,
         value: '',
         onChange: (value: string) => setFilter('employment_status', value),
       },
     ],
-    [setFilter],
+    [setFilter, t, EMPLOYMENT_TYPE_OPTIONS_LOCAL, EMPLOYMENT_STATUS_OPTIONS_LOCAL],
   );
 
   return (
     <Box>
       <PageHeader
-        title="الملفات الوظيفية"
-        subtitle="سجل موظفي المنصة وبياناتهم الوظيفية"
+        title={t('hr.employees.header.title')}
+        subtitle={t('hr.employees.header.subtitle')}
         action={
           <Button
             variant="contained"
             startIcon={<PersonAddIcon />}
             onClick={() => navigate('/app/hr/employees/new')}
           >
-            ملف جديد
+            {t('hr.employees.actions.newFile')}
           </Button>
         }
       />
@@ -176,7 +184,7 @@ const EmployeesPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالاسم أو الرقم الوظيفي أو البريد..."
+        searchPlaceholder={t('hr.employees.searchPlaceholder')}
         filters={filters}
         sortBy={sortBy}
         sortOrder={sortOrder}
@@ -189,8 +197,16 @@ const EmployeesPage = () => {
           exportAll({
             filename: 'hr_employees.csv',
             headers: [
-              'الرقم الوظيفي', 'الاسم', 'البريد', 'المسمى الوظيفي',
-              'الموقع', 'القسم', 'القطاع', 'نوع التعيين', 'الحالة', 'تاريخ التعيين',
+              t('hr.employees.columns.employeeNumber'),
+              t('hr.employees.columns.fullName'),
+              t('hr.employees.export.email'),
+              t('hr.employees.columns.jobTitle'),
+              t('hr.employees.columns.position'),
+              t('hr.employees.columns.department'),
+              t('hr.employees.export.sector'),
+              t('hr.employees.columns.employmentType'),
+              t('hr.employees.columns.status'),
+              t('hr.employees.columns.hireDate'),
             ],
             mapRow: (row) => [
               row.employee_number,
@@ -200,22 +216,22 @@ const EmployeesPage = () => {
               row.position_name ?? '',
               row.department_name ?? '',
               row.sector_name ?? '',
-              employmentTypeLabel(row.employment_type),
-              employmentStatusLabel(row.employment_status),
+              t(`hr.employees.employmentTypeLabels.${row.employment_type}`),
+              t(`hr.employees.employmentStatusLabels.${row.employment_status}`),
               row.hire_date ?? '',
             ],
-            message: 'تم تصدير الملفات الوظيفية',
+            message: t('hr.employees.messages.exported'),
           })
         }
         exporting={exporting}
         actions={(row) => (
           <Stack direction="row" spacing={0.5}>
-            <Tooltip title="عرض الملف">
+            <Tooltip title={t('hr.employees.tooltips.viewProfile')}>
               <IconButton size="small" onClick={() => navigate(`/app/hr/employees/${row.id}`)}>
                 <VisibilityIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="المسار الوظيفي">
+            <Tooltip title={t('hr.employees.tooltips.timeline')}>
               <IconButton
                 size="small"
                 onClick={() => navigate(`/app/hr/employees/${row.id}?tab=timeline`)}
@@ -225,9 +241,9 @@ const EmployeesPage = () => {
             </Tooltip>
           </Stack>
         )}
-        actionsLabel="إجراءات"
-        emptyTitle="لا توجد ملفات وظيفية"
-        emptyDescription="لم يتم العثور على موظفين مطابقين لعوامل التصفية."
+        actionsLabel={t('hr.employees.actions.label')}
+        emptyTitle={t('hr.employees.empty.title')}
+        emptyDescription={t('hr.employees.empty.description')}
       />
     </Box>
   );

@@ -4813,6 +4813,354 @@
         "title": "لا توجد طلبات نقل",
         "description": "ستظهر هنا طلبات النقل والترقية المرفوعة من الموظفين أو من الموارد البشرية."
       }
+    },
+    "performanceCycle": {
+      "actions": {
+        "back": "رجوع",
+        "newReview": "تقييم جديد",
+        "deleteKpi": "حذف",
+        "add": "إضافة"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "OPEN": "مفتوحة",
+        "CLOSED": "مغلقة",
+        "ARCHIVED": "مؤرشفة"
+      },
+      "sections": {
+        "kpis": "مؤشرات الأداء",
+        "addKpi": "إضافة مؤشر"
+      },
+      "alerts": {
+        "weightsIncomplete": "مجموع الأوزان {total}% — يلزم 100% لإغلاق الدورة.",
+        "weightsComplete": "مجموع الأوزان مكتمل (100%).",
+        "cycleClosed": "الدورة مغلقة — لا يمكن تعديل المؤشرات."
+      },
+      "empty": {
+        "noKpis": "لا توجد مؤشرات بعد. أضف مؤشراً بوزن؛ الدرجة النهائية تُشتق من مجموع (الدرجة × الوزن)."
+      },
+      "form": {
+        "kpiName": "اسم المؤشر",
+        "weight": "الوزن",
+        "weightHelper": "نسبة مئوية من الدرجة النهائية"
+      },
+      "dialogs": {
+        "deleteKpiTitle": "حذف مؤشر الأداء",
+        "deleteKpiMessage": "هل تريد حذف المؤشر «{name}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirmDelete": "حذف"
+      },
+      "errors": {
+        "loadCycle": "تعذر تحميل الدورة",
+        "addKpi": "تعذر إضافة المؤشر",
+        "deleteKpi": "تعذر حذف المؤشر",
+        "cycleNotFound": "الدورة غير موجودة"
+      },
+      "messages": {
+        "kpiAdded": "تمت إضافة المؤشر",
+        "kpiDeleted": "تم حذف المؤشر"
+      },
+      "reviewCount": "{approved}/{total} تقييم معتمد"
+    },
+    "postingRequest": {
+      "header": {
+        "prefix": "طلب"
+      },
+      "kindLabels": {
+        "TRANSFER": "نقل",
+        "PROMOTION": "ترقية",
+        "SECONDMENT": "إعارة",
+        "DEPUTATION": "انتداب",
+        "DEMOTION": "خفض"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى",
+        "DRAFT": "مسودة",
+        "SUBMITTED": "مُقدَّم"
+      },
+      "actions": {
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "cancel": "إلغاء الطلب",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "submitted": "تم إرسال الطلب للاعتماد",
+        "approved": "تم اعتماد الطلب وتطبيق النقل",
+        "cancelled": "تم إلغاء الطلب",
+        "rejected": "تم رفض الطلب"
+      },
+      "alerts": {
+        "separationOfDuties": "رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "سبب الرفض (مطلوب)",
+        "rejectReasonPlaceholder": "اذكر السبب الذي سيُعرض لمقدّم الطلب",
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "fields": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "email": "البريد",
+        "requestType": "نوع الطلب",
+        "destination": "الوجهة",
+        "effectiveDate": "تاريخ النفاذ",
+        "justification": "المبرِّر",
+        "submittedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد",
+        "decisionNotes": "ملاحظات القرار",
+        "fromStatus": "من {status}"
+      },
+      "chips": {
+        "selfService": "خدمة ذاتية"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه الوظيفي...",
+      "sections": {
+        "statusLog": "سجل الحالة"
+      },
+      "empty": {
+        "noLogs": "لا توجد قيود بعد."
+      },
+      "errors": {
+        "loadRequest": "تعذر تحميل الطلب",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "requestNotFound": "الطلب غير موجود"
+      }
+    },
+    "attendanceRecords": {
+      "columns": {
+        "date": "التاريخ",
+        "employee": "الموظف",
+        "status": "الحالة",
+        "checkIn": "الدخول",
+        "checkOut": "الانصراف",
+        "workedHours": "ساعات العمل",
+        "approval": "الاعتماد",
+        "employeeNumber": "الرقم الوظيفي",
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات",
+        "all": "الكل",
+        "approved": "معتمد",
+        "pendingApproval": "بانتظار الاعتماد"
+      },
+      "statusLabels": {
+        "PRESENT": "حاضر",
+        "ABSENT": "غائب",
+        "LATE": "متأخر",
+        "HALF_DAY": "نصف يوم",
+        "ON_LEAVE": "في إجازة"
+      },
+      "approval": {
+        "approved": "معتمد",
+        "pending": "بانتظار الاعتماد",
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "header": {
+        "title": "سجلات الحضور",
+        "subtitle": "كل السجلات ضمن نطاقك الإداري — السجل المعتمد يُقفل أمام التعديل والحذف"
+      },
+      "actions": {
+        "recordAttendance": "تسجيل حضور",
+        "approve": "اعتماد"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه...",
+      "export": {
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "messages": {
+        "approved": "تم اعتماد سجل الحضور",
+        "unapproved": "تم سحب اعتماد السجل",
+        "exported": "تم تصدير سجلات الحضور"
+      },
+      "errors": {
+        "actionFailed": "تعذر تنفيذ الإجراء"
+      },
+      "tooltips": {
+        "revokeApproval": "سحب الاعتماد",
+        "cannotApproveOwn": "لا يمكنك اعتماد سجل سجّلته بنفسك",
+        "approveRecord": "اعتماد السجل"
+      },
+      "empty": {
+        "title": "لا توجد سجلات حضور",
+        "description": "سجّل الحضور من زر «تسجيل حضور»، أو عدّل عوامل التصفية."
+      }
+    },
+    "employees": {
+      "filters": {
+        "allTypes": "كل الأنواع",
+        "allStatuses": "كل الحالات"
+      },
+      "employmentTypeLabels": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      },
+      "employmentStatusLabels": {
+        "ACTIVE": "على رأس العمل",
+        "ON_LEAVE": "في إجازة",
+        "SUSPENDED": "موقوف",
+        "TERMINATED": "منتهي الخدمة"
+      },
+      "columns": {
+        "employeeNumber": "الرقم الوظيفي",
+        "fullName": "الاسم",
+        "jobTitle": "المسمى الوظيفي",
+        "position": "الموقع",
+        "department": "القسم",
+        "employmentType": "نوع التعيين",
+        "status": "الحالة",
+        "hireDate": "تاريخ التعيين"
+      },
+      "header": {
+        "title": "الملفات الوظيفية",
+        "subtitle": "سجل موظفي المنصة وبياناتهم الوظيفية"
+      },
+      "actions": {
+        "newFile": "ملف جديد",
+        "label": "إجراءات"
+      },
+      "searchPlaceholder": "بحث بالاسم أو الرقم الوظيفي أو البريد...",
+      "export": {
+        "email": "البريد",
+        "sector": "القطاع"
+      },
+      "messages": {
+        "exported": "تم تصدير الملفات الوظيفية"
+      },
+      "tooltips": {
+        "viewProfile": "عرض الملف",
+        "timeline": "المسار الوظيفي"
+      },
+      "empty": {
+        "title": "لا توجد ملفات وظيفية",
+        "description": "لم يتم العثور على موظفين مطابقة لعوامل التصفية."
+      }
+    },
+    "performanceReview": {
+      "errors": {
+        "loadReview": "تعذر تحميل التقييم",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "reviewNotFound": "التقييم غير موجود"
+      },
+      "header": {
+        "prefix": "تقييم"
+      },
+      "actions": {
+        "back": "رجوع",
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "return": "إعادة",
+        "cancel": "إلغاء",
+        "saveScores": "حفظ الدرجات"
+      },
+      "sections": {
+        "kpiScores": "درجات المؤشرات",
+        "actions": "الإجراءات"
+      },
+      "alerts": {
+        "noKpis": "لا توجد مؤشرات في هذه الدورة — عرّف مؤشرات مجموع أوزانها 100 قبل التقييم."
+      },
+      "fields": {
+        "score": "الدرجة",
+        "strengths": "نقاط القوة",
+        "improvements": "نقاط التحسين",
+        "comments": "ملاحظات",
+        "reviewer": "المُقيِّم",
+        "approvedBy": "المعتمد",
+        "decisionTime": "وقت القرار",
+        "fromStatus": "من {status}"
+      },
+      "dialogs": {
+        "rejectTitle": "رفض التقييم",
+        "rejectReasonLabel": "سبب الرفض",
+        "returnTitle": "إعادة التقييم للتعديل",
+        "returnNoteLabel": "ملاحظة للمُقيِّم"
+      },
+      "messages": {
+        "submitted": "تم الإرسال للاعتماد",
+        "approved": "تم الاعتماد",
+        "rejected": "تم الرفض",
+        "returned": "أُعيد للتعديل",
+        "scoresSaved": "حُفظت درجات المؤشرات"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "IN_PROGRESS": "قيد التقييم",
+        "SUBMITTED": "مُقدَّم",
+        "REVIEWED": "مُقيَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض"
+      }
+    },
+    "leaveRequest": {
+      "errors": {
+        "loadRequest": "تعذر تحميل الطلب",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "requestNotFound": "الطلب غير موجود"
+      },
+      "header": {
+        "prefix": "طلب",
+        "subtitle": "{employeeName} — {days} يوم ({startDate} → {endDate})"
+      },
+      "actions": {
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "cancel": "إلغاء الطلب",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "submitted": "تم إرسال الطلب",
+        "approved": "تم اعتماد الإجازة",
+        "rejected": "تم رفض الطلب",
+        "cancelled": "تم إلغاء الطلب"
+      },
+      "alerts": {
+        "documentRequired": "هذا النوع من الإجازات يطلب مستنداً، ولا يُعتمد قبل إرفاقه.",
+        "cannotApproveOwn": "رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "سبب الرفض (مطلوب)",
+        "rejectReasonPlaceholder": "اذكر السبب الذي سيُعرض لمقدّم الطلب",
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "chips": {
+        "selfService": "خدمة ذاتية",
+        "halfDay": "نصف يوم",
+        "unpaid": "بلا راتب"
+      },
+      "fields": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "leaveType": "نوع الإجازة",
+        "duration": "المدة",
+        "durationValue": "{days} يوم ({startDate} → {endDate})",
+        "attachment": "المرفق",
+        "justification": "المبرِّر",
+        "submittedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد",
+        "decisionNotes": "ملاحظات القرار",
+        "fromStatus": "من {status}"
+      },
+      "sections": {
+        "statusLog": "سجل الحالة"
+      },
+      "empty": {
+        "noLogs": "لا توجد قيود بعد."
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "SUBMITTED": "مُقدَّم"
+      }
     }
   }
 }
