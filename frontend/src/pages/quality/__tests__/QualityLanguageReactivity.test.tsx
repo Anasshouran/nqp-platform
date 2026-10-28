@@ -5,7 +5,7 @@
  * after a language switch.
  */
 import type { ReactNode } from 'react';
-import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { describe, it, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -27,13 +27,19 @@ const foodlabApi = vi.hoisted(() => ({
   getStandardRequirements: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
   getAnalyticalMethods: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
   getRegulatoryRules: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getLabParameters: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
+  getMicroorganisms: vi.fn().mockResolvedValue({ data: { results: [], count: 0 } }),
+  getStandardsComparison: vi.fn().mockResolvedValue({ data: { data: {} } }),
   getStandardsDashboard: vi.fn().mockResolvedValue({ data: { data: {
-    total_standards: 0,
-    active_versions: 0,
-    chemical_requirements: 0,
-    micro_requirements: 0,
-    validated_methods: 0,
-    active_rules: 0
+    kpis: {
+      total_standards: 0,
+      active_versions: 0,
+      chemical_requirements: 0,
+      micro_requirements: 0,
+      validated_methods: 0,
+      active_rules: 0
+    },
+    source_counts: {}
   } } }),
   createStandard: vi.fn().mockResolvedValue({ data: { data: {} } }),
   updateStandard: vi.fn().mockResolvedValue({ data: { data: {} } }),
@@ -69,6 +75,7 @@ vi.mock('../../../components/command', () => ({
   useCommandSections: () => ({ active: 0, register: vi.fn(), scrollTo: vi.fn() }),
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const store = configureStore({ reducer: { auth: authReducer as any } });
 const wrap = (ui: ReactNode) => (
   <Provider store={store}>
