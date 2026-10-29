@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -29,7 +30,7 @@ import KpiCard from '../../components/dashboard/KpiCard';
 import StatusChip from '../../components/ui/StatusChip';
 import { getHrDashboard } from '../../api/endpoints/hr';
 import type { HrDashboard, HrLabelCount } from '../../types/hr';
-import { employmentTypeLabel, timelineEventLabel, TIMELINE_EVENT_TONES } from '../../utils/hrLabels';
+import { TIMELINE_EVENT_TONES } from '../../utils/hrLabels';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/toast';
 
@@ -38,13 +39,15 @@ const DistributionBar = ({
   rows,
   total,
   resolveLabel,
+  t,
 }: {
   rows: HrLabelCount[];
   total: number;
   resolveLabel?: (raw: string) => string;
+  t: (key: string, opts?: Record<string, string | number>) => string;
 }) => {
   if (rows.length === 0) {
-    return <Typography variant="body2" color="text.disabled">لا توجد بيانات</Typography>;
+    return <Typography variant="body2" color="text.disabled">{t('hr.hrDashboard.noData')}</Typography>;
   }
   const max = Math.max(...rows.map((r) => r.value), 1);
   return (
@@ -76,6 +79,7 @@ const DistributionBar = ({
 
 const HrDashboardPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [data, setData] = useState<HrDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,12 +93,12 @@ const HrDashboardPage = () => {
       setData(res.data.data);
       setError(null);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر تحميل لوحة الموارد البشرية'));
+      setError(extractErrorMessage(err, t('hr.hrDashboard.errors.loadDashboard')));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -109,21 +113,21 @@ const HrDashboardPage = () => {
   }
 
   if (error || !data) {
-    return <ErrorState message={error ?? 'تعذر تحميل البيانات'} onRetry={() => load()} />;
+    return <ErrorState message={error ?? t('hr.hrDashboard.errors.loadData')} onRetry={() => load()} />;
   }
 
   return (
     <Box>
       <PageHeader
-        title="لوحة الموارد البشرية"
+        title={t('hr.hrDashboard.pageHeader.title')}
         subtitle={
           data.is_national
-            ? 'أرقام وطنية عبر كامل المنصة'
-            : 'الأرقام محصورة بنطاق صلاحياتك'
+            ? t('hr.hrDashboard.pageHeader.subtitleNational')
+            : t('hr.hrDashboard.pageHeader.subtitleScoped')
         }
         action={
           <Stack direction="row" spacing={1}>
-            <Tooltip title="تحديث">
+            <Tooltip title={t('hr.hrDashboard.tooltip.refresh')}>
               <Box component="span" sx={{ display: 'inline-flex' }}>
                 <IconButton onClick={() => load(true)} disabled={refreshing}>
                   <RefreshIcon />
@@ -131,7 +135,7 @@ const HrDashboardPage = () => {
               </Box>
             </Tooltip>
             <Button variant="outlined" onClick={() => navigate('/app/hr/establishments')}>
-              الوحدات
+              {t('hr.hrDashboard.button.units')}
             </Button>
           </Stack>
         }
@@ -143,37 +147,37 @@ const HrDashboardPage = () => {
         sx={{ mb: 3 }}
       >
         {data.is_national
-          ? 'صلاحيتك وطنية، لذا تعرض اللوحة أرقام كل الموظفين على مستوى المنصة.'
-          : 'هذه الأرقام تخص نطاقك فقط. الموظفون خارج نطاقك غير محسوبين.'}
+          ? t('hr.hrDashboard.alert.national')
+          : t('hr.hrDashboard.alert.scoped')}
       </Alert>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
             icon={<PeopleAltIcon />}
-            label="إجمالي الموظفين"
+            label={t('hr.hrDashboard.kpi.totalEmployees')}
             value={data.total_employees}
             accent="primary.main"
-            hint={data.is_national ? 'وطني' : 'نطاقك'}
+            hint={data.is_national ? t('hr.hrDashboard.kpi.hintNational') : t('hr.hrDashboard.kpi.hintScoped')}
             onClick={() => navigate('/app/hr/employees')}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
             icon={<HowToRegIcon />}
-            label="على رأس العمل"
+            label={t('hr.hrDashboard.kpi.activeEmployees')}
             value={data.active_employees}
             accent="success.main"
             onClick={() => navigate('/app/hr/employees?employment_status=ACTIVE')}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<PersonAddAlt1Icon />} label="تعيينات 30 يوم" value={data.new_hires_30d} accent="info.main" />
+          <KpiCard icon={<PersonAddAlt1Icon />} label={t('hr.hrDashboard.kpi.newHires30d')} value={data.new_hires_30d} accent="info.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
             icon={<WorkspacePremiumIcon />}
-            label="نهاية اختبار خلال 30 يوم"
+            label={t('hr.hrDashboard.kpi.probationsEnding30d')}
             value={data.probations_ending_30d}
             accent="warning.main"
           />
@@ -182,13 +186,13 @@ const HrDashboardPage = () => {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<EventBusyIcon />} label="في إجازة" value={data.on_leave} accent="warning.main" />
+          <KpiCard icon={<EventBusyIcon />} label={t('hr.hrDashboard.kpi.onLeave')} value={data.on_leave} accent="warning.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<PauseCircleOutlineIcon />} label="موقوف" value={data.suspended} accent="error.main" />
+          <KpiCard icon={<PauseCircleOutlineIcon />} label={t('hr.hrDashboard.kpi.suspended')} value={data.suspended} accent="error.main" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <KpiCard icon={<EventBusyIcon />} label="منتهي الخدمة" value={data.terminated} accent="neutral" />
+          <KpiCard icon={<EventBusyIcon />} label={t('hr.hrDashboard.kpi.terminated')} value={data.terminated} accent="neutral" />
         </Grid>
       </Grid>
 
@@ -197,13 +201,14 @@ const HrDashboardPage = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                حسب نوع التعيين
+                {t('hr.hrDashboard.sections.byEmploymentType')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <DistributionBar
                 rows={data.by_employment_type}
                 total={data.total_employees}
-                resolveLabel={employmentTypeLabel}
+                resolveLabel={(type) => t(`hr.hrDashboard.employmentType.${type}`) ?? type}
+                t={t}
               />
             </CardContent>
           </Card>
@@ -213,10 +218,10 @@ const HrDashboardPage = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                حسب القسم
+                {t('hr.hrDashboard.sections.byDepartment')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              <DistributionBar rows={data.by_department} total={data.total_employees} />
+              <DistributionBar rows={data.by_department} total={data.total_employees} t={t} />
             </CardContent>
           </Card>
         </Grid>
@@ -225,10 +230,10 @@ const HrDashboardPage = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                حسب القطاع
+                {t('hr.hrDashboard.sections.bySector')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              <DistributionBar rows={data.by_sector} total={data.total_employees} />
+              <DistributionBar rows={data.by_sector} total={data.total_employees} t={t} />
             </CardContent>
           </Card>
         </Grid>
@@ -240,7 +245,7 @@ const HrDashboardPage = () => {
                 <Stack direction="row" spacing={1} alignItems="center">
                   <TimelineIcon color="primary" />
                   <Typography variant="subtitle1" fontWeight={700}>
-                    أحدث أحداث المسار الوظيفي
+                    {t('hr.hrDashboard.sections.recentEvents')}
                   </Typography>
                 </Stack>
                 <Button
@@ -248,14 +253,14 @@ const HrDashboardPage = () => {
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => navigate('/app/hr/timeline')}
                 >
-                  عرض الكل
+                  {t('hr.hrDashboard.sections.viewAll')}
                 </Button>
               </Stack>
               <Divider sx={{ mb: 1 }} />
               {data.recent_events.length === 0 ? (
                 <EmptyState
-                  title="لا توجد أحداث"
-                  description="ستظهر الترقية والنقل والإجازات هنا فور تسجيلها."
+                  title={t('hr.hrDashboard.emptyEvents.title')}
+                  description={t('hr.hrDashboard.emptyEvents.description')}
                 />
               ) : (
                 data.recent_events.map((event) => (
@@ -272,7 +277,7 @@ const HrDashboardPage = () => {
                   >
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
                       <StatusChip
-                        label={timelineEventLabel(event.event)}
+                        label={t(`hr.hrDashboard.timelineEvent.${event.event}`) ?? event.event}
                         tone={TIMELINE_EVENT_TONES[event.event] ?? 'neutral'}
                       />
                       <Typography variant="body2" fontWeight={600}>
@@ -296,7 +301,7 @@ const HrDashboardPage = () => {
       </Grid>
 
       <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 2 }}>
-        آخر تحديث: {formatDateTime(data.generated_at)}
+        {t('hr.hrDashboard.footer.lastUpdated')}: {formatDateTime(data.generated_at)}
       </Typography>
     </Box>
   );

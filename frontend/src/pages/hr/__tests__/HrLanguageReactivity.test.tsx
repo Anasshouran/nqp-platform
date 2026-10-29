@@ -27,6 +27,10 @@ import AttendanceRecordsPage from '../AttendanceRecordsPage';
 import EmployeesPage from '../EmployeesPage';
 import PerformanceReviewDetailPage from '../PerformanceReviewDetailPage';
 import LeaveRequestDetailPage from '../LeaveRequestDetailPage';
+import HrDashboardPage from '../HrDashboardPage';
+import PerformanceCyclesPage from '../PerformanceCyclesPage';
+import TrainingDetailPage from '../TrainingDetailPage';
+import EmployeeDetailPage from '../EmployeeDetailPage';
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -35,6 +39,10 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useParams: () => ({ id: '1' }),
   };
 });
+
+vi.mock('../../../api/endpoints/organization', () => ({
+  getDepartments: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+}));
 
 vi.mock('../../../api/endpoints/hr', () => ({
   getEmployeeTimelineList: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
@@ -92,6 +100,40 @@ vi.mock('../../../api/endpoints/hr', () => ({
   rejectLeaveRequest: vi.fn().mockResolvedValue({}),
   cancelLeaveRequest: vi.fn().mockResolvedValue({}),
   submitLeaveRequest: vi.fn().mockResolvedValue({}),
+  // Round 3 pages
+  getHrDashboard: vi.fn().mockResolvedValue({ data: { data: {
+    id: '1', total_employees: 100, active_employees: 80, new_hires_30d: 5,
+    probations_ending_30d: 3, on_leave: 10, suspended: 2, terminated: 3,
+    is_national: true, generated_at: '2026-01-01T00:00:00Z',
+    by_employment_type: [], by_department: [], by_sector: [], recent_events: []
+  } } }),
+  closePerformanceCycle: vi.fn().mockResolvedValue({}),
+  openPerformanceCycle: vi.fn().mockResolvedValue({}),
+  getTrainingEnrollment: vi.fn().mockResolvedValue({ data: { data: {
+    id: '1', plan_name: 'الدورة التدريبية', plan_code: 'TRN-001',
+    employee_name: 'أحمد علي', employee_number: 'E001',
+    status: 'REQUESTED', is_self_service: false,
+    requested_date: '2026-01-01', start_date: '2026-02-01', end_date: '2026-06-01',
+    score: null, pass_score: 60, passed: null, certificate_ref: null,
+    rejection_reason: null, requested_by_name: 'أحمد علي', decided_by_name: null,
+    decided_at: null, enrollment_date: null
+  } } }),
+  submitTrainingEnrollment: vi.fn().mockResolvedValue({}),
+  approveTrainingEnrollment: vi.fn().mockResolvedValue({}),
+  rejectTrainingEnrollment: vi.fn().mockResolvedValue({}),
+  completeTrainingEnrollment: vi.fn().mockResolvedValue({}),
+  getEmployee: vi.fn().mockResolvedValue({ data: { data: {
+    id: '1', full_name: 'أحمد علي', employee_number: 'E001',
+    job_title: 'موظف', department_name: 'القسم', sector_name: 'القطاع',
+    hire_date: '2026-01-01', probation_end_date: null, manager_name: 'مدير',
+    office: 'المكتب', email: 'ahmed@nqp.gov.sd', phone: '123456789',
+    internal_phone: '100', home_address: 'العنوان', degree: 'البكالوريوس',
+    specialization: 'التخصص', employment_status: 'ACTIVE', employment_type: 'PERMANENT',
+    photo: null, emergency_contact_name: 'زوجتي', emergency_contact_relation: 'زوجة',
+    emergency_contact_phone: '987654321', timeline_count: 0, assignments: []
+  } } }),
+  getEmployeeTimeline: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  createTimelineEvent: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock('../../../hooks/useAuth', () => ({
@@ -222,5 +264,53 @@ describe('HR pages language reactivity (Round 2)', () => {
       await i18n.changeLanguage('en');
     });
     await screen.findByText(/Leave Request/);
+  });
+});
+
+describe('HR pages language reactivity (Round 3)', () => {
+  vi.setConfig({ testTimeout: 15000 });
+  afterEach(() => {
+    i18n.changeLanguage('ar');
+    vi.clearAllMocks();
+  });
+
+  it('HrDashboardPage AR→EN', async () => {
+    render(wrap(<HrDashboardPage />));
+    await screen.findByText('لوحة الموارد البشرية');
+    await i18n.changeLanguage('en');
+    await screen.findByText('HR Dashboard');
+  });
+
+  it('PerformanceCyclesPage AR→EN', async () => {
+    render(wrap(<PerformanceCyclesPage />));
+    await screen.findByText('دورات تقييم الأداء');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Performance Cycles');
+  });
+
+  it('TrainingDetailPage AR→EN', async () => {
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/app/hr/training/1']}>
+          <TrainingDetailPage />
+        </MemoryRouter>
+      </Provider>,
+    );
+    await screen.findByText(/تسجيل تدريب/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Training Registration/);
+  });
+
+  it('EmployeeDetailPage AR→EN', async () => {
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/app/hr/employees/1']}>
+          <EmployeeDetailPage />
+        </MemoryRouter>
+      </Provider>,
+    );
+    await screen.findByText('رجوع للقائمة');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Back to List');
   });
 });

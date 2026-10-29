@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -29,10 +30,7 @@ import StatusChip from '../../components/ui/StatusChip';
 import { getEmployee, getEmployeeTimeline, createTimelineEvent } from '../../api/endpoints/hr';
 import type { EmployeeDetail, EmployeeTimelineEntry, TimelineEventType } from '../../types/hr';
 import {
-  employmentStatusLabel,
   employmentStatusTone,
-  employmentTypeLabel,
-  timelineEventLabel,
   TIMELINE_EVENT_TONES,
   TIMELINE_EVENT_LABELS,
 } from '../../utils/hrLabels';
@@ -78,6 +76,7 @@ const ChangeCell = ({ from, to }: { from: string | null; to: string | null }) =>
 const EmployeeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
@@ -98,11 +97,11 @@ const EmployeeDetailPage = () => {
       const { data } = await getEmployeeTimeline(id);
       setTimeline(data.data ?? []);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تحميل المسار الوظيفي'));
+      notifyError(extractErrorMessage(err, t('hr.employeeDetail.errors.timelineLoad')));
     } finally {
       setTimelineLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,7 +114,7 @@ const EmployeeDetailPage = () => {
         if (cancelled) return;
         setEmployee(data.data);
       } catch (err) {
-        if (!cancelled) setError(extractErrorMessage(err, 'تعذر تحميل بيانات الموظف'));
+        if (!cancelled) setError(extractErrorMessage(err, t('hr.employeeDetail.errors.employeeLoad')));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -124,11 +123,11 @@ const EmployeeDetailPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (tab === 1) loadTimeline();
-  }, [tab, loadTimeline]);
+  }, [tab, loadTimeline, t]);
 
   if (loading) {
     return (
@@ -139,7 +138,7 @@ const EmployeeDetailPage = () => {
   }
 
   if (error || !employee) {
-    return <ErrorState message={error ?? 'الموظف غير موجود'} onRetry={() => navigate('/app/hr/employees')} />;
+    return <ErrorState message={error ?? t('hr.employeeDetail.errors.employeeNotFound')} onRetry={() => navigate('/app/hr/employees')} />;
   }
 
   return (
@@ -149,11 +148,11 @@ const EmployeeDetailPage = () => {
         onClick={() => navigate('/app/hr/employees')}
         sx={{ mb: 2 }}
       >
-        رجوع للقائمة
+        {t('hr.employeeDetail.button.backToList')}
       </Button>
 
       <PageHeader
-        title={employee.full_name || 'ملف وظيفي'}
+        title={employee.full_name || t('hr.employeeDetail.pageHeader.titleFallback')}
         subtitle={employee.job_title || undefined}
         action={
           <Button
@@ -161,7 +160,7 @@ const EmployeeDetailPage = () => {
             startIcon={<EditIcon />}
             onClick={() => navigate(`/app/hr/employees/${employee.id}/edit`)}
           >
-            تعديل
+            {t('hr.employeeDetail.button.edit')}
           </Button>
         }
       />
@@ -181,17 +180,17 @@ const EmployeeDetailPage = () => {
                   {employee.full_name || '—'}
                 </Typography>
                 <StatusChip
-                  label={employmentStatusLabel(employee.employment_status)}
+                  label={t(`hr.employeeDetail.employmentStatus.${employee.employment_status}`) ?? employee.employment_status}
                   tone={employmentStatusTone(employee.employment_status)}
                 />
                 <StatusChip
-                  label={employmentTypeLabel(employee.employment_type)}
+                  label={t(`hr.employeeDetail.employmentType.${employee.employment_type}`) ?? employee.employment_type}
                   tone="info"
                   showIcon={false}
                 />
               </Stack>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                الرقم الوظيفي: <Box component="span" sx={{ fontWeight: 600 }}>{employee.employee_number || '—'}</Box>
+                {t('hr.employeeDetail.label.employeeNumber')}: <Box component="span" sx={{ fontWeight: 600 }}>{employee.employee_number || '—'}</Box>
               </Typography>
               <Typography variant="body2" color="text.secondary" dir="ltr" sx={{ textAlign: 'right' }}>
                 {employee.email}
@@ -208,9 +207,9 @@ const EmployeeDetailPage = () => {
         }
         sx={{ mb: 2 }}
       >
-        <Tab label="بيانات الوظيفة" />
-        <Tab label={`المسار الوظيفي (${employee.timeline_count})`} />
-        <Tab label="المواقع" />
+        <Tab label={t('hr.employeeDetail.tabs.jobData')} />
+        <Tab label={t('hr.employeeDetail.tabs.timeline', { count: employee.timeline_count })} />
+        <Tab label={t('hr.employeeDetail.tabs.assignments')} />
       </Tabs>
 
       {tab === 0 && (
@@ -219,23 +218,23 @@ const EmployeeDetailPage = () => {
             <Card>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                  البيانات الوظيفية
+                  {t('hr.employeeDetail.sections.jobData')}
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 <Grid container spacing={1}>
-                  <Grid item xs={12} sm={6}><DetailRow label="المسمى الوظيفي" value={employee.job_title} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="الموقع" value={employee.position_name} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="القسم" value={employee.department_name} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="القطاع" value={employee.sector_name} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="تاريخ التعيين" value={employee.hire_date ? formatDate(employee.hire_date) : null} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.jobTitle')} value={employee.job_title} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.position')} value={employee.position_name} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.department')} value={employee.department_name} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.sector')} value={employee.sector_name} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.hireDate')} value={employee.hire_date ? formatDate(employee.hire_date) : null} /></Grid>
                   <Grid item xs={12} sm={6}>
                     <DetailRow
-                      label="نهاية فترة الاختبار"
+                      label={t('hr.employeeDetail.rows.probationEnd')}
                       value={employee.probation_end_date ? formatDate(employee.probation_end_date) : null}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="المدير المباشر" value={employee.manager_name} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="المكتب" value={employee.office} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.manager')} value={employee.manager_name} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.office')} value={employee.office} /></Grid>
                 </Grid>
               </CardContent>
             </Card>
@@ -245,25 +244,25 @@ const EmployeeDetailPage = () => {
             <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                  التعليم والمؤهلات
+                  {t('hr.employeeDetail.sections.education')}
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 <Grid container spacing={1}>
-                  <Grid item xs={12} sm={6}><DetailRow label="الشهادة" value={employee.degree} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="التخصص" value={employee.specialization} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.degree')} value={employee.degree} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.specialization')} value={employee.specialization} /></Grid>
                 </Grid>
               </CardContent>
             </Card>
             <Card>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                  بيانات الاتصال
+                  {t('hr.employeeDetail.sections.contact')}
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 <Grid container spacing={1}>
-                  <Grid item xs={12} sm={6}><DetailRow label="الهاتف" value={employee.phone} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="هاتف داخلي" value={employee.internal_phone} /></Grid>
-                  <Grid item xs={12} sm={12}><DetailRow label="العنوان" value={employee.home_address} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.phone')} value={employee.phone} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.internalPhone')} value={employee.internal_phone} /></Grid>
+                  <Grid item xs={12} sm={12}><DetailRow label={t('hr.employeeDetail.rows.address')} value={employee.home_address} /></Grid>
                 </Grid>
               </CardContent>
             </Card>
@@ -273,13 +272,13 @@ const EmployeeDetailPage = () => {
             <Card>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                  جهة الاتصال الطارئة
+                  {t('hr.employeeDetail.sections.emergencyContact')}
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 <Grid container spacing={1}>
-                  <Grid item xs={12} sm={6}><DetailRow label="الاسم" value={employee.emergency_contact_name} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="صلة القرابة" value={employee.emergency_contact_relation} /></Grid>
-                  <Grid item xs={12} sm={6}><DetailRow label="الهاتف" value={employee.emergency_contact_phone} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.name')} value={employee.emergency_contact_name} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.relation')} value={employee.emergency_contact_relation} /></Grid>
+                  <Grid item xs={12} sm={6}><DetailRow label={t('hr.employeeDetail.rows.phone')} value={employee.emergency_contact_phone} /></Grid>
                 </Grid>
               </CardContent>
             </Card>
@@ -310,23 +309,26 @@ const EmployeeDetailPage = () => {
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
               <AccountTreeIcon color="primary" />
               <Typography variant="subtitle1" fontWeight={700}>
-                المواقع التعاقدية
+                t('hr.employeeDetail.sections.assignments')
               </Typography>
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              تُشتق المواقع من التعيينات النشطة في الهيكل التنظيمي، وهي نفس المصدر الذي يحدد نطاق صلاحيتك.
+              {t('hr.employeeDetail.assignments.derived')}
             </Typography>
             <Divider sx={{ mb: 1 }} />
             {employee.assignments.length === 0 ? (
-              <EmptyState title="لا توجد مواقع" description="لم يُسجَّل لهذا الموظف أي تعيين نشط." />
+              <EmptyState
+                title={t('hr.employeeDetail.emptyAssignments.title')}
+                description={t('hr.employeeDetail.emptyAssignments.description')}
+              />
             ) : (
               employee.assignments.map((a) => (
                 <Box key={a.id} sx={{ py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
                     <Typography variant="body1" fontWeight={600}>
-                      {a.position_name || 'بدون مسمى'}
+                      {a.position_name || t('hr.employeeDetail.assignments.noTitle')}
                     </Typography>
-                    {a.is_primary && <StatusChip label="رئيسي" tone="primary" showIcon={false} />}
+                    {a.is_primary && <StatusChip label={t('hr.employeeDetail.assignments.primary')} tone="primary" showIcon={false} />}
                   </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {[a.sector_name, a.department_name, a.station_name, a.entry_point_name]
@@ -334,8 +336,8 @@ const EmployeeDetailPage = () => {
                       .join(' — ') || '—'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    من {a.start_date ? formatDate(a.start_date) : '—'}
-                    {a.end_date ? ` إلى ${formatDate(a.end_date)}` : ''}
+                    {t('hr.employeeDetail.assignments.from')} {a.start_date ? formatDate(a.start_date) : '—'}
+                    {a.end_date ? t('hr.employeeDetail.assignments.to') + ' ' + formatDate(a.end_date) : ''}
                   </Typography>
                 </Box>
               ))
@@ -361,6 +363,7 @@ interface TimelinePanelProps {
 const TimelinePanel = ({
   employeeId, entries, loading, expanded, onToggle, onCreated, saving, onSavingChange,
 }: TimelinePanelProps) => {
+  const { t } = useTranslation();
   const [formOpen, setFormOpen] = useState(false);
   const [event, setEvent] = useState<TimelineEventType>('HIRE');
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
@@ -390,12 +393,12 @@ const TimelinePanel = ({
         new_department: newDepartment,
         reason,
       });
-      notifySuccess('تم تسجيل الحدث في المسار الوظيفي');
+      notifySuccess(t('hr.employeeDetail.messages.eventRecorded'));
       setFormOpen(false);
       resetForm();
       onCreated();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تسجيل الحدث'));
+      notifyError(extractErrorMessage(err, t('hr.employeeDetail.errors.eventCreate')));
     } finally {
       onSavingChange(false);
     }
@@ -411,7 +414,7 @@ const TimelinePanel = ({
         sx={{ mb: 2 }}
       >
         <Typography variant="subtitle1" fontWeight={700}>
-          سجل الأحداث
+          t('hr.employeeDetail.timeline.panelTitle')
         </Typography>
         <Button
           variant="contained"
@@ -422,7 +425,7 @@ const TimelinePanel = ({
             if (formOpen) resetForm();
           }}
         >
-          {formOpen ? 'إلغاء' : 'تسجيل حدث'}
+          {formOpen ? t('hr.employeeDetail.timeline.button.cancel') : t('hr.employeeDetail.timeline.button.registerEvent')}
         </Button>
       </Stack>
 
@@ -433,13 +436,13 @@ const TimelinePanel = ({
               <TextField
                 select
                 fullWidth
-                label="نوع الحدث"
+                label={t('hr.employeeDetail.timeline.form.eventType')}
                 value={event}
                 onChange={(e) => setEvent(e.target.value as TimelineEventType)}
               >
-                {Object.entries(TIMELINE_EVENT_LABELS).map(([value, label]) => (
+                {Object.keys(TIMELINE_EVENT_LABELS).map((value) => (
                   <MenuItem key={value} value={value}>
-                    {label}
+                    {t(`hr.employeeDetail.timelineEvent.${value}`) ?? value}
                   </MenuItem>
                 ))}
               </TextField>
@@ -448,7 +451,7 @@ const TimelinePanel = ({
               <TextField
                 fullWidth
                 type="date"
-                label="تاريخ البداية"
+                label={t('hr.employeeDetail.timeline.form.startDate')}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
@@ -458,7 +461,7 @@ const TimelinePanel = ({
               <TextField
                 fullWidth
                 type="date"
-                label="تاريخ النهاية"
+                label={t('hr.employeeDetail.timeline.form.endDate')}
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
@@ -467,7 +470,7 @@ const TimelinePanel = ({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="المسمى الجديد"
+                label={t('hr.employeeDetail.timeline.form.newPosition')}
                 value={newPosition}
                 onChange={(e) => setNewPosition(e.target.value)}
               />
@@ -475,7 +478,7 @@ const TimelinePanel = ({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="القسم الجديد"
+                label={t('hr.employeeDetail.timeline.form.newDepartment')}
                 value={newDepartment}
                 onChange={(e) => setNewDepartment(e.target.value)}
               />
@@ -485,7 +488,7 @@ const TimelinePanel = ({
                 fullWidth
                 multiline
                 minRows={2}
-                label="السبب / ملاحظات"
+                label={t('hr.employeeDetail.timeline.form.reason')}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
@@ -498,7 +501,7 @@ const TimelinePanel = ({
                   disabled={saving || !startDate}
                   onClick={submit}
                 >
-                  حفظ الحدث
+                  t('hr.employeeDetail.timeline.form.save')
                 </Button>
               </Stack>
             </Grid>
@@ -512,8 +515,8 @@ const TimelinePanel = ({
         </Box>
       ) : entries.length === 0 ? (
         <EmptyState
-          title="لا يوجد مسار وظيفي مسجل"
-          description="ستظهر الترقية والنقل والإجازات هنا عند تسجيلها."
+          title={t('hr.employeeDetail.emptyTimeline.title')}
+          description={t('hr.employeeDetail.emptyTimeline.description')}
         />
       ) : (
         entries.map((entry) => (
@@ -532,7 +535,7 @@ const TimelinePanel = ({
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
                     <StatusChip
-                      label={timelineEventLabel(entry.event, entry.event_display)}
+                      label={t(`hr.employeeDetail.timelineEvent.${entry.event}`) ?? entry.event_display}
                       tone={TIMELINE_EVENT_TONES[entry.event] ?? 'neutral'}
                     />
                     <Typography variant="body2" color="text.secondary">
@@ -550,29 +553,29 @@ const TimelinePanel = ({
               <Box sx={{ py: 2, px: 1, backgroundColor: 'action.hover', borderRadius: 1 }}>
                 <Grid container spacing={1}>
                   <Grid item xs={12} sm={6}>
-                    <DetailRow label="الموقع" value={<ChangeCellFromTo from={entry.old_position} to={entry.new_position} />} />
+                    <DetailRow label={t('hr.employeeDetail.rows.position')} value={<ChangeCellFromTo from={entry.old_position} to={entry.new_position} />} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <DetailRow
-                      label="القسم"
+                      label={t('hr.employeeDetail.rows.department')}
                       value={<ChangeCellFromTo from={entry.old_department} to={entry.new_department} />}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <DetailRow
-                      label="القطاع"
+                      label={t('hr.employeeDetail.rows.sector')}
                       value={<ChangeCellFromTo from={entry.old_sector} to={entry.new_sector} />}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <DetailRow
-                      label="نقطة الدخول"
+                      label={t('hr.employeeDetail.rows.entryPoint')}
                       value={<ChangeCellFromTo from={entry.old_entry_point} to={entry.new_entry_point} />}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <DetailRow
-                      label="المدة"
+                      label={t('hr.employeeDetail.rows.duration')}
                       value={
                         entry.end_date
                           ? `${formatDate(entry.start_date)} — ${formatDate(entry.end_date)}`
@@ -581,11 +584,11 @@ const TimelinePanel = ({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <DetailRow label="سُجّل بواسطة" value={entry.created_by_name} />
+                    <DetailRow label={t('hr.employeeDetail.rows.createdBy')} value={entry.created_by_name} />
                   </Grid>
                   {entry.reason && (
                     <Grid item xs={12}>
-                      <DetailRow label="السبب" value={entry.reason} />
+                      <DetailRow label={t('hr.employeeDetail.rows.reason')} value={entry.reason} />
                     </Grid>
                   )}
                   <Grid item xs={12}>

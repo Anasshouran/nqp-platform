@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -30,7 +31,7 @@ import {
   submitTrainingEnrollment,
 } from '../../api/endpoints/hr';
 import type { TrainingEnrollment } from '../../types/hr';
-import { enrollmentStatusLabel, ENROLLMENT_STATUS_TONES } from '../../utils/hrLabels';
+import { ENROLLMENT_STATUS_TONES } from '../../utils/hrLabels';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
@@ -46,6 +47,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 const TrainingDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isHr = ['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
@@ -66,11 +68,11 @@ const TrainingDetailPage = () => {
       setEnrollment(data.data);
       setError(null);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر تحميل التسجيل'));
+      setError(extractErrorMessage(err, t('hr.trainingDetail.errors.loadEnrollment')));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -83,7 +85,7 @@ const TrainingDetailPage = () => {
       notifySuccess(ok);
       await load();
     } catch (err) {
-      notifySuccess(extractErrorMessage(err, 'تعذر تنفيذ الإجراء'));
+      notifySuccess(extractErrorMessage(err, t('hr.trainingDetail.errors.actionFailed')));
       await load();
     } finally {
       setBusy(false);
@@ -98,7 +100,7 @@ const TrainingDetailPage = () => {
     );
   }
   if (error || !enrollment) {
-    return <ErrorState message={error ?? 'التسجيل غير موجود'} />;
+    return <ErrorState message={error ?? t('hr.trainingDetail.errors.enrollmentNotFound')} />;
   }
 
   const canSubmit = ['DRAFT', 'RETURNED'].includes(enrollment.status);
@@ -108,10 +110,12 @@ const TrainingDetailPage = () => {
   return (
     <Box>
       <PageHeader
-        title={`تسجيل تدريب — ${enrollment.plan_name}`}
+        title={t('hr.trainingDetail.pageHeader.title', { plan: enrollment.plan_name })}
         subtitle={`${enrollment.employee_name} · ${enrollment.plan_code}`}
         action={
-          <Button onClick={() => navigate('/app/hr/training/enrollments')}>رجوع</Button>
+          <Button onClick={() => navigate('/app/hr/training/enrollments')}>
+            {t('hr.trainingDetail.button.back')}
+          </Button>
         }
       />
 
@@ -121,27 +125,27 @@ const TrainingDetailPage = () => {
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                 <StatusChip
-                  label={enrollmentStatusLabel(enrollment.status)}
+                  label={t(`hr.trainingDetail.status.${enrollment.status}`) ?? enrollment.status}
                   tone={ENROLLMENT_STATUS_TONES[enrollment.status] ?? 'neutral'}
                 />
                 {enrollment.is_self_service && (
                   <Typography variant="caption" color="text.secondary">
-                    تسجيل ذاتي
+                    {t('hr.trainingDetail.selfService')}
                   </Typography>
                 )}
               </Stack>
               <Divider sx={{ mb: 1 }} />
               <Grid container spacing={2}>
-                <Grid item xs={6}><Row label="الموظف" value={enrollment.employee_name} /></Grid>
-                <Grid item xs={6}><Row label="الرقم الوظيفي" value={enrollment.employee_number} /></Grid>
-                <Grid item xs={6}><Row label="الدورة" value={enrollment.plan_name} /></Grid>
-                <Grid item xs={6}><Row label="رمز الدورة" value={enrollment.plan_code} /></Grid>
+                <Grid item xs={6}><Row label={t('hr.trainingDetail.rows.employee')} value={enrollment.employee_name} /></Grid>
+                <Grid item xs={6}><Row label={t('hr.trainingDetail.rows.employeeNumber')} value={enrollment.employee_number} /></Grid>
+                <Grid item xs={6}><Row label={t('hr.trainingDetail.rows.course')} value={enrollment.plan_name} /></Grid>
+                <Grid item xs={6}><Row label={t('hr.trainingDetail.rows.courseCode')} value={enrollment.plan_code} /></Grid>
                 <Grid item xs={6}>
-                  <Row label="تاريخ الطلب" value={formatDate(enrollment.requested_date)} />
+                  <Row label={t('hr.trainingDetail.rows.requestDate')} value={formatDate(enrollment.requested_date)} />
                 </Grid>
                 <Grid item xs={6}>
                   <Row
-                    label="الفترة"
+                    label={t('hr.trainingDetail.rows.period')}
                     value={
                       enrollment.start_date || enrollment.end_date
                         ? `${formatDate(enrollment.start_date)} ← ${formatDate(enrollment.end_date)}`
@@ -149,29 +153,29 @@ const TrainingDetailPage = () => {
                     }
                   />
                 </Grid>
-                <Grid item xs={6}><Row label="الدرجة" value={enrollment.score ?? '—'} /></Grid>
+                <Grid item xs={6}><Row label={t('hr.trainingDetail.rows.score')} value={enrollment.score ?? '—'} /></Grid>
                 <Grid item xs={6}>
-                  <Row label="درجة النجاح" value={enrollment.pass_score ?? '—'} />
+                  <Row label={t('hr.trainingDetail.rows.passScore')} value={enrollment.pass_score ?? '—'} />
                 </Grid>
                 <Grid item xs={6}>
                   <Row
-                    label="النتيجة"
+                    label={t('hr.trainingDetail.rows.result')}
                     value={
                       enrollment.status === 'COMPLETED' || enrollment.status === 'FAILED'
                         ? enrollment.passed
-                          ? 'ناجح'
-                          : 'راسب'
+                          ? t('hr.trainingDetail.result.passed')
+                          : t('hr.trainingDetail.result.failed')
                         : null
                     }
                   />
                 </Grid>
                 <Grid item xs={6}>
-                  <Row label="مرجع الشهادة" value={enrollment.certificate_ref || null} />
+                  <Row label={t('hr.trainingDetail.rows.certificateRef')} value={enrollment.certificate_ref || null} />
                 </Grid>
               </Grid>
               {enrollment.rejection_reason && (
                 <Alert severity="error" sx={{ mt: 1 }}>
-                  سبب الرفض: {enrollment.rejection_reason}
+                  {t('hr.trainingDetail.alert.rejectionReason', { reason: enrollment.rejection_reason })}
                 </Alert>
               )}
             </CardContent>
@@ -182,7 +186,7 @@ const TrainingDetailPage = () => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                الإجراءات
+                {t('hr.trainingDetail.actions.section')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Stack spacing={1}>
@@ -191,9 +195,9 @@ const TrainingDetailPage = () => {
                     variant="contained"
                     startIcon={<SendIcon />}
                     disabled={busy}
-                    onClick={() => run(() => submitTrainingEnrollment(enrollment.id), 'تم الإرسال للاعتماد')}
+                    onClick={() => run(() => submitTrainingEnrollment(enrollment.id), t('hr.trainingDetail.messages.submitted'))}
                   >
-                    إرسال للاعتماد
+                    {t('hr.trainingDetail.actions.submit')}
                   </Button>
                 )}
                 {canDecide && (
@@ -203,9 +207,9 @@ const TrainingDetailPage = () => {
                       color="success"
                       startIcon={<CheckIcon />}
                       disabled={busy}
-                      onClick={() => run(() => approveTrainingEnrollment(enrollment.id), 'تم الاعتماد')}
+                      onClick={() => run(() => approveTrainingEnrollment(enrollment.id), t('hr.trainingDetail.messages.approved'))}
                     >
-                      اعتماد
+                      {t('hr.trainingDetail.actions.approve')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -214,7 +218,7 @@ const TrainingDetailPage = () => {
                       disabled={busy}
                       onClick={() => setRejecting(true)}
                     >
-                      رفض
+                      {t('hr.trainingDetail.actions.reject')}
                     </Button>
                   </Stack>
                 )}
@@ -225,38 +229,38 @@ const TrainingDetailPage = () => {
                     startIcon={<TaskAltIcon />}
                     onClick={() => setCompleting(true)}
                   >
-                    تسجيل الإتمام والدرجة
+                    {t('hr.trainingDetail.actions.complete')}
                   </Button>
                 )}
               </Stack>
 
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                سجلّ القرار
+                {t('hr.trainingDetail.decision.section')}
               </Typography>
-              <Row label="مُرسل بواسطة" value={enrollment.requested_by_name} />
-              <Row label="اعتمده" value={enrollment.decided_by_name} />
-              <Row label="وقت القرار" value={formatDateTime(enrollment.decided_at)} />
+              <Row label={t('hr.trainingDetail.rows.requestedBy')} value={enrollment.requested_by_name} />
+              <Row label={t('hr.trainingDetail.rows.decidedBy')} value={enrollment.decided_by_name} />
+              <Row label={t('hr.trainingDetail.rows.decidedAt')} value={formatDateTime(enrollment.decided_at)} />
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       <Dialog open={rejecting} onClose={() => setRejecting(false)} fullWidth maxWidth="sm">
-        <DialogTitle>رفض تسجيل التدريب</DialogTitle>
+        <DialogTitle>{t('hr.trainingDetail.dialogs.reject.title')}</DialogTitle>
         <DialogContent>
           <FormTextField
-            label="سبب الرفض"
+            label={t('hr.trainingDetail.dialogs.reject.label')}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             multiline
             minRows={3}
             required
-            helperText="سبب الرفض يظهر للموظف في صفحة التسجيل"
+            helperText={t('hr.trainingDetail.dialogs.reject.helperText')}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRejecting(false)}>إلغاء</Button>
+          <Button onClick={() => setRejecting(false)}>{t('hr.trainingDetail.dialogs.cancel')}</Button>
           <Button
             color="error"
             variant="contained"
@@ -264,26 +268,26 @@ const TrainingDetailPage = () => {
             onClick={async () => {
               await run(
                 () => rejectTrainingEnrollment(enrollment.id, reason),
-                'تم الرفض',
+                t('hr.trainingDetail.messages.rejected'),
               );
               setRejecting(false);
               setReason('');
             }}
           >
-            رفض
+            {t('hr.trainingDetail.actions.reject')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={completing} onClose={() => setCompleting(false)} fullWidth maxWidth="sm">
-        <DialogTitle>تسجيل إتمام التدريب</DialogTitle>
+        <DialogTitle>{t('hr.trainingDetail.dialogs.complete.title')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <Alert severity="info">
-              الإتمام مشتق: النجاح = الدرجة ≥ درجة النجاح في الدورة.
+              {t('hr.trainingDetail.dialogs.complete.info')}
             </Alert>
             <FormTextField
-              label="الدرجة"
+              label={t('hr.trainingDetail.dialogs.complete.labelScore')}
               type="number"
               value={score}
               onChange={(e) => setScore(e.target.value)}
@@ -291,15 +295,15 @@ const TrainingDetailPage = () => {
               inputProps={{ min: 0, max: 100, step: 0.5 }}
             />
             <FormTextField
-              label="مرجع الشهادة"
+              label={t('hr.trainingDetail.dialogs.complete.labelCertificateRef')}
               value={certificateRef}
               onChange={(e) => setCertificateRef(e.target.value)}
-              helperText="اختياري — رابط أو رقم خارجي للشهادة"
+              helperText={t('hr.trainingDetail.dialogs.complete.helperText')}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCompleting(false)}>إلغاء</Button>
+          <Button onClick={() => setCompleting(false)}>{t('hr.trainingDetail.dialogs.cancel')}</Button>
           <Button
             variant="contained"
             disabled={busy || score === ''}
@@ -307,12 +311,12 @@ const TrainingDetailPage = () => {
               await run(
                 () =>
                   completeTrainingEnrollment(enrollment.id, Number(score), certificateRef.trim()),
-                'تم تسجيل الإتمام',
+                t('hr.trainingDetail.messages.completed'),
               );
               setCompleting(false);
             }}
           >
-            تسجيل
+            {t('hr.trainingDetail.actions.complete')}
           </Button>
         </DialogActions>
       </Dialog>

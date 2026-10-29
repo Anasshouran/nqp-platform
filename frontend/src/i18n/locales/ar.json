@@ -5161,6 +5161,308 @@
         "DRAFT": "مسودة",
         "SUBMITTED": "مُقدَّم"
       }
+    },
+    "hrDashboard": {
+      "pageHeader": {
+        "title": "لوحة الموارد البشرية",
+        "subtitleNational": "أرقام وطنية عبر كامل المنصة",
+        "subtitleScoped": "الأرقام محصورة بنطاق صلاحياتك"
+      },
+      "tooltip": {
+        "refresh": "تحديث"
+      },
+      "button": {
+        "units": "الوحدات"
+      },
+      "alert": {
+        "national": "صلاحيتك وطنية، لذا تعرض اللوحة أرقام كل الموظفين على مستوى المنصة.",
+        "scoped": "هذه الأرقام تخص نطاقك فقط. الموظفون خارج نطاقك غير محسوبين."
+      },
+      "kpi": {
+        "totalEmployees": "إجمالي الموظفين",
+        "activeEmployees": "على رأس العمل",
+        "newHires30d": "تعيينات 30 يوم",
+        "probationsEnding30d": "نهاية اختبار خلال 30 يوم",
+        "onLeave": "في إجازة",
+        "suspended": "موقوف",
+        "terminated": "منتهي الخدمة",
+        "hintNational": "وطني",
+        "hintScoped": "نطاقك"
+      },
+      "noData": "لا توجد بيانات",
+      "sections": {
+        "byEmploymentType": "حسب نوع التعيين",
+        "byDepartment": "حسب القسم",
+        "bySector": "حسب القطاع",
+        "recentEvents": "أحدث أحداث المسار الوظيفي",
+        "viewAll": "عرض الكل"
+      },
+      "emptyEvents": {
+        "title": "لا توجد أحداث",
+        "description": "ستظهر الترقية والنقل والإجازات هنا فور تسجيلها."
+      },
+      "footer": {
+        "lastUpdated": "آخر تحديث"
+      },
+      "errors": {
+        "loadDashboard": "تعذر تحميل لوحة الموارد البشرية",
+        "loadData": "تعذر تحميل البيانات"
+      },
+      "employmentType": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      }
+    },
+    "performanceCycles": {
+      "pageHeader": {
+        "title": "دورات تقييم الأداء",
+        "subtitle": "الإغلاق يتطلب أن يساوي مجموع أوزان المؤشرات 100 وأن تُعتمد كل التقييمات"
+      },
+      "actions": {
+        "reviews": "التقييمات",
+        "newCycle": "دورة جديدة",
+        "kpis": "المؤشرات",
+        "open": "فتح",
+        "close": "إغلاق"
+      },
+      "actionsLabel": "إجراءات",
+      "columns": {
+        "name": "الدورة",
+        "status": "الحالة",
+        "kpiWeightTotal": "مجموع أوزان KPIs",
+        "reviewCount": "التقييمات",
+        "reviewDueDate": "موعد الاعتماد",
+        "actions": "إجراءات"
+      },
+      "messages": {
+        "opened": "فُتحت الدورة للتقييم",
+        "closed": "تم إغلاق الدورة"
+      },
+      "errors": {
+        "openCycle": "تعذر فتح الدورة",
+        "closeCycle": "تعذر إغلاق الدورة"
+      },
+      "searchPlaceholder": "بحث باسم الدورة...",
+      "filters": {
+        "status": {
+          "label": "الحالة",
+          "all": "كل الحالات"
+        },
+        "department": {
+          "label": "الإدارة",
+          "all": "كل الإدارات"
+        }
+      },
+      "emptyTitle": "لا توجد دورات تقييم",
+      "emptyDescription": "أنشئ دورة، عرّف مؤشراتها بأوزان، ثم افتحها للتقييم.",
+      "dialogs": {
+        "openTitle": "فتح دورة للتقييم: {name}",
+        "openAlert": "بعد الفتح يمكن إضافة التقييمات لها. الفتح يحتاج مؤشراً واحداً على الأقل، ومجموع أوزان المؤشرات يجب أن يبلغ 100 قبل الإغلاق.",
+        "confirmOpen": "تأكيد الفتح",
+        "closeTitle": "إغلاق: {name}",
+        "closeAlert": "الإغلاق نهائي: لن تُقبل تقييمات جديدة، ومجموع أوزان المؤشرات يجب أن يساوي 100 وجميع التقييمات معتمدة.",
+        "closeNoteLabel": "ملاحظة الإغلاق",
+        "confirmClose": "تأكيد الإغلاق",
+        "cancel": "إلغاء"
+      },
+      "status": {
+        "DRAFT": "مسودة",
+        "OPEN": "مفتوحة",
+        "CLOSED": "مغلقة",
+        "ARCHIVED": "مؤرشفة"
+      }
+    },
+    "trainingDetail": {
+      "pageHeader": {
+        "title": "تسجيل تدريب — {plan}"
+      },
+      "button": {
+        "back": "رجوع"
+      },
+      "errors": {
+        "loadEnrollment": "تعذر تحميل التسجيل",
+        "enrollmentNotFound": "التسجيل غير موجود",
+        "actionFailed": "تعذر تنفيذ الإجراء"
+      },
+      "selfService": "تسجيل ذاتي",
+      "rows": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "course": "الدورة",
+        "courseCode": "رمز الدورة",
+        "requestDate": "تاريخ الطلب",
+        "period": "الفترة",
+        "score": "الدرجة",
+        "passScore": "درجة النجاح",
+        "result": "النتيجة",
+        "certificateRef": "مرجع الشهادة",
+        "decidedBy": "اعتمده",
+        "decidedAt": "وقت القرار",
+        "requestedBy": "مُرسل بواسطة"
+      },
+      "result": {
+        "passed": "ناجح",
+        "failed": "راسب"
+      },
+      "actions": {
+        "section": "الإجراءات",
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "complete": "تسجيل الإتمام والدرجة"
+      },
+      "decision": {
+        "section": "سجلّ القرار"
+      },
+      "messages": {
+        "submitted": "تم الإرسال للاعتماد",
+        "approved": "تم الاعتماد",
+        "rejected": "تم الرفض",
+        "completed": "تم تسجيل الإتمام"
+      },
+      "alert": {
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "dialogs": {
+        "reject": {
+          "title": "رفض تسجيل التدريب",
+          "label": "سبب الرفض",
+          "helperText": "سبب الرفض يظهر للموظف في صفحة التسجيل"
+        },
+        "cancel": "إلغاء",
+        "complete": {
+          "title": "تسجيل إتمام التدريب",
+          "info": "الإتمام مشتق: النجاح = الدرجة ≥ درجة النجاح في الدورة.",
+          "labelScore": "الدرجة",
+          "labelCertificateRef": "مرجع الشهادة",
+          "helperText": "اختياري — رابط أو رقم خارجي للشهادة"
+        }
+      },
+      "status": {
+        "DRAFT": "مسودة",
+        "REQUESTED": "مطلوب",
+        "APPROVED": "معتمد",
+        "IN_PROGRESS": "جارٍ",
+        "COMPLETED": "مكتمل",
+        "FAILED": "راسب",
+        "CANCELLED": "ملغى",
+        "REJECTED": "مرفوض",
+        "RETURNED": "مُعادة"
+      }
+    },
+    "employeeDetail": {
+      "button": {
+        "backToList": "رجوع للقائمة",
+        "edit": "تعديل"
+      },
+      "pageHeader": {
+        "titleFallback": "ملف وظيفي"
+      },
+      "label": {
+        "employeeNumber": "الرقم الوظيفي"
+      },
+      "errors": {
+        "timelineLoad": "تعذر تحميل المسار الوظيفي",
+        "employeeLoad": "تعذر تحميل بيانات الموظف",
+        "employeeNotFound": "الموظف غير موجود",
+        "eventCreate": "تعذر تسجيل الحدث"
+      },
+      "messages": {
+        "eventRecorded": "تم تسجيل الحدث في المسار الوظيفي"
+      },
+      "sections": {
+        "jobData": "البيانات الوظيفية",
+        "education": "التعليم والمؤهلات",
+        "contact": "بيانات الاتصال",
+        "emergencyContact": "جهة الاتصال الطارئة",
+        "assignments": "المواقع التعاقدية"
+      },
+      "assignments": {
+        "derived": "تُشتق المواقع من التعيينات النشطة في الهيكل التنظيمي، وهي نفس المصدر الذي يحدد نطاق صلاحيتك.",
+        "noTitle": "بدون مسمى",
+        "primary": "رئيسي",
+        "from": "من",
+        "to": "إلى"
+      },
+      "emptyAssignments": {
+        "title": "لا توجد مواقع",
+        "description": "لم يُسجَّل لهذا الموظف أي تعيين نشط."
+      },
+      "emptyTimeline": {
+        "title": "لا يوجد مسار وظيفي مسجل",
+        "description": "ستظهر الترقية والنقل والإجازات هنا عند تسجيلها."
+      },
+      "tabs": {
+        "jobData": "بيانات الوظيفة",
+        "timeline": "المسار الوظيفي ({count})",
+        "assignments": "المواقع"
+      },
+      "rows": {
+        "jobTitle": "المسمى الوظيفي",
+        "position": "الموقع",
+        "department": "القسم",
+        "sector": "القطاع",
+        "hireDate": "تاريخ التعيين",
+        "probationEnd": "نهاية فترة الاختبار",
+        "manager": "المدير المباشر",
+        "office": "المكتب",
+        "degree": "الشهادة",
+        "specialization": "التخصص",
+        "phone": "الهاتف",
+        "internalPhone": "هاتف داخلي",
+        "address": "العنوان",
+        "name": "الاسم",
+        "relation": "صلة القرابة",
+        "createdBy": "سُجّل بواسطة",
+        "reason": "السبب",
+        "entryPoint": "نقطة الدخول",
+        "duration": "المدة"
+      },
+      "timeline": {
+        "panelTitle": "سجل الأحداث",
+        "button": {
+          "cancel": "إلغاء",
+          "registerEvent": "تسجيل حدث"
+        },
+        "form": {
+          "eventType": "نوع الحدث",
+          "startDate": "تاريخ البداية",
+          "endDate": "تاريخ النهاية",
+          "newPosition": "المسمى الجديد",
+          "newDepartment": "القسم الجديد",
+          "reason": "السبب / ملاحظات",
+          "save": "حفظ الحدث"
+        }
+      },
+      "employmentStatus": {
+        "ACTIVE": "على رأس العمل",
+        "ON_LEAVE": "في إجازة",
+        "SUSPENDED": "موقوف",
+        "TERMINATED": "منتهي الخدمة"
+      },
+      "employmentType": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      },
+      "timelineEvent": {
+        "HIRE": "توظيف",
+        "PROMOTION": "ترقية",
+        "TRANSFER": "نقل",
+        "DEMOTION": "خفض",
+        "LEAVE_START": "بدء إجازة",
+        "LEAVE_END": "انتهاء إجازة",
+        "SUSPENSION": "إيقاف",
+        "TERMINATION": "إنهاء خدمة",
+        "REINSTATE": "إعادة تعيين",
+        "PROBATION_END": "نهاية فترة الاختبار",
+        "CONTRACT_RENEWAL": "تجديد عقد"
+      }
     }
   }
 }
