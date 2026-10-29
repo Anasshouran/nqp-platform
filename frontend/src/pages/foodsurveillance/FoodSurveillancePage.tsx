@@ -44,29 +44,30 @@ import { fssRiskLevel, fssAlertStatus, fssAlertReason, fssNonConformityStatus, f
 import { getFoodSurveillanceDashboard } from '../../api/endpoints/foodSurveillance';
 import type { FssDashboard, FssAlert, FssNonConformity, FssRecall } from '../../api/endpoints/foodSurveillance';
 import type { DashboardWindow } from '../../api/endpoints/reports';
+import { useTranslation } from 'react-i18next';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, ChartTooltip, Legend, Filler);
 
-const WINDOWS: Array<{ key: DashboardWindow; label: string }> = [
-  { key: 'day', label: 'اليوم' },
-  { key: 'week', label: 'الأسبوع' },
-  { key: 'month', label: 'الشهر' },
-  { key: 'year', label: 'السنة' },
-  { key: 'all', label: 'الكل' },
+const WINDOWS = (t: (key: string, opts?: Record<string, string | number>) => string): Array<{ key: DashboardWindow; label: string }> => [
+  { key: 'day', label: t('food.foodSurveillance.windows.day') },
+  { key: 'week', label: t('food.foodSurveillance.windows.week') },
+  { key: 'month', label: t('food.foodSurveillance.windows.month') },
+  { key: 'year', label: t('food.foodSurveillance.windows.year') },
+  { key: 'all', label: t('food.foodSurveillance.windows.all') },
 ];
 
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <TrendingUpIcon fontSize="small" /> },
-  { id: 'alerts', label: 'الإنذارات', icon: <NotificationsActiveIcon fontSize="small" /> },
-  { id: 'nonconformity', label: 'عدم المطابقة', icon: <GppBadIcon fontSize="small" /> },
-  { id: 'recalls', label: 'السحبات', icon: <FactoryIcon fontSize="small" /> },
+const SECTIONS = (t: (key: string, opts?: Record<string, string | number>) => string) => [
+  { id: 'overview', label: t('food.foodSurveillance.sections.overview'), icon: <TrendingUpIcon fontSize="small" /> },
+  { id: 'alerts', label: t('food.foodSurveillance.sections.alerts'), icon: <NotificationsActiveIcon fontSize="small" /> },
+  { id: 'nonconformity', label: t('food.foodSurveillance.sections.nonconformity'), icon: <GppBadIcon fontSize="small" /> },
+  { id: 'recalls', label: t('food.foodSurveillance.sections.recalls'), icon: <FactoryIcon fontSize="small" /> },
 ] as const;
 
-const LEVELS: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-  LEVEL_0: { label: 'مستوى 0 — الوضع طبيعي', tone: 'success' },
-  LEVEL_1: { label: 'مستوى 1 — مراقبة معززة', tone: 'success' },
-  LEVEL_2: { label: 'مستوى 2 — إنذار مبكر', tone: 'warning' },
-  LEVEL_3: { label: 'مستوى 3 — استجابة شاملة', tone: 'error' },
+const LEVELS: Record<string, { tone: 'success' | 'warning' | 'error' }> = {
+  LEVEL_0: { tone: 'success' },
+  LEVEL_1: { tone: 'success' },
+  LEVEL_2: { tone: 'warning' },
+  LEVEL_3: { tone: 'error' },
 };
 
 const lineOptions = {
@@ -95,7 +96,7 @@ const riskTone = (score: number): 'success' | 'warning' | 'error' => (score >= 6
 
 const scoreColor = (score: number): string => (score >= 60 ? '#c63a3a' : score >= 30 ? '#b98a2e' : '#0c7f6a');
 
-const RiskItem = ({ item }: { item: { name: string; count: number; rejected: number; score: number } }) => (
+const RiskItem = ({ item, t }: { item: { name: string; count: number; rejected: number; score: number }; t: (key: string, opts?: Record<string, string | number>) => string }) => (
   <Stack spacing={0.5}>
     <Stack direction="row" justifyContent="space-between" alignItems="center">
       <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.name}</Typography>
@@ -105,19 +106,20 @@ const RiskItem = ({ item }: { item: { name: string; count: number; rejected: num
       <Box sx={{ width: `${item.score}%`, height: '100%', bgcolor: scoreColor(item.score), borderRadius: 1.5 }} />
     </Box>
     <Typography variant="caption" color="text.secondary">
-      {item.rejected} مرفوضة من {item.count} شحنة
+      {t('food.foodSurveillance.riskItem.rejectedFrom', { rejected: item.rejected, count: item.count })}
     </Typography>
   </Stack>
 );
 
 const FoodSurveillancePage = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [window, setWindow] = useState<DashboardWindow>('month');
   const [data, setData] = useState<FssDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [loading]);
+  const { active, register, scrollTo } = useCommandSections(SECTIONS(t) as unknown as CommandSectionDef[], [loading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,7 +132,7 @@ const FoodSurveillancePage = () => {
         setPage(1);
       })
       .catch(() => {
-        if (!cancelled) setError('تعذر تحميل لوحة الترصد الغذائي');
+        if (!cancelled) setError(t('food.foodSurveillance.errors.loadFailed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -141,37 +143,38 @@ const FoodSurveillancePage = () => {
   }, [window]);
 
   const kpis = [
-    { icon: <LocalShippingIcon />, value: data?.kpis.shipments ?? 0, label: 'الشحنات', accent: 'info.main', trend: { label: `${data?.kpis.imports ?? 0} وارد · ${data?.kpis.exports ?? 0} صادر`, positive: true } },
-    { icon: <ScienceIcon />, value: data?.kpis.samples ?? 0, label: 'العينات', accent: 'primary.main' },
-    { icon: <GppBadIcon />, value: data?.kpis.nonconforming ?? 0, label: 'غير المطابقة', accent: 'error.main', trend: { label: `${data?.kpis.rejected ?? 0} مرفوضة`, positive: false } },
-    { icon: <NotificationsActiveIcon />, value: data?.kpis.alerts ?? 0, label: 'إنذارات نشطة', accent: 'warning.main' },
-    { icon: <FactoryIcon />, value: data?.kpis.recalls_active ?? 0, label: 'سحبات نشطة', accent: 'error.main' },
-    { icon: <GppBadIcon />, value: data?.kpis.non_conformities_open ?? 0, label: 'عدم مطابقة مفتوح', accent: 'warning.main' },
+    { icon: <LocalShippingIcon />, value: data?.kpis.shipments ?? 0, label: t('food.foodSurveillance.kpis.shipments'), accent: 'info.main', trend: { label: t('food.foodSurveillance.kpis.shipmentsTrend', { imports: data?.kpis.imports ?? 0, exports: data?.kpis.exports ?? 0 }), positive: true } },
+    { icon: <ScienceIcon />, value: data?.kpis.samples ?? 0, label: t('food.foodSurveillance.kpis.samples'), accent: 'primary.main' },
+    { icon: <GppBadIcon />, value: data?.kpis.nonconforming ?? 0, label: t('food.foodSurveillance.kpis.nonconforming'), accent: 'error.main', trend: { label: t('food.foodSurveillance.kpis.rejectedTrend', { rejected: data?.kpis.rejected ?? 0 }), positive: false } },
+    { icon: <NotificationsActiveIcon />, value: data?.kpis.alerts ?? 0, label: t('food.foodSurveillance.kpis.alerts'), accent: 'warning.main' },
+    { icon: <FactoryIcon />, value: data?.kpis.recalls_active ?? 0, label: t('food.foodSurveillance.kpis.recalls'), accent: 'error.main' },
+    { icon: <GppBadIcon />, value: data?.kpis.non_conformities_open ?? 0, label: t('food.foodSurveillance.kpis.openNonConformities'), accent: 'warning.main' },
   ];
 
-  const levelMeta = LEVELS[data?.response_level ?? 'LEVEL_0'];
+  const levelTone = LEVELS[data?.response_level ?? 'LEVEL_0'].tone;
+  const levelLabel = t(`food.foodSurveillance.levels.${data?.response_level ?? 'LEVEL_0'}`);
   const nonConformingPct = data && data.kpis.samples > 0 ? Math.round((data.kpis.nonconforming / data.kpis.samples) * 100) : 0;
 
   return (
     <Box>
       <DashboardHero
         eyebrow="Food Surveillance System"
-        title="الترصد الغذائي"
-        subtitle="التحليل المبكر لمخاطر الغذاء والاتجاهات والإنذار"
+        title={t('food.foodSurveillance.pageHeader.title')}
+        subtitle={t('food.foodSurveillance.pageHeader.subtitle')}
         gradient="emerald"
         avatarLabel="ا"
         action={
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip label={levelMeta.label} color={levelMeta.tone === 'error' ? 'error' : levelMeta.tone === 'warning' ? 'warning' : 'success'} sx={{ fontWeight: 700, px: 1 }} />
+            <Chip label={levelLabel} color={levelTone === 'error' ? 'error' : levelTone === 'warning' ? 'warning' : 'success'} sx={{ fontWeight: 700, px: 1 }} />
             <TextField
               select
               size="small"
               value={window}
               onChange={(e) => setWindow(e.target.value as DashboardWindow)}
               sx={{ minWidth: 130, bgcolor: 'background.paper' }}
-              inputProps={{ 'aria-label': 'الفترة' }}
+              inputProps={{ 'aria-label': t('food.foodSurveillance.periodLabel') }}
             >
-              {WINDOWS.map((w) => (
+              {WINDOWS(t).map((w) => (
                 <MenuItem key={w.key} value={w.key}>
                   {w.label}
                 </MenuItem>
@@ -179,7 +182,12 @@ const FoodSurveillancePage = () => {
             </TextField>
             <ExportButton
               filename="food-surveillance"
-              headers={['المنتج', 'الشحنات', 'المرفوضة', 'درجة المخاطر']}
+              headers={[
+                t('food.foodSurveillance.export.headers.product'),
+                t('food.foodSurveillance.export.headers.shipments'),
+                t('food.foodSurveillance.export.headers.rejected'),
+                t('food.foodSurveillance.export.headers.riskScore'),
+              ]}
               rows={(data?.risk.products ?? []).map((p) => [p.name, p.count, p.rejected, p.score])}
               disabled={loading}
             />
@@ -189,7 +197,7 @@ const FoodSurveillancePage = () => {
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('food.foodSurveillance.status.live')}
           </Box>,
         ]}
       />
@@ -203,25 +211,25 @@ const FoodSurveillancePage = () => {
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={SECTIONS(t) as unknown as CommandSectionDef[]}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام الترصد"
+            label={t('food.foodSurveillance.sections.title')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
           {/*نظرة عامة*/}
           <Box component="section" ref={register('overview')} data-section="overview" sx={{ scrollMarginTop: '80px' }}>
             {!loading && data && (
-              <SectionCard title="قراءة تحليلية" subtitle={`نسبة العينات غير المطابقة ${nonConformingPct}%`} sx={{ mb: 3 }}>
+              <SectionCard title={t('food.foodSurveillance.sections.overview.title')} subtitle={t('food.foodSurveillance.sections.overview.subtitle', { pct: nonConformingPct })} sx={{ mb: 3 }}>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  <Chip label={`${data.kpis.shipments} شحنة`} size="small" variant="outlined" color="primary" />
-                  <Chip label={`${data.kpis.samples} عينة`} size="small" variant="outlined" color="primary" />
-                  <Chip label={`${data.kpis.imports} وارد`} size="small" variant="outlined" />
-                  <Chip label={`${data.kpis.exports} صادر`} size="small" variant="outlined" />
-                  <Chip label={`${data.kpis.released} مفرج عنها`} size="small" variant="outlined" color="success" />
-                  <Chip label={`${data.kpis.rejected} مرفوضة`} size="small" variant="outlined" color="error" />
+                  <Chip label={t('food.foodSurveillance.chips.shipments', { count: data.kpis.shipments })} size="small" variant="outlined" color="primary" />
+                  <Chip label={t('food.foodSurveillance.chips.samples', { count: data.kpis.samples })} size="small" variant="outlined" color="primary" />
+                  <Chip label={t('food.foodSurveillance.chips.imports', { count: data.kpis.imports })} size="small" variant="outlined" />
+                  <Chip label={t('food.foodSurveillance.chips.exports', { count: data.kpis.exports })} size="small" variant="outlined" />
+                  <Chip label={t('food.foodSurveillance.chips.released', { count: data.kpis.released })} size="small" variant="outlined" color="success" />
+                  <Chip label={t('food.foodSurveillance.chips.rejected', { count: data.kpis.rejected })} size="small" variant="outlined" color="error" />
                 </Stack>
               </SectionCard>
             )}
@@ -239,10 +247,10 @@ const FoodSurveillancePage = () => {
                 <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                   <CardContent sx={{ p: 3 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>العينات غير المطابقة</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('food.foodSurveillance.charts.nonConformingTitle')}</Typography>
                       <TrendingUpIcon color="primary" />
                     </Stack>
-                    <Typography variant="caption" color="text.secondary">الاتجاه الزمني خلال الفترة المحددة</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('food.foodSurveillance.charts.nonConformingSubtitle')}</Typography>
                     <Box sx={{ height: 260, mt: 2 }}>
                       {loading ? (
                         <Skeleton variant="rounded" height={260} />
@@ -252,7 +260,7 @@ const FoodSurveillancePage = () => {
                             labels: (data?.trend ?? []).map((t) => t.date),
                             datasets: [
                               {
-                                label: 'عينات غير مطابقة',
+                                label: t('food.foodSurveillance.charts.nonConformingDataset'),
                                 data: (data?.trend ?? []).map((t) => t.count),
                                 borderColor: 'error.main',
                                 backgroundColor: 'rgba(198,58,58,0.12)',
@@ -272,18 +280,24 @@ const FoodSurveillancePage = () => {
               <Grid item xs={12} lg={5}>
                 <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>توزيع حالات عدم المطابقة</Typography>
-                    <Typography variant="caption" color="text.secondary">حسب مرحلة المعالجة</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{t('food.foodSurveillance.charts.ncDistributionTitle')}</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('food.foodSurveillance.charts.ncDistributionSubtitle')}</Typography>
                     <Box sx={{ height: 250, mt: 2 }}>
                       {loading ? (
                         <Skeleton variant="rounded" height={250} />
                       ) : (
                         <Bar
                           data={{
-                            labels: ['مفتوحة', 'قيد التحقيق', 'إجراء تصحيحي', 'تم الحل', 'مغلقة'],
+                            labels: [
+                              t('food.foodSurveillance.charts.ncStatus.open'),
+                              t('food.foodSurveillance.charts.ncStatus.underInvestigation'),
+                              t('food.foodSurveillance.charts.ncStatus.correctiveAction'),
+                              t('food.foodSurveillance.charts.ncStatus.resolved'),
+                              t('food.foodSurveillance.charts.ncStatus.closed'),
+                            ],
                             datasets: [
                               {
-                                label: 'الحالات',
+                                label: t('food.foodSurveillance.charts.ncStatusDataset'),
                                 data: [
                                   data?.nc_distribution.open ?? 0,
                                   data?.nc_distribution.under_investigation ?? 0,
@@ -307,30 +321,30 @@ const FoodSurveillancePage = () => {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6} lg={3}>
-                <SectionCard title="🌍 الدول عالية الخطورة" subtitle="محرك المخاطر حسب بلد المنشأ">
+                <SectionCard title={t('food.foodSurveillance.sections.highRiskCountries.title')} subtitle={t('food.foodSurveillance.sections.highRiskCountries.subtitle')}>
                   <Stack spacing={1.75}>
-                    {(data?.risk.countries ?? []).length === 0 ? <Typography color="text.secondary">لا توجد بيانات</Typography> : data?.risk.countries.map((c) => <RiskItem key={c.name} item={c} />)}
+                    {(data?.risk.countries ?? []).length === 0 ? <Typography color="text.secondary">{t('food.foodSurveillance.noData.countries')}</Typography> : data?.risk.countries.map((c) => <RiskItem key={c.name} item={c} t={t} />)}
                   </Stack>
                 </SectionCard>
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
-                <SectionCard title="🏭 الموردون عاليو الخطورة" subtitle="سجل الرفض السابق">
+                <SectionCard title={t('food.foodSurveillance.sections.highRiskSuppliers.title')} subtitle={t('food.foodSurveillance.sections.highRiskSuppliers.subtitle')}>
                   <Stack spacing={1.75}>
-                    {(data?.risk.suppliers ?? []).length === 0 ? <Typography color="text.secondary">لا توجد بيانات</Typography> : data?.risk.suppliers.map((c) => <RiskItem key={c.name} item={c} />)}
+                    {(data?.risk.suppliers ?? []).length === 0 ? <Typography color="text.secondary">{t('food.foodSurveillance.noData.suppliers')}</Typography> : data?.risk.suppliers.map((c) => <RiskItem key={c.name} item={c} t={t} />)}
                   </Stack>
                 </SectionCard>
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
-                <SectionCard title="🍎 المنتجات عالية الخطورة" subtitle="نسبة الرفض للشحنات">
+                <SectionCard title={t('food.foodSurveillance.sections.highRiskProducts.title')} subtitle={t('food.foodSurveillance.sections.highRiskProducts.subtitle')}>
                   <Stack spacing={1.75}>
-                    {(data?.risk.products ?? []).length === 0 ? <Typography color="text.secondary">لا توجد بيانات</Typography> : data?.risk.products.map((c) => <RiskItem key={c.name} item={c} />)}
+                    {(data?.risk.products ?? []).length === 0 ? <Typography color="text.secondary">{t('food.foodSurveillance.noData.products')}</Typography> : data?.risk.products.map((c) => <RiskItem key={c.name} item={c} t={t} />)}
                   </Stack>
                 </SectionCard>
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
-                <SectionCard title="🧪 ترصد المختبر" subtitle="أكثر المعاملات مخالفة">
+                <SectionCard title={t('food.foodSurveillance.sections.labSurveillance.title')} subtitle={t('food.foodSurveillance.sections.labSurveillance.subtitle')}>
                   <Stack spacing={1.25}>
-                    {(data?.lab_top ?? []).length === 0 ? <Typography color="text.secondary">لا توجد نتائج</Typography> : data?.lab_top.map((p) => (
+                    {(data?.lab_top ?? []).length === 0 ? <Typography color="text.secondary">{t('food.foodSurveillance.noData.labTop')}</Typography> : data?.lab_top.map((p) => (
                       <Stack key={p.code} direction="row" alignItems="center" spacing={1.5}>
                         <Box sx={{ width: 34, height: 34, borderRadius: 2, display: 'grid', placeItems: 'center', color: 'error.main', bgcolor: 'error.light', flexShrink: 0 }}>
                           <ScienceIcon fontSize="small" />
@@ -352,12 +366,12 @@ const FoodSurveillancePage = () => {
           <Box component="section" ref={register('alerts')} data-section="alerts" sx={{ scrollMarginTop: '80px' }}>
             <DataTable<FssAlert>
               columns={[
-                { key: 'alert_number', label: 'الرقم', render: (a) => <Typography sx={{ fontWeight: 700 }}>{a.alert_number}</Typography> },
-                { key: 'title', label: 'العنوان', render: (a) => <Typography sx={{ maxWidth: 300 }}>{a.title}</Typography> },
-                { key: 'reason', label: 'السبب', render: (a) => { const m = fssAlertReason[a.reason]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.reason; }, hideOnMobile: true },
-                { key: 'risk_level', label: 'المخاطر', render: (a) => { const m = fssRiskLevel[a.risk_level]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.risk_level; } },
-                { key: 'status', label: 'الحالة', render: (a) => { const m = fssAlertStatus[a.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : <StatusChip label={a.status} tone="neutral" />; } },
-                { key: 'raised_at', label: 'وقت الإنشاء', render: (a) => formatDateTime(a.raised_at), hideOnMobile: true },
+                { key: 'alert_number', label: t('food.foodSurveillance.tables.alerts.columns.number'), render: (a) => <Typography sx={{ fontWeight: 700 }}>{a.alert_number}</Typography> },
+                { key: 'title', label: t('food.foodSurveillance.tables.alerts.columns.title'), render: (a) => <Typography sx={{ maxWidth: 300 }}>{a.title}</Typography> },
+                { key: 'reason', label: t('food.foodSurveillance.tables.alerts.columns.reason'), render: (a) => { const m = fssAlertReason[a.reason]; return m ? <StatusChip label={t(`food.foodSurveillance.alertReasons.${a.reason}`) ?? a.reason} tone={m.tone} /> : a.reason; }, hideOnMobile: true },
+                { key: 'risk_level', label: t('food.foodSurveillance.tables.alerts.columns.risk'), render: (a) => { const m = fssRiskLevel[a.risk_level]; return m ? <StatusChip label={t(`food.foodSurveillance.riskLevels.${a.risk_level}`) ?? a.risk_level} tone={m.tone} /> : a.risk_level; } },
+                { key: 'status', label: t('food.foodSurveillance.tables.alerts.columns.status'), render: (a) => { const m = fssAlertStatus[a.status]; return m ? <StatusChip label={t(`food.foodSurveillance.alertStatuses.${a.status}`) ?? a.status} tone={m.tone} /> : <StatusChip label={a.status} tone="neutral" />; } },
+                { key: 'raised_at', label: t('food.foodSurveillance.tables.alerts.columns.raisedAt'), render: (a) => formatDateTime(a.raised_at), hideOnMobile: true },
               ]}
               rows={data?.alerts ?? []}
               rowKey={(a) => a.id}
@@ -365,10 +379,10 @@ const FoodSurveillancePage = () => {
               page={page}
               rowsPerPage={10}
               onPageChange={setPage}
-              title="الإنذارات الغذائية"
-              subtitle="إنذارات الإنذار المبكر للسلامة الغذائية"
-              emptyTitle="لا توجد إنذارات"
-              emptyDescription="تُنشأ الإنذارات عند كشف اتجاهات أو تكرار عدم مطابقة"
+              title={t('food.foodSurveillance.tables.alerts.title')}
+              subtitle={t('food.foodSurveillance.tables.alerts.subtitle')}
+              emptyTitle={t('food.foodSurveillance.tables.alerts.emptyTitle')}
+              emptyDescription={t('food.foodSurveillance.tables.alerts.emptyDescription')}
             />
           </Box>
 
@@ -376,12 +390,12 @@ const FoodSurveillancePage = () => {
           <Box component="section" ref={register('nonconformity')} data-section="nonconformity" sx={{ scrollMarginTop: '80px' }}>
             <DataTable<FssNonConformity>
               columns={[
-                { key: 'nc_number', label: 'الرقم', render: (n) => <Typography sx={{ fontWeight: 700 }}>{n.nc_number}</Typography> },
-                { key: 'product', label: 'المنتج', render: (n) => n.product || '—' },
-                { key: 'origin_country', label: 'بلد المنشأ', render: (n) => n.origin_country || '—', hideOnMobile: true },
-                { key: 'risk_level', label: 'المخاطر', render: (n) => { const m = fssRiskLevel[n.risk_level]; return m ? <StatusChip label={m.label} tone={m.tone} /> : n.risk_level; } },
-                { key: 'status', label: 'الحالة', render: (n) => { const m = fssNonConformityStatus[n.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : <StatusChip label={n.status} tone="neutral" />; } },
-                { key: 'reported_at', label: 'وقت البلاغ', render: (n) => formatDateTime(n.reported_at), hideOnMobile: true },
+                { key: 'nc_number', label: t('food.foodSurveillance.tables.nonconformity.columns.number'), render: (n) => <Typography sx={{ fontWeight: 700 }}>{n.nc_number}</Typography> },
+                { key: 'product', label: t('food.foodSurveillance.tables.nonconformity.columns.product'), render: (n) => n.product || '—' },
+                { key: 'origin_country', label: t('food.foodSurveillance.tables.nonconformity.columns.origin'), render: (n) => n.origin_country || '—', hideOnMobile: true },
+                { key: 'risk_level', label: t('food.foodSurveillance.tables.nonconformity.columns.risk'), render: (n) => { const m = fssRiskLevel[n.risk_level]; return m ? <StatusChip label={t(`food.foodSurveillance.riskLevels.${n.risk_level}`) ?? n.risk_level} tone={m.tone} /> : n.risk_level; } },
+                { key: 'status', label: t('food.foodSurveillance.tables.nonconformity.columns.status'), render: (n) => { const m = fssNonConformityStatus[n.status]; return m ? <StatusChip label={t(`food.foodSurveillance.ncStatuses.${n.status}`) ?? n.status} tone={m.tone} /> : <StatusChip label={n.status} tone="neutral" />; } },
+                { key: 'reported_at', label: t('food.foodSurveillance.tables.nonconformity.columns.reportedAt'), render: (n) => formatDateTime(n.reported_at), hideOnMobile: true },
               ]}
               rows={data?.non_conformities ?? []}
               rowKey={(n) => n.id}
@@ -389,10 +403,10 @@ const FoodSurveillancePage = () => {
               page={page}
               rowsPerPage={10}
               onPageChange={setPage}
-              title="حالات عدم المطابقة"
-              subtitle="دورة المعالجة من الفتح حتى الإغلاق"
-              emptyTitle="لا توجد حالات"
-              emptyDescription="لا توجد حالات عدم مطابقة مسجلة"
+              title={t('food.foodSurveillance.tables.nonconformity.title')}
+              subtitle={t('food.foodSurveillance.tables.nonconformity.subtitle')}
+              emptyTitle={t('food.foodSurveillance.tables.nonconformity.emptyTitle')}
+              emptyDescription={t('food.foodSurveillance.tables.nonconformity.emptyDescription')}
             />
           </Box>
 
@@ -400,12 +414,12 @@ const FoodSurveillancePage = () => {
           <Box component="section" ref={register('recalls')} data-section="recalls" sx={{ scrollMarginTop: '80px' }}>
             <DataTable<FssRecall>
               columns={[
-                { key: 'recall_number', label: 'الرقم', render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.recall_number}</Typography> },
-                { key: 'product', label: 'المنتج', render: (r) => r.product },
-                { key: 'recall_type', label: 'النوع', render: (r) => { const m = fssRecallType[r.recall_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : r.recall_type; } },
-                { key: 'risk_level', label: 'المخاطر', render: (r) => { const m = fssRiskLevel[r.risk_level]; return m ? <StatusChip label={m.label} tone={m.tone} /> : r.risk_level; } },
-                { key: 'status', label: 'الحالة', render: (r) => { const m = fssRecallStatus[r.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : <StatusChip label={r.status} tone="neutral" />; } },
-                { key: 'decided_at', label: 'القرار', render: (r) => formatDateTime(r.decided_at), hideOnMobile: true },
+                { key: 'recall_number', label: t('food.foodSurveillance.tables.recalls.columns.number'), render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.recall_number}</Typography> },
+                { key: 'product', label: t('food.foodSurveillance.tables.recalls.columns.product'), render: (r) => r.product },
+                { key: 'recall_type', label: t('food.foodSurveillance.tables.recalls.columns.type'), render: (r) => { const m = fssRecallType[r.recall_type]; return m ? <StatusChip label={t(`food.foodSurveillance.recallTypes.${r.recall_type}`) ?? r.recall_type} tone={m.tone} /> : r.recall_type; } },
+                { key: 'risk_level', label: t('food.foodSurveillance.tables.recalls.columns.risk'), render: (r) => { const m = fssRiskLevel[r.risk_level]; return m ? <StatusChip label={t(`food.foodSurveillance.riskLevels.${r.risk_level}`) ?? r.risk_level} tone={m.tone} /> : r.risk_level; } },
+                { key: 'status', label: t('food.foodSurveillance.tables.recalls.columns.status'), render: (r) => { const m = fssRecallStatus[r.status]; return m ? <StatusChip label={t(`food.foodSurveillance.recallStatuses.${r.status}`) ?? r.status} tone={m.tone} /> : <StatusChip label={r.status} tone="neutral" />; } },
+                { key: 'decided_at', label: t('food.foodSurveillance.tables.recalls.columns.decidedAt'), render: (r) => formatDateTime(r.decided_at), hideOnMobile: true },
               ]}
               rows={data?.recalls ?? []}
               rowKey={(r) => r.id}
@@ -413,10 +427,10 @@ const FoodSurveillancePage = () => {
               page={page}
               rowsPerPage={10}
               onPageChange={setPage}
-              title="سحب المنتجات الغذائية"
-              subtitle="عمليات الاستدعاء والانسحاب"
-              emptyTitle="لا توجد سحبات"
-              emptyDescription="لا توجد عمليات سحب نشطة"
+              title={t('food.foodSurveillance.tables.recalls.title')}
+              subtitle={t('food.foodSurveillance.tables.recalls.subtitle')}
+              emptyTitle={t('food.foodSurveillance.tables.recalls.emptyTitle')}
+              emptyDescription={t('food.foodSurveillance.tables.recalls.emptyDescription')}
             />
           </Box>
         </Grid>

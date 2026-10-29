@@ -34,31 +34,33 @@ import type {
 import { formatDateTime } from '../../utils/formatters';
 import { notifyError, notifySuccess } from '../../utils/toast';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
-const TX_STATUS: Record<string, { label: string; tone: 'success' | 'warning' | 'error' | 'info' | 'neutral' }> = {
-  OPEN: { label: 'مفتوحة', tone: 'info' },
-  IN_PROGRESS: { label: 'قيد المعالجة', tone: 'warning' },
-  CLOSED: { label: 'مغلقة', tone: 'success' },
+const TX_STATUS: Record<string, { tone: 'success' | 'warning' | 'error' | 'info' | 'neutral' }> = {
+  OPEN: { tone: 'info' },
+  IN_PROGRESS: { tone: 'warning' },
+  CLOSED: { tone: 'success' },
 };
 
-const DECISION_LABELS: Record<string, { label: string; tone: 'success' | 'error' | 'warning' }> = {
-  APPROVED: { label: 'مطابق', tone: 'success' },
-  REJECTED: { label: 'مرفوض', tone: 'error' },
-  HOLD: { label: 'موقوف', tone: 'warning' },
+const DECISION_LABELS: Record<string, { tone: 'success' | 'error' | 'warning' }> = {
+  APPROVED: { tone: 'success' },
+  REJECTED: { tone: 'error' },
+  HOLD: { tone: 'warning' },
 };
 
 const TAB_KEYS = ['dashboard', 'transactions', 'decisions', 'scope', 'audit'] as const;
 
-const tabs = [
-    { label: 'نظرة عامة' },
-    { label: 'المعاملات' },
-    { label: 'القرارات' },
-    { label: 'نطاق الصلاحيات' },
-    { label: 'السجل' },
+const tabs = (t: (key: string, opts?: Record<string, string | number>) => string) => [
+    { label: t('food.foodWindow.tabs.dashboard') },
+    { label: t('food.foodWindow.tabs.transactions') },
+    { label: t('food.foodWindow.tabs.decisions') },
+    { label: t('food.foodWindow.tabs.scope') },
+    { label: t('food.foodWindow.tabs.audit') },
   ];
 
 const FoodWindowPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tabIdx, setTabIdx] = useState(0);
   const tab = TAB_KEYS[tabIdx];
   const [dashboard, setDashboard] = useState<WindowDashboardItem[]>([]);
@@ -86,59 +88,59 @@ const FoodWindowPage = () => {
   const handleCloseTx = async (id: string) => {
     try {
       await closeTransaction(id);
-      notifySuccess('تم إغلاق المعاملة');
+      notifySuccess(t('food.foodWindow.messages.closed'));
       refresh();
-    } catch { notifyError('تعذّر إغلاق المعاملة'); }
+    } catch { notifyError(t('food.foodWindow.messages.closeError')); }
   };
 
   const txColumns: DataTableColumn<ShipmentTransaction>[] = [
-    { key: 'shipment_manifest', label: 'رقم البيان', render: (r) => <Typography variant="body2" sx={{ fontWeight: 600 }}>{r.shipment_manifest ?? '—'}</Typography> },
-    { key: 'window_name', label: 'النافذة', render: (r) => r.window_name ?? '—' },
-    { key: 'clerk_name', label: 'الموظّف', render: (r) => r.clerk_name ?? '—' },
+    { key: 'shipment_manifest', label: t('food.foodWindow.columns.shipmentManifest'), render: (r) => <Typography variant="body2" sx={{ fontWeight: 600 }}>{r.shipment_manifest ?? '—'}</Typography> },
+    { key: 'window_name', label: t('food.foodWindow.columns.windowName'), render: (r) => r.window_name ?? '—' },
+    { key: 'clerk_name', label: t('food.foodWindow.columns.clerkName'), render: (r) => r.clerk_name ?? '—' },
     {
       key: 'status',
-      label: 'الحالة',
+      label: t('food.foodWindow.columns.status'),
       render: (r) => {
-        const meta = TX_STATUS[r.status] ?? { label: r.status, tone: 'neutral' };
-        return <StatusChip label={meta.label} tone={meta.tone as any} />;
+        const meta = TX_STATUS[r.status] ?? { tone: 'neutral' };
+        return <StatusChip label={t(`food.foodWindow.txStatus.${r.status}`) ?? r.status} tone={meta.tone as any} />;
       },
     },
-    { key: 'assigned_at', label: 'التاريخ', render: (r) => formatDateTime(r.assigned_at) },
+    { key: 'assigned_at', label: t('food.foodWindow.columns.assignedAt'), render: (r) => formatDateTime(r.assigned_at) },
   ];
 
   const decColumns: DataTableColumn<CommodityDecision>[] = [
-    { key: 'decided_by_name', label: 'صادر القرار', render: (r) => r.decided_by_name ?? '—' },
+    { key: 'decided_by_name', label: t('food.foodWindow.columns.decidedBy'), render: (r) => r.decided_by_name ?? '—' },
     {
       key: 'decision',
-      label: 'القرار',
+      label: t('food.foodWindow.columns.decision'),
       render: (r) => {
-        const meta = DECISION_LABELS[r.decision] ?? { label: r.decision, tone: 'neutral' };
-        return <StatusChip label={meta.label} tone={meta.tone as any} />;
+        const meta = DECISION_LABELS[r.decision] ?? { tone: 'neutral' };
+        return <StatusChip label={t(`food.foodWindow.decisionLabels.${r.decision}`) ?? r.decision} tone={meta.tone as any} />;
       },
     },
-    { key: 'reason', label: 'السبب', render: (r) => r.reason || '—' },
-    { key: 'decided_at', label: 'التاريخ', render: (r) => formatDateTime(r.decided_at) },
+    { key: 'reason', label: t('food.foodWindow.columns.reason'), render: (r) => r.reason || '—' },
+    { key: 'decided_at', label: t('food.foodWindow.columns.decidedAt'), render: (r) => formatDateTime(r.decided_at) },
   ];
 
   const auditColumns: DataTableColumn<any>[] = [
-    { key: 'window_name', label: 'النافذة', render: (r) => r.window_name ?? '—' },
-    { key: 'user_name', label: 'المستخدم', render: (r) => r.user_name ?? '—' },
-    { key: 'action', label: 'الإجراء' },
-    { key: 'timestamp', label: 'الوقت', render: (r) => formatDateTime(r.timestamp) },
+    { key: 'window_name', label: t('food.foodWindow.columns.windowName'), render: (r) => r.window_name ?? '—' },
+    { key: 'user_name', label: t('food.foodWindow.columns.userName'), render: (r) => r.user_name ?? '—' },
+    { key: 'action', label: t('food.foodWindow.columns.action'), render: (r) => r.action ?? '—' },
+    { key: 'timestamp', label: t('food.foodWindow.columns.timestamp'), render: (r) => formatDateTime(r.timestamp) },
   ];
 
   return (
     <Box>
       <PageHeader
-        eyebrow="نافذة الأغذية الموحدة"
-        title="إدارة نوافذ الأغذية"
-        subtitle="نافذة موحدة لإدارة معاملات الشحنات وقرارات السلع على مستوى القطاع."
+        eyebrow={t('food.foodWindow.pageHeader.eyebrow')}
+        title={t('food.foodWindow.pageHeader.title')}
+        subtitle={t('food.foodWindow.pageHeader.subtitle')}
         action={
           <Chip label={user?.full_name ?? ''} variant="outlined" size="small" />
         }
       />
 
-      <PageTabs tabs={tabs} value={tabIdx} onChange={setTabIdx} />
+      <PageTabs tabs={tabs(t)} value={tabIdx} onChange={setTabIdx} />
 
       {/* Dashboard */}
       {tab === 'dashboard' && (
@@ -147,23 +149,23 @@ const FoodWindowPage = () => {
             {loading ? (
               [0, 1, 2].map((i) => <Grid item xs={12} sm={4} key={i}><Skeleton variant="rounded" height={110} /></Grid>)
             ) : dashboard.length === 0 ? (
-              <Grid item xs={12}><EmptyState icon={<Typography>🏢</Typography>} title="لا توجد نوافذ" description="لم يتم إنشاء أي نافذة خدمة بعد." /></Grid>
+              <Grid item xs={12}><EmptyState icon={<Typography>🏢</Typography>} title={t('food.foodWindow.emptyWindows.title')} description={t('food.foodWindow.emptyWindows.description')} /></Grid>
             ) : dashboard.map((d) => (
               <Grid item xs={12} sm={6} lg={4} key={d.id}>
                 <Card variant="outlined" sx={{ borderRadius: 3 }}>
                   <CardContent sx={{ p: 2.5 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
                       <Typography variant="body1" sx={{ fontWeight: 700 }}>{d.name_ar}</Typography>
-                      <Chip size="small" label={d.window_type === 'SINGLE' ? 'نافذة واحدة' : 'عدة نوافذ'} variant="outlined" />
+                      <Chip size="small" label={d.window_type === 'SINGLE' ? t('food.foodWindow.windowType.single') : t('food.foodWindow.windowType.multiple')} variant="outlined" />
                     </Stack>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>{d.station_name}</Typography>
                     <Divider sx={{ mb: 1.5 }} />
                     <Grid container spacing={1}>
                       {[
-                        { v: d.open_transactions, l: 'مفتوحة', color: 'info.main' },
-                        { v: d.closed_today, l: 'أغلقت اليوم', color: 'success.main' },
-                        { v: d.approved, l: 'مطابق', color: 'success.main' },
-                        { v: d.rejected, l: 'مرفوض', color: 'error.main' },
+                        { v: d.open_transactions, l: t('food.foodWindow.dashboard.open'), color: 'info.main' },
+                        { v: d.closed_today, l: t('food.foodWindow.dashboard.closedToday'), color: 'success.main' },
+                        { v: d.approved, l: t('food.foodWindow.dashboard.approved'), color: 'success.main' },
+                        { v: d.rejected, l: t('food.foodWindow.dashboard.rejected'), color: 'error.main' },
                       ].map((m) => (
                         <Grid item xs={3} key={m.l}>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: m.color }}>{m.v}</Typography>
@@ -181,7 +183,7 @@ const FoodWindowPage = () => {
 
       {/* Transactions */}
       {tab === 'transactions' && (
-        <SectionCard title="معاملات الشحنات" subtitle="آخر المعاملات المسجلة على النوافذ">
+        <SectionCard title={t('food.foodWindow.sections.transactions.title')} subtitle={t('food.foodWindow.sections.transactions.subtitle')}>
           <DataTable<ShipmentTransaction>
             columns={txColumns}
             rows={transactions}
@@ -192,7 +194,7 @@ const FoodWindowPage = () => {
             loading={loading}
             hidePagination
             actions={(r) => r.status !== 'CLOSED' ? (
-              <AppButton size="small" variant="ghost" onClick={() => handleCloseTx(r.id)}>إغلاق</AppButton>
+              <AppButton size="small" variant="ghost" onClick={() => handleCloseTx(r.id)}>{t('food.foodWindow.actions.close')}</AppButton>
             ) : null}
           />
         </SectionCard>
@@ -200,7 +202,7 @@ const FoodWindowPage = () => {
 
       {/* Decisions */}
       {tab === 'decisions' && (
-        <SectionCard title="قرارات السلع" subtitle="آخر القرارات الصادرة عن النوافذ">
+        <SectionCard title={t('food.foodWindow.sections.decisions.title')} subtitle={t('food.foodWindow.sections.decisions.subtitle')}>
           <DataTable<CommodityDecision>
             columns={decColumns}
             rows={decisions}
@@ -216,9 +218,9 @@ const FoodWindowPage = () => {
 
       {/* Scope */}
       {tab === 'scope' && (
-        <SectionCard title="نطاق الصلاحيات" subtitle="النوافذ والسلع المرتبطة بحسابك">
+        <SectionCard title={t('food.foodWindow.sections.scope.title')} subtitle={t('food.foodWindow.sections.scope.subtitle')}>
           {myScope.length === 0 ? (
-            <EmptyState icon={<Typography>🔒</Typography>} title="لا توجد صلاحيات" description="لم يتم تعيينك على أي نافذة بعد." />
+            <EmptyState icon={<Typography>🔒</Typography>} title={t('food.foodWindow.emptyScope.title')} description={t('food.foodWindow.emptyScope.description')} />
           ) : (
             <Grid container spacing={2}>
               {myScope.map((s) => (
@@ -244,7 +246,7 @@ const FoodWindowPage = () => {
 
       {/* Audit */}
       {tab === 'audit' && (
-        <SectionCard title="سجل التدقيق" subtitle="آخر الحركات على النوافذ">
+        <SectionCard title={t('food.foodWindow.sections.audit.title')} subtitle={t('food.foodWindow.sections.audit.subtitle')}>
           <DataTable
             columns={auditColumns}
             rows={auditLogs}

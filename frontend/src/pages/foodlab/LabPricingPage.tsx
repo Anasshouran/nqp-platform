@@ -1,5 +1,6 @@
 import En from '../../components/uikit/En';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -25,6 +26,7 @@ const num = (v: number | string | null | undefined) =>
 const fmt = (v: number) => v.toLocaleString('en-US');
 
 const LabPricingPage = () => {
+  const { t } = useTranslation();
   const table = useServerTable<LabParameter>({
     fetchData: (params) => getLabParameters(params),
   });
@@ -35,8 +37,11 @@ const LabPricingPage = () => {
   const filters: DataTableFilterDef[] = [
     {
       key: 'bench',
-      label: 'كل المختبرات',
-      options: Object.entries(labBench).map(([value, meta]) => ({ value, label: meta.label })),
+      label: t('food.labPricing.filters.bench'),
+      options: Object.entries(labBench).map(([value, meta]) => ({
+        value,
+        label: t(`food.labPricing.bench.${value}`) ?? meta.label,
+      })),
       value: benchFilter,
       onChange: (value: string) => {
         setBenchFilter(value);
@@ -45,10 +50,10 @@ const LabPricingPage = () => {
     },
     {
       key: 'is_active',
-      label: 'كل الحالات',
+      label: t('food.labPricing.filters.isActive'),
       options: [
-        { value: 'true', label: 'نشط' },
-        { value: 'false', label: 'موقوف' },
+        { value: 'true', label: t('food.labPricing.filters.active') },
+        { value: 'false', label: t('food.labPricing.filters.inactive') },
       ],
       value: activeFilter,
       onChange: (value: string) => {
@@ -95,7 +100,7 @@ const LabPricingPage = () => {
     if (!deleting) return;
     try {
       await deleteLabParameter(deleting.id);
-      notifySuccess('تم حذف الفحص');
+      notifySuccess(t('food.labPricing.messages.deleted'));
       setDeleting(null);
       table.refresh();
     } catch {
@@ -106,12 +111,12 @@ const LabPricingPage = () => {
   return (
     <Box sx={{ p: { xs: 2, lg: 3 } }}>
       <PageHeader
-        title="تسعير الفحوص المخبرية"
-        eyebrow="معاملات التحليل"
-        subtitle="أسعار التحاليل لكل فحص — تُخصم آلياً على فواتير العينات عند إدراج المعامل"
+        title={t('food.labPricing.pageHeader.title')}
+        eyebrow={t('food.labPricing.pageHeader.eyebrow')}
+        subtitle={t('food.labPricing.pageHeader.subtitle')}
         action={
           <AppButton startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
-            إضافة فحص
+            {t('food.labPricing.actions.add')}
           </AppButton>
         }
       />
@@ -129,7 +134,7 @@ const LabPricingPage = () => {
               }}
             >
               <Typography variant="caption" color="text.secondary">
-                إجمالي التعرفة
+                {t('food.labPricing.summary.totalTariff')}
               </Typography>
               <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{fmt(totalPrice)} ج.س</Typography>
             </Box>
@@ -150,12 +155,12 @@ const LabPricingPage = () => {
                 }}
               >
                 <Typography variant="caption" color="text.secondary">
-                  {meta.label}
+                  {t(`food.labPricing.bench.${key}`) ?? meta.label}
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="baseline">
                   <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{s.count}</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    فحص — {fmt(s.total)} ج.س
+                    {t('food.labPricing.summary.perTest', { total: fmt(s.total) })} ج.س
                   </Typography>
                 </Stack>
               </Box>
@@ -165,13 +170,13 @@ const LabPricingPage = () => {
       </Grid>
 
       <DataTable
-        title="معاملات التحليل"
-        subtitle="كتالوج الفحوص المخبرية وأسعارها حسب المختبر"
+        title={t('food.labPricing.table.title')}
+        subtitle={t('food.labPricing.table.subtitle')}
         columns={[
-          { key: 'code', label: 'الكود', width: 120, noWrap: true },
+          { key: 'code', label: t('food.labPricing.columns.code'), width: 120, noWrap: true },
           {
             key: 'name',
-            label: 'الاسم',
+            label: t('food.labPricing.columns.name'),
             render: (p) => (
               <Stack>
                 <Typography sx={{ fontWeight: 700, fontSize: 13.5 }}>{p.name_ar}</Typography>
@@ -183,24 +188,24 @@ const LabPricingPage = () => {
           },
           {
             key: 'bench',
-            label: 'المختبر',
+            label: t('food.labPricing.columns.bench'),
             render: (p) => (
-              <StatusChip label={labBench[p.bench]?.label || p.bench} tone="info" variant="outlined" />
+              <StatusChip label={t(`food.labPricing.bench.${p.bench}`) ?? labBench[p.bench]?.label ?? p.bench} tone="info" variant="outlined" />
             ),
           },
-          { key: 'unit', label: 'الوحدة', render: (p) => p.unit || '—' },
+          { key: 'unit', label: t('food.labPricing.columns.unit'), render: (p) => p.unit || '—' },
           {
             key: 'price',
-            label: 'السعر (ج.س)',
+            label: t('food.labPricing.columns.price'),
             render: (p) => <Typography sx={{ fontWeight: 700, fontSize: 14 }}>{fmt(num(p.price))}</Typography>,
           },
-          { key: 'sla', label: 'مدة الإنجاز', render: (p) => `${p.sla_min_days}–${p.sla_max_days} يوم` },
+          { key: 'sla', label: t('food.labPricing.columns.sla'), render: (p) => `${p.sla_min_days}–${p.sla_max_days} ${t('food.labPricing.columns.days')}` },
           {
             key: 'is_active',
-            label: 'الحالة',
+            label: t('food.labPricing.columns.isActive'),
             render: (p) => (
               <StatusChip
-                label={p.is_active ? 'نشط' : 'موقوف'}
+                label={t(`food.labPricing.isActive.${p.is_active}`)}
                 tone={p.is_active ? 'success' : 'neutral'}
                 variant="outlined"
               />
@@ -216,7 +221,7 @@ const LabPricingPage = () => {
         error={table.error}
         searchInput={table.searchInput}
         onSearchChange={table.setSearchInput}
-        searchPlaceholder="بحث بالكود أو الاسم..."
+        searchPlaceholder={t('food.labPricing.searchPlaceholder')}
         filters={filters}
         sortBy={table.sortBy}
         sortOrder={table.sortOrder}
@@ -226,11 +231,11 @@ const LabPricingPage = () => {
         onRefresh={table.refresh}
         actions={(p) => (
           <Stack direction="row" spacing={0.5}>
-            <Tooltip title="تعديل">
+            <Tooltip title={t('food.labPricing.actions.edit')}>
               <IconButton
                 size="small"
                 color="primary"
-                aria-label="تعديل"
+                aria-label={t('food.labPricing.actions.edit')}
                 onClick={() => {
                   setEditing(p);
                   setDialogOpen(true);
@@ -239,8 +244,8 @@ const LabPricingPage = () => {
                 <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="حذف">
-              <IconButton size="small" color="error" aria-label="حذف" onClick={() => setDeleting(p)}>
+            <Tooltip title={t('food.labPricing.actions.delete')}>
+              <IconButton size="small" color="error" aria-label={t('food.labPricing.actions.delete')} onClick={() => setDeleting(p)}>
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -260,9 +265,9 @@ const LabPricingPage = () => {
 
       <ConfirmDialog
         open={!!deleting}
-        title="حذف الفحص"
-        message={`تأكيد حذف الفحص «${deleting?.name_ar}»؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف"
+        title={t('food.labPricing.dialogs.deleteTitle')}
+        message={t('food.labPricing.dialogs.deleteMessage', { name: deleting?.name_ar })}
+        confirmLabel={t('food.labPricing.dialogs.confirm')}
         onConfirm={handleDelete}
         onClose={() => setDeleting(null)}
       />

@@ -5811,5 +5811,515 @@
         "futureDate": "لا يُسجَّل حضور لتاريخ مستقبلي"
       }
     }
+  },
+  "food": {
+    "foodWindow": {
+      "pageHeader": {
+        "title": "إدارة نوافذ الأغذية",
+        "subtitle": "نافذة موحدة لإدارة معاملات الشحنات وقرارات السلع على مستوى القطاع.",
+        "eyebrow": "نافذة الأغذية الموحدة"
+      },
+      "tabs": {
+        "dashboard": "نظرة عامة",
+        "transactions": "المعاملات",
+        "decisions": "القرارات",
+        "scope": "نطاق الصلاحيات",
+        "audit": "السجل"
+      },
+      "messages": {
+        "closed": "تم إغلاق المعاملة",
+        "closeError": "تعذّر إغلاق المعاملة"
+      },
+      "columns": {
+        "shipmentManifest": "رقم البيان",
+        "windowName": "النافذة",
+        "clerkName": "الموظف",
+        "status": "الحالة",
+        "assignedAt": "التاريخ",
+        "decidedBy": "صادر القرار",
+        "decision": "القرار",
+        "reason": "السبب",
+        "decidedAt": "التاريخ",
+        "userName": "المستخدم",
+        "action": "الإجراء",
+        "timestamp": "الوقت"
+      },
+      "txStatus": {
+        "OPEN": "مفتوحة",
+        "IN_PROGRESS": "قيد المعالجة",
+        "CLOSED": "مغلقة"
+      },
+      "decisionLabels": {
+        "APPROVED": "مطابق",
+        "REJECTED": "مرفوض",
+        "HOLD": "موقوف"
+      },
+      "emptyWindows": {
+        "title": "لا توجد نوافذ",
+        "description": "لم يتم إنشاء أي نافذة خدمة بعد."
+      },
+      "windowType": {
+        "single": "نافذة واحدة",
+        "multiple": "عدة نوافذ"
+      },
+      "dashboard": {
+        "open": "مفتوحة",
+        "closedToday": "أغلقت اليوم",
+        "approved": "مطابق",
+        "rejected": "مرفوض"
+      },
+      "sections": {
+        "transactions": {
+          "title": "معاملات الشحنات",
+          "subtitle": "آخر المعاملات المسجلة على النوافذ"
+        },
+        "decisions": {
+          "title": "قرارات السلع",
+          "subtitle": "آخر القرارات الصادرة عن النوافذ"
+        },
+        "scope": {
+          "title": "نطاق الصلاحيات",
+          "subtitle": "النوافذ والسلع المرتبطة بحسابك"
+        },
+        "audit": {
+          "title": "سجل التدقيق",
+          "subtitle": "آخر الحركات على النوافذ"
+        }
+      },
+      "emptyScope": {
+        "title": "لا توجد صلاحيات",
+        "description": "لم يتم تعيينك على أي نافذة بعد."
+      },
+      "actions": {
+        "close": "إغلاق"
+      }
+    },
+    "chemistryLab": {
+      "sections": {
+        "overview": "نظرة عامة",
+        "samples": "عينات الكيمياء",
+        "qc": "مراجعة الجودة",
+        "equipment": "الأجهزة والمعايرة",
+        "title": "أقسام اللوحة"
+      },
+      "pageHeader": {
+        "title": "قسم الكيمياء — لوحة رئيس القسم",
+        "subtitle": "إدارة عينات الكيمياء: التوزيع، المتابعة، مراجعة النتائج، QC، الأجهزة و SLA"
+      },
+      "actions": {
+        "registerDevice": "تسجيل جهاز",
+        "exportCsv": "تصدير تقرير CSV",
+        "open": "فتح",
+        "qcReview": "مراجعة QC"
+      },
+      "errors": {
+        "enterDeviceName": "اكتب اسم الجهاز",
+        "registerDeviceFailed": "تعذر تسجيل الجهاز",
+        "calibrationFailed": "تعذر تسجيل المعايرة",
+        "qcReviewFailed": "تعذر تسجيل مراجعة الجودة",
+        "noExportData": "لا توجد بيانات للتصدير"
+      },
+      "messages": {
+        "deviceRegistered": "تم تسجيل الجهاز",
+        "calibrationRecorded": "تم تسجيل معايرة {name}",
+        "qcApproved": "تم اعتماد الجودة (QC)",
+        "qcViolation": "سُجِّلت مخالفة جودة (QC)"
+      },
+      "columns": {
+        "sampleNumber": "الرقم",
+        "sampleType": "المنتج",
+        "source": "المصدر",
+        "priority": "الأولوية",
+        "status": "الحالة",
+        "analyst": "المحلل",
+        "parameter": "الفحص",
+        "result": "النتيجة",
+        "decision": "القرار",
+        "qcStatus": "مراجعة الجودة",
+        "qcReviewer": "مراجِع QC",
+        "isActive": "الحالة"
+      },
+      "priority": {
+        "HIGH": "عالي",
+        "MEDIUM": "متوسط",
+        "LOW": "منخفض"
+      },
+      "sampleStatus": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "COMPLETED": "مكتمل"
+      },
+      "testStatus": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "COMPLETED": "مكتمل"
+      },
+      "decision": {
+        "PASS": "ناجح",
+        "FAIL": "راسب"
+      },
+      "qcStatus": {
+        "PASSED": "مطابق",
+        "FAILED": "غير مطابق"
+      },
+      "slaStatus": {
+        "ON_TIME": "في الوقت المحدد",
+        "DELAYED": "متأخر",
+        "COMPLETED": "مكتمل"
+      },
+      "equipmentStatus": {
+        "OPERATIONAL": "تشغيلي",
+        "MAINTENANCE": "صيانة",
+        "CALIBRATION": "معايرة",
+        "OUT_OF_SERVICE": "خارج الخدمة"
+      },
+      "equipmentStatusLabels": {
+        "underMaintenance": "قيد الصيانة",
+        "outOfService": "خارج الخدمة"
+      },
+      "stats": {
+        "samples": "عينات الكيمياء",
+        "underTesting": "قيد التحليل",
+        "readyForApproval": "جاهزة للاعتماد",
+        "approved": "معتمدة",
+        "overdueTests": "فحوصات متأخرة SLA",
+        "qcPending": "بانتظار QC",
+        "qcFailed": "مخالفات QC",
+        "equipment": "أجهزة القسم",
+        "calibrationOverdue": "معايرة متأخرة"
+      },
+      "tables": {
+        "samplesTitle": "عينات قسم الكيمياء",
+        "qcTitle": "نتائج فحوصات الكيمياء — مراجعة الجودة"
+      },
+      "dialogs": {
+        "registerDevice": {
+          "title": "تسجيل جهاز معملي",
+          "subtitle": "إضافة جهاز إلى قسم الكيمياء لمراقبة الجاهزية والمعايرة",
+          "deviceNameAr": "اسم الجهاز (عربي)",
+          "deviceNameEn": "اسم الجهاز (إنجليزي)",
+          "modelNumber": "رقم الموديل",
+          "status": "الحالة",
+          "nextCalibration": "موعد المعايرة القادم"
+        },
+        "qc": {
+          "title": "مراجعة الجودة — QC",
+          "subtitle": "اعتماد مطابقة النتيجة للمواصفة قبل الاعتماد النهائي",
+          "submitLabel": "تسجيل المراجعة",
+          "result": "نتيجة مراجعة الجودة",
+          "notes": "ملاحظات QC"
+        }
+      },
+      "status": {
+        "live": "مباشر"
+      },
+      "equipment": {
+        "lastCalibrated": "آخر معايرة: {date}",
+        "calibrationOverdue": "تأخرت المعايرة ({date})",
+        "noEquipment": "لا توجد أجهزة مسجلة في قسم الكيمياء."
+      }
+    },
+    "foodSurveillance": {
+      "pageHeader": {
+        "title": "الترصد الغذائي",
+        "subtitle": "التحليل المبكر لمخاطر الغذاء والاتجاهات والإنذار"
+      },
+      "periodLabel": "الفترة",
+      "status": {
+        "live": "مباشر"
+      },
+      "errors": {
+        "loadFailed": "تعذر تحميل لوحة الترصد الغذائي"
+      },
+      "kpis": {
+        "shipments": "الشحنات",
+        "shipmentsTrend": "{imports} وارد · {exports} صادر",
+        "samples": "العينات",
+        "nonconforming": "غير المطابقة",
+        "rejectedTrend": "{rejected} مرفوضة",
+        "alerts": "إنذارات نشطة",
+        "recalls": "سحبات نشطة",
+        "openNonConformities": "عدم مطابقة مفتوح"
+      },
+      "sections": {
+        "title": "أقسام الترصد",
+        "overview": {
+          "title": "قراءة تحليلية",
+          "subtitle": "نسبة العينات غير المطابقة {pct}%"
+        },
+        "highRiskCountries": {
+          "title": "الدول عالية الخطورة",
+          "subtitle": "محرك المخاطر حسب بلد المنشأ"
+        },
+        "highRiskSuppliers": {
+          "title": "الموردون عاليو الخطورة",
+          "subtitle": "سجل الرفض السابق"
+        },
+        "highRiskProducts": {
+          "title": "المنتجات عالية الخطورة",
+          "subtitle": "نسبة الرفض للشحنات"
+        },
+        "labSurveillance": {
+          "title": "ترصد المختبر",
+          "subtitle": "أكثر المعاملات مخالفة"
+        }
+      },
+      "charts": {
+        "nonConformingTitle": "العينات غير المطابقة",
+        "nonConformingSubtitle": "الاتجاه الزمني خلال الفترة المحددة",
+        "nonConformingDataset": "عينات غير مطابقة",
+        "ncDistributionTitle": "توزيع حالات عدم المطابقة",
+        "ncDistributionSubtitle": "حسب مرحلة المعالجة",
+        "ncStatus": {
+          "open": "مفتوحة",
+          "underInvestigation": "قيد التحقيق",
+          "correctiveAction": "إجراء تصحيحي",
+          "resolved": "تم الحل",
+          "closed": "مغلقة"
+        },
+        "ncStatusDataset": "الحالات"
+      },
+      "riskItem": {
+        "rejectedFrom": "{rejected} مرفوضة من {count} شحنة"
+      },
+      "windows": {
+        "day": "اليوم",
+        "week": "الأسبوع",
+        "month": "الشهر",
+        "year": "السنة",
+        "all": "الكل"
+      },
+      "levels": {
+        "LEVEL_0": "المستوى 0 — الوضع طبيعي",
+        "LEVEL_1": "المستوى 1 — مراقبة معززة",
+        "LEVEL_2": "المستوى 2 — إنذار مبكر",
+        "LEVEL_3": "المستوى 3 — استجابة شاملة"
+      },
+      "tables": {
+        "alerts": {
+          "title": "الإنذارات الغذائية",
+          "subtitle": "إنذارات الإنذار المبكر للسلامة الغذائية",
+          "emptyTitle": "لا توجد إنذارات",
+          "emptyDescription": "تُنشأ الإنذارات عند كشف اتجاهات أو تكرار عدم مطابقة",
+          "columns": {
+            "number": "الرقم",
+            "title": "العنوان",
+            "reason": "السبب",
+            "risk": "المخاطر",
+            "status": "الحالة",
+            "raisedAt": "وقت الإنشاء"
+          }
+        },
+        "nonconformity": {
+          "title": "حالات عدم المطابقة",
+          "subtitle": "دورة المعالجة من الفتح حتى الإغلاق",
+          "emptyTitle": "لا توجد حالات",
+          "emptyDescription": "لا توجد حالات عدم مطابقة مسجلة",
+          "columns": {
+            "number": "الرقم",
+            "product": "المنتج",
+            "origin": "بلد المنشأ",
+            "risk": "المخاطر",
+            "status": "الحالة",
+            "reportedAt": "وقت البلاغ"
+          }
+        },
+        "recalls": {
+          "title": "سحب المنتجات الغذائية",
+          "subtitle": "عمليات الاستدعاء والانسحاب",
+          "emptyTitle": "لا توجد سحبات",
+          "emptyDescription": "لا توجد عمليات سحب نشطة",
+          "columns": {
+            "number": "الرقم",
+            "product": "المنتج",
+            "type": "النوع",
+            "risk": "المخاطر",
+            "status": "الحالة",
+            "decidedAt": "القرار"
+          }
+        }
+      },
+      "export": {
+        "headers": {
+          "product": "المنتج",
+          "shipments": "الشحنات",
+          "rejected": "المرفوضة",
+          "riskScore": "درجة المخاطر"
+        }
+      },
+      "noData": {
+        "countries": "لا توجد بيانات",
+        "suppliers": "لا توجد بيانات",
+        "products": "لا توجد بيانات",
+        "labTop": "لا توجد نتائج"
+      },
+      "alertReasons": {
+        "BIOLOGICAL": "أحيائي",
+        "CHEMICAL": "كيميائي",
+        "PHYSICAL": "فيزيائي"
+      },
+      "riskLevels": {
+        "HIGH": "عالي",
+        "MEDIUM": "متوسط",
+        "LOW": "منخفض"
+      },
+      "alertStatuses": {
+        "NEW": "جديد",
+        "INVESTIGATING": "قيد التحقيق",
+        "RESOLVED": "تم الحل",
+        "CLOSED": "مغلق"
+      },
+      "ncStatuses": {
+        "OPEN": "مفتوحة",
+        "INVESTIGATION": "قيد التحقيق",
+        "CORRECTIVE_ACTION": "إجراء تصحيحي",
+        "RESOLVED": "تم الحل",
+        "CLOSED": "مغلقة"
+      },
+      "recallTypes": {
+        "VOLUNTARY": "اختياري",
+        "MANDATORY": "إجباري"
+      },
+      "recallStatuses": {
+        "PENDING": "قيد الانتظار",
+        "IN_PROGRESS": "قيد التنفيذ",
+        "COMPLETED": "مكتمل"
+      }
+    },
+    "quarantineFees": {
+      "pageHeader": {
+        "title": "رسوم اللائحة المالية {year}",
+        "subtitle": "تقرير شامل بجميع رسوم اللائحة المالية السارية",
+        "eyebrow": "رسوم اللائحة المالية"
+      },
+      "alert": {
+        "info": "يتضمن هذا التقرير {items} موزعة عبر {categories}، مع دعم عملتين: السوداني (SDG) والدولي (USD). أي بند يمتلك العملتين يتم عرضه في عمودين منفصلين.",
+        "retry": "إعادة المحاولة",
+        "loadError": "تعذر تحميل رسوم اللائحة المالية. تأكد من اتصال الخادم وحاول مرة أخرى.",
+        "empty": "لا توجد بنود رسوم مسجّلة لعام {year}. يرجى مراجعة إدارة بيانات تعرفة الكرنتينة."
+      },
+      "table": {
+        "code": "الكود",
+        "name": "الاسم",
+        "note": "ملاحظة"
+      },
+      "pluralize": {
+        "itemsOne": "بند واحد",
+        "itemsTwo": "بندان",
+        "itemsFew": "{count} بنود",
+        "itemsMany": "{count} بنداً",
+        "categoriesOne": "قسم واحد",
+        "categoriesTwo": "قسمان",
+        "categoriesFew": "{count} أقسام",
+        "categoriesMany": "{count} قسماً"
+      }
+    },
+    "foodPage": {
+      "pageHeader": {
+        "title": "الرقابة الغذائية",
+        "subtitle": "إدارة شحنات المواد الغذائية المستوردة والمصدرة",
+        "eyebrow": "العمليات"
+      },
+      "headers": {
+        "manifestNumber": "رقم البيان",
+        "supplier": "المورد",
+        "originCountry": "بلد المنشأ",
+        "port": "المنفذ",
+        "shipmentType": "النوع",
+        "arrivalDate": "تاريخ الوصول",
+        "status": "الحالة"
+      },
+      "messages": {
+        "exported": "تم تصدير الشحنات"
+      },
+      "table": {
+        "title": "الشحنات",
+        "subtitle": "{count} شحنة"
+      },
+      "searchPlaceholder": "بحث برقم البيان أو اسم المورد...",
+      "actionsLabel": "متابعة",
+      "actions": {
+        "viewDetails": "فتح دورة حياة الشحنة",
+        "details": "التفاصيل"
+      },
+      "emptyTitle": "لا توجد شحنات",
+      "emptyDescription": "شحنات المواد الغذائية تظهر هنا عند تسجيلها",
+      "filters": {
+        "portType": "نوع المنفذ",
+        "shipmentType": "النوع",
+        "status": "الحالة"
+      },
+      "shipmentType": {
+        "IMPORT": "استيراد",
+        "EXPORT": "تصدير"
+      },
+      "shipmentStatus": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "COMPLETED": "مكتمل"
+      },
+      "portType": {
+        "SEA": "بحري",
+        "AIR": "جوي",
+        "LAND": "بري"
+      }
+    },
+    "labPricing": {
+      "pageHeader": {
+        "title": "تسعير الفحوص المخبرية",
+        "eyebrow": "معاملات التحليل",
+        "subtitle": "أسعار التحاليل لكل فحص — تُخصم آلياً على فواتير العينات عند إدراج المعامل"
+      },
+      "actions": {
+        "add": "إضافة فحص",
+        "edit": "تعديل",
+        "delete": "حذف"
+      },
+      "filters": {
+        "bench": "كل المختبرات",
+        "isActive": "كل الحالات",
+        "active": "نشط",
+        "inactive": "موقوف"
+      },
+      "messages": {
+        "deleted": "تم حذف الفحص"
+      },
+      "summary": {
+        "totalTariff": "إجمالي التعرفة",
+        "perTest": "فحص — {total}"
+      },
+      "table": {
+        "title": "معاملات التحليل",
+        "subtitle": "كتالوج الفحوص المخبرية وأسعارها حسب المختبر"
+      },
+      "columns": {
+        "code": "الكود",
+        "name": "الاسم",
+        "bench": "المختبر",
+        "unit": "الوحدة",
+        "price": "السعر (ج.س)",
+        "sla": "مدة الإنجاز",
+        "days": "يوم",
+        "isActive": "الحالة"
+      },
+      "isActive": {
+        "true": "نشط",
+        "false": "موقوف"
+      },
+      "searchPlaceholder": "بحث بالكود أو الاسم...",
+      "dialogs": {
+        "deleteTitle": "حذف الفحص",
+        "deleteMessage": "تأكيد حذف الفحص «{name}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف"
+      },
+      "bench": {
+        "CHEMISTRY": "الكيمياء",
+        "MICROBIOLOGY": "الميكروبيولوجيا",
+        "HEMATOLOGY": "血液学"
+      }
+    }
   }
 }
