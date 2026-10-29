@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
@@ -18,21 +19,22 @@ import { getQuarantineFees } from '../../api/endpoints/food';
 
 const YEAR = 2025;
 
-const pluralizeItems = (count: number) => {
-  if (count === 1) return 'بند واحد';
-  if (count === 2) return 'بندان';
-  if (count >= 3 && count <= 10) return `${count} بنود`;
-  return `${count} بنداً`;
+const pluralizeItems = (t: (key: string, opts?: Record<string, string | number>) => string, count: number) => {
+  if (count === 1) return t('food.quarantineFees.pluralize.itemsOne');
+  if (count === 2) return t('food.quarantineFees.pluralize.itemsTwo');
+  if (count >= 3 && count <= 10) return t('food.quarantineFees.pluralize.itemsFew', { count });
+  return t('food.quarantineFees.pluralize.itemsMany', { count });
 };
 
-const pluralizeCategories = (count: number) => {
-  if (count === 1) return 'قسم واحد';
-  if (count === 2) return 'قسمان';
-  if (count >= 3 && count <= 10) return `${count} أقسام`;
-  return `${count} قسماً`;
+const pluralizeCategories = (t: (key: string, opts?: Record<string, string | number>) => string, count: number) => {
+  if (count === 1) return t('food.quarantineFees.pluralize.categoriesOne');
+  if (count === 2) return t('food.quarantineFees.pluralize.categoriesTwo');
+  if (count >= 3 && count <= 10) return t('food.quarantineFees.pluralize.categoriesFew', { count });
+  return t('food.quarantineFees.pluralize.categoriesMany', { count });
 };
 
 const QuarantineFeesPage = () => {
+  const { t } = useTranslation();
   const [data, setData] = useState<QuarantineFeeSchedule | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -63,17 +65,18 @@ const QuarantineFeesPage = () => {
   return (
     <Box>
       <PageHeader
-        title={`رسوم اللائحة المالية ${YEAR}`}
-        subtitle="تقرير شامل بجميع رسوم اللائحة المالية السارية"
-        eyebrow="رسوم اللائحة المالية"
+        title={t('food.quarantineFees.pageHeader.title', { year: YEAR })}
+        subtitle={t('food.quarantineFees.pageHeader.subtitle')}
+        eyebrow={t('food.quarantineFees.pageHeader.eyebrow')}
       />
 
       {!loading && !error && !isEmpty && data && (
         <Box sx={{ mb: 4 }}>
           <Alert severity="info" icon={false}>
-            يتضمن هذا التقرير <strong>{pluralizeItems(data.total_fees)}</strong> موزعة عبر{' '}
-            <strong>{pluralizeCategories(data.total_categories)}</strong>، مع دعم عملتين: السوداني (SDG)
-            والدولي (USD). أي بند يمتلك العملتين يتم عرضه في عمودين منفصلين.
+            {t('food.quarantineFees.alert.info', {
+              items: pluralizeItems(t, data.total_fees),
+              categories: pluralizeCategories(t, data.total_categories),
+            })}
           </Alert>
         </Box>
       )}
@@ -85,21 +88,21 @@ const QuarantineFeesPage = () => {
       )}
 
       {error && (
-        <Alert severity="error" action={<Button color="inherit" size="small" onClick={load}>إعادة المحاولة</Button>}>
-          تعذر تحميل رسوم اللائحة المالية. تأكد من اتصال الخادم وحاول مرة أخرى.
+        <Alert severity="error" action={<Button color="inherit" size="small" onClick={load}>{t('food.quarantineFees.alert.retry')}</Button>}>
+          {t('food.quarantineFees.alert.loadError')}
         </Alert>
       )}
 
       {isEmpty && (
         <Alert severity="warning">
-          لا توجد بنود رسوم مسجّلة لعام {YEAR}. يرجى مراجعة إدارة بيانات تعرفة الكرنتينة.
+          {t('food.quarantineFees.alert.empty', { year: YEAR })}
         </Alert>
       )}
 
       {!loading && !error && categories.length > 0 && (
         <Stack direction="row" spacing={3} alignItems="stretch" sx={{ flexWrap: 'wrap' }}>
           {categories.map((category: QuarantineFeeCategory) => (
-            <FeeCategoryCard key={category.key} category={category} />
+            <FeeCategoryCard key={category.key} category={category} t={t} />
           ))}
         </Stack>
       )}
@@ -107,7 +110,7 @@ const QuarantineFeesPage = () => {
   );
 };
 
-const FeeCategoryCard = ({ category }: { category: QuarantineFeeCategory }) => {
+const FeeCategoryCard = ({ category, t }: { category: QuarantineFeeCategory; t: (key: string, opts?: Record<string, string | number>) => string }) => {
   const hasSdg = category.fees.some((f) => f.amount_sdg !== null);
   const hasUsd = category.fees.some((f) => f.amount_usd !== null);
   const hasNote = category.fees.some((f) => f.currency_note);
@@ -129,7 +132,7 @@ const FeeCategoryCard = ({ category }: { category: QuarantineFeeCategory }) => {
           {category.label}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-          {pluralizeItems(category.fees.length)}
+          {pluralizeItems(t, category.fees.length)}
         </Typography>
       </Box>
 
@@ -138,11 +141,11 @@ const FeeCategoryCard = ({ category }: { category: QuarantineFeeCategory }) => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={thStyle}>الكود</TableCell>
-                <TableCell sx={thStyle}>الاسم</TableCell>
+                <TableCell sx={thStyle}>{t('food.quarantineFees.table.code')}</TableCell>
+                <TableCell sx={thStyle}>{t('food.quarantineFees.table.name')}</TableCell>
                 {hasSdg && <TableCell sx={{ ...thStyle, color: '#16a34a' }}>SDG</TableCell>}
                 {hasUsd && <TableCell sx={{ ...thStyle, color: '#2563eb' }}>USD</TableCell>}
-                {hasNote && <TableCell sx={thStyle}>ملاحظة</TableCell>}
+                {hasNote && <TableCell sx={thStyle}>{t('food.quarantineFees.table.note')}</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>

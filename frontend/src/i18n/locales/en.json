@@ -5811,5 +5811,515 @@
         "futureDate": "Attendance not recorded for future date"
       }
     }
+  },
+  "food": {
+    "foodWindow": {
+      "pageHeader": {
+        "title": "Manage Food Windows",
+        "subtitle": "Unified window for managing shipment transactions and commodity decisions at sector level.",
+        "eyebrow": "Unified Food Window"
+      },
+      "tabs": {
+        "dashboard": "Overview",
+        "transactions": "Transactions",
+        "decisions": "Decisions",
+        "scope": "Scope",
+        "audit": "Audit"
+      },
+      "messages": {
+        "closed": "Transaction closed",
+        "closeError": "Failed to close transaction"
+      },
+      "columns": {
+        "shipmentManifest": "Manifest Number",
+        "windowName": "Window",
+        "clerkName": "Clerk",
+        "status": "Status",
+        "assignedAt": "Date",
+        "decidedBy": "Decided By",
+        "decision": "Decision",
+        "reason": "Reason",
+        "decidedAt": "Date",
+        "userName": "User",
+        "action": "Action",
+        "timestamp": "Time"
+      },
+      "txStatus": {
+        "OPEN": "Open",
+        "IN_PROGRESS": "In Progress",
+        "CLOSED": "Closed"
+      },
+      "decisionLabels": {
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "HOLD": "Hold"
+      },
+      "emptyWindows": {
+        "title": "No Windows",
+        "description": "No service window has been created yet."
+      },
+      "windowType": {
+        "single": "Single Window",
+        "multiple": "Multiple Windows"
+      },
+      "dashboard": {
+        "open": "Open",
+        "closedToday": "Closed Today",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "sections": {
+        "transactions": {
+          "title": "Shipment Transactions",
+          "subtitle": "Latest transactions registered on windows"
+        },
+        "decisions": {
+          "title": "Commodity Decisions",
+          "subtitle": "Latest decisions issued by windows"
+        },
+        "scope": {
+          "title": "Scope of Authorization",
+          "subtitle": "Windows and commodities linked to your account"
+        },
+        "audit": {
+          "title": "Audit Log",
+          "subtitle": "Latest movements on windows"
+        }
+      },
+      "emptyScope": {
+        "title": "No Permissions",
+        "description": "You have not been assigned to any window yet."
+      },
+      "actions": {
+        "close": "Close"
+      }
+    },
+    "chemistryLab": {
+      "sections": {
+        "overview": "Overview",
+        "samples": "Chemistry Samples",
+        "qc": "Quality Review",
+        "equipment": "Equipment & Calibration",
+        "title": "Board Sections"
+      },
+      "pageHeader": {
+        "title": "Chemistry Lab \u2014 Section Head Dashboard",
+        "subtitle": "Manage chemistry samples: distribution, follow-up, review results, QC, equipment and SLA"
+      },
+      "actions": {
+        "registerDevice": "Register Device",
+        "exportCsv": "Export CSV Report",
+        "open": "Open",
+        "qcReview": "QC Review"
+      },
+      "errors": {
+        "enterDeviceName": "Enter device name",
+        "registerDeviceFailed": "Failed to register device",
+        "calibrationFailed": "Failed to record calibration",
+        "qcReviewFailed": "Failed to record QC review",
+        "noExportData": "No data to export"
+      },
+      "messages": {
+        "deviceRegistered": "Device registered",
+        "calibrationRecorded": "Calibration recorded for {name}",
+        "qcApproved": "QC Approved",
+        "qcViolation": "QC Violation Recorded"
+      },
+      "columns": {
+        "sampleNumber": "Number",
+        "sampleType": "Product",
+        "source": "Source",
+        "priority": "Priority",
+        "status": "Status",
+        "analyst": "Analyst",
+        "parameter": "Test",
+        "result": "Result",
+        "decision": "Decision",
+        "qcStatus": "QC Review",
+        "qcReviewer": "QC Reviewer",
+        "isActive": "Status"
+      },
+      "priority": {
+        "HIGH": "High",
+        "MEDIUM": "Medium",
+        "LOW": "Low"
+      },
+      "sampleStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "COMPLETED": "Completed"
+      },
+      "testStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "COMPLETED": "Completed"
+      },
+      "decision": {
+        "PASS": "Pass",
+        "FAIL": "Fail"
+      },
+      "qcStatus": {
+        "PASSED": "Passed",
+        "FAILED": "Failed"
+      },
+      "slaStatus": {
+        "ON_TIME": "On Time",
+        "DELAYED": "Delayed",
+        "COMPLETED": "Completed"
+      },
+      "equipmentStatus": {
+        "OPERATIONAL": "Operational",
+        "MAINTENANCE": "Maintenance",
+        "CALIBRATION": "Calibration",
+        "OUT_OF_SERVICE": "Out of Service"
+      },
+      "equipmentStatusLabels": {
+        "underMaintenance": "Under Maintenance",
+        "outOfService": "Out of Service"
+      },
+      "stats": {
+        "samples": "Chemistry Samples",
+        "underTesting": "Under Testing",
+        "readyForApproval": "Ready for Approval",
+        "approved": "Approved",
+        "overdueTests": "Overdue SLA Tests",
+        "qcPending": "Pending QC",
+        "qcFailed": "QC Violations",
+        "equipment": "Lab Equipment",
+        "calibrationOverdue": "Overdue Calibration"
+      },
+      "tables": {
+        "samplesTitle": "Chemistry Section Samples",
+        "qcTitle": "Chemistry Test Results \u2014 QC Review"
+      },
+      "dialogs": {
+        "registerDevice": {
+          "title": "Register Lab Equipment",
+          "subtitle": "Add equipment to Chemistry Lab for readiness and calibration monitoring",
+          "deviceNameAr": "Device Name (Arabic)",
+          "deviceNameEn": "Device Name (English)",
+          "modelNumber": "Model Number",
+          "status": "Status",
+          "nextCalibration": "Next Calibration Due"
+        },
+        "qc": {
+          "title": "QC Review \u2014 QC",
+          "subtitle": "Approve test result compliance with specifications before final approval",
+          "submitLabel": "Record Review",
+          "result": "QC Review Result",
+          "notes": "QC Notes"
+        }
+      },
+      "status": {
+        "live": "Live"
+      },
+      "equipment": {
+        "lastCalibrated": "Last Calibrated: {date}",
+        "calibrationOverdue": "Calibration Overdue ({date})",
+        "noEquipment": "No equipment registered in Chemistry Lab."
+      }
+    },
+    "foodSurveillance": {
+      "pageHeader": {
+        "title": "Food Surveillance",
+        "subtitle": "Early analysis of food risks, trends and alerts"
+      },
+      "periodLabel": "Period",
+      "status": {
+        "live": "Live"
+      },
+      "errors": {
+        "loadFailed": "Failed to load food surveillance dashboard"
+      },
+      "kpis": {
+        "shipments": "Shipments",
+        "shipmentsTrend": "{imports} imported \u00b7 {exports} exported",
+        "samples": "Samples",
+        "nonconforming": "Non-conforming",
+        "rejectedTrend": "{rejected} rejected",
+        "alerts": "Active Alerts",
+        "recalls": "Active Recalls",
+        "openNonConformities": "Open Non-conformities"
+      },
+      "sections": {
+        "title": "Surveillance Sections",
+        "overview": {
+          "title": "Analytical Reading",
+          "subtitle": "Percentage of non-conforming samples {pct}%"
+        },
+        "highRiskCountries": {
+          "title": "High-Risk Countries",
+          "subtitle": "Risk engine by country of origin"
+        },
+        "highRiskSuppliers": {
+          "title": "High-Risk Suppliers",
+          "subtitle": "Previous rejection log"
+        },
+        "highRiskProducts": {
+          "title": "High-Risk Products",
+          "subtitle": "Rejection rate by shipment"
+        },
+        "labSurveillance": {
+          "title": "Lab Surveillance",
+          "subtitle": "Most non-compliant labs"
+        }
+      },
+      "charts": {
+        "nonConformingTitle": "Non-conforming Samples",
+        "nonConformingSubtitle": "Trend over the specified period",
+        "nonConformingDataset": "Non-conforming Samples",
+        "ncDistributionTitle": "Distribution of Non-conformity Cases",
+        "ncDistributionSubtitle": "By processing stage",
+        "ncStatus": {
+          "open": "Open",
+          "underInvestigation": "Under Investigation",
+          "correctiveAction": "Corrective Action",
+          "resolved": "Resolved",
+          "closed": "Closed"
+        },
+        "ncStatusDataset": "Cases"
+      },
+      "riskItem": {
+        "rejectedFrom": "{rejected} rejected from {count} shipments"
+      },
+      "windows": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "year": "Year",
+        "all": "All"
+      },
+      "levels": {
+        "LEVEL_0": "Level 0 \u2014 Normal",
+        "LEVEL_1": "Level 1 \u2014 Enhanced Monitoring",
+        "LEVEL_2": "Level 2 \u2014 Early Warning",
+        "LEVEL_3": "Level 3 \u2014 Comprehensive Response"
+      },
+      "tables": {
+        "alerts": {
+          "title": "Food Alerts",
+          "subtitle": "Early warning alerts for food safety",
+          "emptyTitle": "No Alerts",
+          "emptyDescription": "Alerts are created when trends or repeated non-conformity are detected",
+          "columns": {
+            "number": "Number",
+            "title": "Title",
+            "reason": "Reason",
+            "risk": "Risk",
+            "status": "Status",
+            "raisedAt": "Raised At"
+          }
+        },
+        "nonconformity": {
+          "title": "Non-conformity Cases",
+          "subtitle": "Processing cycle from opening to closure",
+          "emptyTitle": "No Cases",
+          "emptyDescription": "No non-conformity cases registered",
+          "columns": {
+            "number": "Number",
+            "product": "Product",
+            "origin": "Country of Origin",
+            "risk": "Risk",
+            "status": "Status",
+            "reportedAt": "Reported At"
+          }
+        },
+        "recalls": {
+          "title": "Food Recalls",
+          "subtitle": "Recall and withdrawal operations",
+          "emptyTitle": "No Recalls",
+          "emptyDescription": "No active recall operations",
+          "columns": {
+            "number": "Number",
+            "product": "Product",
+            "type": "Type",
+            "risk": "Risk",
+            "status": "Status",
+            "decidedAt": "Decision Date"
+          }
+        }
+      },
+      "export": {
+        "headers": {
+          "product": "Product",
+          "shipments": "Shipments",
+          "rejected": "Rejected",
+          "riskScore": "Risk Score"
+        }
+      },
+      "noData": {
+        "countries": "No Data",
+        "suppliers": "No Data",
+        "products": "No Data",
+        "labTop": "No Results"
+      },
+      "alertReasons": {
+        "BIOLOGICAL": "Biological",
+        "CHEMICAL": "Chemical",
+        "PHYSICAL": "Physical"
+      },
+      "riskLevels": {
+        "HIGH": "High",
+        "MEDIUM": "Medium",
+        "LOW": "Low"
+      },
+      "alertStatuses": {
+        "NEW": "New",
+        "INVESTIGATING": "Investigating",
+        "RESOLVED": "Resolved",
+        "CLOSED": "Closed"
+      },
+      "ncStatuses": {
+        "OPEN": "Open",
+        "INVESTIGATION": "Investigation",
+        "CORRECTIVE_ACTION": "Corrective Action",
+        "RESOLVED": "Resolved",
+        "CLOSED": "Closed"
+      },
+      "recallTypes": {
+        "VOLUNTARY": "Voluntary",
+        "MANDATORY": "Mandatory"
+      },
+      "recallStatuses": {
+        "PENDING": "Pending",
+        "IN_PROGRESS": "In Progress",
+        "COMPLETED": "Completed"
+      }
+    },
+    "quarantineFees": {
+      "pageHeader": {
+        "title": "Quarantine Fees Schedule {year}",
+        "subtitle": "Comprehensive report of all current quarantine fee schedules",
+        "eyebrow": "Quarantine Fees"
+      },
+      "alert": {
+        "info": "This report includes {items} distributed across {categories}, with dual currency support (SDG and USD). Any item with both currencies is displayed in separate columns.",
+        "retry": "Retry",
+        "loadError": "Failed to load quarantine fee schedule. Please check server connection and try again.",
+        "empty": "No fee items registered for year {year}. Please review the customs tariff data management."
+      },
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "note": "Note"
+      },
+      "pluralize": {
+        "itemsOne": "one item",
+        "itemsTwo": "two items",
+        "itemsFew": "{count} items",
+        "itemsMany": "{count} items",
+        "categoriesOne": "one category",
+        "categoriesTwo": "two categories",
+        "categoriesFew": "{count} categories",
+        "categoriesMany": "{count} categories"
+      }
+    },
+    "foodPage": {
+      "pageHeader": {
+        "title": "Food Control",
+        "subtitle": "Manage imported and exported food shipments",
+        "eyebrow": "Operations"
+      },
+      "headers": {
+        "manifestNumber": "Manifest Number",
+        "supplier": "Supplier",
+        "originCountry": "Country of Origin",
+        "port": "Port",
+        "shipmentType": "Type",
+        "arrivalDate": "Arrival Date",
+        "status": "Status"
+      },
+      "messages": {
+        "exported": "Shipments exported"
+      },
+      "table": {
+        "title": "Shipments",
+        "subtitle": "{count} shipments"
+      },
+      "searchPlaceholder": "Search by manifest number or supplier name...",
+      "actionsLabel": "Actions",
+      "actions": {
+        "viewDetails": "Open shipment lifecycle",
+        "details": "Details"
+      },
+      "emptyTitle": "No Shipments",
+      "emptyDescription": "Food shipments will appear here when registered",
+      "filters": {
+        "portType": "Port Type",
+        "shipmentType": "Type",
+        "status": "Status"
+      },
+      "shipmentType": {
+        "IMPORT": "Import",
+        "EXPORT": "Export"
+      },
+      "shipmentStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "COMPLETED": "Completed"
+      },
+      "portType": {
+        "SEA": "Sea",
+        "AIR": "Air",
+        "LAND": "Land"
+      }
+    },
+    "labPricing": {
+      "pageHeader": {
+        "title": "Laboratory Test Pricing",
+        "eyebrow": "Lab Transactions",
+        "subtitle": "Prices for each test \u2014 automatically deducted from sample invoices when labs are added"
+      },
+      "actions": {
+        "add": "Add Test",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "filters": {
+        "bench": "All Labs",
+        "isActive": "All Statuses",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "messages": {
+        "deleted": "Test deleted"
+      },
+      "summary": {
+        "totalTariff": "Total Tariff",
+        "perTest": "{total} per test"
+      },
+      "table": {
+        "title": "Lab Transactions",
+        "subtitle": "Catalog of lab tests and prices by lab"
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "bench": "Lab",
+        "unit": "Unit",
+        "price": "Price (SDG)",
+        "sla": "Turnaround Time",
+        "days": "days",
+        "isActive": "Status"
+      },
+      "isActive": {
+        "true": "Active",
+        "false": "Inactive"
+      },
+      "searchPlaceholder": "Search by code or name...",
+      "dialogs": {
+        "deleteTitle": "Delete Test",
+        "deleteMessage": "Confirm deleting test \u00ab{name}\u00bb? This cannot be undone.",
+        "confirm": "Delete"
+      },
+      "bench": {
+        "CHEMISTRY": "Chemistry",
+        "MICROBIOLOGY": "Microbiology",
+        "HEMATOLOGY": "Hematology"
+      }
+    }
   }
 }
