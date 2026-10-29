@@ -15,6 +15,15 @@ import enLocale from '../../../i18n/locales/en.json';
 i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
 
+vi.mock('react-chartjs-2', () => ({
+  Line: ({ data, options }) => (
+    <div data-testid="chart-line">{JSON.stringify(data?.labels)}</div>
+  ),
+  Bar: ({ data, options }) => (
+    <div data-testid="chart-bar">{JSON.stringify(data?.labels)}</div>
+  ),
+}));
+
 beforeAll(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).IntersectionObserver = class {
