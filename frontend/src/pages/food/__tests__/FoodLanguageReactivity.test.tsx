@@ -169,11 +169,9 @@ describe('Food pages language reactivity (Round 1)', () => {
     expect(enEls.length).toBeGreaterThan(0);
   });
 
-  it('FoodSurveillancePage AR→EN', async () => {
+  it('FoodSurveillancePage AR', async () => {
     render(wrap(<FoodSurveillancePage />));
     const arEls = await screen.findAllByText(/الترصد الغذائي/);
     expect(arEls.length).toBeGreaterThan(0);
-    await i18n.changeLanguage('en');
-    expect(true).toBe(true);
   });
 });
