@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -29,21 +30,21 @@ import { flightStatus } from '../../utils/status';
 import { formatDateTime } from '../../utils/formatters';
 import type { AirportDashboard } from '../../types/airport';
 
-const getShift = () => {
+const getShift = (t: (key: string) => string) => {
   const h = new Date().getHours();
-  if (h >= 6 && h < 14) return 'الصباحية';
-  if (h >= 14 && h < 22) return 'المسائية';
-  return 'الليلية';
+  if (h >= 6 && h < 14) return t('borders.inspector.shift.morning');
+  if (h >= 14 && h < 22) return t('borders.inspector.shift.evening');
+  return t('borders.inspector.shift.night');
 };
 
 const todayArabic = () =>
   new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const quickActions: { icon: React.ReactNode; label: string; path: string }[] = [
-  { icon: <AddCircleIcon />, label: 'بدء فحص رحلة', path: '/app/airport?tab=1' },
-  { icon: <PersonSearchIcon />, label: 'البحث عن مسافر', path: '/app/travelers' },
-  { icon: <LocalHospitalIcon />, label: 'إحالة إلى العيادة', path: '/app/clinic' },
-  { icon: <DescriptionIcon />, label: 'تقرير تفتيش الطائرة', path: '/app/airport?tab=2' },
+const getQuickActions = (t: (key: string) => string): { icon: React.ReactNode; label: string; path: string }[] => [
+  { icon: <AddCircleIcon />, label: t('borders.inspector.quick.startFlight'), path: '/app/airport?tab=1' },
+  { icon: <PersonSearchIcon />, label: t('borders.inspector.quick.findPassenger'), path: '/app/travelers' },
+  { icon: <LocalHospitalIcon />, label: t('borders.inspector.quick.clinicReferral'), path: '/app/clinic' },
+  { icon: <DescriptionIcon />, label: t('borders.inspector.quick.aircraftReport'), path: '/app/airport?tab=2' },
 ];
 
 const FlightNumberChip = ({ code }: { code: string }) => (
@@ -68,6 +69,7 @@ const FlightNumberChip = ({ code }: { code: string }) => (
 );
 
 const InspectorDashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<AirportDashboard | null>(null);
@@ -82,18 +84,19 @@ const InspectorDashboard = () => {
   }, []);
 
   const k = data?.kpis;
+  const quickActions = useMemo(() => getQuickActions(t), [t]);
   const kpiCards = useMemo(
     () => [
-      { icon: <FlightTakeoffIcon />, label: 'الرحلات اليوم', value: k?.flights_today ?? 0, accent: 'primary.main' },
-      { icon: <GroupsIcon />, label: 'المسافرون', value: k?.passengers_today ?? 0, accent: 'info.main' },
-      { icon: <HourglassTopIcon />, label: 'بانتظار الفحص', value: k?.pending_screenings ?? 0, accent: 'warning.main' },
-      { icon: <FactCheckIcon />, label: 'تم فحصهم', value: k?.screened_today ?? 0, accent: 'primary.main' },
-      { icon: <LocalHospitalIcon />, label: 'إحالات للعيادة', value: k?.clinic_referrals ?? 0, accent: 'secondary.main' },
-      { icon: <WarningAmberIcon />, label: 'حالات مشتبه بها', value: k?.suspected_cases ?? 0, accent: 'error.main' },
-      { icon: <VaccinesIcon />, label: 'تطعيمات', value: k?.vaccinations ?? 0, accent: 'success.main' },
-      { icon: <CheckCircleIcon />, label: 'مكتملة', value: k?.completed_today ?? 0, accent: 'success.main' },
+      { icon: <FlightTakeoffIcon />, label: t('borders.inspector.kpi.flights'), value: k?.flights_today ?? 0, accent: 'primary.main' },
+      { icon: <GroupsIcon />, label: t('borders.inspector.kpi.passengers'), value: k?.passengers_today ?? 0, accent: 'info.main' },
+      { icon: <HourglassTopIcon />, label: t('borders.inspector.kpi.pending'), value: k?.pending_screenings ?? 0, accent: 'warning.main' },
+      { icon: <FactCheckIcon />, label: t('borders.inspector.kpi.screened'), value: k?.screened_today ?? 0, accent: 'primary.main' },
+      { icon: <LocalHospitalIcon />, label: t('borders.inspector.kpi.referrals'), value: k?.clinic_referrals ?? 0, accent: 'secondary.main' },
+      { icon: <WarningAmberIcon />, label: t('borders.inspector.kpi.suspected'), value: k?.suspected_cases ?? 0, accent: 'error.main' },
+      { icon: <VaccinesIcon />, label: t('borders.inspector.kpi.vaccinations'), value: k?.vaccinations ?? 0, accent: 'success.main' },
+      { icon: <CheckCircleIcon />, label: t('borders.inspector.kpi.completed'), value: k?.completed_today ?? 0, accent: 'success.main' },
     ],
-    [k]
+    [k, t]
   );
 
   if (loading) {
@@ -123,10 +126,10 @@ const InspectorDashboard = () => {
       <Box sx={{ textAlign: 'center', py: 10 }}>
         <WarningAmberIcon sx={{ fontSize: 52, color: 'warning.main', mb: 2 }} />
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-          تعذر تحميل لوحة المطار
+          {t('borders.inspector.error.title')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          حدث خطأ أثناء جلب بيانات اللوحة، حاول مرة أخرى.
+          {t('borders.inspector.error.body')}
         </Typography>
         <Button variant="contained" sx={{ textTransform: 'none' }} onClick={() => {
           setLoading(true);
@@ -136,7 +139,7 @@ const InspectorDashboard = () => {
             .catch(() => setError(true))
             .finally(() => setLoading(false));
         }}>
-          إعادة المحاولة
+          {t('borders.inspector.error.retry')}
         </Button>
       </Box>
     );
@@ -146,9 +149,9 @@ const InspectorDashboard = () => {
     <Stack spacing={2.5}>
       <AirportHero
         name={user?.full_name || ''}
-        role="مفتش الحجر الصحي — قسم صحة المطار"
+        role={t('borders.inspector.role')}
         date={todayArabic()}
-        shift={getShift()}
+        shift={getShift(t)}
       />
 
       <Grid container spacing={1.5}>
@@ -159,7 +162,7 @@ const InspectorDashboard = () => {
         ))}
       </Grid>
 
-      <SectionCard title="إجراءات سريعة" subtitle="نفّذ المهام الشائعة بضغطة واحدة">
+      <SectionCard title={t('borders.inspector.quick.title')} subtitle={t('borders.inspector.quick.subtitle')}>
         <Grid container spacing={1.5}>
           {quickActions.map((a) => (
             <Grid item xs={12} sm={6} lg={3} key={a.label}>
@@ -188,7 +191,7 @@ const InspectorDashboard = () => {
       <Grid container spacing={2.5}>
         {/* --- main column --- */}
         <Grid item xs={12} lg={8}>
-          <SectionCard title="الرحلات القادمة" subtitle="مواعيد الوصول عبر منافذ المطارات">
+          <SectionCard title={t('borders.inspector.upcoming.title')} subtitle={t('borders.inspector.upcoming.subtitle')}>
             {data?.upcoming_flights?.length ? (
               <Stack
                 divider={<Box sx={{ height: 1, bgcolor: 'rgba(16,40,34,0.07)' }} />}
@@ -237,11 +240,11 @@ const InspectorDashboard = () => {
                 })}
               </Stack>
             ) : (
-              <Typography color="text.secondary">لا توجد رحلات قادمة</Typography>
+              <Typography color="text.secondary">{t('borders.inspector.empty.flights')}</Typography>
             )}
           </SectionCard>
 
-          <SectionCard title="الحالات المشتبه بها" subtitle="إحالات تتطلب انتباهاً فورياً" sx={{ mt: 2.5 }}>
+          <SectionCard title={t('borders.inspector.suspected.title')} subtitle={t('borders.inspector.suspected.subtitle')} sx={{ mt: 2.5 }}>
             {data?.suspected?.length ? (
               <Stack spacing={1}>
                 {data.suspected.map((s, i) => (
@@ -270,7 +273,7 @@ const InspectorDashboard = () => {
                         <Typography component="span" sx={{ fontWeight: 700, fontSize: 14 }}>
                           {s.traveler_name}
                         </Typography>
-                        <StatusChip label={s.kind === 'RED' ? 'خطرة' : 'إحالة'} tone={s.kind === 'RED' ? 'error' : 'warning'} size="small" />
+                        <StatusChip label={s.kind === 'RED' ? t('borders.inspector.chip.dangerous') : t('borders.inspector.chip.referral')} tone={s.kind === 'RED' ? 'error' : 'warning'} size="small" />
                         {s.flight_number && <FlightNumberChip code={s.flight_number} />}
                       </Stack>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
@@ -284,30 +287,30 @@ const InspectorDashboard = () => {
                 ))}
               </Stack>
             ) : (
-              <Typography color="text.secondary">لا توجد حالات مشتبه بها حالياً</Typography>
+              <Typography color="text.secondary">{t('borders.inspector.empty.suspected')}</Typography>
             )}
           </SectionCard>
         </Grid>
 
         {/* --- side column --- */}
         <Grid item xs={12} lg={4}>
-          <SectionCard title="المهام المكلف بها" subtitle="أولويات الوردية الحالية">
+          <SectionCard title={t('borders.inspector.tasks.title')} subtitle={t('borders.inspector.tasks.subtitle')}>
             {data?.tasks?.length ? (
               <Stack spacing={1.5}>
-                {data.tasks.map((t, i) => (
-                  <Stack key={`${t.title}-${i}`} direction="row" spacing={1.5} alignItems="center">
+                {data.tasks.map((task, i) => (
+                  <Stack key={`${task.title}-${i}`} direction="row" spacing={1.5} alignItems="center">
                     <StatusChip
-                      label={t.priority === 'high' ? 'عاجل' : t.priority === 'medium' ? 'مهم' : 'روتيني'}
-                      tone={t.priority === 'high' ? 'error' : t.priority === 'medium' ? 'warning' : 'neutral'}
+                      label={task.priority === 'high' ? t('borders.inspector.task.urgent') : task.priority === 'medium' ? t('borders.inspector.task.important') : t('borders.inspector.task.routine')}
+                      tone={task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'neutral'}
                       size="small"
                     />
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography component="span" sx={{ fontWeight: 600, fontSize: 14, display: 'block' }}>
-                        {t.title}
+                        {task.title}
                       </Typography>
-                      {t.kind && (
+                      {task.kind && (
                         <Typography component="span" variant="caption" color="text.secondary">
-                          {t.kind}
+                          {task.kind}
                         </Typography>
                       )}
                     </Box>
@@ -315,11 +318,11 @@ const InspectorDashboard = () => {
                 ))}
               </Stack>
             ) : (
-              <Typography color="text.secondary">لا توجد مهام معلقة</Typography>
+              <Typography color="text.secondary">{t('borders.inspector.empty.tasks')}</Typography>
             )}
           </SectionCard>
 
-          <SectionCard title="التنبيهات" subtitle="آخر إشعارات النظام" sx={{ mt: 2.5 }}>
+          <SectionCard title={t('borders.inspector.alerts.title')} subtitle={t('borders.inspector.alerts.subtitle')} sx={{ mt: 2.5 }}>
             {data?.alerts?.length ? (
               <Stack spacing={1.5}>
                 {data.alerts.map((a) => (
@@ -350,25 +353,25 @@ const InspectorDashboard = () => {
                 ))}
               </Stack>
             ) : (
-              <Typography color="text.secondary">لا توجد تنبيهات</Typography>
+              <Typography color="text.secondary">{t('borders.inspector.empty.alerts')}</Typography>
             )}
           </SectionCard>
 
-          <SectionCard title="التقرير اليومي" subtitle="إحصاءات الفحص المتراكمة" sx={{ mt: 2.5 }}>
+          <SectionCard title={t('borders.inspector.report.title')} subtitle={t('borders.inspector.report.subtitle')} sx={{ mt: 2.5 }}>
             {data?.report && (
               <Stack spacing={1.25}>
-                <ReportRow label="الرحلات" value={data.report.flights} />
-                <ReportRow label="المسافرون" value={data.report.travelers} />
-                <ReportRow label="المفحوصون" value={data.report.screened} />
-                <ReportRow label="الإحالات" value={data.report.referrals} />
-                <ReportRow label="الحالات المشتبه بها" value={data.report.suspected} />
+                <ReportRow label={t('borders.inspector.report.flights')} value={data.report.flights} />
+                <ReportRow label={t('borders.inspector.report.travelers')} value={data.report.travelers} />
+                <ReportRow label={t('borders.inspector.report.screened')} value={data.report.screened} />
+                <ReportRow label={t('borders.inspector.report.referrals')} value={data.report.referrals} />
+                <ReportRow label={t('borders.inspector.report.suspected')} value={data.report.suspected} />
 
                 {data.report.screenings_by_flight?.length ? (
                   <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px dashed rgba(16,40,34,0.1)' }}>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                       <AirlineStopsIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                       <Typography variant="caption" component="span" color="text.secondary" sx={{ fontWeight: 700 }}>
-                        الفحوصات حسب الرحلة
+                        {t('borders.inspector.report.byFlight')}
                       </Typography>
                     </Stack>
                     <Stack spacing={1}>

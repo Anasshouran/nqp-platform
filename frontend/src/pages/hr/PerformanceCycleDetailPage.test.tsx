@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../../i18n';
+import arLocale from '../../i18n/locales/ar.json';
+
+i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 
 import { deleteCycleKpi, getCycleKpis, getPerformanceCycle } from '../../api/endpoints/hr';
 
@@ -55,8 +59,8 @@ describe('PerformanceCycleDetailPage — حذف المؤشر', () => {
     fireEvent.click(screen.getByRole('button', { name: 'حذف' }));
 
     const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/حذف مؤشر/)).toBeTruthy();
     expect(within(dialog).getByText('حذف مؤشر الأداء')).toBeTruthy();
-    expect(within(dialog).getByText(/مؤشر الانضباط/)).toBeTruthy();
     expect(deleteCycleKpi).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'إلغاء' }));

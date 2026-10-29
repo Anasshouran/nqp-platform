@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import AddIcon from '@mui/icons-material/Add';
@@ -24,6 +25,7 @@ import { labelOf, toneOf } from '../../utils/labels';
 import ScreeningForm from '../../components/forms/ScreeningForm';
 
 const ScreeningPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const table = useServerTable<HealthScreening>({ fetchData: getScreenings });
@@ -57,7 +59,15 @@ const ScreeningPage = () => {
     setExporting(true);
     try {
       const all = await fetchAllRows();
-      const headers = ['المسافر', 'جواز السفر', 'الحرارة', 'التشبع بالأكسجين', 'الضغط (sys/dia)', 'ملاحظات', 'وقت الفحص'];
+      const headers = [
+        t('clinic.screening.csv.traveler'),
+        t('clinic.screening.csv.passport'),
+        t('clinic.screening.csv.temperature'),
+        t('clinic.screening.csv.oxygen'),
+        t('clinic.screening.csv.pressure'),
+        t('clinic.screening.csv.notes'),
+        t('clinic.screening.csv.screenedAt'),
+      ];
       const data = all.map((s) => [
         s.traveler_name,
         s.passport_number,
@@ -68,9 +78,9 @@ const ScreeningPage = () => {
         formatDateTime(s.screened_at),
       ]);
       exportToCsv(`screening-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
-      notifySuccess(`تم تصدير ${all.length} فحص`);
+      notifySuccess(t('clinic.screening.export.success', { count: all.length }));
     } catch {
-      notifyError('تعذر تصدير الفحوصات');
+      notifyError(t('clinic.screening.export.error'));
     } finally {
       setExporting(false);
     }
@@ -84,7 +94,7 @@ const ScreeningPage = () => {
       const res = await getLatestRisk(s.id);
       setAssessment(res.data.data);
     } catch {
-      notifyError('لا يوجد تقييم مخاطر لهذا الفحص بعد');
+      notifyError(t('clinic.screening.risk.noAssessment'));
     } finally {
       setRiskLoading(false);
     }
@@ -95,10 +105,10 @@ const ScreeningPage = () => {
     setReferring(true);
     try {
       await referScreening(referTarget.id);
-      notifySuccess('تم تحويل المسافر إلى العيادة');
+      notifySuccess(t('clinic.screening.refer.success'));
       setReferTarget(null);
     } catch {
-      notifyError('تعذر إجراء التحويل — تأكد من ربط منفذ بعيادة');
+      notifyError(t('clinic.screening.refer.error'));
     } finally {
       setReferring(false);
     }
@@ -107,12 +117,12 @@ const ScreeningPage = () => {
   return (
     <Box>
       <PageHeader
-        title="الفحوصات الصحية"
-        subtitle="تسجيل ومراجعة الفحوصات الصحية عند منافذ الدخول وقرارات الإحالة"
-        eyebrow="العمليات"
+        title={t('clinic.screening.header.title')}
+        subtitle={t('clinic.screening.header.subtitle')}
+        eyebrow={t('clinic.clinic.header.eyebrow')}
         action={
           <AppButton variant="primary" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
-            فحص جديد
+            {t('clinic.screening.action.newScreening')}
           </AppButton>
         }
       />
@@ -121,7 +131,7 @@ const ScreeningPage = () => {
         columns={[
           {
             key: 'traveler_name',
-            label: 'المسافر',
+            label: t('clinic.screening.cols.traveler'),
             render: (s) => (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Avatar sx={{ width: 32, height: 32, bgcolor: 'info.light', color: 'info.main', fontWeight: 700, fontSize: 14 }}>
@@ -140,12 +150,12 @@ const ScreeningPage = () => {
           },
           {
             key: 'body_temperature',
-            label: 'الحرارة',
+            label: t('clinic.screening.cols.temperature'),
             render: (s) => <StatusChip label={formatTemperature(s.body_temperature)} tone={temperatureTone(s.body_temperature)} />,
           },
           {
             key: 'oxygen_saturation',
-            label: 'التشبع O2',
+            label: t('clinic.screening.cols.oxygen'),
             render: (s) =>
               s.oxygen_saturation != null ? (
                 <StatusChip
@@ -159,14 +169,14 @@ const ScreeningPage = () => {
           },
           {
             key: 'blood_pressure',
-            label: 'الضغط',
+            label: t('clinic.screening.cols.pressure'),
             render: (s) => (s.systolic_bp && s.diastolic_bp ? `${s.systolic_bp}/${s.diastolic_bp}` : '—'),
             hideOnMobile: true,
           },
-          { key: 'officer_notes', label: 'ملاحظات', render: (s) => s.officer_notes || '—', hideOnMobile: true },
+          { key: 'officer_notes', label: t('clinic.screening.cols.notes'), render: (s) => s.officer_notes || '—', hideOnMobile: true },
           {
             key: 'screened_at',
-            label: 'وقت الفحص',
+            label: t('clinic.screening.cols.screenedAt'),
             sortable: true,
             render: (s) => formatDateTime(s.screened_at),
             hideOnMobile: true,
@@ -180,11 +190,11 @@ const ScreeningPage = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="سجل الفحوصات"
-        subtitle={`${count} فحص`}
+        title={t('clinic.screening.table.title')}
+        subtitle={t('clinic.screening.table.subtitle', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم المسافر أو رقم الجواز..."
+        searchPlaceholder={t('clinic.screening.table.searchPlaceholder')}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={setSorting}
@@ -193,38 +203,38 @@ const ScreeningPage = () => {
         onExport={handleExport}
         exporting={exporting}
         onRefresh={refresh}
-        emptyTitle="لا توجد فحوصات"
-        emptyDescription="الفحوصات الصحية تظهر هنا عند تسجيلها من شاشة الفحص"
+        emptyTitle={t('clinic.screening.table.emptyTitle')}
+        emptyDescription={t('clinic.screening.table.emptyDescription')}
       actions={(s) => (
             <>
-              <Tooltip title="تقييم المخاطر">
+              <Tooltip title={t('clinic.screening.risk.title')}>
                 <AppButton
                   variant="ghost"
                   size="small"
                   startIcon={<RiskIcon />}
                   onClick={() => openRisk(s)}
                 >
-                  المخاطر
+                  {t('clinic.screening.action.risk')}
                 </AppButton>
               </Tooltip>
-              <Tooltip title="تحويل إلى العيادة">
+              <Tooltip title={t('clinic.screening.refer.title')}>
                 <AppButton
                   variant="ghost"
                   size="small"
                   startIcon={<LocalHospitalIcon />}
                   onClick={() => setReferTarget(s)}
                 >
-                  إحالة
+                  {t('clinic.screening.action.refer')}
                 </AppButton>
               </Tooltip>
-              <Tooltip title="عرض ملف المسافر">
+              <Tooltip title={t('clinic.screening.tooltip.viewTraveler')}>
                 <AppButton
                   variant="ghost"
                   size="small"
                   startIcon={<PersonSearchIcon />}
                   onClick={() => goToTraveler(s.passport_number)}
                 >
-                  المسافر
+                  {t('clinic.screening.action.viewTraveler')}
                 </AppButton>
               </Tooltip>
             </>
@@ -241,13 +251,13 @@ const ScreeningPage = () => {
 
       <ConfirmDialog
         open={Boolean(referTarget)}
-        title="تحويل إلى العيادة"
+        title={t('clinic.screening.refer.dialogTitle')}
         message={
           referTarget
-            ? `تأكيد تحويل ${referTarget.traveler_name} إلى العيادة المرتبطة بالمنفذ؟`
+            ? t('clinic.screening.refer.message', { name: referTarget.traveler_name })
             : ''
         }
-        confirmLabel="تحويل"
+        confirmLabel={t('clinic.screening.refer.confirm')}
         loading={referring}
         tone="info"
         onConfirm={confirmRefer}
@@ -256,29 +266,29 @@ const ScreeningPage = () => {
 
       <ConfirmDialog
         open={Boolean(riskTarget)}
-        title="تقييم المخاطر"
-        message="نتيجة تقييم المخاطر التلقائية لهذا الفحص من نظام تقييم المخاطر."
-        confirmLabel="حسناً"
-        cancelLabel="إغلاق"
+        title={t('clinic.screening.risk.dialogTitle')}
+        message={t('clinic.screening.risk.message')}
+        confirmLabel={t('clinic.screening.risk.confirm')}
+        cancelLabel={t('clinic.common.close')}
         tone="info"
         onConfirm={() => setRiskTarget(null)}
         onClose={() => setRiskTarget(null)}
       >
         {riskLoading ? (
-          <Typography color="text.secondary">جارٍ التحميل…</Typography>
+          <Typography color="text.secondary">{t('clinic.screening.risk.loading')}</Typography>
         ) : assessment ? (
           <Box>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
               <StatusChip label={labelOf(riskLevel, assessment.risk_level)} tone={toneOf(riskLevel, assessment.risk_level)} />
               <StatusChip label={labelOf(riskRecommendation, assessment.recommendation)} tone={toneOf(riskRecommendation, assessment.recommendation)} />
             </Stack>
-            <Typography variant="body2">درجة الخطر: {assessment.risk_score}</Typography>
+            <Typography variant="body2">{t('clinic.screening.risk.score', { score: assessment.risk_score })}</Typography>
             <Typography variant="body2" color="text.secondary">
-              التقييم: {formatDateTime(assessment.assessed_at)}
+              {t('clinic.screening.risk.assessed', { at: formatDateTime(assessment.assessed_at) })}
             </Typography>
           </Box>
         ) : (
-          <Alert severity="info">لا يوجد تقييم مخاطر لهذا الفحص بعد.</Alert>
+          <Alert severity="info">{t('clinic.screening.risk.noAssessmentHint')}</Alert>
         )}
       </ConfirmDialog>
     </Box>

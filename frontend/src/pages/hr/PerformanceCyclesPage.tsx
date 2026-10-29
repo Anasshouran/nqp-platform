@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -32,6 +33,7 @@ import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
 const PerformanceCyclesPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -62,7 +64,7 @@ const PerformanceCyclesPage = () => {
     () => [
       {
         key: 'name',
-        label: 'الدورة',
+        label: t('hr.performanceCycles.columns.name'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
@@ -76,10 +78,10 @@ const PerformanceCyclesPage = () => {
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.performanceCycles.columns.status'),
         render: (row) => (
           <StatusChip
-            label={CYCLE_STATUS_LABELS[row.status] ?? row.status}
+            label={t(`hr.performanceCycles.status.${row.status}`) ?? row.status}
             tone={
               row.status === 'OPEN'
                 ? 'info'
@@ -92,13 +94,13 @@ const PerformanceCyclesPage = () => {
       },
       {
         key: 'kpi_weight_total',
-        label: 'مجموع أوزان KPIs',
+        label: t('hr.performanceCycles.columns.kpiWeightTotal'),
         align: 'center' as const,
         render: (row) => `${row.kpi_weight_total}%`,
       },
       {
         key: 'review_count',
-        label: 'التقييمات',
+        label: t('hr.performanceCycles.columns.reviewCount'),
         sortable: true,
         align: 'center' as const,
         render: (row) =>
@@ -108,20 +110,20 @@ const PerformanceCyclesPage = () => {
       },
       {
         key: 'review_due_date',
-        label: 'موعد الاعتماد',
+        label: t('hr.performanceCycles.columns.reviewDueDate'),
         sortable: true,
         hideOnMobile: true,
         render: (row) => formatDate(row.review_due_date),
       },
       {
         key: 'actions',
-        label: 'إجراءات',
+        label: t('hr.performanceCycles.columns.actions'),
         align: 'right' as const,
         sortable: false,
         render: (row) => (
           <Stack direction="row" spacing={0.5} justifyContent="flex-end">
             <Button size="small" onClick={() => navigate(`/app/hr/performance/cycles/${row.id}`)}>
-              المؤشرات
+              {t('hr.performanceCycles.actions.kpis')}
             </Button>
             {row.status === 'DRAFT' && (
               <Button
@@ -130,7 +132,7 @@ const PerformanceCyclesPage = () => {
                 startIcon={<LockOpenIcon />}
                 onClick={() => setOpening(row)}
               >
-                فتح
+                {t('hr.performanceCycles.actions.open')}
               </Button>
             )}
             {row.status === 'OPEN' && (
@@ -140,14 +142,14 @@ const PerformanceCyclesPage = () => {
                 startIcon={<CloseIcon />}
                 onClick={() => setClosing(row)}
               >
-                إغلاق
+                {t('hr.performanceCycles.actions.close')}
               </Button>
             )}
           </Stack>
         ),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const onOpen = async () => {
@@ -156,11 +158,11 @@ const PerformanceCyclesPage = () => {
     setFormError(null);
     try {
       await openPerformanceCycle(opening.id);
-      notifySuccess('فُتحت الدورة للتقييم');
+      notifySuccess(t('hr.performanceCycles.messages.opened'));
       setOpening(null);
       await reload();
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر فتح الدورة'));
+      setFormError(extractErrorMessage(err, t('hr.performanceCycles.errors.openCycle')));
     } finally {
       setBusy(false);
     }
@@ -172,12 +174,12 @@ const PerformanceCyclesPage = () => {
     setFormError(null);
     try {
       await closePerformanceCycle(closing.id, note.trim());
-      notifySuccess('تم إغلاق الدورة');
+      notifySuccess(t('hr.performanceCycles.messages.closed'));
       setClosing(null);
       setNote('');
       await reload();
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر إغلاق الدورة'));
+      setFormError(extractErrorMessage(err, t('hr.performanceCycles.errors.closeCycle')));
     } finally {
       setBusy(false);
     }
@@ -186,8 +188,8 @@ const PerformanceCyclesPage = () => {
   return (
     <Box>
       <PageHeader
-        title="دورات تقييم الأداء"
-        subtitle="الإغلاق يتطلب أن يساوي مجموع أوزان المؤشرات 100 وأن تُعتمد كل التقييمات"
+        title={t('hr.performanceCycles.pageHeader.title')}
+        subtitle={t('hr.performanceCycles.pageHeader.subtitle')}
         action={
           <Stack direction="row" spacing={1}>
             <Button
@@ -195,14 +197,14 @@ const PerformanceCyclesPage = () => {
               startIcon={<ListAltIcon />}
               onClick={() => navigate('/app/hr/performance/reviews')}
             >
-              التقييمات
+              {t('hr.performanceCycles.actions.reviews')}
             </Button>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate('/app/hr/performance/cycles/new')}
             >
-              دورة جديدة
+              {t('hr.performanceCycles.actions.newCycle')}
             </Button>
           </Stack>
         }
@@ -227,23 +229,26 @@ const PerformanceCyclesPage = () => {
           error={null}
           searchInput={searchInput}
           onSearchChange={setSearchInput}
-          searchPlaceholder="بحث باسم الدورة..."
+          searchPlaceholder={t('hr.performanceCycles.searchPlaceholder')}
           filters={[
             {
               key: 'status',
-              label: 'الحالة',
+              label: t('hr.performanceCycles.filters.status.label'),
               options: [
-                { value: '', label: 'كل الحالات' },
-                ...Object.entries(CYCLE_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+                { value: '', label: t('hr.performanceCycles.filters.status.all') },
+                ...Object.keys(CYCLE_STATUS_LABELS).map((value) => ({
+                  value,
+                  label: t(`hr.performanceCycles.status.${value}`) ?? value,
+                })),
               ],
               value: '',
               onChange: (v) => setFilter('status', v),
             },
             {
               key: 'department',
-              label: 'الإدارة',
+              label: t('hr.performanceCycles.filters.department.label'),
               options: [
-                { value: '', label: 'كل الإدارات' },
+                { value: '', label: t('hr.performanceCycles.filters.department.all') },
                 ...departments.map((d) => ({ value: d.id, label: d.name_ar })),
               ],
               value: '',
@@ -256,10 +261,10 @@ const PerformanceCyclesPage = () => {
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
           onRefresh={refresh}
-          actionsLabel="إجراءات"
+          actionsLabel={t('hr.performanceCycles.actionsLabel')}
           actions={() => null}
-          emptyTitle="لا توجد دورات تقييم"
-          emptyDescription="أنشئ دورة، عرّف مؤشراتها بأوزان، ثم افتحها للتقييم."
+          emptyTitle={t('hr.performanceCycles.emptyTitle')}
+          emptyDescription={t('hr.performanceCycles.emptyDescription')}
         />
       )}
 
@@ -267,11 +272,10 @@ const PerformanceCyclesPage = () => {
         <Card sx={{ mt: 2 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              فتح دورة للتقييم: {opening.name}
+              {t('hr.performanceCycles.dialogs.openTitle', { name: opening.name })}
             </Typography>
             <Alert severity="info" sx={{ mb: 2 }}>
-              بعد الفتح يمكن إضافة التقييمات لها. الفتح يحتاج مؤشراً واحداً على الأقل،
-              ومجموع أوزان المؤشرات يجب أن يبلغ 100 قبل الإغلاق.
+              {t('hr.performanceCycles.dialogs.openAlert')}
             </Alert>
             {formError && (
               <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>
@@ -284,9 +288,11 @@ const PerformanceCyclesPage = () => {
                 disabled={busy}
                 onClick={onOpen}
               >
-                تأكيد الفتح
+                {t('hr.performanceCycles.dialogs.confirmOpen')}
               </Button>
-              <Button onClick={() => { setOpening(null); setFormError(null); }}>إلغاء</Button>
+              <Button onClick={() => { setOpening(null); setFormError(null); }}>
+                {t('hr.performanceCycles.dialogs.cancel')}
+              </Button>
             </Stack>
           </CardContent>
         </Card>
@@ -296,17 +302,16 @@ const PerformanceCyclesPage = () => {
         <Card sx={{ mt: 2 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              إغلاق: {closing.name}
+              {t('hr.performanceCycles.dialogs.closeTitle', { name: closing.name })}
             </Typography>
             <Alert severity="warning" sx={{ mb: 2 }}>
-              الإغلاق نهائي: لن تُقبل تقييمات جديدة، ومجموع أوزان المؤشرات يجب أن يساوي
-              100 وجميع التقييمات معتمدة.
+              {t('hr.performanceCycles.dialogs.closeAlert')}
             </Alert>
             {formError && (
               <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>
             )}
             <FormTextField
-              label="ملاحظة الإغلاق"
+              label={t('hr.performanceCycles.dialogs.closeNoteLabel')}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               multiline
@@ -314,10 +319,10 @@ const PerformanceCyclesPage = () => {
             />
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button variant="contained" color="secondary" disabled={busy} onClick={onClose}>
-                تأكيد الإغلاق
+                {t('hr.performanceCycles.dialogs.confirmClose')}
               </Button>
               <Button onClick={() => { setClosing(null); setFormError(null); }}>
-                إلغاء
+                {t('hr.performanceCycles.dialogs.cancel')}
               </Button>
             </Stack>
           </CardContent>

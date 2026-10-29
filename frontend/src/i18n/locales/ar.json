@@ -8,7 +8,10 @@
     "success": "تم بنجاح",
     "language": "اللغة",
     "arabic": "العربية",
-    "english": "English"
+    "english": "English",
+    "fallback": {
+      "doctor": "الطبيب"
+    }
   },
   "vaccination": {
     "أخرى": "أخرى",
@@ -847,5 +850,4966 @@
     "الإرشادات الصحية": "الإرشادات الصحية",
     "التنبيهات": "التنبيهات",
     "سلامة الأغذية": "سلامة الأغذية"
+  },
+  "traveler": {
+    "preRegistration": {
+      "symptoms": {
+        "fever": "حمى",
+        "headache": "صداع",
+        "bodyPain": "ألم في الجسم",
+        "vomiting": "قيء",
+        "diarrhea": "إسهال",
+        "lossOfAppetite": "فقدان الشهية",
+        "difficultySwallowing": "صعوبة في البلع",
+        "bleeding": "نزيف",
+        "contactWithPatient": "مخالطة مريض",
+        "otherSymptoms": "أعراض أخرى"
+      },
+      "travelModes": {
+        "air": "جوي",
+        "land": "بري",
+        "sea": "بحري"
+      },
+      "yesNo": {
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "title": "التسجيل المسبق للحدود",
+      "subtitle": "يرجى ملء البيانات التالية قبل الوصول إلى نقطة الدخول",
+      "eyebrow": "مسافر",
+      "submit": "إرسال الطلب",
+      "submitting": "جاري الإرسال...",
+      "success": "تم إرسال الطلب بنجاح",
+      "steps": {
+        "start": "البدء",
+        "personal": "البيانات الشخصية",
+        "trip": "بيانات الرحلة",
+        "purposeContact": "الغرض والتواصل",
+        "health": "الإقرار الصحي",
+        "review": "المراجعة والتأكيد"
+      },
+      "personal": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "passportNumber": "رقم جواز السفر",
+        "nationality": "الجنسية",
+        "dob": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني"
+      },
+      "travel": {
+        "arrivalPort": "ميناء/معبر الدخول",
+        "arrivalDate": "تاريخ الوصول المتوقع",
+        "arrivalTime": "وقت الوصول",
+        "travelMode": "وسيلة السفر",
+        "flightNumber": "رقم الرحلة"
+      },
+      "health": {
+        "symptoms": "هل تعاني من أي من الأعراض التالية؟",
+        "feverTemp": "درجة الحرارة (°م)",
+        "contact": "هل كانت لديك مخالطة لشخص مصاب بأمراض معدية خلال 14 يومًا؟",
+        "visited": "هل زرت أي منطقة موبوءة خلال 14 يومًا؟"
+      },
+      "accommodation": {
+        "address": "عنوان الإقامة في السودان",
+        "hotel": "اسم الفندق/المكان"
+      },
+      "review": {
+        "confirm": "أقر بصحة المعلومات المقدمة"
+      },
+      "next": "التالي",
+      "back": "السابق",
+      "saveDraft": "حفظ مسودة",
+      "validation": {
+        "required": "هذا الحقل مطلوب",
+        "email": "يرجى إدخال بريد إلكتروني صحيح",
+        "passport": "رقم الجواز غير صحيح (6-20 حرفاً).",
+        "flight": "رقم الرحلة غير صحيح."
+      },
+      "pageTitle": "التسجيل المسبق للمسافر",
+      "pageSubtitle": "استمارة إلكترونية متعددة الخطوات لتسريع إجراءات وصولك إلى المنافذ",
+      "requestTracking": {
+        "title": "تتبع الطلب",
+        "subtitle": "تحقق من حالة طلب التسجيل المسبق"
+      },
+      "healthProfile": {
+        "title": "الملف الصحي",
+        "subtitle": "عرض ملفك الصحي وحالة الطلب"
+      },
+      "uploadDocuments": {
+        "title": "رفع المستندات",
+        "subtitle": "رفع المستندات المطلوبة لإتمام الطلب"
+      },
+      "purpose": {
+        "tourism": "سياحة",
+        "work": "عمل",
+        "visit": "زيارة",
+        "study": "دراسة",
+        "transit": "عبور",
+        "diplomatic": "دبلوماسي",
+        "internationalOrg": "منظمة دولية",
+        "other": "آخر"
+      },
+      "form": {
+        "seatOrCabin": "رقم المقعد / الكابينة (اختياري)",
+        "bookingOrFlight": "رقم الحجز / الرحلة (اختياري)",
+        "seat": "رقم المقعد (اختياري)",
+        "flightNumberOrShip": "رقم الرحلة / اسم السفينة",
+        "flightNumber": "رقم الرحلة"
+      },
+      "risk": {
+        "initial": "تصنيف المخاطر المبدئي:",
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "mediumDesc": "قد تحتاج إلى فحص إضافي عند الوصول.",
+        "highDesc": "يرجى التوجه إلى الفحص الطبي فور وصولك."
+      },
+      "points": "نقطة",
+      "date": "تاريخ",
+      "noSymptoms": "لا توجد أعراض",
+      "stepProgress": "الخطوة",
+      "of": "من"
+    },
+    "requestTracking": {
+      "status": {
+        "pendingDocuments": "بانتظار المستندات",
+        "underReview": "قيد المراجعة",
+        "actionRequired": "إجراء مطلوب",
+        "completed": "مكتمل",
+        "rejected": "مرفوض"
+      },
+      "progressLabel": "نسبة اكتمال الطلب",
+      "title": "تتبع الطلب",
+      "subtitle": "تحقق من حالة طلب التسجيل المسبق وسجّل المستندات إذا طُلب ذلك",
+      "eyebrow": "مسافر",
+      "form": {
+        "passportLabel": "رقم جواز السفر",
+        "dobLabel": "تاريخ الميلاد",
+        "search": "بحث",
+        "passportPlaceholder": "أدخل رقم جواز السفر",
+        "searchButton": "بحث",
+        "searching": "جاري البحث..."
+      },
+      "statusCard": {
+        "title": "حالة الطلب"
+      },
+      "qr": {
+        "title": "رمز QR للتتبع",
+        "issued": "تم إصدار رمز QR",
+        "notIssued": "رمز QR غير صادر بعد",
+        "refresh": "تحديث QR",
+        "printInstruction": "اعرض هذا الرمز لموظف الحجر الصحي عند الوصول."
+      },
+      "timeline": {
+        "title": "مسار الطلب",
+        "created": "تم إنشاء الطلب",
+        "documents": "رفع المستندات",
+        "review": "الإقرار الصحي والمراجعة",
+        "approved": "اعتماد الطلب وإصدار QR"
+      },
+      "details": {
+        "travelerName": "اسم المسافر",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني",
+        "nationality": "الجنسية"
+      },
+      "error": {
+        "notFound": "لم يتم العثور على طلب بهذا الرقم",
+        "search": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "refresh": "تعذر إعادة إصدار رمز QR، حاول مرة أخرى.",
+        "load": "تعذر تحميل حالة الطلب، حاول مرة أخرى لاحقاً."
+      },
+      "share": {
+        "title": "رمز QR - NQP"
+      },
+      "empty": {
+        "title": "ابحث عن طلبك",
+        "description": "أدخل رقم جواز السفر وتاريخ الميلاد أعلاه لعرض حالة الطلب، أو سجّل مسبقاً من بوابة المسافرين."
+      }
+    },
+    "healthProfile": {
+      "status": {
+        "pendingDocuments": "بانتظار المستندات",
+        "underReview": "قيد المراجعة",
+        "actionRequired": "إجراء مطلوب",
+        "completed": "مكتمل",
+        "rejected": "مرفوض"
+      },
+      "title": "الملف الصحي",
+      "subtitle": "عرض معلومات التسجيل المسبق وحالة الطلب",
+      "eyebrow": "مسافر",
+      "personalInfo": "المعلومات الشخصية",
+      "fullName": "الاسم الكامل",
+      "passportNumber": "رقم جواز السفر",
+      "nationality": "الجنسية",
+      "phone": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "tripInfo": "معلومات الرحلة",
+      "arrivalPort": "ميناء الوصول",
+      "arrivalDate": "تاريخ الوصول",
+      "travelMode": "وسيلة السفر",
+      "healthDeclaration": "الإقرار الصحي",
+      "documents": "المستندات",
+      "viewDocuments": "عرض المستندات",
+      "units": {
+        "byte": "بايت",
+        "kb": "كيلوبايت",
+        "mb": "ميجابايت"
+      }
+    },
+    "dashboard": {
+      "title": "لوحة المسافر",
+      "subtitle": "إدارة طلبات التسجيل المسبق والمستندات",
+      "eyebrow": "مسافر",
+      "preRegistration": {
+        "title": "التسجيل المسبق",
+        "description": "تقديم طلب تسجيل مسبق للحدود",
+        "button": "بدء التسجيل"
+      },
+      "tracking": {
+        "title": "تتبع الطلب",
+        "description": "التحقق من حالة طلبك",
+        "button": "تتبع"
+      },
+      "healthProfile": {
+        "title": "الملف الصحي",
+        "description": "عرض وإدارة معلوماتك الصحية",
+        "button": "عرض الملف"
+      },
+      "documents": {
+        "title": "المستندات",
+        "description": "رفع المستندات المطلوبة",
+        "button": "رفع المستندات",
+        "manage": "إدارة المستندات",
+        "viewAll": "عرض جميع المستندات"
+      },
+      "logout": "تسجيل الخروج",
+      "loading": "جاري التحميل...",
+      "noTraveler": "لا يوجد ملف مسافر مرتبط بهذا الحساب",
+      "preRegister": "التسجيل المسبق",
+      "status": {
+        "title": "حالة الطلب",
+        "progress": "نسبة الإنجاز",
+        "qrIssued": "تم إصدار رمز QR",
+        "qrNotIssued": "لم يتم إصدار رمز QR بعد",
+        "viewTracking": "عرض تتبع الطلب",
+        "rejectionReason": "سبب الرفض"
+      },
+      "personalInfo": {
+        "title": "المعلومات الشخصية",
+        "fullName": "الاسم الكامل",
+        "passport": "رقم جواز السفر",
+        "nationality": "الجنسية",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني"
+      },
+      "tripInfo": {
+        "title": "معلومات الرحلة",
+        "port": "ميناء الوصول",
+        "date": "تاريخ الوصول",
+        "mode": "وسيلة السفر",
+        "flight": "رقم الرحلة/المركبة"
+      },
+      "health": {
+        "title": "الإقرار الصحي",
+        "riskLevel": "مستوى الخطر",
+        "symptoms": "الأعراض المبلغ عنها",
+        "contact": "مخالطة مريض خلال 14 يومًا",
+        "visited": "زيارة منطقة موبوءة خلال 14 يومًا"
+      },
+      "notices": {
+        "title": "إعلانات صحية"
+      },
+      "edit": "تعديل",
+      "risk": {
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع"
+      },
+      "symptoms": {
+        "fever": "حمى",
+        "headache": "صداع",
+        "bodyPain": "ألم في الجسم",
+        "vomiting": "قيء",
+        "diarrhea": "إسهال",
+        "lossOfAppetite": "فقدان الشهية",
+        "difficultySwallowing": "صعوبة في البلع",
+        "bleeding": "نزيف",
+        "contactWithPatient": "مخالطة مريض",
+        "otherSymptoms": "أعراض أخرى"
+      },
+      "transport": {
+        "air": "طائرة",
+        "sea": "سفينة",
+        "land": "بر"
+      },
+      "notificationsTooltip": "إشعارات",
+      "notificationsAria": "الإشعارات",
+      "profileTooltip": "ملفي الشخصي",
+      "profileAria": "الملف الشخصي",
+      "healthDeclaration": {
+        "title": "الإقرار الصحي",
+        "submitted": "تم التقديم",
+        "risk": "تصنيف المخاطر",
+        "date": "تاريخ التقديم",
+        "symptoms": "الأعراض",
+        "noSymptoms": "لا توجد أعراض"
+      }
+    },
+    "uploadDocuments": {
+      "types": {
+        "passport": "صورة جواز السفر",
+        "vaccine": "شهادة التطعيم",
+        "testResult": "نتيجة فحص",
+        "other": "مستندات أخرى"
+      },
+      "title": "رفع المستندات",
+      "subtitle": "يرجى رفع المستندات المطلوبة لإتمام طلب التسجيل المسبق",
+      "eyebrow": "مسافر",
+      "required": "إلزامي",
+      "optional": "اختياري",
+      "upload": "رفع",
+      "uploading": "جاري الرفع...",
+      "uploaded": "تم الرفع",
+      "remove": "حذف",
+      "submit": "إرسال",
+      "success": {
+        "delete": "تم حذف المستند"
+      },
+      "error": {
+        "load": "تعذر تحميل المستندات.",
+        "searchPassport": "يرجى إدخال رقم جواز السفر.",
+        "searchDob": "يرجى إدخال تاريخ الميلاد للتحقق من الهوية.",
+        "notFound": "لم يتم العثور على مسافر بهذا الرقم. يرجى إكمال التسجيل المسبق أولاً.",
+        "searchGeneric": "حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.",
+        "fileType": "نوع الملف غير مدعوم (يُسمح بـ JPEG, PNG, PDF).",
+        "fileSize": "حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).",
+        "upload": "فشل رفع الملف:",
+        "delete": "تعذر حذف المستند"
+      },
+      "passportNumber": "رقم جواز السفر",
+      "passportPlaceholder": "أدخل رقم جواز السفر",
+      "selectType": "اختر نوع المستند",
+      "selectFile": "اختر ملف",
+      "noDocuments": "لا توجد مستندات مرفوعة",
+      "fileSize": "حجم الملف",
+      "fileType": "نوع الملف",
+      "delete": {
+        "title": "حذف المستند",
+        "message": "هل تريد حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف",
+        "aria": "حذف",
+        "fallback": "المستند"
+      }
+    }
+  },
+  "login": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "الدخول للموظفين والجهات المعتمدة فقط",
+      "brand": "منصة الحجر الصحي القومي",
+      "description": "نظام موحّد لموظفي الإدارة الاتحادية للحجر الصحي لإدارة منافذ الدخول،\n              الفحص الصحي، الرصد الوبائي، وغرفة العمليات الطارئة.",
+      "highlights": [
+        "مراقبة وبائية على مدار الساعة",
+        "إدارة متكاملة لمنافذ الدخول",
+        "تقارير فورية للجهات الرسمية"
+      ],
+      "backToSite": "العودة إلى الموقع العام",
+      "copyright": "الإدارة الاتحادية للحجر الصحي"
+    },
+    "travelerLogin": {
+      "title": "دخول المسافر",
+      "subtitle": "سجّل دخولك لإدارة رحلتك ومتابعة طلبك",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "submitting": "جاري تسجيل الدخول...",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "noAccount": "ليس لديك حساب؟",
+      "signup": "أنشئ حساباً جديداً",
+      "backToHome": "العودة للرئيسية",
+      "invalidCredentials": "بيانات الدخول غير صحيحة",
+      "authError": "خطأ في المصادقة"
+    },
+    "travelerSignup": {
+      "title": "إنشاء حساب مسافر",
+      "subtitle": "أنشئ حسابك لتتمكن من تسجيل رحلتك ومتابعتها",
+      "fullNameLabel": "الاسم الكامل",
+      "emailLabel": "البريد الإلكتروني",
+      "phoneLabel": "رقم الجوال (اختياري)",
+      "passwordLabel": "كلمة المرور",
+      "passwordHelper": "8 أحرف على الأقل",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "submit": "إنشاء الحساب",
+      "submitting": "جاري الإنشاء...",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "login": "سجّل الدخول",
+      "backToHome": "العودة للرئيسية",
+      "errors": {
+        "fullNameRequired": "الاسم الكامل مطلوب",
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "emailInvalid": "البريد الإلكتروني غير صحيح",
+        "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordMismatch": "كلمتا المرور غير متطابقتين",
+        "fixErrors": "يرجى تصحيح الأخطاء أدناه",
+        "createError": "حدث خطأ أثناء إنشاء الحساب"
+      }
+    },
+    "forgot": {
+      "travelerTitle": "نسيت كلمة المرور؟",
+      "travelerSubtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور",
+      "emailLabel": "البريد الإلكتروني",
+      "submit": "إرسال رابط إعادة التعيين",
+      "submitting": "جاري الإرسال...",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "backToHome": "العودة للرئيسية",
+      "successTitle": "تحقق من بريدك الإلكتروني",
+      "successMessage": "إذا كان <strong>{{email}}</strong> مسجّلاً، ستتلقى رابطاً لإعادة تعيين كلمة المرور.",
+      "successNote": "لم تصل الرسالة؟ تحقق من مجلد الرسائل غير المرغوب فيها.",
+      "error": "تعذر إرسال رابط إعادة التعيين"
+    },
+    "reset": {
+      "travelerTitle": "إعادة تعيين كلمة المرور",
+      "travelerSubtitle": "أدخل كلمة المرور الجديدة",
+      "newPasswordLabel": "كلمة المرور الجديدة",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "submit": "إعادة تعيين كلمة المرور",
+      "submitting": "جاري الإعادة...",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "requestNewLink": "اطلب رابطاً جديداً",
+      "noLinkReceived": "لم تتلقى الرابط؟",
+      "successTitle": "تم إعادة تعيين كلمة المرور",
+      "successSubtitle": "يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة",
+      "successButton": "تسجيل الدخول",
+      "errors": {
+        "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordMismatch": "كلمتا المرور غير متطابقتين",
+        "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية"
+      }
+    },
+    "forgotStaff": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور",
+      "emailLabel": "البريد الإلكتروني",
+      "submit": "إرسال رابط إعادة التعيين",
+      "submitting": "جاري الإرسال...",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "backToHome": "العودة للرئيسية",
+      "successTitle": "تحقق من بريدك الإلكتروني",
+      "successMessage": "إذا كان <strong>{{email}}</strong> مسجّلاً، ستتلقى رابطاً لإعادة تعيين كلمة المرور.",
+      "successNote": "لم تصل الرسالة؟ تحقق من مجلد الرسائل غير المرغوب فيها."
+    },
+    "resetStaff": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل كلمة المرور الجديدة",
+      "newPasswordLabel": "كلمة المرور الجديدة",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "submit": "إعادة تعيين كلمة المرور",
+      "submitting": "جاري الإعادة...",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "successTitle": "تم إعادة تعيين كلمة المرور",
+      "successSubtitle": "يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة",
+      "successButton": "تسجيل الدخول",
+      "errors": {
+        "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordMismatch": "كلمتا المرور غير متطابقتين",
+        "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية"
+      }
+    }
+  },
+  "borders": {
+    "bordersHealth": {
+      "tabs": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات الصحية",
+        "screening": "الفحص الصحي",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "تفتيش الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "حالات الحجر",
+        "isolation": "حالات العزل",
+        "tracing": "حالات التتبع",
+        "incidents": "الحوادث الصحية",
+        "emergencies": "حالات الطوارئ",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "dailyStats": "الحصيلة اليومية",
+        "certificates": "الشهادات"
+      },
+      "title": "صحة المعابر البرية",
+      "subtitle": "إدارة المعابر البرية: الحركة، الفحص، المركبات، الشحنات، العينات، الحجر، العزل، التتبع، الطوارئ، القرارات، الإشعارات، الشهادات، الحصيلة اليومية",
+      "eyebrow": "مركز قيادة المعابر",
+      "sections": {
+        "dashboard": "لوحة القيادة",
+        "crossings": "المعابر",
+        "facilities": "المرافق",
+        "shifts": "الورديات",
+        "staff": "الكادر",
+        "travelers": "المسافرون",
+        "declarations": "الإقرارات",
+        "screenings": "الفحوصات",
+        "vehicles": "المركبات",
+        "vehicleInspections": "تفتيش المركبات",
+        "cargo": "الشحنات",
+        "samples": "العيّنات",
+        "quarantine": "الحجر",
+        "isolation": "العزل",
+        "tracing": "تتبع المخالطين",
+        "emergencies": "الطوارئ",
+        "certificates": "الشهادات",
+        "decisions": "القرارات",
+        "notifications": "الإشعارات",
+        "statistics": "الحصيلة اليومية"
+      },
+      "dashboard": {
+        "eyebrow": "مركز قيادة المعابر",
+        "title": "الحجر الصحي القومي — المعابر البرية",
+        "subtitle": "مؤشرات وطنية لحركة المسافرين والمركبات والشحنات والحجر عبر المعابر",
+        "avatarLabel": "المعابر",
+        "kpi": {
+          "openCrossings": "معابر عاملة",
+          "from": "من",
+          "travelersToday": "مسافرون اليوم",
+          "vehiclesInspected": "مركبات مفتّشة",
+          "cargoInspections": "شحنات مفتّشة",
+          "activeQuarantine": "حالات حجر نشطة",
+          "activeIsolation": "حالات عزل",
+          "suspectedCases": "حالات مشتبه بها",
+          "certificatesIssued": "شهادات صادرة"
+        },
+        "performance": {
+          "title": "أداء المعابر",
+          "subtitle": "مقارنة الحركة والتفتيش والحجر بين المعابر",
+          "emptyTitle": "لا توجد بيانات أداء",
+          "emptyDescription": "تظهر المقارنة بعد تسجيل حركة عبر المعابر.",
+          "cols": {
+            "crossing": "المعبر",
+            "code": "الكود",
+            "neighbor": "الدولة المجاورة",
+            "status": "الحالة",
+            "travelerFlow": "حركة المسافرين",
+            "vehicles": "مركبات",
+            "cargo": "شحنات",
+            "quarantine": "حجر"
+          }
+        },
+        "trend": {
+          "title": "اتجاه الحركة (7 أيام)",
+          "inbound": "داخل",
+          "outbound": "خارج",
+          "daysRecorded": "أيام مسجّلة"
+        }
+      },
+      "crossings": {
+        "title": "إدارة المعابر",
+        "subtitle": "{count} معبر",
+        "searchPlaceholder": "بحث باسم المعبر أو كوده أو الدولة المجاورة...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد معابر",
+        "emptyDescription": "شغّل أمر بذر المعابر لإنشاء الملفات التشغيلية.",
+        "dialogTitle": "تغيير حالة المعبر",
+        "reasonLabel": "سبب الإغلاق / التقييد",
+        "newStatus": "الحالة الجديدة",
+        "cols": {
+          "crossing": "المعبر",
+          "neighbor": "الدولة المجاورة",
+          "state": "الولاية",
+          "status": "الحالة",
+          "capacity": "السعة اليومية",
+          "lab": "مختبر"
+        },
+        "actions": {
+          "changeStatus": "تغيير حالة التشغيل"
+        },
+        "exported": "تم تصدير بيانات المعابر"
+      },
+      "facilities": {
+        "title": "مرافق المعابر",
+        "subtitle": "{count} مرفق",
+        "searchPlaceholder": "بحث باسم المرفق...",
+        "filterKind": "نوع المرفق",
+        "emptyTitle": "لا توجد مرافق",
+        "emptyDescription": "سجّل مرافق المعبر: مختبر، وحدة حجر، مخزن.",
+        "cols": {
+          "name": "المرفق",
+          "type": "النوع",
+          "crossing": "المعبر",
+          "capacity": "السعة",
+          "staff": "الكادر",
+          "status": "التشغيل"
+        }
+      },
+      "shifts": {
+        "title": "الورديات",
+        "subtitle": "{count} وردية",
+        "searchPlaceholder": "بحث في الملاحظات...",
+        "filterType": "نوع الوردية",
+        "emptyTitle": "لا توجد ورديات",
+        "emptyDescription": "سجّل ورديات العمل اليومية لكل معبر.",
+        "cols": {
+          "date": "التاريخ",
+          "shift": "الوردية",
+          "start": "البداية",
+          "end": "النهاية",
+          "crossing": "المعبر",
+          "supervisor": "المشرف",
+          "staffed": "مؤمَّنة"
+        }
+      },
+      "staff": {
+        "title": "كادر المعابر",
+        "subtitle": "{count} إسناد",
+        "searchPlaceholder": "بحث باسم الموظف...",
+        "emptyTitle": "لا يوجد كادر مسجَّل",
+        "emptyDescription": "أسند الموظفين إلى المعابر من صفحة الأدوار والصلاحيات.",
+        "cols": {
+          "employee": "الموظف",
+          "role": "الدور",
+          "crossing": "المعبر",
+          "assignment": "نوع الإسناد",
+          "starts": "يبدأ",
+          "ends": "ينتهي",
+          "status": "نشط"
+        }
+      },
+      "travelers": {
+        "title": "المسافرون",
+        "subtitle": "{count} مسافر",
+        "searchPlaceholder": "بحث بالاسم أو رقم الجواز...",
+        "filterDirection": "الاتجاه",
+        "filterRisk": "الخطورة",
+        "emptyTitle": "لا توجد حركة مسافرين",
+        "emptyDescription": "سجّل حركة المسافرين من صفحة الفحص الصحي.",
+        "cols": {
+          "traveler": "المسافر",
+          "direction": "الاتجاه",
+          "time": "وقت العبور",
+          "crossing": "المعبر",
+          "risk": "الخطورة",
+          "decision": "القرار",
+          "assessor": "المُقيِّم",
+          "passport": "الجواز"
+        },
+        "exported": "تم تصدير حركة المسافرين"
+      },
+      "declarations": {
+        "title": "الإقرارات الصحية",
+        "subtitle": "{count} إقرار",
+        "searchPlaceholder": "بحث بالاسم أو الجواز...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد إقرارات",
+        "emptyDescription": "تُسجَّل الإقرارات الصحية من بوابة المسافرين أو عند المعبر.",
+        "cols": {
+          "traveler": "المسافر",
+          "departureCountry": "بلد المغادرة",
+          "departureDate": "تاريخ المغادرة",
+          "symptoms": "الأعراض",
+          "status": "الحالة",
+          "crossing": "المعبر",
+          "declaredAt": "تاريخ الإقرار"
+        }
+      },
+      "screenings": {
+        "title": "الفحص الصحي",
+        "subtitle": "{count} فحص",
+        "searchPlaceholder": "بحث بالاسم أو رقم الجواز...",
+        "filterDecision": "القرار",
+        "emptyTitle": "لا توجد فحوصات",
+        "emptyDescription": "سجّل الفحص الحراري مع قرار الإفراج.",
+        "reassessTitle": "إعادة تقييم الفحص",
+        "reassessNote": "تُعاد قراءة القواعد على القياسات أدناه: حمّى ≥ 38 أو أكسجين < 92 ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.",
+        "currentDecision": "القرار الحالي",
+        "tempLabel": "درجة الحرارة (°C)",
+        "oxygenLabel": "إشباع الأكسجين (%)",
+        "reassessBtn": "إعادة التقييم",
+        "cols": {
+          "traveler": "المسافر",
+          "temp": "الحرارة",
+          "oxygen": "الأكسجين",
+          "risk": "الخطورة",
+          "decision": "القرار",
+          "docs": "الوثائق",
+          "crossing": "المعبر",
+          "time": "وقت الفحص"
+        },
+        "ruleNote": "تُعاد قراءة القواعد على القياسات أدناه: حمّى ≥ 38 أو أكسجين < 92 ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.",
+        "reassessBtnLabel": "إعادة التقييم",
+        "loading": "جارٍ...",
+        "fields": {
+          "temp": "درجة الحرارة (°C)",
+          "oxygen": "إشباع الأكسجين (%)"
+        },
+        "reassessed": "أُعيد تقييم الفحص وحُدِّث القرار",
+        "busy": "جارٍ..."
+      },
+      "vehicles": {
+        "title": "المركبات",
+        "subtitle": "{count} مركبة",
+        "searchPlaceholder": "بحث باللوحة أو الهيكل أو اسم السائق...",
+        "filterType": "نوع المركبة",
+        "emptyTitle": "لا توجد مركبات",
+        "emptyDescription": "سجّل المركبات العابرة مع بيانات السائق.",
+        "cols": {
+          "plate": "اللوحة",
+          "type": "النوع",
+          "model": "الطراز",
+          "driver": "السائق",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "vehicleInspections": {
+        "title": "تفتيش المركبات",
+        "subtitle": "{count} عملية تفتيش",
+        "searchPlaceholder": "بحث باللوحة أو الملاحظات...",
+        "filterOverall": "الحكم",
+        "emptyTitle": "لا توجد عمليات تفتيش",
+        "emptyDescription": "سجّل نتائج تفتيش المركبات.",
+        "cols": {
+          "plate": "اللوحة",
+          "type": "نوع التفتيش",
+          "cleanliness": "النظافة",
+          "pest": "الحشرات",
+          "overall": "الحكم",
+          "date": "التاريخ",
+          "inspector": "المفتش"
+        }
+      },
+      "cargo": {
+        "title": "تفتيش الشحنات",
+        "subtitle": "{count} شحنة",
+        "searchPlaceholder": "بحث برقم الإقرار أو الصنف أو المنشأ...",
+        "filterScope": "النطاق",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد شحنات",
+        "emptyDescription": "سجّل تفتيش الشحنات العامة والغذائية.",
+        "dialogTitle": "تسجيل قرار الشحنة",
+        "dialogNote": "يجمع النظام القرار من نتائج العيّنات المرتبطة. يمكنك تجاوزه بقرار صريح.",
+        "declaration": "الإقرار",
+        "decisionSamples": "احتساب من العيّنات",
+        "cols": {
+          "declaration": "رقم الإقرار",
+          "scope": "النطاق",
+          "product": "الصنف",
+          "origin": "المنشأ",
+          "plate": "اللوحة",
+          "status": "الحالة",
+          "decision": "القرار"
+        },
+        "note": "يجمع النظام القرار من نتائج العيّنات المرتبطة. يمكنك تجاوزه بقرار صريح.",
+        "reject": "رفض",
+        "hold": "حجز",
+        "calcFromSamples": "احتساب من العيّنات",
+        "declarationLabel": "الإقرار:",
+        "recorded": "تم تسجيل قرار الشحنة",
+        "failed": "تعذر تسجيل القرار"
+      },
+      "samples": {
+        "title": "العيّنات",
+        "subtitle": "{count} عيّنة",
+        "searchPlaceholder": "بحث بكود العيّنة أو نوعها...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد عيّنات",
+        "emptyDescription": "سجّل عيّنات الشحنات الغذائية والمياه.",
+        "cols": {
+          "code": "كود العيّنة",
+          "type": "نوع العيّنة",
+          "status": "الحالة",
+          "result": "النتيجة",
+          "crossing": "المعبر",
+          "collectedBy": "المسحوب",
+          "collectedAt": "التاريخ"
+        }
+      },
+      "quarantine": {
+        "title": "حالات الحجر",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث برقم الحالة أو الاسم...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد حالات حجر",
+        "emptyDescription": "سجّل حالات الحجر الصحي مع المتابعة.",
+        "cols": {
+          "caseNo": "رقم الحالة",
+          "person": "الحالة",
+          "entryAt": "تاريخ الدخول",
+          "duration": "المدة",
+          "expectedEnd": "النهاية المتوقعة",
+          "phase": "المرحلة",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "isolation": {
+        "title": "حالات العزل",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث بالاسم أو رقم الحالة...",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد حالات عزل",
+        "emptyDescription": "إدارة العزل الصحي مع المراقبة اليومية.",
+        "cols": {
+          "caseNo": "رقم الحالة",
+          "person": "المريض",
+          "diagnosis": "التشخيص",
+          "admittedAt": "تاريخ الدخول",
+          "facility": "المرفق",
+          "status": "الحالة",
+          "endDate": "تاريخ الخروج المتوقع"
+        }
+      },
+      "tracing": {
+        "title": "حالات التتبع",
+        "subtitle": "{count} حالة",
+        "searchPlaceholder": "بحث باسم الحالة الأصل...",
+        "emptyTitle": "لا توجد حالات تتبع",
+        "emptyDescription": "تُفتح حالة تتبع من تسجيل مخالفي وسيلة نقل وارد.",
+        "cols": {
+          "case": "الحالة الأصلية",
+          "exposed": "المخاطَب",
+          "passport": "الجواز",
+          "phone": "الهاتف",
+          "seat": "المقعد / الصلة",
+          "transport": "وسيلة النقل",
+          "followUp": "أيام المتابعة",
+          "started": "تاريخ البدء",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        }
+      },
+      "emergencies": {
+        "title": "حالات الطوارئ",
+        "subtitle": "{count} حالة طوارئ",
+        "searchPlaceholder": "بحث بالعنوان أو النوع...",
+        "filterType": "النوع",
+        "filterSeverity": "الخطورة",
+        "emptyTitle": "لا توجد طوارئ",
+        "emptyDescription": "سجّل حالات الطوارئ الصحية على الفور.",
+        "cols": {
+          "title": "العنوان",
+          "type": "النوع",
+          "severity": "الخطورة",
+          "status": "الحالة",
+          "reportedAt": "وقت الإبلاغ",
+          "crossing": "المعبر",
+          "actionedBy": "تم الإجراء بواسطة"
+        }
+      },
+      "certificates": {
+        "title": "الشهادات",
+        "subtitle": "{count} شهادة",
+        "searchPlaceholder": "بحث برقم الشهادة أو الاسم...",
+        "filterType": "النوع",
+        "filterStatus": "الحالة",
+        "issue": "إصدار شهادة",
+        "emptyTitle": "لا توجد شهادات",
+        "emptyDescription": "أصدر شهادات الحجر الصحي للمسافرين أو الشحنات.",
+        "issueDialog": {
+          "title": "إصدار شهادة",
+          "type": "نوع الشهادة",
+          "traveler": "اسم المسافر",
+          "passport": "رقم الجواز",
+          "crossing": "المعبر",
+          "issuedBy": "المصدر",
+          "validDays": "مدة الصلاحية (يوم)",
+          "reason": "سبب الإصدار"
+        },
+        "cols": {
+          "number": "رقم الشهادة",
+          "type": "النوع",
+          "holder": "المُستفيد",
+          "passport": "الجواز",
+          "issuedAt": "تاريخ الإصدار",
+          "expiresAt": "تاريخ الانتهاء",
+          "status": "الحالة",
+          "crossing": "المعبر"
+        },
+        "exported": "تم تصدير الشهادات",
+        "selectCrossing": "اختر المعبر أولاً",
+        "issued": "صدرت الشهادة {number}",
+        "issueFailed": "تعذر إصدار الشهادة"
+      },
+      "decisions": {
+        "title": "القرارات",
+        "subtitle": "{count} قرار",
+        "searchPlaceholder": "بحث بالموضوع أو القرار...",
+        "filterType": "النوع",
+        "emptyTitle": "لا توجد قرارات",
+        "emptyDescription": "قرارات الحجر الصحي ومسارات الاعتراض.",
+        "cols": {
+          "ref": "رقم المرجع",
+          "subject": "الموضوع",
+          "type": "النوع",
+          "outcome": "النتيجة",
+          "decidedAt": "تاريخ القرار",
+          "decidedBy": "صادر عن",
+          "crossing": "المعبر"
+        },
+        "exported": "تم تصدير القرارات"
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "subtitle": "{count} إشعار",
+        "searchPlaceholder": "بحث بالعنوان...",
+        "filterType": "النوع",
+        "filterStatus": "الحالة",
+        "emptyTitle": "لا توجد إشعارات",
+        "emptyDescription": "إشعارات الطوارئ والتذكير.",
+        "cols": {
+          "title": "العنوان",
+          "type": "النوع",
+          "channel": "القناة",
+          "status": "الحالة",
+          "sentAt": "وقت الإرسال",
+          "recipients": "المستلمون"
+        },
+        "exported": "تم تصدير الإشعارات"
+      },
+      "statistics": {
+        "title": "الحصيلة اليومية",
+        "subtitle": "إحصائيات يومية حسب المعبر",
+        "filterDate": "التاريخ",
+        "emptyTitle": "لا توجد إحصائيات",
+        "emptyDescription": "يتم توليد الحصيلة اليومية تلقائياً أو يدوياً.",
+        "refresh": "تحديث الحصيلة",
+        "cols": {
+          "date": "التاريخ",
+          "crossing": "المعبر",
+          "travelers": "المسافرون",
+          "vehicles": "المركبات",
+          "declarations": "الإقرارات",
+          "screenings": "الفحوصات",
+          "suspected": "مشتبه به",
+          "quarantine": "حجر",
+          "isolation": "عزل",
+          "cargo": "شحنات",
+          "certificates": "شهادات"
+        },
+        "refreshing": "جارٍ التحديث...",
+        "emptyRefresh": "اضغط «تحديث حصيلة اليوم» لحساب أرقام اليوم من سجلات الفحص والشحنات.",
+        "minutesUnit": "د",
+        "refreshed": "تم تحديث حصيلة اليوم لكل المعابر",
+        "refreshFailed": "تعذّر تحديث الإحصاءات — قد تحتاج صلاحية لوحة القيادة"
+      },
+      "statusLabels": {
+        "yes": "نعم",
+        "no": "لا",
+        "operational": "يعمل",
+        "stopped": "متوقف",
+        "active": "نشط",
+        "ended": "منتهٍ",
+        "ongoing": "مستمر"
+      }
+    },
+    "portHealth": {
+      "nav": {
+        "dashboard": "لوحة المؤشرات",
+        "seaports": "الموانئ",
+        "vessels": "السفن",
+        "crew": "الطاقم",
+        "passengers": "الركاب",
+        "declarations": "الإقرار الصحي",
+        "inspections": "التفتيش الصحي",
+        "shipInspection": "تفتيش ميداني",
+        "foodWater": "الأغذية والمياه",
+        "sanitation": "شهادات صحة السفن",
+        "isolation": "العزل والحجر",
+        "surveillance": "الترصد الوبائي",
+        "vectors": "النواقل",
+        "cargo": "الشحنات",
+        "waste": "النفايات",
+        "emergencies": "الطوارئ",
+        "healthCerts": "الشهادات"
+      },
+      "title": "صحة الموانئ",
+      "subtitle": "إدارة الحجر الصحي في الموانئ البحرية — السفن والطاقم والركاب والشحنات والتفتيش",
+      "eyebrow": "العمليات",
+      "dashboard": {
+        "eyebrow": "لوحة المؤشرات — صحة الموانئ",
+        "welcome": "مرحباً، ",
+        "supervisor": "المشرف",
+        "avatar": "م",
+        "live": "مباشر"
+      },
+      "kpi": {
+        "seaports": "الموانئ البحرية",
+        "totalVessels": "إجمالي السفن",
+        "arrivedVessels": "سفن وصلت",
+        "inspections": "عمليات التفتيش",
+        "certificatesIssued": "شهادات صادرة",
+        "suspectedCases": "حالات مشتبه بها",
+        "activeIsolation": "عزل نشط",
+        "openEmergencies": "طوارئ مفتوحة"
+      },
+      "cols": {
+        "vessel": "السفينة",
+        "vesselName": "اسم السفينة",
+        "imo": "رقم IMO",
+        "flag": "العلم",
+        "company": "الشركة",
+        "type": "النوع",
+        "status": "الحالة",
+        "arrival": "الوصول",
+        "code": "الكود",
+        "port": "الميناء",
+        "location": "الموقع",
+        "capacity": "الطاقة الاستيعابية",
+        "crewMember": "عضو الطاقم",
+        "nationality": "الجنسية",
+        "jobTitle": "الوظيفة",
+        "healthStatus": "الحالة الصحية",
+        "temperature": "الحرارة",
+        "passenger": "الراكب",
+        "cabin": "المقصورة",
+        "captain": "الربان",
+        "date": "التاريخ",
+        "illnesses": "حالات مرضية",
+        "deaths": "الوفيات",
+        "actions": "الإجراءات",
+        "review": "المراجعة",
+        "inspector": "المفتش",
+        "cleanliness": "النظافة",
+        "overallStatus": "الحالة العامة",
+        "certificate": "الشهادة",
+        "inspectionDate": "تاريخ التفتيش",
+        "foodSafety": "سلامة الأغذية",
+        "samples": "العينات",
+        "sampleStatus": "حالة العينات",
+        "certificateNumber": "رقم الشهادة",
+        "issueDate": "الإصدار",
+        "expiryDate": "الانتهاء",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "disease": "المرض",
+        "report": "البلاغ",
+        "internationalAlert": "تنبيه دولي",
+        "evidence": "دلائل",
+        "treatment": "المكافحة",
+        "campaign": "الحملة",
+        "declarationNumber": "رقم الإقرار",
+        "originCountry": "بلد المنشأ",
+        "inspectionStatus": "حالة الفحص",
+        "decision": "القرار",
+        "medicalWaste": "النفايات الطبية",
+        "wastewater": "مياه الصرف",
+        "title": "العنوان",
+        "severity": "الخطورة",
+        "vesselRestricted": "تقييد الحركة"
+      },
+      "tables": {
+        "vessels": {
+          "title": "السفن",
+          "subtitle": "{count} سفينة",
+          "searchPlaceholder": "بحث بالاسم أو رقم IMO أو العلم...",
+          "emptyTitle": "لا توجد سفن",
+          "emptyDescription": "السفن القادمة والمغادرة تظهر هنا",
+          "exported": "تم تصدير السفن"
+        },
+        "seaports": {
+          "title": "الموانئ البحرية",
+          "subtitle": "{count} ميناء",
+          "searchPlaceholder": "بحث بالاسم أو الكود...",
+          "emptyTitle": "لا توجد موانئ",
+          "emptyDescription": "موانئ بورتسودان وسواكن ومحطات الحجر الصحي تظهر هنا"
+        },
+        "crew": {
+          "title": "أفراد الطاقم",
+          "subtitle": "{count} فرد",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد طاقم",
+          "emptyDescription": "أفراد طاقم السفن يظهرون هنا"
+        },
+        "passengers": {
+          "title": "الركاب",
+          "subtitle": "{count} راكب",
+          "searchPlaceholder": "بحث بالاسم أو الجواز...",
+          "emptyTitle": "لا يوجد ركاب",
+          "emptyDescription": "ركاب السفن يظهرون هنا"
+        },
+        "declarations": {
+          "title": "الإقرارات الصحية البحرية",
+          "subtitle": "{count} إقرار",
+          "searchPlaceholder": "بحث بالسفينة أو الربان...",
+          "emptyTitle": "لا توجد إقرارات",
+          "emptyDescription": "الإقرارات الصحية (MDH) المقدمة من ربان السفينة تظهر هنا"
+        },
+        "inspections": {
+          "title": "التفتيش الصحي للسفن",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات",
+          "emptyDescription": "تفتيش أماكن الإقامة والمطابخ والمخازن والعيادة تظهر هنا"
+        },
+        "foodWater": {
+          "title": "تفتيش الأغذية والمياه",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات أغذية",
+          "emptyDescription": "تفتيش الأغذية ومياه الشرب على متن السفن يظهر هنا"
+        },
+        "sanitation": {
+          "title": "شهادات صحة السفن",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات SSCC و SSCEC تظهر هنا"
+        },
+        "isolation": {
+          "title": "العزل والحجر الصحي",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالاسم أو السفينة...",
+          "emptyTitle": "لا توجد سجلات عزل",
+          "emptyDescription": "حالات العزل والحجر الصحي على السفن تظهر هنا"
+        },
+        "surveillance": {
+          "title": "الترصد الوبائي",
+          "subtitle": "{count} حالة",
+          "searchPlaceholder": "بحث بالمرض أو الحالة...",
+          "emptyTitle": "لا توجد حالات",
+          "emptyDescription": "حالات الترصد الوبائي في الموانئ تظهر هنا"
+        },
+        "vectors": {
+          "title": "ترصد ومكافحة النواقل",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالسفينة أو الحملة...",
+          "emptyTitle": "لا توجد سجلات نواقل",
+          "emptyDescription": "ترصد ومكافحة البعوض والقوارض والحشرات تظهر هنا"
+        },
+        "cargo": {
+          "title": "تفتيش الشحنات",
+          "subtitle": "{count} شحنة",
+          "searchPlaceholder": "بحث برقم الإقرار أو المنشأ...",
+          "emptyTitle": "لا توجد شحنات",
+          "emptyDescription": "تفتيش الأغذية والأدوية والمواد الكيميائية على السفن يظهر هنا"
+        },
+        "waste": {
+          "title": "تفتيش النفايات",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث بالسفينة...",
+          "emptyTitle": "لا توجد تفتيشات نفايات",
+          "emptyDescription": "النفايات الطبية والغذائية ومياه الصرف على السفن تظهر هنا"
+        },
+        "emergencies": {
+          "title": "الطوارئ الصحية",
+          "subtitle": "{count} طوارئ",
+          "searchPlaceholder": "بحث بالعنوان...",
+          "emptyTitle": "لا توجد طوارئ",
+          "emptyDescription": "البلاغات الصحية والاستجابة السريعة في الموانئ تظهر هنا"
+        },
+        "healthCerts": {
+          "title": "الشهادات الصحية",
+          "subtitle": "{count} شهادة",
+          "searchPlaceholder": "بحث برقم الشهادة...",
+          "emptyTitle": "لا توجد شهادات",
+          "emptyDescription": "شهادات صحة السفينة والتفتيش والإفراج الصحي تظهر هنا"
+        }
+      },
+      "labels": {
+        "compliant": "مطابق",
+        "notCompliant": "غير مطابق",
+        "done": "نُنفذت"
+      },
+      "actions": {
+        "startReview": "بدء المراجعة",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "rejectReason": "سبب الرفض (مطلوب)",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "reviewStarted": "تم تحويل الإقرار قيد المراجعة",
+        "approved": "تم اعتماد الإقرار",
+        "rejected": "تم رفض الإقرار",
+        "failed": "تعذّر تنفيذ الإجراء — تحقق من الحالة الحالية والصلاحيات"
+      }
+    },
+    "shipInspection": {
+      "title": "استمارة التفتيش الصحي الميداني",
+      "areas": {
+        "accommodation": {
+          "label": "أماكن الإقامة (Crew Quarters)",
+          "hint": "نظيفة ومناسبة، لا توجد آفات"
+        },
+        "kitchen": {
+          "label": "المطابخ (Galley)",
+          "hint": "النظافة، تخزين الأغذية، حرارات الثلاجات"
+        },
+        "storeroom": {
+          "label": "مخازن الأغذية (Stores)",
+          "hint": "لا مواد منتهية الصلاحية، تهوية جيدة"
+        },
+        "waterTank": {
+          "label": "خزانات المياه (Water Tanks)",
+          "hint": "نظيفة ومغلقة، لا تسريبات"
+        },
+        "clinic": {
+          "label": "العيادة الطبية (Medical Bay)",
+          "hint": "مجهزة، الأدوية سارية"
+        },
+        "toilet": {
+          "label": "دورات المياه والصرف (Toilets)",
+          "hint": "نظيفة وعاملة"
+        },
+        "ventilation": {
+          "label": "التهوية (Ventilation)",
+          "hint": "عاملة وسليمة"
+        },
+        "cleanliness": {
+          "label": "النظافة العامة (Cleanliness)",
+          "hint": "مطابقة للمعايير"
+        }
+      },
+      "compliance": {
+        "compliant": "مطابق",
+        "nonCompliant": "غير مطابق",
+        "notApplicable": "غير متاح"
+      },
+      "derived": {
+        "passed": "سليمة — لا توجد نواقص",
+        "failed": "نواقص جسيمة — توقيف السفينة",
+        "conditional": "مشروط"
+      },
+      "errors": {
+        "notApplicableNotSupported": "«غير متاح» غير مدعوم: يجب تصنيف كل المناطق الثماني قاطعاً للحفظ",
+        "selectVesselFirst": "اختر السفينة أولاً",
+        "saveFailed": "تعذر حفظ التفتيش — تحقق من البيانات والصلاحيات"
+      },
+      "success": {
+        "saved": "تم حفظ تفتيش السفينة «{{vessel}}»"
+      },
+      "form": {
+        "vessel": "السفينة",
+        "visitOptional": "الزيارة (اختياري)",
+        "noVisit": "— بدون ربط بزيارة —",
+        "vesselMeta": "العلم: {{flag}} · الشركة: {{company}} · آخر ميناء: {{port}}",
+        "findings": "الملاحظات العامة (Findings)",
+        "findingsPlaceholder": "وصف المخالفات وموقعها وإجراءات التصحيح المطلوبة...",
+        "lastSaved": "آخر نتيجة محفوظة: {{status}}"
+      },
+      "sections": {
+        "areas": "مناطق الفحص الثماني",
+        "finalResult": "النتيجة النهائية (مستنتجة من الخادم)"
+      },
+      "alerts": {
+        "nonCompliantWarning": "توجد {{count}} منطقة غير مطابقة — يُنصح بتوثيقها في الملاحظات ومراجعة النتيجة النهائية."
+      },
+      "info": {
+        "finalResultDerived": "النتيجة النهائية تُستنتج آلياً من مناطق الفحص الثماني بواسطة الخادم، ولا تُختار يدوياً."
+      },
+      "preview": {
+        "notDetermined": "غير قابلة للاستنتاج — الحفظ سيُرفض"
+      },
+      "chips": {
+        "nonCompliant": "مناطق غير مطابقة: {{count}}",
+        "notApplicable": "مناطق غير متاحة: {{count}}"
+      },
+      "actions": {
+        "saving": "جارٍ الحفظ...",
+        "save": "حفظ التفتيش",
+        "reset": "إعادة تعيين"
+      }
+    },
+    "airport": {
+      "title": "صحة المطارات",
+      "subtitle": "إدارة فحوصات المسافرين وتفتيش الطائرات وسجلات الأطقم في المطارات",
+      "eyebrow": "العمليات",
+      "tabs": {
+        "main": "الرئيسية",
+        "screenings": "فحوصات المطارات",
+        "aircraft": "تفتيش الطائرات",
+        "crew": "صحة الأطقم",
+        "terminals": "صالات المطارات",
+        "points": "نقاط الفحص"
+      },
+      "cols": {
+        "traveler": "المسافر",
+        "passport": "جواز السفر",
+        "point": "النقطة",
+        "pointName": "نقطة الفحص",
+        "flight": "الرحلة",
+        "type": "النوع",
+        "risk": "المخاطر",
+        "status": "الحالة",
+        "time": "الوقت",
+        "screenedAt": "وقت الفحص",
+        "aircraftReg": "تسجيل الطائرة",
+        "inspector": "المفتش",
+        "cleanliness": "النظافة",
+        "waterQuality": "جودة المياه",
+        "overallStatus": "الحالة العامة",
+        "inspectionDate": "تاريخ التفتيش",
+        "crewMember": "عضو الطاقم",
+        "healthStatus": "الحالة الصحية",
+        "temperature": "درجة الحرارة",
+        "clearance": "التصريح",
+        "code": "الرمز",
+        "terminal": "الصالة",
+        "port": "المنفذ",
+        "capacity": "السعة",
+        "pointCode": "رمز النقطة",
+        "aircraft": "الطائرة",
+        "certificate": "شهادة"
+      },
+      "export": {
+        "screenings": "تم تصدير الفحوصات",
+        "inspections": "تم تصدير التفتيشات"
+      },
+      "table": {
+        "screenings": {
+          "title": "فحوصات المطارات",
+          "subtitle": "{count} فحص",
+          "searchPlaceholder": "بحث بالاسم أو جواز السفر...",
+          "emptyTitle": "لا توجد فحوصات مطار",
+          "emptyDescription": "فحوصات المسافرين في المطار تظهر هنا"
+        },
+        "aircraft": {
+          "title": "تفتيش الطائرات",
+          "subtitle": "{count} تفتيش",
+          "searchPlaceholder": "بحث برقم التسجيل أو الرحلة...",
+          "emptyTitle": "لا توجد تفتيشات",
+          "emptyDescription": "تفتيش الطائرات حسب المعايير الصحية يظهر هنا"
+        },
+        "crew": {
+          "title": "سجلات صحة الأطقم",
+          "subtitle": "{count} سجل",
+          "searchPlaceholder": "بحث بالاسم أو الرحلة...",
+          "emptyTitle": "لا توجد سجلات أطقم",
+          "emptyDescription": "سجلات صحة أطقم الطائرات تظهر هنا"
+        },
+        "terminals": {
+          "title": "صالات المطارات",
+          "subtitle": "{count} صالة",
+          "searchPlaceholder": "بحث بالاسم أو الرمز...",
+          "emptyTitle": "لا توجد صالات",
+          "emptyDescription": "صالات المطارات ونقاطها تظهر هنا"
+        },
+        "points": {
+          "title": "نقاط الفحص",
+          "subtitle": "{count} نقطة",
+          "searchPlaceholder": "بحث برمز النقطة...",
+          "emptyTitle": "لا توجد نقاط فحص",
+          "emptyDescription": "نقاط فحص المسافرين في الصالات تظهر هنا"
+        }
+      }
+    },
+    "inspector": {
+      "role": "مفتش الحجر الصحي — قسم صحة المطار",
+      "shift": {
+        "morning": "الصباحية",
+        "evening": "المسائية",
+        "night": "الليلية"
+      },
+      "quick": {
+        "title": "إجراءات سريعة",
+        "subtitle": "نفّذ المهام الشائعة بضغطة واحدة",
+        "startFlight": "بدء فحص رحلة",
+        "findPassenger": "البحث عن مسافر",
+        "clinicReferral": "إحالة إلى العيادة",
+        "aircraftReport": "تقرير تفتيش الطائرة"
+      },
+      "kpi": {
+        "flights": "الرحلات اليوم",
+        "passengers": "المسافرون",
+        "pending": "بانتظار الفحص",
+        "screened": "تم فحصهم",
+        "referrals": "إحالات للعيادة",
+        "suspected": "حالات مشتبه بها",
+        "vaccinations": "تطعيمات",
+        "completed": "مكتملة"
+      },
+      "error": {
+        "title": "تعذر تحميل لوحة المطار",
+        "body": "حدث خطأ أثناء جلب بيانات اللوحة، حاول مرة أخرى.",
+        "retry": "إعادة المحاولة"
+      },
+      "upcoming": {
+        "title": "الرحلات القادمة",
+        "subtitle": "مواعيد الوصول عبر منافذ المطارات"
+      },
+      "suspected": {
+        "title": "الحالات المشتبه بها",
+        "subtitle": "إحالات تتطلب انتباهاً فورياً"
+      },
+      "tasks": {
+        "title": "المهام المكلف بها",
+        "subtitle": "أولويات الوردية الحالية"
+      },
+      "alerts": {
+        "title": "التنبيهات",
+        "subtitle": "آخر إشعارات النظام"
+      },
+      "report": {
+        "title": "التقرير اليومي",
+        "subtitle": "إحصاءات الفحص المتراكمة",
+        "byFlight": "الفحوصات حسب الرحلة",
+        "flights": "الرحلات",
+        "travelers": "المسافرون",
+        "screened": "المفحوصون",
+        "referrals": "الإحالات",
+        "suspected": "الحالات المشتبه بها"
+      },
+      "empty": {
+        "flights": "لا توجد رحلات قادمة",
+        "suspected": "لا توجد حالات مشتبه بها حالياً",
+        "tasks": "لا توجد مهام معلقة",
+        "alerts": "لا توجد تنبيهات"
+      },
+      "chip": {
+        "dangerous": "خطرة",
+        "referral": "إحالة"
+      },
+      "task": {
+        "urgent": "عاجل",
+        "important": "مهم",
+        "routine": "روتيني"
+      }
+    },
+    "airportHealth": {
+      "title": "صحة المطارات والطيران",
+      "header": {
+        "back": "العودة إلى المنصة",
+        "home": "الرئيسية",
+        "openMenu": "فتح القائمة"
+      },
+      "groups": {
+        "operations": "التشغيل",
+        "passengerHealth": "صحة المسافرين",
+        "casesLab": "الحالات والمختبر",
+        "inspectionOps": "عمليات التفتيش",
+        "emergency": "الطوارئ",
+        "admin": "الإدارة"
+      },
+      "nav": {
+        "dashboard": "مركز القيادة",
+        "flights": "الرحلات",
+        "flightDetails": "تفاصيل الرحلة",
+        "crew": "الطاقم",
+        "screening": "فحص المسافرين",
+        "declaration": "الإعلان الصحي",
+        "riskAssessment": "تقييم المخاطر",
+        "vaccination": "التطعيم",
+        "suspected": "الحالات المشتبهة",
+        "isolation": "إدارة العزل",
+        "lab": "المختبر",
+        "contactTracing": "تتبع المخالطين",
+        "inspection": "تفتيش الطائرات",
+        "analytics": "التحليلات",
+        "certificates": "الشهادات",
+        "emergency": "غرفة عمليات الطوارئ",
+        "users": "المستخدمون",
+        "roles": "الأدوار والأذونات",
+        "auditLogs": "سجل التدقيق",
+        "settings": "الإعدادات",
+        "notifications": "الإشعارات"
+      },
+      "sidebar": {
+        "brand": "نظام الصحة بالمطار"
+      },
+      "risk": {
+        "low": "منخفض",
+        "medium": "متوسط",
+        "high": "مرتفع",
+        "assessment": "قيد التقييم",
+        "closed": "مغلق"
+      },
+      "status": {
+        "cleared": "صُرف",
+        "screening": "فحص أساسي",
+        "secondary": "فحص ثانوي",
+        "medicalAssessment": "تقييم طبي",
+        "alert": "إنذار",
+        "hold": "إيقاف مؤقت"
+      },
+      "offline": {
+        "online": "ONLINE — متصل",
+        "offline": "OFFLINE — غير متصل",
+        "syncing": "SYNCING — مزامنة",
+        "synced": "SYNC COMPLETE — اكتمل"
+      }
+    },
+    "common": {
+      "dashboard": "لوحة القيادة",
+      "sections": "أقسام اللوحة",
+      "yes": "نعم",
+      "no": "لا",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "search": "بحث",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "status": "الحالة"
+    },
+    "actions": {
+      "changeStatus": "تغيير حالة التشغيل",
+      "changeBorderStatus": "تغيير حالة المعبر",
+      "reassess": "إعادة التقييم بقياسات جديدة",
+      "reassessScreening": "إعادة تقييم الفحص",
+      "reassessDialog": "إعادة تقييم الفحص",
+      "recordCargoDecision": "تسجيل قرار الشحنة",
+      "issueCertificate": "إصدار شهادة"
+    },
+    "labels": {
+      "border": "المعبر",
+      "crossing": "المعبر",
+      "facility": "المرفق",
+      "shift": "الوردية",
+      "staff": "الكادر",
+      "traveler": "المسافر",
+      "declaration": "الإقرار",
+      "screening": "الفحص",
+      "vehicle": "المركبة",
+      "cargo": "الشحنة",
+      "sample": "العيّنة",
+      "quarantine": "الحجر",
+      "isolation": "العزل",
+      "emergency": "الطوارئ",
+      "certificate": "الشهادة",
+      "decision": "القرار",
+      "notification": "الإشعار",
+      "yes": "نعم",
+      "no": "لا",
+      "active": "نشط",
+      "continuous": "مستمر",
+      "all": "الكل",
+      "search": "بحث",
+      "filter": "تصفية",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "add": "إضافة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "view": "عرض",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "hold": "حجز",
+      "issue": "إصدار",
+      "loading": "جارٍ...",
+      "none": "—",
+      "code": "الكود"
+    },
+    "dialogs": {
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "apply": "تطبيق",
+      "confirm": "تأكيد"
+    },
+    "messages": {
+      "updated": "تم التحديث بنجاح",
+      "saved": "تم الحفظ بنجاح",
+      "error": "حدث خطأ",
+      "exported": "تم التصدير بنجاح"
+    },
+    "status": {
+      "verified": "مُتحقَّق",
+      "incomplete": "ناقصة"
+    }
+  },
+  "clinic": {
+    "certificates": {
+      "action": {
+        "ariaRevoke": "إلغاء الشهادة",
+        "ariaView": "عرض الشهادة",
+        "print": "طباعة",
+        "revoke": "إلغاء الشهادة",
+        "view": "عرض الشهادة"
+      },
+      "cols": {
+        "issuedAt": "تاريخ الإصدار",
+        "number": "الرقم",
+        "status": "الحالة",
+        "traveler": "المسافر",
+        "type": "النوع",
+        "validUntil": "صالحة حتى"
+      },
+      "filters": {
+        "status": "الحالة"
+      },
+      "header": {
+        "subtitle": "الشهادات الصحية الصادرة عن عيادات الحجر الصحي وإدارة التحقق منها",
+        "title": "الشهادات الصحية"
+      },
+      "print": {
+        "h1Suffix": "- الحجر الصحي",
+        "h2": "شهادة صحية",
+        "orgFallback": "وزارة الصحة الاتحادية",
+        "qrAlt": "QR",
+        "rows": {
+          "content": "المضمون",
+          "holder": "اسم حامل الشهادة",
+          "issuedAt": "تاريخ الإصدار",
+          "issuer": "الجهة المصدرة",
+          "no": "رقم الشهادة",
+          "type": "نوع الشهادة",
+          "validUntil": "صالحة حتى",
+          "verdict": "التوصية النهائية"
+        },
+        "titlePrefix": "شهادة صحية - ",
+        "verifyPrefix": "للتحقق: "
+      },
+      "revoke": {
+        "cancel": "تراجع",
+        "confirm": "تأكيد الإلغاء",
+        "confirmMessage": "هل أنت متأكد من إلغاء الشهادة «{{number}}»؟ لن تكون صالحة بعد الآن لفقد صلاحية التحقق.",
+        "dialogTitle": "إلغاء الشهادة",
+        "error": "تعذر إلغاء الشهادة",
+        "success": "تم إلغاء الشهادة"
+      },
+      "table": {
+        "emptyDescription": "الشهادات تصدر عند اتخاذ القرار الطبي للزيارات",
+        "emptyTitle": "لا توجد شهادات",
+        "searchPlaceholder": "بحث برقم الشهادة أو الاسم أو الجواز...",
+        "subtitle": "{{count}} شهادة",
+        "title": "الشهادات"
+      },
+      "view": {
+        "contentPrefix": "المضمون: ",
+        "holderPrefix": "حامل الشهادة: ",
+        "issuedBy": "صادرة عن {{clinic}} · {{at}}",
+        "qrAlt": "رمز التحقق",
+        "title": "الشهادة الصحية {{number}}",
+        "typePrefix": "النوع: ",
+        "validUntilPrefix": "صالحة حتى: ",
+        "verdictPrefix": "التوصية النهائية: ",
+        "verifyPrefix": "تحقق: "
+      }
+    },
+    "clinic": {
+      "actions": {
+        "acceptReferral": "قبول الإحالة",
+        "closeVisit": "إغلاق الزيارة",
+        "openVisit": "فتح الزيارة",
+        "rejectReferral": "رفض الإحالة"
+      },
+      "cols": {
+        "createdAt": "تاريخ الإنشاء",
+        "doctor": "الطبيب",
+        "openedAt": "وقت الفتح",
+        "passport": "جواز السفر",
+        "phase": "المرحلة",
+        "port": "المنفذ",
+        "status": "الحالة",
+        "traveler": "المسافر"
+      },
+      "dialogs": {
+        "acceptReferralConfirm": "قبول الإحالة",
+        "acceptReferralMessage": "سيتم قبول إحالة «{{traveler}}» وفتح زيارة عيادة جديدة للمسافر.",
+        "acceptReferralTitle": "قبول الإحالة",
+        "closeVisitConfirm": "إغلاق الزيارة",
+        "closeVisitMessage": "هل أنت متأكد من إغلاق زيارة «{{traveler}}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع.",
+        "closeVisitTitle": "إغلاق الزيارة",
+        "rejectReasonLabel": "سبب الرفض (اختياري)",
+        "rejectReferralConfirm": "تأكيد الرفض",
+        "rejectReferralMessage": "سيتم رفض إحالة «{{traveler}}». يمكنك إضافة سبب الرفض.",
+        "rejectReferralTitle": "رفض الإحالة"
+      },
+      "empty": {
+        "referralsDesc": "إحالات العيادة من الفحوصات تظهر هنا",
+        "referralsTitle": "لا توجد إحالات",
+        "visitsDesc": "الزيارات تظهر عند قبول الإحالات",
+        "visitsTitle": "لا توجد زيارات"
+      },
+      "header": {
+        "eyebrow": "العمليات",
+        "subtitle": "إدارة إحالات وزيارات العيادات الطبية بسلاسة",
+        "title": "العيادة"
+      },
+      "messages": {
+        "acceptReferralFailed": "تعذر قبول الإحالة",
+        "closeVisitFailed": "تعذر إغلاق الزيارة",
+        "referralAccepted": "تم قبول الإحالة وفتح زيارة جديدة",
+        "referralRejected": "تم رفض الإحالة",
+        "referralsExported": "تم تصدير الإحالات",
+        "rejectReferralFailed": "تعذر رفض الإحالة",
+        "visitClosed": "تم إغلاق الزيارة"
+      },
+      "search": {
+        "referrals": "بحث بالاسم أو جواز السفر...",
+        "visits": "بحث بالاسم أو جواز السفر..."
+      },
+      "status": {
+        "certificate": "الشهادة",
+        "closed": "مغلقة",
+        "decision": "القرار",
+        "examined": "فحص طبي",
+        "laboratory": "مختبر",
+        "registered": "مسجلة",
+        "triaged": "تم الفرز"
+      },
+      "subtitles": {
+        "referrals": "{{count}} إحالة",
+        "visits": "{{count}} زيارة"
+      },
+      "tabs": {
+        "referrals": "إحالات العيادة",
+        "visits": "زيارات العيادة"
+      }
+    },
+    "common": {
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "confirm": "تأكيد",
+      "export": "تصدير",
+      "refresh": "تحديث",
+      "save": "حفظ",
+      "search": "بحث",
+      "view": "عرض"
+    },
+    "dashboard": {
+      "a11y": {
+        "notifRegion": "منطقة التنبيهات والمتابعة"
+      },
+      "actions": {
+        "allVisits": "كل الزيارات",
+        "manageReferrals": "إدارة الإحالات",
+        "refresh": "تحديث البيانات",
+        "registerCase": "تسجيل حالة",
+        "viewAll": "عرض الكل"
+      },
+      "charts": {
+        "activityAria": "نشاط العيادة خلال سبعة أيام",
+        "activityTitle": "نشاط الأيام السبعة الأخيرة",
+        "emptyActivityDesc": "سيتحدث الرسم البياني تلقائياً مع فتح وإغلاق الزيارات",
+        "emptyActivityTitle": "لا يوجد نشاط خلال الأسبوع",
+        "emptyDesc": "ستظهر هنا إحالات العيادة بمجرد وصولها من الفحص المبدئي",
+        "emptyTitle": "لا توجد إحالات بعد",
+        "funnelAria": "توزيع حالات الإحالات",
+        "funnelTitle": "مسار الإحالات",
+        "lazyHint": "مرِّر إليه لعرض المخططات المرتبطة بالشريحة الحالية",
+        "lazyNote": "تشمل مسار الإحالات ونشاط الأيام السبعة الأخيرة",
+        "openedVsClosed": "الزيارات المفتوحة مقابل المغلقة",
+        "referralUnit": "إحالة",
+        "srActivity": "نشاط الزيارات خلال الأيام السبعة: {{items}}.",
+        "srActivitySep": "، ",
+        "srDay": "{{label}}: {{opened}} مفتوحة و{{closed}} مغلقة",
+        "srDonut": "توزيع حالات الإحالات — الإجمالي {{total}}: {{items}}.",
+        "srDonutSep": "، "
+      },
+      "chips": {
+        "fever": "حمّى",
+        "queueTurn": "دور {{no}}"
+      },
+      "dialogs": {
+        "closeQuestion": "هل أنت متأكد من إغلاق زيارة «{{name}}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع.",
+        "closeVisit": "إغلاق الزيارة",
+        "rejectConfirm": "تأكيد الرفض",
+        "rejectQuestion": "هل أنت متأكد من رفض إحالة «{{name}}»؟ لن يتم فتح زيارة عيادة لهذا المسافر.",
+        "rejectReason": "سبب الرفض (اختياري)"
+      },
+      "errors": {
+        "acceptReferralFailed": "تعذر قبول الإحالة",
+        "closeVisitFailed": "تعذر إغلاق الزيارة",
+        "holdReferralFailed": "تعذر تأجيل الإحالة",
+        "loadReportFailed": "تعذر تحميل تقرير العيادة",
+        "rejectReferralFailed": "تعذر رفض الإحالة",
+        "releaseReferralFailed": "تعذر إعادة الإحالة"
+      },
+      "footer": {
+        "brand": "منصة الحجر الصحي القومي · لوحة العيادة الطبية",
+        "loading": "جاري التحميل…",
+        "updatedPrefix": "آخر تحديث: "
+      },
+      "header": {
+        "title": "لوحة العيادة الطبية"
+      },
+      "isolation": {
+        "cols": {
+          "health": "الحالة الصحية",
+          "started": "البداية",
+          "type": "نوع العزل"
+        },
+        "emptyDesc": "سجلات العزل والحجر الصحي ستظهر هنا",
+        "emptyTitle": "لا توجد حالات عزل"
+      },
+      "kpi": {
+        "awaitingDecision": "بانتظار القرار الطبي",
+        "closedVisits": "زيارات مغلقة",
+        "completedToday": "مكتملة اليوم",
+        "openVisits": "زيارات مفتوحة",
+        "patients": "المرضى",
+        "trend": {
+          "inIsolation": "{{count}} في العزل",
+          "inReview": "{{count}} قيد المراجعة",
+          "ofClosed": "منها {{count}} مغلقة"
+        },
+        "yourDecisions": "قرار بانتظارك"
+      },
+      "messages": {
+        "referralAccepted": "تم قبول الإحالة وفتح زيارة جديدة",
+        "referralHeld": "تم تأجيل الإحالة للمراجعة",
+        "referralRejected": "تم رفض الإحالة",
+        "referralReleased": "أُعيدت الإحالة إلى قائمة الانتظار",
+        "visitClosed": "تم إغلاق الزيارة",
+        "visitClosedBy": "أُغلقت الزيارة من لوحة العيادة بتأكيد {{by}}"
+      },
+      "notif": {
+        "decisionVisits": {
+          "detail": "في مرحلة القرار أو الشهادة",
+          "label": "زيارات بانتظار القرار الطبي"
+        },
+        "decisions": {
+          "detail": "مراجعة الفحص ثم قبول أو رفض أو تأجيل",
+          "label": "إحالات تنتظر قرارك"
+        },
+        "held": {
+          "detail": "مؤجلة — تُعاد للانتظار أو تُقبل كزيارة",
+          "label": "إحالات قيد المراجعة"
+        },
+        "isolation": {
+          "detail": "تحتاج بلاغات حالة ومتابعة ووثائق خروج",
+          "label": "حالات عزل نشطة"
+        }
+      },
+      "phase": {
+        "certificate": "الشهادة",
+        "closed": "مغلقة",
+        "decision": "القرار",
+        "examined": "فحص طبي",
+        "laboratory": "مختبر",
+        "registered": "مسجلة",
+        "triaged": "تم الفرز"
+      },
+      "rail": {
+        "hintActive": "حالات نشطة",
+        "hintPending": "بانتظار قرارك",
+        "hintProgress": "قيد المتابعة",
+        "isolation": "العزل والحجر",
+        "report": "تقرير الوحدات"
+      },
+      "referrals": {
+        "acceptAria": "قبول إحالة {{name}}",
+        "acceptReferral": "قبول الإحالة",
+        "rejectAria": "رفض إحالة {{name}}",
+        "rejectReferral": "رفض الإحالة",
+        "viewExamination": "عرض تفاصيل الفحص",
+        "viewExaminationAria": "عرض تفاصيل إحالة {{name}}"
+      },
+      "report": {
+        "certificates": "شهادات صادرة",
+        "completedToday": "أُنجز اليوم",
+        "empty": "لا توجد بيانات تقرير لهذه الوحدة بعد.",
+        "isolated": "حالات عزل",
+        "noData": "لا بيانات",
+        "phaseDistribution": "توزيع المراحل:",
+        "totalVisits": "إجمالي الزيارات",
+        "uniquePatients": "مريض فريد"
+      },
+      "sections": {
+        "charts": "المخططات والنشاط",
+        "isolation": "العزل والحجر الصحي",
+        "overview": "نظرة عامة",
+        "referrals": "قرارات الإحالة",
+        "report": "تقرير وحدات العيادة",
+        "visits": "الزيارات المفتوحة"
+      },
+      "table": {
+        "cols": {
+          "actions": "إجراءات",
+          "station": "المنفذ · الوقت",
+          "status": "الحالة",
+          "symptoms": "الأعراض والفحص",
+          "traveler": "المسافر"
+        },
+        "completed": "مكتملة",
+        "emptyDesc": "الإحالات الجديدة القادمة من محطات الفحص ستظهر هنا",
+        "emptyTitle": "لا توجد إحالات",
+        "noSymptoms": "لا أعراض",
+        "openDecisionAria": "فتح قرار إحالة {{name}}"
+      },
+      "visits": {
+        "allChip": "الكل",
+        "closeVisitAria": "إغلاق زيارة {{name}}",
+        "emptyNote": "لا توجد زيارات مفتوحة حالياً — عند قبول إحالة تُفتح زيارة جديدة تظهر هنا",
+        "emptyPhase": "لا توجد زيارات في هذه المرحلة — اختر مرحلة أخرى",
+        "openFile": "فتح ملف الزيارة",
+        "openFileAria": "فتح زيارة {{name}}"
+      }
+    },
+    "healthDashboard": {
+      "chips": {
+        "lastUpdated": "آخر تحديث: {{at}}"
+      },
+      "empty": {
+        "description": "تظهر المؤشرات الصحية هنا عند توافر بيانات من المنصة.",
+        "title": "لا توجد مؤشرات بعد"
+      },
+      "errors": {
+        "load": "تعذّر تحميل الإحصائيات الصحية"
+      },
+      "export": {
+        "metric": "المؤشر",
+        "value": "القيمة"
+      },
+      "header": {
+        "subtitle": "مؤشرات المراقبة الوبائية والفحوصات والعينات وتسجيل الأوبئة — بيانات حقيقية من النظام",
+        "title": "لوحة الرعاية الصحية"
+      },
+      "kpi": {
+        "certificatesHint": "منشورة",
+        "certificatesLabel": "الشهادات الصحية",
+        "diseasesHint": "نشطة",
+        "diseasesLabel": "أمراض مُدرجة للترصد",
+        "entryPointsHint": "منافذ",
+        "entryPointsLabel": "نقاط الدخول النشطة",
+        "labSamplesHint": "مُدرجة",
+        "labSamplesLabel": "العينات المخبرية",
+        "screeningsHint": "إجمالي مُسجَّل",
+        "screeningsLabel": "الفحوصات الصحية",
+        "vectorActivitiesHint": "مُسجّلة",
+        "vectorActivitiesLabel": "أنشطة مكافحة النواقل"
+      },
+      "loading": "جارٍ تحميل المؤشرات الصحية…",
+      "notifications": {
+        "subtitle": "تنبيهات المراقبة والإرسال"
+      },
+      "sections": {
+        "alerts": "التنبيهات",
+        "cases": "المؤشرات",
+        "overview": "نظرة عامة"
+      },
+      "stats": {
+        "certificates": "الشهادات الصحية",
+        "diseases": "الأمراض المُدرجة",
+        "entryPoints": "نقاط الدخول",
+        "labSamples": "العينات المخبرية",
+        "notices": "التنبيهات المنشورة",
+        "screenings": "الفحوصات الصحية",
+        "vectorActivities": "أنشطة مكافحة النواقل"
+      },
+      "table": {
+        "emptyDescription": "لم يتم العثور على مؤشرات تطابق البحث",
+        "emptyTitle": "لا توجد مؤشرات",
+        "metric": "المؤشر",
+        "searchPlaceholder": "بحث في المؤشرات...",
+        "subtitle": "{{count}} مؤشر",
+        "title": "المؤشرات الصحية",
+        "value": "القيمة"
+      }
+    },
+    "isolation": {
+      "actions": {
+        "openVisit": "فتح الزيارة",
+        "release": "تسجيل الخروج",
+        "releaseAria": "خروج",
+        "updateAria": "تحديث الحالة",
+        "updateStatus": "تحديث الحالة الصحية",
+        "viewAria": "فتح الزيارة"
+      },
+      "chip": {
+        "active": "جاري"
+      },
+      "cols": {
+        "duration": "المدة (يوم)",
+        "healthStatus": "الحالة الصحية",
+        "isolationType": "نوع العزل",
+        "severity": "الخطورة",
+        "startDate": "بداية العزل",
+        "status": "الحالة",
+        "traveler": "المسافر"
+      },
+      "dialogs": {
+        "checkoutMessage": "سيتم توثيق خروج {{name}} وتسجيل تاريخ الانتهاء الفعلي.",
+        "checkoutTitle": "تسجيل خروج من العزل",
+        "dischargeSummaryLabel": "ملخص الخروج",
+        "endDateLabel": "تاريخ الانتهاء الفعلي",
+        "releaseConfirm": "تسجيل الخروج",
+        "updateStatusLabel": "الحالة الصحية",
+        "updateStatusTitle": "تحديث الحالة الصحية"
+      },
+      "empty": {
+        "desc": "سجلات العزل تظهر عند عزل حالات من الزيارات",
+        "title": "لا توجد سجلات عزل"
+      },
+      "filters": {
+        "status": "الحالة",
+        "type": "النوع"
+      },
+      "header": {
+        "eyebrow": "العمليات",
+        "subtitle": "متابعة حالات العزل داخل العيادة والمستشفى والحجر الإجباري",
+        "title": "العزل والحجر الصحي"
+      },
+      "messages": {
+        "releaseFailed": "تعذر تسجيل الخروج",
+        "released": "تم تسجيل خروج المريض من العزل",
+        "statusUpdateFailed": "تعذر تحديث الحالة الصحية",
+        "statusUpdated": "تم تحديث الحالة الصحية"
+      },
+      "search": {
+        "placeholder": "بحث بالاسم أو جواز السفر..."
+      },
+      "table": {
+        "subtitle": "{{count}} سجل",
+        "title": "سجلات العزل"
+      }
+    },
+    "lab": {
+      "aria": {
+        "table": "الطلبات المخبرية"
+      },
+      "empty": {
+        "description": "الطلبات المختبرية تُنشأ من داخل زيارة العيادة عند الحاجة لفحص عينة",
+        "title": "لا توجد طلبات مخبرية"
+      },
+      "errors": {
+        "load": "تعذر تحميل طلبات المختبر"
+      },
+      "header": {
+        "subtitle": "متابعة الطلبات المخبرية الصادرة من زيارات العيادة",
+        "title": "طلبات المختبر"
+      },
+      "section": {
+        "title": "الطلبات المخبرية"
+      },
+      "table": {
+        "barcode": "الباركود",
+        "disease": "المرض",
+        "open": "فتح",
+        "priority": "الأولوية",
+        "sampleType": "نوع العينة",
+        "traveler": "المسافر"
+      },
+      "tooltip": {
+        "openVisit": "فتح زيارة العيادة"
+      }
+    },
+    "medications": {
+      "badges": {
+        "interactions": "{{count}} تفاعلات"
+      },
+      "empty": {
+        "desc": "أدوية العيادة ستظهر هنا عند إضافتها من الإدارة",
+        "title": "لا توجد أدوية مسجلة"
+      },
+      "error": {
+        "desc": "حدث خطأ أثناء الاتصال بالخادم — يرجى المحاولة لاحقاً",
+        "title": "تعذر تحميل الأدوية"
+      },
+      "header": {
+        "eyebrow": "العيادة",
+        "subtitle": "سجل الأدوية المتاحة للصرف من عيادة الموانئ الطبية",
+        "title": "الأدوية والمخزون"
+      },
+      "messages": {
+        "loadFailed": "تعذر تحميل الأدوية"
+      },
+      "sections": {
+        "items": "أصناف الأدوية"
+      }
+    },
+    "referral": {
+      "accepted": {
+        "noNext": "لا توجد إحالة تالية",
+        "openVisit": "فتح زيارة «{{name}}»",
+        "openedText": "فُتحت زيارة عيادة للمسافر «{{name}}»",
+        "processNext": "معالجة الإحالة التالية",
+        "stayInList": "البقاء في القائمة",
+        "title": "تم قبول الإحالة"
+      },
+      "actions": {
+        "accept": "قبول وفتح زيارة",
+        "hold": "تأجيل للمراجعة",
+        "reject": "رفض الإحالة",
+        "release": "إرجاع إلى قائمة الانتظار"
+      },
+      "fields": {
+        "nationality": "الجنسية",
+        "referredAt": "وقت الإحالة",
+        "source": "المصدر",
+        "temperature": "درجة الحرارة عند الفحص"
+      },
+      "header": {
+        "title": "قرار الإحالة"
+      },
+      "noSymptoms": "لا أعراض مسجلة.",
+      "officerNotes": "ملاحظات موظف الفحص",
+      "queueChip": "دور {{no}}",
+      "referralNotes": "ملاحظات الإحالة",
+      "rejectReason": "سبب الرفض (اختياري)",
+      "section": {
+        "screeningResults": "نتائج الفحص المبدئي",
+        "traveler": "بيانات المسافر"
+      },
+      "temperature": {
+        "noReading": "لا قياس"
+      },
+      "vitals": {
+        "fever": "حمّى"
+      }
+    },
+    "registerPatient": {
+      "errors": {
+        "loadClinicsFailed": "تعذر تحميل العيادات",
+        "registrationFailed": "تعذر تسجيل المريض",
+        "searchFailed": "تعذر البحث عن المريض"
+      },
+      "form": {
+        "clinicUnit": "وحدة العيادة",
+        "dateOfBirth": "تاريخ الميلاد *",
+        "firstName": "الاسم الأول *",
+        "lastName": "اسم العائلة *",
+        "mobile": "الجوال",
+        "nationality": "الجنسية",
+        "notes": "ملاحظات (سبب الحضور)",
+        "passport": "رقم الجواز *",
+        "submit": "تسجيل الحالة وإضافة للطابور",
+        "submitting": "جاري التسجيل…"
+      },
+      "header": {
+        "eyebrow": "عيادة الحجر الصحي",
+        "subtitle": "تسجيل الحضور المباشر أو استدعاء ملف مريض سابق لعيادة الحجر الصحي",
+        "title": "تسجيل حالة جديدة"
+      },
+      "messages": {
+        "patientRegistered": "تم تسجيل {{name}} برقم ملف {{fileNo}}"
+      },
+      "qr": {
+        "alt": "QR الملف الطبي",
+        "goToReferrals": "الذهاب للإحالات",
+        "hint": "امسح الرمز لاستدعاء ملف المريض داخل وحدة العيادة",
+        "print": "طباعة",
+        "title": "الملف الطبي الموحد"
+      },
+      "referral": {
+        "created": "تم إنشاء إحالة بانتظار القبول — يمكن قبولها من تبويب الإحالات"
+      },
+      "search": {
+        "action": "بحث",
+        "placeholder": "رقم الجواز، رقم الملف MR-… أو الاسم",
+        "searching": "جاري البحث…",
+        "select": "تحديد"
+      },
+      "sections": {
+        "newCase": "بيانات الحالة الجديدة",
+        "searchPrevious": "البحث عن مريض سابق"
+      }
+    },
+    "screening": {
+      "action": {
+        "newScreening": "فحص جديد",
+        "refer": "إحالة",
+        "risk": "المخاطر",
+        "viewTraveler": "المسافر"
+      },
+      "cols": {
+        "notes": "ملاحظات",
+        "oxygen": "التشبع O2",
+        "pressure": "الضغط",
+        "screenedAt": "وقت الفحص",
+        "temperature": "الحرارة",
+        "traveler": "المسافر"
+      },
+      "csv": {
+        "notes": "ملاحظات",
+        "oxygen": "التشبع بالأكسجين",
+        "passport": "جواز السفر",
+        "pressure": "الضغط (sys/dia)",
+        "screenedAt": "وقت الفحص",
+        "temperature": "الحرارة",
+        "traveler": "المسافر"
+      },
+      "export": {
+        "error": "تعذر تصدير الفحوصات",
+        "success": "تم تصدير {{count}} فحص"
+      },
+      "header": {
+        "subtitle": "تسجيل ومراجعة الفحوصات الصحية عند منافذ الدخول وقرارات الإحالة",
+        "title": "الفحوصات الصحية"
+      },
+      "refer": {
+        "confirm": "تحويل",
+        "dialogTitle": "تحويل إلى العيادة",
+        "error": "تعذر إجراء التحويل — تأكد من ربط منفذ بعيادة",
+        "message": "تأكيد تحويل {{name}} إلى العيادة المرتبطة بالمنفذ؟",
+        "success": "تم تحويل المسافر إلى العيادة",
+        "title": "تحويل إلى العيادة"
+      },
+      "risk": {
+        "assessed": "التقييم: {{at}}",
+        "confirm": "حسناً",
+        "dialogTitle": "تقييم المخاطر",
+        "loading": "جارٍ التحميل…",
+        "message": "نتيجة تقييم المخاطر التلقائية لهذا الفحص من نظام تقييم المخاطر.",
+        "noAssessment": "لا يوجد تقييم مخاطر لهذا الفحص بعد",
+        "noAssessmentHint": "لا يوجد تقييم مخاطر لهذا الفحص بعد.",
+        "score": "درجة الخطر: {{score}}",
+        "title": "تقييم المخاطر"
+      },
+      "table": {
+        "emptyDescription": "الفحوصات الصحية تظهر هنا عند تسجيلها من شاشة الفحص",
+        "emptyTitle": "لا توجد فحوصات",
+        "searchPlaceholder": "بحث باسم المسافر أو رقم الجواز...",
+        "subtitle": "{{count}} فحص",
+        "title": "سجل الفحوصات"
+      },
+      "tooltip": {
+        "viewTraveler": "عرض ملف المسافر"
+      }
+    },
+    "shared": {
+      "healthStatus": {
+        "critical": "حرج",
+        "improving": "أفضل",
+        "stable": "مستقر",
+        "worsening": "تدهور"
+      },
+      "isoSeverity": {
+        "critical": "حرج",
+        "high": "مرتفع",
+        "low": "منخفض",
+        "medium": "متوسط"
+      },
+      "isolationStatus": {
+        "active": "جاري",
+        "released": "خروج",
+        "removed": "إنهاء/إلغاء"
+      },
+      "isolationType": {
+        "clinicIsolation": "عزل بالعيادة",
+        "hospital": "تحويل للمستشفى",
+        "quarantine": "حجر صحي إجباري"
+      },
+      "notifications": {
+        "empty": "لا توجد عناصر بحاجة إلى إجراء حالياً",
+        "title": "التنبيهات والمتابعة"
+      },
+      "queueRail": {
+        "label": "أقسام اللوحة"
+      }
+    },
+    "visitDetail": {
+      "certificate": {
+        "actions": {
+          "issue": "إصدار الشهادة"
+        },
+        "confirmClose": "تأكيد إغلاق الزيارة",
+        "dialogTitle": "إصدار الشهادة الصحية",
+        "errors": {
+          "issueFailed": "تعذر إصدار الشهادة"
+        },
+        "fields": {
+          "decisionText": "مضمون القرار الطبي",
+          "summary": "ملخص التقرير الطبي",
+          "type": "نوع الشهادة",
+          "verdict": "التوصية النهائية"
+        },
+        "issueHint": "ستُمنح الشهادة برقم فريد ورمز تحقق (QR)، وتكون صالحة لمدة 30 يوماً.",
+        "issuedBy": "صادرة عن {{by}} · {{at}}",
+        "messages": {
+          "closed": "تم إغلاق الزيارة وإصدار القرار",
+          "issued": "تم إصدار الشهادة الصحية بنجاح"
+        },
+        "publicVerify": "تحقق علني من الشهادة",
+        "status": {
+          "active": "سارية",
+          "revoked": "ملغاة"
+        },
+        "title": "الشهادة الصحية",
+        "type": {
+          "clearance": "شهادة خلو من الأمراض",
+          "medical": "تقرير طبي",
+          "negative": "شهادة نتيجة سلبية"
+        },
+        "typeLine": "النوع: {{type}}",
+        "validUntilPrefix": "صالحة حتى: ",
+        "verdict": {
+          "hospital": "تحويل المستشفى",
+          "isolation": "عزل/حجر صحي",
+          "release": "خروج/إجازة"
+        },
+        "verdictLine": "التوصية: {{verdict}}"
+      },
+      "emr": {
+        "actions": {
+          "saveEmr": "حفظ السجل الطبي"
+        },
+        "errors": {
+          "completePrescription": "يرجى إكمال بيانات الوصفة",
+          "saveFailed": "تعذر حفظ السجل الطبي"
+        },
+        "exam": {
+          "abdomen": "البطن",
+          "chest": "الصدر",
+          "generalCondition": "الحالة العامة",
+          "skin": "الجلد",
+          "throat": "الحلق"
+        },
+        "fields": {
+          "diagnosis": "التشخيص",
+          "severity": "شدة الحالة"
+        },
+        "messages": {
+          "saved": "تم حفظ السجل الطبي"
+        },
+        "prescription": {
+          "added": "تمت إضافة الوصفة الطبية",
+          "failed": "تعذر إضافة الوصفة الطبية"
+        },
+        "prescriptions": {
+          "add": "إضافة الوصفة",
+          "daysUnit": "يوم",
+          "dosage": "الجرعة",
+          "drug": "الدواء",
+          "duration": "المدة (أيام)",
+          "frequency": "التكرار",
+          "frequencyPlaceholder": "كل 8 ساعات",
+          "instructions": "التعليمات",
+          "interactionAlert": "تنبيه تداخلات دوائية: {{items}}",
+          "newDrug": "وصف دواء جديد",
+          "selectDrug": "— اختر الدواء —",
+          "title": "الوصفات الطبية"
+        },
+        "savedChip": {
+          "saved": "محفوظ",
+          "unsaved": "غير محفوظ"
+        },
+        "sections": {
+          "clinicalNotes": "الملاحظات السريرية",
+          "physicalExam": "الفحص البدني",
+          "vitals": "العلامات الحيوية"
+        },
+        "title": "السجل الطبي الإلكتروني (EMR)",
+        "vitals": {
+          "bloodPressure": "ضغط الدم (ملم زئبق)",
+          "heartRate": "نبض القلب (د/دقيقة)",
+          "oxygenSaturation": "تشبع الأكسجين (%)",
+          "respiratoryRate": "معدل التنفس (نفس/دقيقة)",
+          "temperature": "درجة الحرارة (°C)"
+        }
+      },
+      "isolation": {
+        "actions": {
+          "register": "تسجيل العزل"
+        },
+        "dialogTitle": "عزل المريض / حجر صحي",
+        "durationLine": "المدة: {{days}} يوماً",
+        "endedAt": " · انتهى: {{date}}",
+        "errors": {
+          "registerFailed": "تعذر تسجيل العزل",
+          "updateFailed": "تعذر تحديث الحالة"
+        },
+        "expectedEnd": " · متوقع: {{date}}",
+        "fields": {
+          "expectedEnd": "تاريخ الانتهاء المتوقع",
+          "healthStatus": "الحالة الصحية أثناء العزل",
+          "requiredDays": "المدة المطلوبة (أيام)"
+        },
+        "messages": {
+          "healthUpdated": "تم تحديث الحالة الصحية أثناء العزل",
+          "registered": "تم تسجيل العزل / الحجر الصحي"
+        },
+        "releaseConfirm": "سيتم توثيق خروج {{name}} من العزل وتحديث حالة الزيارة.",
+        "releaseTitle": "تسجيل الخروج من العزل",
+        "sinceChip": "منذ {{date}}",
+        "title": "العزل / الحجر الصحي"
+      },
+      "journey": {
+        "completed": "الزيارة مغلقة — أُنجز مسار المعالجة.",
+        "currentChip": "الحالية",
+        "errors": {
+          "transitionFailed": "تعذر تحديث المرحلة"
+        },
+        "messages": {
+          "transitioned": "تم تحديث مرحلة المعالجة"
+        },
+        "steps": {
+          "decision": "تسجيل القرار الطبي",
+          "examined": "بدء الفحص الطبي",
+          "isolation": "عزل / حجر صحي",
+          "laboratory": "إحالة للمختبر"
+        },
+        "title": "مسار المعالجة"
+      },
+      "lab": {
+        "actions": {
+          "request": "إرسال طلب الفحص"
+        },
+        "approval": {
+          "approved": "معتمد",
+          "pending": "قيد الاعتماد"
+        },
+        "errors": {
+          "requestFailed": "تعذر إرسال طلب الفحص المخبري",
+          "selectDisease": "يرجى اختيار المرض"
+        },
+        "fields": {
+          "disease": "المرض (ICD-11)",
+          "priority": "الأولوية",
+          "sampleType": "نوع العينة"
+        },
+        "messages": {
+          "requested": "تم إرسال طلب الفحص المخبري"
+        },
+        "newRequest": "طلب فحص جديد",
+        "result": {
+          "inconclusive": "غير حاسم",
+          "negative": "سلبي",
+          "positive": "إيجابي"
+        },
+        "results": {
+          "approved": " · اعتمد: {{name}}",
+          "defaultName": "فحص مخبري",
+          "entered": "أفاد: {{name}}",
+          "title": "نتائج المختبر"
+        },
+        "selectDisease": "— اختر المرض —",
+        "title": "الفحوصات المخبرية"
+      },
+      "page": {
+        "actions": {
+          "visitClosed": "الزيارة مغلقة"
+        },
+        "back": "العودة إلى العيادة",
+        "closedNotice": "تم إغلاق هذه الزيارة. لا يمكن تعديل السجل الطبي أو إضافة فحوصات أو وصفات جديدة.",
+        "error": {
+          "description": "تأكد من صحة الرابط أو عد إلى قائمة الزيارات.",
+          "title": "تعذر عرض الزيارة"
+        },
+        "errors": {
+          "loadVisit": "تعذر تحميل بيانات الزيارة، حاول مرة أخرى لاحقاً."
+        },
+        "extraActions": "إجراءات إضافية",
+        "finalDecision": "القرار النهائي",
+        "header": {
+          "eyebrow": "بوابة عيادات الحجر الصحي",
+          "loading": "جارٍ تحميل بيانات الزيارة",
+          "title": "زيارة العيادة"
+        },
+        "meta": {
+          "closedAt": "وقت الإغلاق",
+          "closedBy": "بواسطة {{name}} · ",
+          "user": "المستخدم"
+        },
+        "overline": "زيارة عيادة",
+        "passengerFileHint": "لعرض الملف الصحي الكامل للمسافر (البيانات الشخصية، التطعيمات، نتائج الفحوصات) يمكنك الانتقال إلى ملف المسافر.",
+        "viewPassengerFile": "عرض ملف المسافر"
+      },
+      "sections": {
+        "notes": "ملاحظات",
+        "other": "أخرى",
+        "severity": "درجة الخطورة"
+      },
+      "separator": {
+        "list": "، "
+      },
+      "triage": {
+        "actions": {
+          "save": "حفظ الفرز"
+        },
+        "disposition": {
+          "followUp": "متابعة منزلية",
+          "hospital": "إحالة إلى المستشفى",
+          "release": "إفراج المريض"
+        },
+        "errors": {
+          "saveFailed": "تعذر تسجيل الفرز"
+        },
+        "fields": {
+          "chiefComplaint": "الشكوى الرئيسية",
+          "diastolicBp": "الضغط الانبساطي",
+          "heartRate": "نبض القلب",
+          "respiratoryRate": "معدل التنفس",
+          "routing": "التوجيه",
+          "symptomsHint": "الأعراض (افصل بينها بفاصلة)",
+          "systolicBp": "الضغط الانقباضي"
+        },
+        "log": {
+          "symptoms": "الأعراض: {{items}}",
+          "title": "سجل الفرز"
+        },
+        "messages": {
+          "saved": "تم تسجيل الفرز وتصنيف الخطورة"
+        },
+        "priority": {
+          "high": "عالي",
+          "routine": "عادي",
+          "urgent": "عاجل"
+        },
+        "routing": {
+          "clinic": "متابعة في العيادة",
+          "isolation": "حجر صحي / عزل",
+          "release": "خروج"
+        },
+        "sample": {
+          "blood": "دم",
+          "stool": "براز",
+          "swab": "مسحة",
+          "urine": "بول"
+        },
+        "severity": {
+          "emergency": "طوارئ"
+        },
+        "severityOptions": {
+          "low": "بسيط",
+          "severe": "شديد"
+        },
+        "title": "فرز الحالة وتصنيف الخطورة"
+      }
+    }
+  },
+  "laboratory": {
+    "nationalLab": {
+      "activeChip": "نشطة",
+      "activeLabs": "{{count}} معامل نشطة",
+      "alertsSub": "أحدث إنذارات الطوارئ النشطة",
+      "alertsTitle": "الإنذارات القومية",
+      "avatarFallback": "و",
+      "chartOutcomeSub": "التوزيع الوطني للإيجابية والسلبية والحرجة",
+      "chartOutcomeTitle": "مخرجات النتائج",
+      "chartSectorsSub": "إجمالي العينات المختبرية لكل قطاع",
+      "chartSectorsTitle": "العينات حسب القطاع",
+      "chartTopSub": "أكثر الفحوصات طلباً وطنياً",
+      "chartTopTitle": "الأصناف السائدة",
+      "colAlerts": "إنذارات الوباء",
+      "colAvgTat": "متوسط TAT",
+      "colEquipment": "أجهزة متأخرة",
+      "colLab": "المعمل",
+      "colQc": "ن.م مفتوح / فحص معلق",
+      "colReagents": "مواد منتهية/منخفضة",
+      "colSector": "القطاع",
+      "emptyDescription": "ستظهر البيانات فور تسجيل العينات في المعامل",
+      "emptyTitle": "لا توجد بيانات قطاعية",
+      "eyebrow": "الإدارة القومية للمعامل — التجميع الوطني",
+      "hourUnit": "س",
+      "kpiCompleted": "عينات مكتملة",
+      "kpiNegative": "نتائج سلبية",
+      "kpiPositive": "نتائج إيجابية",
+      "kpiSamples": "إجمالي العينات (وطنياً)",
+      "kpiTat": "متوسط زمن الفحص (ساعة)",
+      "kpiTests": "إجمالي الاختبارات",
+      "kpiUnderTesting": "قيد التحليل وطنياً",
+      "loadError": "تعذر تحميل اللوحة القومية للمعامل",
+      "noAlerts": "لا توجد إنذارات نشطة",
+      "noPort": "بلا منفذ",
+      "noResults": "لا توجد نتائج بعد",
+      "outbreak": "تفشٍ",
+      "radarCritical": "الحرجة",
+      "radarIncoming": "الواردة",
+      "radarNeedTwo": "تتطلب المقارنة قطاعين أو أكثر",
+      "radarPositive": "الإيجابية",
+      "radarSub": "مقارنة نسبية بين الواردة والإيجابية والحرجة ومدة الفحص",
+      "radarTat": "مدة الفحص",
+      "radarTitle": "مؤشر أداء القطاعات (Radar)",
+      "redAlert": "إنذار أحمر",
+      "sectionAlerts": "الإنذارات",
+      "sectionCharts": "الرسوم البيانية",
+      "sectionKpis": "المؤشرات",
+      "sectionRadar": "مؤشر الأداء",
+      "sectionSectors": "مقارنة القطاعات",
+      "sectorsCount": "{{count}} قطاعاً",
+      "subtitle": "مراقبة موحّدة لأداء معامل القطاعات السبعة: العينات، النتائج، الجودة، الإنذارات، ومؤشرات الأداء",
+      "tableSubtitle": "كل الأبعاد التشغيلية لكل معلم قطاعي",
+      "tableTitle": "مقارنة القطاعات",
+      "title": "اللوحة القومية للمعامل القطاعية",
+      "topFive": "أعلى خمسة"
+    },
+    "nqlisDashboard": {
+      "aCriticalSub": "تتطلب إقراراً فورياً",
+      "aCriticalText": "{{count}} نتيجة حرجة مفتوحة",
+      "aDueSoonSub": "حدد موعد المعايرة",
+      "aDueSoonText": "{{count}} جهاز معايرة قريبة",
+      "aExpiredSub": "حظر الاستخدام وإتلافها",
+      "aExpiredText": "{{count}} مادة منتهية الصلاحية",
+      "aExpiringSub": "استهلكها أولاً (FEFO)",
+      "aExpiringText": "{{count}} مادة تنتهي قريباً",
+      "aFailedSub": "إجراء تصحيحي مطلوب",
+      "aFailedText": "{{count}} فحص جودة فاشل",
+      "aLowStockSub": "اطلب توريدها قريباً",
+      "aLowStockText": "{{count}} مادة منخفضة المخزون",
+      "aOpenNcSub": "أغلق منها أو أعد الفحص",
+      "aOpenNcText": "{{count}} عدم مطابقة مفتوح",
+      "aOverdueSub": "راجع جدول المعايرة",
+      "aOverdueText": "{{count}} جهاز متأخر المعايرة",
+      "aPendingSub": "بانتظار التنفيذ",
+      "aPendingText": "{{count}} فحص جودة معلق",
+      "alertsSub": "أولوية اتخاذ الإجراء حسب الخطورة",
+      "alertsTitle": "مركز التنبيهات والمخاطر",
+      "avatarFallback": "ل",
+      "bannerLine": "{{critical}} نتيجة حرجة مفتوحة · {{overdue}} جهاز متأخر المعايرة · {{expired}} مادة منتهية",
+      "bannerTitle": "تتطلب النتائج الحرجة وقضايا الجودة اهتماماً فورياً",
+      "colPriority": "الأولوية",
+      "colReceived": "الاستلام",
+      "colSampleNumber": "رقم العينة",
+      "colSource": "المصدر",
+      "criticalChip": "النتائج الحرجة",
+      "dashboardChip": "لوحة المعلومات",
+      "emptyDescription": "ستظهر العينات فور استلامها",
+      "emptyTitle": "لا توجد عينات حديثة",
+      "eyebrow": "نظام معلومات المختبر القومي — البيانات التشغيلية",
+      "kpiCompleted": "مكتملة",
+      "kpiPending": "بانتظار الاستقبال",
+      "kpiQuality": "مؤشرات جودة بانتظار المعالجة",
+      "kpiReady": "جاهزة للاعتماد",
+      "kpiSamples": "إجمالي العينات",
+      "kpiSubmitted": "اختبارات بانتظار المراجعة",
+      "loadError": "تعذر تحميل لوحة المختبر",
+      "moreChip": "المزيد",
+      "noAlerts": "لا توجد تنبيهات — كل المؤشرات سليمة",
+      "notifSub": "آخر رسائل المنصة",
+      "notifTitle": "إشعارات النظام",
+      "openChip": "فتح",
+      "other": "أخرى",
+      "pipeApproved": "معتمدة",
+      "pipeDraft": "مسودات",
+      "pipePending": "بانتظار",
+      "pipeReview": "بانتظار المراجعة",
+      "qCalDueSoon": "أجهزة معايرة قريبة",
+      "qCalOverdue": "أجهزة معايرة متأخرة",
+      "qOpenNc": "عدم مطابقة مفتوح",
+      "qQcFailed": "فحوصات جودة فاشلة",
+      "qQcPending": "فحوصات جودة معلقة",
+      "qReagentExpired": "مواد منتهية الصلاحية",
+      "qReagentExpiring": "مواد تنتهي قريباً",
+      "qReagentLowStock": "مواد مخزون منخفض",
+      "qualitySub": "المعايرة والمواد ومراقبة الجودة",
+      "qualityTitle": "جاهزية الجودة",
+      "sectionAlerts": "التنبيهات والمخاطر",
+      "sectionSamples": "توزيع العينات",
+      "sectionTests": "مسار الاختبارات",
+      "sectionsSub": "التحميل العملي على أقسام المختبر",
+      "sectionsTitle": "العينات حسب القسم",
+      "showAll": "عرض كل العينات",
+      "sourcesSub": "{{count}} عينة موزعة حسب المصدر",
+      "sourcesTitle": "مصادر العينات",
+      "statusSub": "التوزيع الكامل لحالة سجل العينات",
+      "statusTitle": "حالة العينات",
+      "subtitle": "مراقبة لحظية لسير العينات والتحاليل والجودة — الاستقبال، الفحص، الاعتماد، وعدم المطابقة",
+      "tableSubtitle": "{{count}} عينة حديثة",
+      "tableTitle": "آخر العينات المستلمة",
+      "testUnit": "اختبار",
+      "testsChip": "معتمدة وفقاً للحالة",
+      "testsSub": "{{count}} اختباراً في السير",
+      "title": "لوحة قيادة المختبر القومي",
+      "trendInProgress": "{{count}} قيد التنفيذ",
+      "trendToday": "+{{count}} اليوم",
+      "urgentChip": "{{count}} إجراء عاجل",
+      "viewDetails": "عرض التفاصيل"
+    },
+    "nqlisQc": {
+      "approveError": "تعذر الاعتماد",
+      "approved": "تم اعتماد المراقبة",
+      "colControl": "نوع المراقب",
+      "colResult": "النتيجة/المتوقع",
+      "colReviewer": "المراجِع",
+      "createTitle": "إنشاء سجل مراقبة جودة",
+      "created": "تم إنشاء سجل مراقبة الجودة",
+      "emptyDescription": "سجلات مراقبة الجودة تظهر هنا",
+      "emptyTitle": "لا توجد سجلات مراقبة جودة",
+      "failed": "غير مطابق",
+      "lblExpected": "القيمة المتوقعة",
+      "lblNotes": "ملاحظات",
+      "lblResult": "النتيجة",
+      "lblReviewNotes": "ملاحظات المراجعة",
+      "lblTolerance": "التفاوت",
+      "passed": "مطابق",
+      "pending": "قيد المراجعة",
+      "reviewAction": "مراجعة",
+      "reviewTitle": "مراجعة سجل مراقبة الجودة",
+      "subtitle": "سجلات مراقبة الجودة واعتمادها",
+      "tableTitle": "سجلات مراقبة الجودة",
+      "title": "مراقبة الجودة"
+    },
+    "nqlisQuality": {
+      "actionsSub": "{{count}} إجراء",
+      "capaClosed": "مغلق",
+      "capaCreated": "تم إنشاء الإجراء التصحيحي والوقائي",
+      "capaInProgress": "قيد التنفيذ",
+      "capaOpen": "مفتوح",
+      "capaStatusUpdated": "تم تحديث حالة الإجراء",
+      "capaVerification": "قيد التحقق",
+      "close": "إغلاق",
+      "colActionTitle": "الإجراء",
+      "colActions": "الإجراءات",
+      "colCorrective": "التصحيحي",
+      "colDue": "الاستحقاق",
+      "colNc": "عدم المطابقة",
+      "colReporter": "المبلّغ",
+      "colResponsible": "المسؤول",
+      "colTitle": "العنوان",
+      "dialogCapa": "إنشاء إجراء تصحيحي ووقائي",
+      "dialogNc": "إنشاء عدم مطابقة",
+      "lblActionTitle": "عنوان الإجراء",
+      "lblCorrective": "الإجراء التصحيحي",
+      "lblDescription": "الوصف",
+      "lblDue": "تاريخ الاستحقاق",
+      "lblPreventive": "الإجراء الوقائي",
+      "lblRef": "رقم المرجع",
+      "ncAwaitingCapa": "بانتظار الإجراء التصحيحي",
+      "ncClosed": "مغلقة",
+      "ncCreated": "تم إنشاء عدم المطابقة",
+      "ncInvestigating": "قيد التحقيق",
+      "ncOpen": "مفتوحة",
+      "ncStatusUpdated": "تم تحديث حالة عدم المطابقة",
+      "newAction": "إجراء جديد",
+      "sendToVerify": "إرسال للتحقق",
+      "startExecution": "بدء التنفيذ",
+      "subtitle": "عدم المطابقة والإجراءات التصحيحية والوقائية",
+      "tabCapa": "الإجراءات CAPA ({{count}})",
+      "tabNc": "عدم المطابقة ({{count}})",
+      "tableCapa": "الإجراءات التصحيحية والوقائية",
+      "title": "الجودة",
+      "typeDocumentation": "توثيق",
+      "typeEquipment": "جهاز",
+      "typeMethod": "طريقة",
+      "typePersonnel": "كادر",
+      "typeQc": "جودة",
+      "typeReagent": "مادة",
+      "typeResult": "نتيجة",
+      "typeSample": "عينة",
+      "typeSla": "مدة إنجاز",
+      "typeTest": "فحص",
+      "updateError": "تعذر التحديث"
+    },
+    "nqlisReagents": {
+      "colExpiry": "تاريخ الانتهاء",
+      "colLotNumber": "رقم الدفعة",
+      "colMaterial": "المادة",
+      "colNameEn": "الاسم الإنجليزي",
+      "colQty": "الكمية",
+      "colReorder": "حد إعادة الطلب",
+      "colStock": "المخزون",
+      "dialogAddLot": "إضافة دفعة",
+      "dialogAddMaterial": "إضافة مادة/كاشف",
+      "expired": "منتهي",
+      "expiring": "قريب الانتهاء",
+      "formMaterialPlaceholder": "اختر المادة",
+      "formName": "اسم المادة (عربي)",
+      "formType": "نوع المادة",
+      "lotAdded": "تمت إضافة الدفعة",
+      "lowStock": "منخفض",
+      "matConsumable": "مستهلك",
+      "matControl": "عينة ضبط",
+      "matReagent": "كاشف",
+      "materialAdded": "تمت إضافة المادة",
+      "newLot": "دفعة جديدة",
+      "newMaterial": "مادة جديدة",
+      "subtitle": "إدارة الكواشف ودفعاتها في مختبرات NQLIS",
+      "sufficient": "كافٍ",
+      "tabLots": "الدفعات ({{count}})",
+      "tabReagents": "المواد ({{count}})",
+      "tableLots": "دفعات المواد",
+      "tableLotsSub": "{{count}} دفعة",
+      "tableReagents": "المواد",
+      "tableReagentsSub": "{{count}} مادة",
+      "title": "المواد والكواشف",
+      "unit": "الوحدة",
+      "valid": "سارٍ"
+    },
+    "nqlisUsers": {
+      "active": "نشط",
+      "avatarFallback": "م",
+      "colCreated": "تاريخ الإنشاء",
+      "colEmail": "البريد الإلكتروني",
+      "colLastLogin": "آخر دخول",
+      "colName": "الاسم",
+      "colPhone": "الجوال",
+      "colRole": "الدور",
+      "confirmDisable": "هل أنت متأكد من تعطيل حساب \"{{name}}\"؟",
+      "confirmEnable": "هل أنت متأكد من تفعيل حساب \"{{name}}\"؟",
+      "created": "تم إنشاء المستخدم",
+      "dialogEdit": "تعديل مستخدم",
+      "disable": "تعطيل",
+      "disableAccount": "تعطيل الحساب",
+      "disabled": "معطل",
+      "disabledMsg": "تم تعطيل الحساب",
+      "editTip": "تعديل",
+      "emptyDescription": "أضف مستخدماً جديداً لفريق المختبر",
+      "emptyTitle": "لا يوجد مستخدمو مختبر",
+      "enable": "تفعيل",
+      "enableAccount": "تفعيل الحساب",
+      "enabledMsg": "تم تفعيل الحساب",
+      "kpiActive": "حسابات نشطة",
+      "kpiDisabled": "حسابات معطلة",
+      "kpiRoles": "أدوار المختبر",
+      "kpiTotal": "إجمالي المستخدمين",
+      "lblFullName": "الاسم الكامل",
+      "newUser": "مستخدم جديد",
+      "pwdHint": "8 أحرف على الأقل",
+      "pwdLabel": "كلمة المرور",
+      "pwdNew": "كلمة المرور الجديدة",
+      "pwdNewOptional": "كلمة مرور جديدة (اختياري)",
+      "pwdTooShort": "كلمة المرور يجب ألا تقل عن 8 أحرف",
+      "railLabel": "أقسام الصفحة",
+      "resetDone": "تم إعادة تعيين كلمة المرور",
+      "resetError": "تعذر إعادة تعيين كلمة المرور",
+      "resetSubmit": "إعادة التعيين",
+      "resetTip": "إعادة تعيين كلمة المرور",
+      "resetUserPrefix": "مستخدم:",
+      "saveError": "تعذر حفظ المستخدم",
+      "searchPlaceholder": "بحث بالاسم أو البريد أو الجوال...",
+      "sectionUsers": "المستخدمون",
+      "submitCreate": "إنشاء المستخدم",
+      "submitEdit": "حفظ التعديلات",
+      "subtitle": "فريق عمل المعمل القومي للحجر الصحي — الحسابات والأدوار والصلاحيات",
+      "tableSubtitle": "{{count}} مستخدم",
+      "tableTitle": "قائمة مستخدمي المختبر",
+      "title": "مستخدمو المختبر",
+      "toggleAria": "إيقاف",
+      "toggleError": "تعذر تنفيذ العملية",
+      "updated": "تم تحديث بيانات المستخدم"
+    },
+    "shared": {
+      "batchNumber": "رقم التشغيلة",
+      "colAction": "إجراء",
+      "colNumber": "الرقم",
+      "colSection": "القسم",
+      "colSeverity": "الخطورة",
+      "colStatus": "الحالة",
+      "colType": "النوع",
+      "critical": "حرج",
+      "criticalOpenResults": "نتائج حرجة مفتوحة",
+      "criticalResult": "حرجة",
+      "inProgress": "قيد التنفيذ",
+      "live": "مباشر",
+      "major": "جوهري",
+      "minor": "طفيف",
+      "negative": "سلبية",
+      "newRecord": "سجل جديد",
+      "noData": "لا توجد بيانات",
+      "overview": "نظرة عامة",
+      "positive": "إيجابية",
+      "recordsCount": "{{count}} سجل",
+      "refreshAria": "تحديث",
+      "refreshTip": "تحديث البيانات",
+      "sampleUnit": "عينة",
+      "samplesUnit": "عينات",
+      "saveError": "تعذر الحفظ",
+      "sectionsRail": "أقسام اللوحة",
+      "selectNc": "اختر عدم المطابقة",
+      "underTesting": "قيد التحليل"
+    },
+    "laboratoryPage": {
+      "dashboard": "لوحة المعلومات",
+      "reception": "استقبال العينات",
+      "samples": "سجل العينات",
+      "worklist": "قائمة العمل",
+      "critical": "النتائج الحرجة",
+      "reagents": "المواد والكواشف",
+      "equipment": "الأجهزة",
+      "qc": "مراقبة الجودة",
+      "quality": "الجودة وعدم المطابقة",
+      "reports": "التقارير",
+      "users": "المستخدمون",
+      "activeSector": "القطاع النشط",
+      "sector": "القطاع",
+      "sectorOnly": "تُعرض البيانات الخاصة بهذا القطاع فقط",
+      "title": "المعمل القومي للحجر الصحي"
+    },
+    "nqlisCritical": {
+      "ackSuccess": "تم الإقرار بالنتيجة الحرجة",
+      "ackError": "تعذر الإقرار",
+      "colSampleNumber": "رقم العينة",
+      "colTestName": "الفحص",
+      "colOutcome": "النتيجة",
+      "colChannel": "القناة",
+      "colNotifiedAt": "وقت الإخطار",
+      "colAcknowledgedBy": "أقرّ به",
+      "colAction": "إجراء",
+      "acknowledged": "تم الإقرار",
+      "tooltipAck": "إقرار",
+      "pageTitle": "النتائج الحرجة",
+      "pageSubtitle": "إخطارات النتائج الحرجة واستجابتها",
+      "tableTitle": "إخطارات النتائج الحرجة",
+      "tableSubtitle": "{{count}} إخطار",
+      "emptyTitle": "لا توجد نتائج حرجة",
+      "emptyDescription": "سيتم إنشاء إخطار تلقائياً عند اعتماد نتيجة حرجة",
+      "dialogTitle": "الإقرار بنتيجة حرجة",
+      "dialogNoteLabel": "ملاحظة الإقرار",
+      "outcomePositive": "إيجابي",
+      "outcomeNegative": "سلبي",
+      "outcomeInconclusive": "غير حاسم"
+    },
+    "nqlisEquipment": {
+      "statusOperational": "تشغيلية",
+      "statusUnderMaintenance": "قيد الصيانة",
+      "statusOutOfService": "خارج الخدمة",
+      "addSuccess": "تمت إضافة الجهاز",
+      "saveError": "تعذر الحفظ",
+      "colDevice": "الجهاز",
+      "colDeviceNameEn": "الاسم الإنجليزي",
+      "colModel": "الطراز",
+      "colSection": "القسم",
+      "colStatus": "الحالة",
+      "colCalibration": "المعايرة",
+      "calibrationOverdue": "متأخرة",
+      "calibrationDueSoon": "قريبة",
+      "pageTitle": "الأجهزة والمعدات",
+      "pageSubtitle": "أجهزة مختبرات NQLIS وحالة معايرتها",
+      "tableTitle": "الأجهزة",
+      "tableSubtitle": "{{count}} جهاز",
+      "btnNewDevice": "جهاز جديد",
+      "emptyTitle": "لا توجد أجهزة",
+      "emptyDescription": "أجهزة المختبر تظهر هنا",
+      "dialogTitle": "إضافة جهاز",
+      "formDeviceNameAr": "اسم الجهاز (عربي)",
+      "formDeviceNameEn": "الاسم الإنجليزي",
+      "formModel": "الطراز",
+      "formSerial": "الرقم التسلسلي",
+      "formStatus": "الحالة"
+    },
+    "nqlisReports": {
+      "section": {
+        "overview": "نظرة عامة",
+        "sections": "الأداء حسب القسم",
+        "diseases": "النتائج حسب المرض",
+        "sources": "العينات حسب المصدر"
+      },
+      "loadError": "تعذر تحميل التقارير",
+      "pageTitle": "التقارير",
+      "pageSubtitle": "تقارير الأداء والإنجاز لمختبرات NQLIS",
+      "liveStatus": "مباشر",
+      "railLabel": "أقسام اللوحة",
+      "kpiSamples": "إجمالي العينات",
+      "kpiTests": "إجمالي الفحوصات",
+      "kpiPositivityRate": "نسبة الإيجابية",
+      "kpiAvgTAT": "متوسط زمن الإنجاز (ساعة)",
+      "kpiPositive": "نتائج إيجابية",
+      "kpiCritical": "نتائج حرجة",
+      "sectionCardSections": "الأداء حسب القسم",
+      "noData": "لا توجد بيانات",
+      "positiveCount": "{{count}} إيجابي",
+      "sectionCardDiseases": "النتائج حسب المرض",
+      "noDiseaseResults": "لا توجد نتائج محسومة",
+      "notSpecified": "غير محدد",
+      "sectionCardSources": "العينات حسب المصدر",
+      "headerCode": "الكود",
+      "headerSection": "القسم",
+      "headerTests": "الفحوصات",
+      "headerCompleted": "مكتملة",
+      "headerPositive": "إيجابية",
+      "headerNonCompliant": "غير مطابقة",
+      "headerCritical": "حرجة",
+      "totalTests": "{{count}} فحص"
+    },
+    "nqlisSamples": {
+      "type": {
+        "BLOOD": "دم",
+        "SWAB": "مسحة",
+        "URINE": "بول",
+        "STOOL": "براز",
+        "TISSUE": "أنسجة",
+        "FOOD": "غذاء",
+        "WATER": "مياه",
+        "ENVIRONMENTAL": "بيئية",
+        "OTHER": "أخرى"
+      },
+      "source": {
+        "CLINIC": "عيادة الحجر الصحي",
+        "AIRPORT": "مطار",
+        "SEAPORT": "ميناء",
+        "LAND_PORT": "معبر بري",
+        "FOOD_SURVEILLANCE": "رقابة الأغذية",
+        "SURVEILLANCE": "الترصد",
+        "REFERRAL": "إحالة طبية",
+        "OTHER": "أخرى"
+      },
+      "priority": {
+        "ROUTINE": "عادي",
+        "HIGH": "عالي",
+        "URGENT": "عاجل"
+      },
+      "status": {
+        "REGISTERED": "مسجلة",
+        "RECEIVED": "تم الاستلام",
+        "ACCEPTED": "مقبولة",
+        "CONDITIONALLY_ACCEPTED": "قبول مشروط",
+        "PROCESSING": "قيد التحليل",
+        "UNDER_TESTING": "قيد التحليل",
+        "READY_FOR_APPROVAL": "جاهزة للاعتماد",
+        "COMPLETED": "مكتملة",
+        "REJECTED": "مرفوضة"
+      },
+      "trackError": "تعذر تحميل سجل التتبع",
+      "sectionsError": "تعذر تحميل الأقسام",
+      "assignSuccess": "تم توزيع العينة على القسم",
+      "assignError": "تعذر توزيع العينة",
+      "colSampleNumber": "رقم العينة",
+      "colBarcode": "الباركود",
+      "colType": "النوع",
+      "colSource": "المصدر",
+      "colPriority": "الأولوية",
+      "colSectionName": "القسم",
+      "colStatus": "الحالة",
+      "colTestCount": "الفحوصات",
+      "colActions": "إجراءات",
+      "actionTrack": "تتبع",
+      "actionDistribute": "توزيع",
+      "pageTitle": "سجل العينات",
+      "pageSubtitle": "عرض وتتبع عينات NQLIS",
+      "tableTitle": "العينات",
+      "tableSubtitle": "{{count}} عينة",
+      "searchPlaceholder": "بحث بالرقم أو الباركود...",
+      "filterType": "النوع",
+      "filterStatus": "الحالة",
+      "emptyTitle": "لا توجد عينات",
+      "emptyDescription": "سجل عينات NQLIS فارغ",
+      "trackTitle": "سجل تتبع العينة {{sampleNumber}}",
+      "trackStatusLabel": "الحالة",
+      "trackSectionLabel": "القسم",
+      "trackLoading": "جارِ التحميل...",
+      "trackNoMovements": "لا يوجد سجل حركة",
+      "dialogTitle": "توزيع العينة على قسم",
+      "formSection": "القسم",
+      "formSectionPlaceholder": "اختر القسم"
+    },
+    "nqlisReception": {
+      "type": {
+        "BLOOD": "دم",
+        "SWAB": "مسحة",
+        "URINE": "بول",
+        "STOOL": "براز",
+        "TISSUE": "أنسجة",
+        "FOOD": "غذاء",
+        "WATER": "مياه",
+        "ENVIRONMENTAL": "بيئية",
+        "OTHER": "أخرى"
+      },
+      "source": {
+        "CLINIC": "عيادة الحجر الصحي",
+        "AIRPORT": "مطار",
+        "SEAPORT": "ميناء",
+        "LAND_PORT": "معبر بري",
+        "FOOD_SURVEILLANCE": "رقابة الأغذية",
+        "SURVEILLANCE": "الترصد",
+        "REFERRAL": "إحالة طبية",
+        "OTHER": "أخرى"
+      },
+      "priority": {
+        "ROUTINE": "عادي",
+        "HIGH": "عالي",
+        "URGENT": "عاجل"
+      },
+      "createSuccess": "تم تسجيل العينة بنجاح",
+      "createError": "تعذر تسجيل العينة",
+      "defaultRejectionReason": "عينة غير مطابقة",
+      "decisionSuccess": "تم تحديث قرار الاستقبال",
+      "decisionError": "تعذر تنفيذ القرار",
+      "colSampleNumber": "رقم العينة",
+      "colBarcode": "الباركود",
+      "colType": "النوع",
+      "colSource": "المصدر",
+      "colPriority": "الأولوية",
+      "colReceptionStatus": "حالة الاستقبال",
+      "colReceivedAt": "وقت الاستلام",
+      "colActions": "إجراءات",
+      "receptionStatus": {
+        "RECEIVED": "تم الاستلام",
+        "ACCEPTED": "مقبولة",
+        "CONDITIONALLY_ACCEPTED": "قبول مشروط",
+        "REJECTED": "مرفوضة"
+      },
+      "tooltipAccept": "قبول",
+      "tooltipConditional": "قبول مشروط",
+      "tooltipReject": "رفض",
+      "pageTitle": "استقبال العينات",
+      "pageSubtitle": "مراجعة وقبول عينات NQLIS الواردة",
+      "tableTitle": "طابور الاستقبال",
+      "tableSubtitle": "{{count} عينة}",
+      "btnNewSample": "عينة جديدة",
+      "emptyTitle": "لا توجد عينات بانتظار الاستقبال",
+      "emptyDescription": "العينات الجديدة تظهر هنا",
+      "dialogCreateTitle": "تسجيل عينة جديدة",
+      "dialogCreateSubtitle": "إنشاء عينة NQLIS يدوياً",
+      "formSampleType": "نوع العينة",
+      "formSource": "المصدر",
+      "formPriority": "الأولوية",
+      "decisionTitleAccept": "قبول العينة",
+      "decisionTitleConditional": "قبول مشروط",
+      "decisionTitleReject": "رفض العينة",
+      "decisionSubtitle": "العينة {{sampleNumber}}",
+      "submitReject": "رفض",
+      "submitConfirm": "تأكيد",
+      "labelRejectionReason": "سبب الرفض",
+      "labelReceptionNote": "ملاحظة الاستقبال"
+    },
+    "nqlisWorklist": {
+      "status": {
+        "PENDING": "قيد الانتظار",
+        "IN_PROGRESS": "قيد التنفيذ",
+        "DRAFT": "مسودة",
+        "SUBMITTED": "مُرسلة للمراجعة",
+        "COMPLETED": "مكتمل",
+        "REJECTED": "مرفوض"
+      },
+      "outcome": {
+        "POSITIVE": "إيجابي",
+        "NEGATIVE": "سلبي",
+        "INCONCLUSIVE": "غير حاسم"
+      },
+      "priority": {
+        "ROUTINE": "عادي",
+        "HIGH": "عالي",
+        "URGENT": "عاجل"
+      },
+      "stepSuccess": "تم تنفيذ الخطوة",
+      "stepError": "تعذر تنفيذ الخطوة",
+      "saveSuccess": "تم حفظ النتيجة",
+      "defaultReturnReason": "إعادة",
+      "returnSuccess": "تمت إعادة الفحص للمراجعة",
+      "addTestSuccess": "تمت إضافة الفحص",
+      "saveError": "تعذر حفظ العملية",
+      "colSampleNumber": "رقم العينة",
+      "colTestName": "الفحص",
+      "colDiseaseName": "المرض",
+      "colSectionName": "القسم",
+      "colPriority": "الأولوية",
+      "colStatus": "الحالة",
+      "colIsCritical": "حرج",
+      "colAssignedName": "المسؤول",
+      "colActions": "إجراءات",
+      "critical": "حرج",
+      "tooltipStart": "بدء",
+      "tooltipEnterResult": "إدخال النتيجة",
+      "tooltipSubmitForReview": "إرسال للمراجعة",
+      "tooltipReview": "مراجعة",
+      "tooltipApprove": "اعتماد",
+      "tooltipReturn": "إعادة",
+      "tooltipRevise": "مراجعة إصدار جديد",
+      "pageTitle": "قائمة العمل",
+      "pageSubtitle": "مهام فحص عينات NQLIS",
+      "tableTitle": "قائمة العمل",
+      "tableSubtitle": "{{count} فحص}",
+      "filterStatus": "الحالة",
+      "emptyTitle": "لا توجد مهام",
+      "emptyDescription": "المهام الجديدة تظهر هنا",
+      "dialogResultTitle": "إدخال نتيجة الفحص",
+      "formOutcome": "النتيجة",
+      "formResultValue": "القيمة",
+      "formUnit": "الوحدة",
+      "formReferenceRange": "المدى المرجعي",
+      "formResultText": "النتيجة النصية",
+      "formNotes": "ملاحظات",
+      "dialogReturnTitle": "إعادة الفحص",
+      "formReturnReason": "سبب الإعادة"
+    }
+  },
+  "inspector": {
+    "quarantine": {
+      "eyebrow": "قسم الحجر الصحي البيطري والنباتي",
+      "inspectorFallback": "المفتش",
+      "greeting": "مرحباً، {{name}}",
+      "subtitle": "متابعة عمليات التفتيش الصحي على الشحنات والعينات",
+      "liveStatus": "مباشر",
+      "sectionsLabel": "أقسام اللوحة",
+      "sections": {
+        "overview": "نظرة عامة",
+        "inspections": "التفتيشات"
+      },
+      "kpiShipments": "إجمالي الشحنات",
+      "kpiInspections": "عمليات التفتيش",
+      "kpiUnderInspection": "قيد التفتيش",
+      "kpiReleased": "أُفرج عنه",
+      "colShipmentManifest": "رقم البيان",
+      "colInspector": "المفتش",
+      "colDecision": "القرار",
+      "colInspectedAt": "وقت التفتيش",
+      "decisionCompliant": "مطابق",
+      "decisionNonCompliant": "غير مطابق",
+      "exportMessage": "تم تصدير التفتيشات",
+      "headers": {
+        "shipmentManifest": "رقم البيان",
+        "inspector": "المفتش",
+        "decision": "القرار",
+        "inspectedAt": "وقت التفتيش"
+      },
+      "tableTitle": "سجل التفتيش",
+      "tableSubtitle": "{{count} عملية تفتيش}",
+      "searchPlaceholder": "بحث برقم البيان أو اسم المفتش...",
+      "filterDecision": "القرار",
+      "emptyTitle": "لا توجد تفتيشات",
+      "emptyDescription": "عمليات التفتيش الصحي تظهر هنا عند تسجيلها"
+    },
+    "dashboard": {
+      "inspectionDashboard": "لوحة التفتيش",
+      "fieldInspection": "التفتيش الميداني",
+      "foodControl": "رقابة الأغذية",
+      "fieldInspectorDashboard": "لوحة التفتيش الميداني — رقابة الأغذية",
+      "openMenu": "فتح القائمة",
+      "profile": "الملف الشخصي",
+      "userMenu": "قائمة المستخدم",
+      "foodInspector": "مفتش الغذاء",
+      "profileMenu": "الملف الشخصي",
+      "logout": "تسجيل الخروج",
+      "expandSidebar": "توسيع الشريط",
+      "collapseSidebar": "طي الشريط",
+      "updating": "جارٍ التحديث…",
+      "dataUpdated": "البيانات محدثة",
+      "close": "إغلاق",
+      "tab": {
+        "home": "الرئيسية",
+        "tasks": "مهام التفتيش",
+        "samples": "العينات"
+      },
+      "inspectorFallback": "المفتش",
+      "sampleTypeFood": "غذائية",
+      "unitKg": "كجم",
+      "loadTasksError": "تعذر تحميل مهام التفتيش",
+      "selectDecisionError": "اختر نتيجة التفتيش أولاً",
+      "nonCompliantNotesError": "نتيجة «غير مطابق» تتطلب وصف المخالفة في الملاحظات",
+      "compliantSaved": "تم اعتماد المطابقة وإفراج عن {{manifest}}",
+      "inspectionSaved": "تم حفظ نتيجة التفتيش",
+      "saveInspectionError": "تعذر حفظ التفتيش",
+      "sampleSaved": "تم تسجيل العينة {{barcode}}",
+      "sampleRegisterError": "تعذر تسجيل العينة",
+      "sampleTracking": "متابعة العينات",
+      "sampleBarcode": "باركود العينة",
+      "shipment": "المعاملة",
+      "sampleType": "نوع العينة",
+      "status": "الحالة",
+      "receivedAt": "تاريخ الأخذ",
+      "noSamples": "لا توجد عينات مسجلة باسمك بعد",
+      "sampleStatus": {
+        "RECEIVED": "تم الاستلام",
+        "COORDINATED": "تم التنسيق",
+        "ASSIGNED": "أُسندت للقسم",
+        "UNDER_TESTING": "قيد التحليل",
+        "READY_FOR_APPROVAL": "جاهزة للاعتماد",
+        "APPROVED": "معتمدة",
+        "DISPATCHED": "أُرسلت النتائج",
+        "COMPLETED": "مكتملة",
+        "REJECTED": "مرفوضة"
+      },
+      "currentTasks": "مهام التفتيش الحالية",
+      "allTasks": "جميع المهام المعينة لك",
+      "kpiPendingTasks": "مهام بانتظار التفتيش",
+      "kpiPendingHint": "معينات لك",
+      "kpiSamplesInLab": "عينات قيد المختبر",
+      "kpiSamplesHint": "قيد التحليل أو التنسيق",
+      "kpiReadySamples": "نتائج عينات جاهزة",
+      "kpiReadyHint": "معتمدة/مكتملة",
+      "kpiMyInspections": "تفتيشي المنجز",
+      "kpiMyInspHint": "إجمالي الاستمارات المحفوظة",
+      "transactionNumber": "رقم المعاملة",
+      "importer": "المستورد/المصدر",
+      "port": "المنفذ",
+      "weight": "الوزن (كجم)",
+      "proposedSamples": "عدد العينات المقترح",
+      "products": "المنتجات",
+      "temperature": "درجة الحرارة (°م)",
+      "batchNumber": "رقم التشغيلة",
+      "productionDate": "تاريخ الإنتاج",
+      "containerCondition": "وسيلة النقل/الماعون",
+      "packageCondition": "حالة العبوات",
+      "soundPackages": "عبوات سليمة",
+      "damagedPackages": "عبوات تالفة",
+      "soundWeight": "الوزن السليم (كجم)",
+      "damagedWeight": "الوزن التالف (كجم)",
+      "expiryDate": "تاريخ الانتهاء",
+      "inspectionResult": "نتيجة التفتيش *",
+      "compliantLabel": "✅ مطابق",
+      "nonCompliantLabel": "❌ غير مطابق",
+      "needsAnalysisLabel": "🔬 يحتاج عينة",
+      "violationDesc": "وصف المخالفة *",
+      "additionalNotes": "ملاحظات إضافية",
+      "compliantInfo": "المطابقة تعتمد الإفراج المباشر للشحنة.",
+      "needsAnalysisInfo": "بعد الحفظ ستُفتح نافذة تسجيل العينة لإرسالها للمختبر.",
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ…",
+      "saveInspection": "حفظ التفتيش",
+      "registerSample": "تسجيل عينة",
+      "quantity": "الكمية",
+      "unit": "الوحدة",
+      "unitPack": "عبوة",
+      "unitLiter": "لتر",
+      "barcodeInfo": "سيتم توليد باركود فريد (FS-…) تلقائياً عند الحفظ، وتتحول الشحنة إلى «بانتظار نتائج المختبر».",
+      "registering": "جارٍ التسجيل…",
+      "saveAndSend": "حفظ وإرسال للمختبر",
+      "noTasks": "لا توجد مهام تفتيش معينة لك حالياً 🎉",
+      "startInspection": "بدء التفتيش",
+      "showAllTasks": "عرض كل المهام ←",
+      "action": "إجراء"
+    }
+  },
+  "quality": {
+    "nav": {
+      "home": "لوحة الجودة الشاملة — رصد سلامة النظام الفني للمختبر",
+      "specs": "المواصفات المعتمدة (n/c/m/M) — المصدر الوحيد للحقيقة",
+      "specs.micro": "المواصفات الميكروبيولوجية — المنتج، الكائن، خطة السحب (n/c/m/M)",
+      "specs.chemical": "المواصفات الكيميائية — حدود التركيز للمنتجات الغذائية",
+      "specs.plans": "خطط السحب Sampling Plans — عدد الوحدات (n) وقبول الدفعة (c)",
+      "specs.versions": "إدارة إصدارات المواصفات — بدون تعديل النسخة النشطة مباشرة",
+      "qc.dashboard": "نظرة عامة على مراجعة الجودة QC حسب الأقسام",
+      "qc.results": "سجلات مراجعة الجودة QC — الضوابط والنتائج المتأثرة",
+      "qc.failures": "فشل الجودة QC Failures — النتائج المتأثرة بفشل ضابط",
+      "methods": "طرق الاختبار المعتمدة — الإصدار، السريان، الأجهزة والكواشف المطلوبة",
+      "equipment.calibration": "معايرة الأجهزة — الجاهزية والمواعيد القادمة",
+      "equipment.maintenance": "صيانة الأجهزة — الحالة التشغيلية",
+      "reagents": "الكواشف — الصلاحية والكمية ومنع استخدام المنتهي",
+      "nc.open": "عدم المطابقة — الحالات المفتوحة",
+      "nc.investigation": "التحقيق في عدم المطابقة — تحديد السبب الجذري",
+      "nc.capa": "الإجراءات التصحيحية والوقائية CAPA",
+      "documents": "التحكم في الوثائق — SOP، التعليمات، طرق الاختبار، الجودة",
+      "audit": "سجل التدقيق — من فعل ماذا ومتى (Audit Trail)",
+      "reports": "تقارير الجودة المتقدمة",
+      "alerts": "تنبيهات الجودة"
+    },
+    "ncType": {
+      "sample": "عينة",
+      "test": "اختبار",
+      "qc": "جودة",
+      "equipment": "جهاز",
+      "reagent": "كاشف",
+      "method": "طريقة",
+      "personnel": "موظف",
+      "documentation": "توثيق",
+      "result": "نتيجة",
+      "sla": "التزام زمني"
+    },
+    "severity": {
+      "minor": "طفيف",
+      "major": "جوهري",
+      "critical": "حرج"
+    },
+    "ncStatus": {
+      "open": "مفتوحة",
+      "underInvestigation": "قيد التحقيق",
+      "awaitingCapa": "بانتظار CAPA",
+      "closed": "مغلقة"
+    },
+    "capaStatus": {
+      "open": "مفتوحة",
+      "inProgress": "قيد التنفيذ",
+      "verification": "قيد التحقق",
+      "closed": "مغلقة"
+    },
+    "sections": {
+      "overview": "نظرة عامة",
+      "specs": "المواصفات",
+      "qc": "مراجعة الجودة",
+      "methods": "طرق الاختبار",
+      "equipment": "الأجهزة",
+      "reagents": "الكواشف",
+      "nc": "عدم المطابقة",
+      "documents": "الوثائق",
+      "audit": "سجل التدقيق",
+      "reports": "التقارير",
+      "alerts": "التنبيهات"
+    },
+    "columns": {
+      "code": "الكود",
+      "product": "المنتج",
+      "category": "الفئة",
+      "status": "الحالة",
+      "version": "الإصدار الحالي",
+      "approvalDate": "الاعتماد",
+      "qcNumber": "رقم QC",
+      "bench": "القسم",
+      "controlType": "الضابط",
+      "severity": "الخطورة",
+      "affectedTestsCount": "متأثر",
+      "reviewedAt": "المراجعة",
+      "reagent": "الكاشف",
+      "lotNumber": "التشغيلة",
+      "expiryDate": "الصلاحية",
+      "quantity": "الكمية",
+      "ncNumber": "الرقم",
+      "ncType": "النوع",
+      "title": "العنوان",
+      "capaCount": "CAPA",
+      "responsibleUserName": "المسؤول",
+      "dueDate": "الاستحقاق",
+      "userName": "المستخدم",
+      "action": "الفعل",
+      "objectType": "الكائن",
+      "objectLabel": "الوصف",
+      "createdAt": "الوقت",
+      "device": "الجهاز",
+      "lastCalibrated": "آخر معايرة",
+      "nextCalibrationDue": "المعايرة القادمة"
+    },
+    "dashboard": {
+      "eyebrow": "مراقبة الجودة",
+      "title": "لوحة مسؤول الجودة",
+      "subtitle": "إدارة الجودة والامتثال الفني",
+      "refresh": "تحديث",
+      "liveStatus": "مباشر",
+      "sectionsLabel": "أقسام اللوحة",
+      "stats": {
+        "specsActive": "مواصفات فعالة",
+        "qcFailed": "QC فاشل",
+        "calibrationDue": "معايرة مستحقة",
+        "ncOpen": "عدم مطابقة مفتوح",
+        "capaOpen": "CAPA مفتوح",
+        "reagentsExpired": "كواشف منتهية",
+        "auditToday": "أحداث تدقيق اليوم",
+        "methodsActive": "طرق اختبار نشطة"
+      },
+      "kpis": {
+        "title": "مؤشرات الجودة Quality Indicators",
+        "resultCompliance": "امتثال النتائج (Result Compliance)",
+        "qcPassRate": "معدل نجاح QC (QC Pass Rate)",
+        "calibrationPct": "معايرة الأجهزة (Calibration)",
+        "methodCompliance": "امتثال طرق الاختبار (Method Compliance)",
+        "reagentValidity": "صلاحية الكواشف (Reagent Validity)",
+        "ncClosedPct": "إغلاق عدم المطابقة (NC Closed)"
+      },
+      "alerts": {
+        "title": "تنبيهات الجودة Quality Alerts",
+        "qcFailed": "فشل QC — راجع النتائج المتأثرة ({{count}})",
+        "calibrationOverdue": "معايرة متأخرة لـ {{count}} جهاز — يُمنع الاستخدام",
+        "reagentsExpired": "كواشف منتهية الصلاحية ({{count}}) — لا تُستخدم في اختبارات جديدة",
+        "ncOpen": "عدم مطابقة مفتوح: {{count}}",
+        "capaOpen": "CAPA قيد التنفيذ: {{count}}",
+        "noCritical": "لا توجد تنبيهات حرجة حالياً",
+        "loading": "جارٍ التحميل…"
+      },
+      "qcOverview": {
+        "title": "نظرة عامة QC Overview",
+        "microbiology": "الأحياء الدقيقة Microbiology",
+        "chemistry": "الكيمياء Chemistry",
+        "successRate": "معدل النجاح",
+        "tableTitle": "سجلات مراجعة الجودة QC"
+      },
+      "qcFailures": {
+        "openNc": "فتح عدم مطابقة",
+        "warning": "النتائج المدرجة قد تكون متأثرة بفشل الضابط — أعد الفحص قبل اعتماد النتيجة النهائية.",
+        "noFailures": "لا توجد حالات فشل QC حالياً.",
+        "section": "القسم",
+        "officer": "الضابط",
+        "test": "الفحص",
+        "status": "الحالة",
+        "testsAffected": "نتائج متأثرة"
+      },
+      "methods": {
+        "description": "طرق الاختبار المعتمدة — كل طريقة لها إصدار وتاريخ سريان وأجهزة وكواشف وكمية عينة وحدود اكتشاف ومرجع.",
+        "activeCount": "{{active}} من {{total}} طريقة نشطة ({{compliance}}%)."
+      },
+      "documents": {
+        "title": "التحكم في الوثائق Document Control",
+        "description": "كل وثيقة تحمل: كود الوثيقة، الإصدار، المالك، تاريخ السريان، تاريخ المراجعة، الحالة، والمعتمِد.",
+        "sop": "SOP",
+        "workInstructions": "تعليمات العمل",
+        "testMethods": "طرق الاختبار",
+        "qualityGuide": "دليل الجودة",
+        "forms": "النماذج",
+        "specifications": "المواصفات",
+        "calibrationCertificates": "شهادات المعايرة",
+        "qcProcedures": "إجراءات QC"
+      },
+      "reports": {
+        "title": "تقارير الجودة Quality Reports",
+        "qcPerformance": "أداء QC",
+        "nonConformity": "عدم المطابقة",
+        "capa": "CAPA",
+        "equipmentCalibration": "معايرة الأجهزة",
+        "reagentsExpired": "انتهاء الكواشف",
+        "methodCompliance": "امتثال الطرق",
+        "specChanges": "تغييرات المواصفات",
+        "auditTrail": "سجل التدقيق",
+        "documentReview": "مراجعة الوثائق",
+        "labQualityIndicators": "مؤشرات جودة المختبر"
+      },
+      "pages": {
+        "specs": {
+          "micro": {
+            "title": "المواصفات الميكروبيولوجية"
+          },
+          "chemical": {
+            "title": "المواصفات الكيميائية",
+            "text": "حدود التركيز الكيميائي للمنتجات الغذائية — تُدار بنفس منطق الإصدارات."
+          },
+          "plans": {
+            "title": "خطط السحب Sampling Plans",
+            "text": "عدد الوحدات (n) وحدود القبول (c) حسب نظام السحب الثنائي/الثلاثي للدفعة."
+          },
+          "versions": {
+            "title": "إصدارات المواصفات Versions",
+            "text": "لا يُعدَّل الإصدار النشط مباشرة — يُنشأ إصدار جديد ويُؤرشف القديم حفاظاً على تاريخ النتائج."
+          }
+        },
+        "equipment": {
+          "title": "الأجهزة والمعايرة"
+        },
+        "reagents": {
+          "title": "الكواشف Reagents"
+        },
+        "settings": {
+          "title": "الإعدادات",
+          "text": "إعدادات الجودة والامتثال."
+        },
+        "help": {
+          "title": "المساعدة",
+          "text": "دليل استخدام واجهة الجودة."
+        }
+      }
+    },
+    "standards": {
+      "nav": {
+        "dashboard": "لوحة القيادة",
+        "standards": "المواصفات",
+        "versions": "الإصدارات",
+        "requirements": "المتطلبات",
+        "methods": "الطرق التحليلية",
+        "rules": "قواعد التطبيق",
+        "comparison": "مقارنة المواصفات"
+      },
+      "columns": {
+        "code": "الكود",
+        "title_ar": "العنوان",
+        "source_label": "المصدر",
+        "status_label": "الحالة",
+        "product_name": "المنتج",
+        "mandatory": "إلزامية",
+        "created_at": "تاريخ الإنشاء",
+        "standard_code": "المواصفة",
+        "version": "الإصدار",
+        "effective_from": "سارٍ من",
+        "effective_to": "ينتهي",
+        "standard_source": "المصدر",
+        "version_code": "المواصفة",
+        "parameter_name": "المعامل",
+        "microorganism_name": "الكائن الدقيق",
+        "limit_type_label": "نوع الحد",
+        "label": "الحد",
+        "method_name": "الطريقة",
+        "active": "نشط",
+        "device": "المصفوفة",
+        "name_ar": "الاسم",
+        "validation_status_label": "حالة الاعتماد",
+        "device_code": "كود الجهاز",
+        "manufacturer": "الشركة المصنعة",
+        "model_number": "رقم الموديل",
+        "serial_number": "الرقم التسلسلي",
+        "equipment_type": "نوع الجهاز",
+        "calibration_status": "حالة المعايرة",
+        "last_calibrated": "آخر معايرة",
+        "next_calibration_due": "المعايرة القادمة",
+        "user_name": "المستخدم",
+        "action": "الفعل",
+        "object_type": "نوع الكائن",
+        "object_label": "الوصف"
+      },
+      "dashboard": {
+        "eyebrow": "المواصفات والمعايير",
+        "title": "مراجعة المواصفات والمطابقة",
+        "subtitle": "إدارة المواصفات والمعايير المرجعية، الإصدارات، المتطلبات، الطرق التحليلية، وقواعد التطبيق التنظيمية",
+        "refresh": "تحديث",
+        "liveStatus": "مباشر",
+        "sectionsLabel": "أقسام اللوحة",
+        "kpis": {
+          "title": "مؤشرات الجودة",
+          "total_standards": "إجمالي المواصفات",
+          "active_versions": "الإصدارات السارية",
+          "chemical_requirements": "المتطلبات الكيميائية",
+          "micro_requirements": "المتطلبات الميكروبيولوجية",
+          "validated_methods": "الطرق المعتمدة",
+          "active_rules": "قواعد التطبيق النشطة",
+          "by_source": "المواصفات حسب المصدر"
+        },
+        "alerts": {
+          "title": "تنبيهات الجودة",
+          "loading": "جارٍ التحميل…"
+        },
+        "qcOverview": {
+          "title": "نظرة عامة QC Overview",
+          "microbiology": "الأحياء الدقيقة Microbiology",
+          "chemistry": "الكيمياء Chemistry",
+          "successRate": "معدل النجاح",
+          "tableTitle": "سجلات مراجعة الجودة QC"
+        },
+        "qcFailures": {
+          "openNc": "فتح عدم مطابقة",
+          "warning": "النتائج المدرجة قد تكون متأثرة بفشل الضابط — أعد الفحص قبل اعتماد النتيجة النهائية.",
+          "noFailures": "لا توجد حالات فشل QC حالياً.",
+          "section": "القسم",
+          "officer": "الضابط",
+          "test": "الفحص",
+          "status": "الحالة",
+          "testsAffected": "نتائج متأثرة"
+        },
+        "methods": {
+          "description": "طرق الاختبار المعتمدة — كل طريقة لها إصدار وتاريخ سريان وأجهزة وكواشف وكمية عينة وحدود اكتشاف ومرجع.",
+          "activeCount": "{{active}} من {{total}} طريقة نشطة ({{compliance}}%)."
+        },
+        "documents": {
+          "title": "التحكم في الوثائق Document Control",
+          "description": "كل وثيقة تحمل: كود الوثيقة، الإصدار، المالك، تاريخ السريان، تاريخ المراجعة، الحالة، والمعتمِد.",
+          "sop": "SOP",
+          "workInstructions": "تعليمات العمل",
+          "testMethods": "طرق الاختبار",
+          "qualityGuide": "دليل الجودة",
+          "forms": "النماذج",
+          "specifications": "المواصفات",
+          "calibrationCertificates": "شهادات المعايرة",
+          "qcProcedures": "إجراءات QC"
+        },
+        "reports": {
+          "title": "تقارير الجودة Quality Reports",
+          "qcPerformance": "أداء QC",
+          "nonConformity": "عدم المطابقة",
+          "capa": "CAPA",
+          "equipmentCalibration": "معايرة الأجهزة",
+          "reagentsExpired": "انتهاء الكواشف",
+          "methodCompliance": "امتثال الطرق",
+          "specChanges": "تغييرات المواصفات",
+          "auditTrail": "سجل التدقيق",
+          "documentReview": "مراجعة الوثائق",
+          "labQualityIndicators": "مؤشرات جودة المختبر"
+        },
+        "pages": {
+          "specs": {
+            "micro": {
+              "title": "المواصفات الميكروبيولوجية"
+            },
+            "chemical": {
+              "title": "المواصفات الكيميائية",
+              "text": "حدود التركيز الكيميائي للمنتجات الغذائية — تُدار بنفس منطق الإصدارات."
+            },
+            "plans": {
+              "title": "خطط السحب Sampling Plans",
+              "text": "عدد الوحدات (n) وحدود القبول (c) حسب نظام السحب الثنائي/الثلاثي للدفعة."
+            },
+            "versions": {
+              "title": "إصدارات المواصفات Versions",
+              "text": "لا يُعدَّل الإصدار النشط مباشرة — يُنشأ إصدار جديد ويُؤرشف القديم حفاظاً على تاريخ النتائج."
+            }
+          },
+          "equipment": {
+            "title": "الأجهزة والمعايرة"
+          },
+          "reagents": {
+            "title": "الكواشف Reagents"
+          },
+          "settings": {
+            "title": "الإعدادات",
+            "text": "إعدادات الجودة والامتثال."
+          },
+          "help": {
+            "title": "المساعدة",
+            "text": "دليل استخدام واجهة الجودة."
+          }
+        },
+        "dialogs": {
+          "standard": {
+            "title": "تعديل مواصفة",
+            "new": "إضافة مواصفة",
+            "edit": "تعديل مواصفة",
+            "code": "الكود *",
+            "title_ar": "العنوان (عربي) *",
+            "title_en": "العنوان (إنجليزي)",
+            "source": "المصدر *",
+            "country": "الدولة/الجهة",
+            "document_reference": "المرجع الوثائقي",
+            "mandatory": "إلزامية",
+            "status": "الحالة *"
+          },
+          "version": {
+            "title": "تعديل إصدار",
+            "new": "إضافة إصدار",
+            "edit": "تعديل إصدار",
+            "standard": "المواصفة *",
+            "version": "رقم/سنة الإصدار *",
+            "effective_from": "تاريخ السريان *",
+            "effective_to": "تاريخ الانتهاء",
+            "issue_date": "تاريخ الإصدار",
+            "document_reference": "المرجع الوثائقي",
+            "notes": "ملاحظات"
+          },
+          "requirement": {
+            "title": "تعديل متطلب",
+            "new": "إضافة متطلب",
+            "edit": "تعديل متطلب",
+            "version": "الإصدار *",
+            "parameter": "المعامل",
+            "microorganism": "الكائن الدقيق",
+            "method": "الطريقة",
+            "limit_type": "نوع الحد *",
+            "min_value": "الحد الأدنى",
+            "max_value": "الحد الأقصى",
+            "unit": "الوحدة",
+            "plan": "نوع الخطة",
+            "active": "نشط"
+          },
+          "rule": {
+            "title": "تعديل قاعدة تطبيق",
+            "new": "إضافة قاعدة تطبيق",
+            "edit": "تعديل قاعدة تطبيق",
+            "code": "الكود *",
+            "name_ar": "الاسم (عربي) *",
+            "description": "الوصف",
+            "priority": "ترتيب الأولوية *",
+            "source_type": "نوع المرجع *",
+            "active": "فعالة"
+          },
+          "delete": {
+            "title": "حذف المواصفة",
+            "message": "هل أنت متأكد من حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+            "confirm": "حذف",
+            "cancel": "إلغاء"
+          }
+        }
+      }
+    }
+  },
+  "hr": {
+    "employeeTimeline": {
+      "header": {
+        "title": "المسار الوظيفي",
+        "subtitle": "سجل الترقية والنقل والإجازات لكل الموظفين في نطاقك"
+      },
+      "filters": {
+        "allEvents": "كل الأحداث",
+        "eventType": "نوع الحدث"
+      },
+      "columns": {
+        "startDate": "التاريخ",
+        "employee": "الموظف",
+        "event": "الحدث",
+        "change": "التغيير",
+        "reason": "السبب",
+        "createdBy": "سُجّل بواسطة"
+      },
+      "eventLabels": {
+        "HIRE": "توظيف",
+        "PROMOTION": "ترقية",
+        "TRANSFER": "نقل",
+        "DEMOTION": "خفض",
+        "LEAVE_START": "بدء إجازة",
+        "LEAVE_END": "انتهاء إجازة",
+        "TERMINATION": "إنهاء الخدمة",
+        "SUSPENSION": "إيقاف",
+        "RETIREMENT": "تقاعد",
+        "APPOINTMENT": "تعيين",
+        "SECONDMENT": "إعارة"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو السبب...",
+      "export": {
+        "from": "من",
+        "to": "إلى",
+        "message": "تم تصدير المسار الوظيفي"
+      },
+      "actions": {
+        "label": "إجراءات",
+        "viewProfile": "عرض الملف"
+      },
+      "empty": {
+        "title": "لا توجد أحداث",
+        "description": "لم يتم تسجيل أي ترقية أو نقل أو إجازة بعد."
+      }
+    },
+    "trainingEnrollments": {
+      "header": {
+        "title": "تسجيلات التدريب",
+        "subtitle": "من التسجيل إلى الاعتماد ثم الإتمام — الإتمام مشتق من الدرجة"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "course": "الدورة",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "score": "الدرجة",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "APPLIED": "مُقدَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "COMPLETED": "مكتمل",
+        "CANCELLED": "ملغى",
+        "WAITLIST": "قائمة انتظار"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو الدورة...",
+      "actions": {
+        "new": "تسجيل جديد",
+        "details": "تفاصيل",
+        "viewEnrollment": "تفاصيل التسجيل"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير تسجيلات التدريب"
+      },
+      "empty": {
+        "title": "لا توجد تسجيلات تدريب",
+        "description": "ستظهر هنا الاشتراكات في الدورات التدريبية."
+      }
+    },
+    "leaveRequests": {
+      "header": {
+        "title": "طلبات الإجازات",
+        "subtitle": "اعتماد الطلب يخصم من الرصيد؛ الطلب المُقدَّم يحجز أيامه حتى يُبتّ"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "type": "النوع",
+        "from": "من",
+        "to": "إلى",
+        "days": "الأيام",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى"
+      },
+      "halfDay": "نصف",
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه...",
+      "actions": {
+        "new": "طلب جديد",
+        "details": "تفاصيل",
+        "viewRequest": "تفاصيل الطلب"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير طلبات الإجازات"
+      },
+      "empty": {
+        "title": "لا توجد طلبات إجازة",
+        "description": "ستظهر هنا الطلبات المرفوعة من الموظفين أو من الموارد البشرية."
+      }
+    },
+    "establishments": {
+      "header": {
+        "title": "الوحدات التأسيسية",
+        "subtitle": "الهيكل التنظيمي داخل نطاق صلاحياتك — مصدر-truth واحد للصلاحيات"
+      },
+      "filters": {
+        "allKinds": "كل الأنواع"
+      },
+      "columns": {
+        "code": "الكود",
+        "unit": "الوحدة",
+        "type": "النوع",
+        "sector": "القطاع",
+        "parent": "يتبع",
+        "manager": "المنصب المسؤول",
+        "headcount": "القوة العاملة"
+      },
+      "kindLabels": {
+        "DEPARTMENT": "قسم رئيسي",
+        "UNIT": "وحدة فرعية",
+        "ENTRY_POINT": "نقطة دخول",
+        "ENTRY_GROUP": "مجموعة نقاط دخول"
+      },
+      "searchPlaceholder": "بحث بالكود أو الاسم...",
+      "actions": {
+        "dashboard": "اللوحة"
+      },
+      "export": {
+        "englishName": "بالإنجليزية",
+        "message": "تم تصدير الوحدات"
+      },
+      "empty": {
+        "title": "لا توجد وحدات",
+        "description": "لم يُسجَّل أي وحدة هيكلية داخل نطاقك، أو لا يوجد نطاق مخصّص لك."
+      }
+    },
+    "performanceReviews": {
+      "header": {
+        "title": "تقييمات الأداء",
+        "subtitle": "الدرجة والتقدير يُشتقّان من درجات المؤشرات وأوزانها — لا يُرسلان من العميل"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات",
+        "allCycles": "كل الدورات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "reviewer": "المُقيِّم",
+        "cycle": "الدورة",
+        "score": "الدرجة",
+        "rating": "التقدير",
+        "status": "الحالة",
+        "approvedBy": "المعتمد"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "IN_PROGRESS": "قيد التقييم",
+        "SUBMITTED": "مُقدَّم",
+        "REVIEWED": "مُقيَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو الدورة...",
+      "actions": {
+        "cycles": "الدورات",
+        "new": "تقييم جديد",
+        "details": "تفاصيل",
+        "viewReview": "تفاصيل التقييم"
+      },
+      "alert": {
+        "noOpenCycle": "لا توجد دورة مفتوحة — أنشئ دورة وافتحها قبل بدء التقييم."
+      },
+      "export": {
+        "message": "تم تصدير تقييمات الأداء"
+      },
+      "empty": {
+        "title": "لا توجد تقييمات",
+        "description": "ستظهر هنا تقييمات الأداء داخل الدورات المفتوحة."
+      }
+    },
+    "postingRequests": {
+      "header": {
+        "title": "طلبات النقل والترقية",
+        "subtitle": "الاعتماد ينقل الموظف فعلياً: يُغلق تعيينه القديم ويفتح الجديد ويُسجَّل في المسار الوظيفي"
+      },
+      "filters": {
+        "allKinds": "كل الأنواع",
+        "allStatuses": "كل الحالات"
+      },
+      "columns": {
+        "employee": "الموظف",
+        "kind": "النوع",
+        "status": "الحالة",
+        "destination": "الوجهة",
+        "effectiveDate": "تاريخ النفاذ",
+        "requestedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد"
+      },
+      "kindLabels": {
+        "TRANSFER": "نقل",
+        "PROMOTION": "ترقية",
+        "SECONDMENT": "إعارة",
+        "DEPUTATION": "انتداب"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى"
+      },
+      "selfService": "خدمة ذاتية",
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه الوظيفي...",
+      "actions": {
+        "new": "طلب جديد",
+        "label": "إجراءات",
+        "viewRequest": "تفاصيل الطلب"
+      },
+      "export": {
+        "employeeNumber": "الرقم الوظيفي",
+        "message": "تم تصدير الطلبات"
+      },
+      "empty": {
+        "title": "لا توجد طلبات نقل",
+        "description": "ستظهر هنا طلبات النقل والترقية المرفوعة من الموظفين أو من الموارد البشرية."
+      }
+    },
+    "performanceCycle": {
+      "actions": {
+        "back": "رجوع",
+        "newReview": "تقييم جديد",
+        "deleteKpi": "حذف",
+        "add": "إضافة"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "OPEN": "مفتوحة",
+        "CLOSED": "مغلقة",
+        "ARCHIVED": "مؤرشفة"
+      },
+      "sections": {
+        "kpis": "مؤشرات الأداء",
+        "addKpi": "إضافة مؤشر"
+      },
+      "alerts": {
+        "weightsIncomplete": "مجموع الأوزان {total}% — يلزم 100% لإغلاق الدورة.",
+        "weightsComplete": "مجموع الأوزان مكتمل (100%).",
+        "cycleClosed": "الدورة مغلقة — لا يمكن تعديل المؤشرات."
+      },
+      "empty": {
+        "noKpis": "لا توجد مؤشرات بعد. أضف مؤشراً بوزن؛ الدرجة النهائية تُشتق من مجموع (الدرجة × الوزن)."
+      },
+      "form": {
+        "kpiName": "اسم المؤشر",
+        "weight": "الوزن",
+        "weightHelper": "نسبة مئوية من الدرجة النهائية"
+      },
+      "dialogs": {
+        "deleteKpiTitle": "حذف مؤشر الأداء",
+        "deleteKpiMessage": "هل تريد حذف المؤشر «{name}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirmDelete": "حذف"
+      },
+      "errors": {
+        "loadCycle": "تعذر تحميل الدورة",
+        "addKpi": "تعذر إضافة المؤشر",
+        "deleteKpi": "تعذر حذف المؤشر",
+        "cycleNotFound": "الدورة غير موجودة"
+      },
+      "messages": {
+        "kpiAdded": "تمت إضافة المؤشر",
+        "kpiDeleted": "تم حذف المؤشر"
+      },
+      "reviewCount": "{approved}/{total} تقييم معتمد"
+    },
+    "postingRequest": {
+      "header": {
+        "prefix": "طلب"
+      },
+      "kindLabels": {
+        "TRANSFER": "نقل",
+        "PROMOTION": "ترقية",
+        "SECONDMENT": "إعارة",
+        "DEPUTATION": "انتداب",
+        "DEMOTION": "خفض"
+      },
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى",
+        "DRAFT": "مسودة",
+        "SUBMITTED": "مُقدَّم"
+      },
+      "actions": {
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "cancel": "إلغاء الطلب",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "submitted": "تم إرسال الطلب للاعتماد",
+        "approved": "تم اعتماد الطلب وتطبيق النقل",
+        "cancelled": "تم إلغاء الطلب",
+        "rejected": "تم رفض الطلب"
+      },
+      "alerts": {
+        "separationOfDuties": "رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "سبب الرفض (مطلوب)",
+        "rejectReasonPlaceholder": "اذكر السبب الذي سيُعرض لمقدّم الطلب",
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "fields": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "email": "البريد",
+        "requestType": "نوع الطلب",
+        "destination": "الوجهة",
+        "effectiveDate": "تاريخ النفاذ",
+        "justification": "المبرِّر",
+        "submittedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد",
+        "decisionNotes": "ملاحظات القرار",
+        "fromStatus": "من {status}"
+      },
+      "chips": {
+        "selfService": "خدمة ذاتية"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه الوظيفي...",
+      "sections": {
+        "statusLog": "سجل الحالة"
+      },
+      "empty": {
+        "noLogs": "لا توجد قيود بعد."
+      },
+      "errors": {
+        "loadRequest": "تعذر تحميل الطلب",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "requestNotFound": "الطلب غير موجود"
+      }
+    },
+    "attendanceRecords": {
+      "columns": {
+        "date": "التاريخ",
+        "employee": "الموظف",
+        "status": "الحالة",
+        "checkIn": "الدخول",
+        "checkOut": "الانصراف",
+        "workedHours": "ساعات العمل",
+        "approval": "الاعتماد",
+        "employeeNumber": "الرقم الوظيفي",
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "filters": {
+        "allStatuses": "كل الحالات",
+        "all": "الكل",
+        "approved": "معتمد",
+        "pendingApproval": "بانتظار الاعتماد"
+      },
+      "statusLabels": {
+        "PRESENT": "حاضر",
+        "ABSENT": "غائب",
+        "LATE": "متأخر",
+        "HALF_DAY": "نصف يوم",
+        "ON_LEAVE": "في إجازة"
+      },
+      "approval": {
+        "approved": "معتمد",
+        "pending": "بانتظار الاعتماد",
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "header": {
+        "title": "سجلات الحضور",
+        "subtitle": "كل السجلات ضمن نطاقك الإداري — السجل المعتمد يُقفل أمام التعديل والحذف"
+      },
+      "actions": {
+        "recordAttendance": "تسجيل حضور",
+        "approve": "اعتماد"
+      },
+      "searchPlaceholder": "بحث باسم الموظف أو رقمه...",
+      "export": {
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "messages": {
+        "approved": "تم اعتماد سجل الحضور",
+        "unapproved": "تم سحب اعتماد السجل",
+        "exported": "تم تصدير سجلات الحضور"
+      },
+      "errors": {
+        "actionFailed": "تعذر تنفيذ الإجراء"
+      },
+      "tooltips": {
+        "revokeApproval": "سحب الاعتماد",
+        "cannotApproveOwn": "لا يمكنك اعتماد سجل سجّلته بنفسك",
+        "approveRecord": "اعتماد السجل"
+      },
+      "empty": {
+        "title": "لا توجد سجلات حضور",
+        "description": "سجّل الحضور من زر «تسجيل حضور»، أو عدّل عوامل التصفية."
+      }
+    },
+    "employees": {
+      "filters": {
+        "allTypes": "كل الأنواع",
+        "allStatuses": "كل الحالات"
+      },
+      "employmentTypeLabels": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      },
+      "employmentStatusLabels": {
+        "ACTIVE": "على رأس العمل",
+        "ON_LEAVE": "في إجازة",
+        "SUSPENDED": "موقوف",
+        "TERMINATED": "منتهي الخدمة"
+      },
+      "columns": {
+        "employeeNumber": "الرقم الوظيفي",
+        "fullName": "الاسم",
+        "jobTitle": "المسمى الوظيفي",
+        "position": "الموقع",
+        "department": "القسم",
+        "employmentType": "نوع التعيين",
+        "status": "الحالة",
+        "hireDate": "تاريخ التعيين"
+      },
+      "header": {
+        "title": "الملفات الوظيفية",
+        "subtitle": "سجل موظفي المنصة وبياناتهم الوظيفية"
+      },
+      "actions": {
+        "newFile": "ملف جديد",
+        "label": "إجراءات"
+      },
+      "searchPlaceholder": "بحث بالاسم أو الرقم الوظيفي أو البريد...",
+      "export": {
+        "email": "البريد",
+        "sector": "القطاع"
+      },
+      "messages": {
+        "exported": "تم تصدير الملفات الوظيفية"
+      },
+      "tooltips": {
+        "viewProfile": "عرض الملف",
+        "timeline": "المسار الوظيفي"
+      },
+      "empty": {
+        "title": "لا توجد ملفات وظيفية",
+        "description": "لم يتم العثور على موظفين مطابقة لعوامل التصفية."
+      }
+    },
+    "performanceReview": {
+      "errors": {
+        "loadReview": "تعذر تحميل التقييم",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "reviewNotFound": "التقييم غير موجود"
+      },
+      "header": {
+        "prefix": "تقييم"
+      },
+      "actions": {
+        "back": "رجوع",
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "return": "إعادة",
+        "cancel": "إلغاء",
+        "saveScores": "حفظ الدرجات"
+      },
+      "sections": {
+        "kpiScores": "درجات المؤشرات",
+        "actions": "الإجراءات"
+      },
+      "alerts": {
+        "noKpis": "لا توجد مؤشرات في هذه الدورة — عرّف مؤشرات مجموع أوزانها 100 قبل التقييم."
+      },
+      "fields": {
+        "score": "الدرجة",
+        "strengths": "نقاط القوة",
+        "improvements": "نقاط التحسين",
+        "comments": "ملاحظات",
+        "reviewer": "المُقيِّم",
+        "approvedBy": "المعتمد",
+        "decisionTime": "وقت القرار",
+        "fromStatus": "من {status}"
+      },
+      "dialogs": {
+        "rejectTitle": "رفض التقييم",
+        "rejectReasonLabel": "سبب الرفض",
+        "returnTitle": "إعادة التقييم للتعديل",
+        "returnNoteLabel": "ملاحظة للمُقيِّم"
+      },
+      "messages": {
+        "submitted": "تم الإرسال للاعتماد",
+        "approved": "تم الاعتماد",
+        "rejected": "تم الرفض",
+        "returned": "أُعيد للتعديل",
+        "scoresSaved": "حُفظت درجات المؤشرات"
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "IN_PROGRESS": "قيد التقييم",
+        "SUBMITTED": "مُقدَّم",
+        "REVIEWED": "مُقيَّم",
+        "APPROVED": "معتمد",
+        "REJECTED": "مرفوض"
+      }
+    },
+    "leaveRequest": {
+      "errors": {
+        "loadRequest": "تعذر تحميل الطلب",
+        "actionFailed": "تعذر تنفيذ الإجراء",
+        "requestNotFound": "الطلب غير موجود"
+      },
+      "header": {
+        "prefix": "طلب",
+        "subtitle": "{employeeName} — {days} يوم ({startDate} → {endDate})"
+      },
+      "actions": {
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "cancel": "إلغاء الطلب",
+        "confirmReject": "تأكيد الرفض"
+      },
+      "messages": {
+        "submitted": "تم إرسال الطلب",
+        "approved": "تم اعتماد الإجازة",
+        "rejected": "تم رفض الطلب",
+        "cancelled": "تم إلغاء الطلب"
+      },
+      "alerts": {
+        "documentRequired": "هذا النوع من الإجازات يطلب مستنداً، ولا يُعتمد قبل إرفاقه.",
+        "cannotApproveOwn": "رفعتَ هذا الطلب بنفسك، ولا يمكنك اعتماده — هذا مبدأ فصل المهام."
+      },
+      "dialogs": {
+        "rejectReasonLabel": "سبب الرفض (مطلوب)",
+        "rejectReasonPlaceholder": "اذكر السبب الذي سيُعرض لمقدّم الطلب",
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "chips": {
+        "selfService": "خدمة ذاتية",
+        "halfDay": "نصف يوم",
+        "unpaid": "بلا راتب"
+      },
+      "fields": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "leaveType": "نوع الإجازة",
+        "duration": "المدة",
+        "durationValue": "{days} يوم ({startDate} → {endDate})",
+        "attachment": "المرفق",
+        "justification": "المبرِّر",
+        "submittedBy": "مقدّم الطلب",
+        "approvedBy": "المعتمد",
+        "decisionNotes": "ملاحظات القرار",
+        "fromStatus": "من {status}"
+      },
+      "sections": {
+        "statusLog": "سجل الحالة"
+      },
+      "empty": {
+        "noLogs": "لا توجد قيود بعد."
+      },
+      "statusLabels": {
+        "DRAFT": "مسودة",
+        "SUBMITTED": "مُقدَّم"
+      }
+    },
+    "hrDashboard": {
+      "pageHeader": {
+        "title": "لوحة الموارد البشرية",
+        "subtitleNational": "أرقام وطنية عبر كامل المنصة",
+        "subtitleScoped": "الأرقام محصورة بنطاق صلاحياتك"
+      },
+      "tooltip": {
+        "refresh": "تحديث"
+      },
+      "button": {
+        "units": "الوحدات"
+      },
+      "alert": {
+        "national": "صلاحيتك وطنية، لذا تعرض اللوحة أرقام كل الموظفين على مستوى المنصة.",
+        "scoped": "هذه الأرقام تخص نطاقك فقط. الموظفون خارج نطاقك غير محسوبين."
+      },
+      "kpi": {
+        "totalEmployees": "إجمالي الموظفين",
+        "activeEmployees": "على رأس العمل",
+        "newHires30d": "تعيينات 30 يوم",
+        "probationsEnding30d": "نهاية اختبار خلال 30 يوم",
+        "onLeave": "في إجازة",
+        "suspended": "موقوف",
+        "terminated": "منتهي الخدمة",
+        "hintNational": "وطني",
+        "hintScoped": "نطاقك"
+      },
+      "noData": "لا توجد بيانات",
+      "sections": {
+        "byEmploymentType": "حسب نوع التعيين",
+        "byDepartment": "حسب القسم",
+        "bySector": "حسب القطاع",
+        "recentEvents": "أحدث أحداث المسار الوظيفي",
+        "viewAll": "عرض الكل"
+      },
+      "emptyEvents": {
+        "title": "لا توجد أحداث",
+        "description": "ستظهر الترقية والنقل والإجازات هنا فور تسجيلها."
+      },
+      "footer": {
+        "lastUpdated": "آخر تحديث"
+      },
+      "errors": {
+        "loadDashboard": "تعذر تحميل لوحة الموارد البشرية",
+        "loadData": "تعذر تحميل البيانات"
+      },
+      "employmentType": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      }
+    },
+    "performanceCycles": {
+      "pageHeader": {
+        "title": "دورات تقييم الأداء",
+        "subtitle": "الإغلاق يتطلب أن يساوي مجموع أوزان المؤشرات 100 وأن تُعتمد كل التقييمات"
+      },
+      "actions": {
+        "reviews": "التقييمات",
+        "newCycle": "دورة جديدة",
+        "kpis": "المؤشرات",
+        "open": "فتح",
+        "close": "إغلاق"
+      },
+      "actionsLabel": "إجراءات",
+      "columns": {
+        "name": "الدورة",
+        "status": "الحالة",
+        "kpiWeightTotal": "مجموع أوزان KPIs",
+        "reviewCount": "التقييمات",
+        "reviewDueDate": "موعد الاعتماد",
+        "actions": "إجراءات"
+      },
+      "messages": {
+        "opened": "فُتحت الدورة للتقييم",
+        "closed": "تم إغلاق الدورة"
+      },
+      "errors": {
+        "openCycle": "تعذر فتح الدورة",
+        "closeCycle": "تعذر إغلاق الدورة"
+      },
+      "searchPlaceholder": "بحث باسم الدورة...",
+      "filters": {
+        "status": {
+          "label": "الحالة",
+          "all": "كل الحالات"
+        },
+        "department": {
+          "label": "الإدارة",
+          "all": "كل الإدارات"
+        }
+      },
+      "emptyTitle": "لا توجد دورات تقييم",
+      "emptyDescription": "أنشئ دورة، عرّف مؤشراتها بأوزان، ثم افتحها للتقييم.",
+      "dialogs": {
+        "openTitle": "فتح دورة للتقييم: {name}",
+        "openAlert": "بعد الفتح يمكن إضافة التقييمات لها. الفتح يحتاج مؤشراً واحداً على الأقل، ومجموع أوزان المؤشرات يجب أن يبلغ 100 قبل الإغلاق.",
+        "confirmOpen": "تأكيد الفتح",
+        "closeTitle": "إغلاق: {name}",
+        "closeAlert": "الإغلاق نهائي: لن تُقبل تقييمات جديدة، ومجموع أوزان المؤشرات يجب أن يساوي 100 وجميع التقييمات معتمدة.",
+        "closeNoteLabel": "ملاحظة الإغلاق",
+        "confirmClose": "تأكيد الإغلاق",
+        "cancel": "إلغاء"
+      },
+      "status": {
+        "DRAFT": "مسودة",
+        "OPEN": "مفتوحة",
+        "CLOSED": "مغلقة",
+        "ARCHIVED": "مؤرشفة"
+      }
+    },
+    "trainingDetail": {
+      "pageHeader": {
+        "title": "تسجيل تدريب — {plan}"
+      },
+      "button": {
+        "back": "رجوع"
+      },
+      "errors": {
+        "loadEnrollment": "تعذر تحميل التسجيل",
+        "enrollmentNotFound": "التسجيل غير موجود",
+        "actionFailed": "تعذر تنفيذ الإجراء"
+      },
+      "selfService": "تسجيل ذاتي",
+      "rows": {
+        "employee": "الموظف",
+        "employeeNumber": "الرقم الوظيفي",
+        "course": "الدورة",
+        "courseCode": "رمز الدورة",
+        "requestDate": "تاريخ الطلب",
+        "period": "الفترة",
+        "score": "الدرجة",
+        "passScore": "درجة النجاح",
+        "result": "النتيجة",
+        "certificateRef": "مرجع الشهادة",
+        "decidedBy": "اعتمده",
+        "decidedAt": "وقت القرار",
+        "requestedBy": "مُرسل بواسطة"
+      },
+      "result": {
+        "passed": "ناجح",
+        "failed": "راسب"
+      },
+      "actions": {
+        "section": "الإجراءات",
+        "submit": "إرسال للاعتماد",
+        "approve": "اعتماد",
+        "reject": "رفض",
+        "complete": "تسجيل الإتمام والدرجة"
+      },
+      "decision": {
+        "section": "سجلّ القرار"
+      },
+      "messages": {
+        "submitted": "تم الإرسال للاعتماد",
+        "approved": "تم الاعتماد",
+        "rejected": "تم الرفض",
+        "completed": "تم تسجيل الإتمام"
+      },
+      "alert": {
+        "rejectionReason": "سبب الرفض: {reason}"
+      },
+      "dialogs": {
+        "reject": {
+          "title": "رفض تسجيل التدريب",
+          "label": "سبب الرفض",
+          "helperText": "سبب الرفض يظهر للموظف في صفحة التسجيل"
+        },
+        "cancel": "إلغاء",
+        "complete": {
+          "title": "تسجيل إتمام التدريب",
+          "info": "الإتمام مشتق: النجاح = الدرجة ≥ درجة النجاح في الدورة.",
+          "labelScore": "الدرجة",
+          "labelCertificateRef": "مرجع الشهادة",
+          "helperText": "اختياري — رابط أو رقم خارجي للشهادة"
+        }
+      },
+      "status": {
+        "DRAFT": "مسودة",
+        "REQUESTED": "مطلوب",
+        "APPROVED": "معتمد",
+        "IN_PROGRESS": "جارٍ",
+        "COMPLETED": "مكتمل",
+        "FAILED": "راسب",
+        "CANCELLED": "ملغى",
+        "REJECTED": "مرفوض",
+        "RETURNED": "مُعادة"
+      }
+    },
+    "employeeDetail": {
+      "button": {
+        "backToList": "رجوع للقائمة",
+        "edit": "تعديل"
+      },
+      "pageHeader": {
+        "titleFallback": "ملف وظيفي"
+      },
+      "label": {
+        "employeeNumber": "الرقم الوظيفي"
+      },
+      "errors": {
+        "timelineLoad": "تعذر تحميل المسار الوظيفي",
+        "employeeLoad": "تعذر تحميل بيانات الموظف",
+        "employeeNotFound": "الموظف غير موجود",
+        "eventCreate": "تعذر تسجيل الحدث"
+      },
+      "messages": {
+        "eventRecorded": "تم تسجيل الحدث في المسار الوظيفي"
+      },
+      "sections": {
+        "jobData": "البيانات الوظيفية",
+        "education": "التعليم والمؤهلات",
+        "contact": "بيانات الاتصال",
+        "emergencyContact": "جهة الاتصال الطارئة",
+        "assignments": "المواقع التعاقدية"
+      },
+      "assignments": {
+        "derived": "تُشتق المواقع من التعيينات النشطة في الهيكل التنظيمي، وهي نفس المصدر الذي يحدد نطاق صلاحيتك.",
+        "noTitle": "بدون مسمى",
+        "primary": "رئيسي",
+        "from": "من",
+        "to": "إلى"
+      },
+      "emptyAssignments": {
+        "title": "لا توجد مواقع",
+        "description": "لم يُسجَّل لهذا الموظف أي تعيين نشط."
+      },
+      "emptyTimeline": {
+        "title": "لا يوجد مسار وظيفي مسجل",
+        "description": "ستظهر الترقية والنقل والإجازات هنا عند تسجيلها."
+      },
+      "tabs": {
+        "jobData": "بيانات الوظيفة",
+        "timeline": "المسار الوظيفي ({count})",
+        "assignments": "المواقع"
+      },
+      "rows": {
+        "jobTitle": "المسمى الوظيفي",
+        "position": "الموقع",
+        "department": "القسم",
+        "sector": "القطاع",
+        "hireDate": "تاريخ التعيين",
+        "probationEnd": "نهاية فترة الاختبار",
+        "manager": "المدير المباشر",
+        "office": "المكتب",
+        "degree": "الشهادة",
+        "specialization": "التخصص",
+        "phone": "الهاتف",
+        "internalPhone": "هاتف داخلي",
+        "address": "العنوان",
+        "name": "الاسم",
+        "relation": "صلة القرابة",
+        "createdBy": "سُجّل بواسطة",
+        "reason": "السبب",
+        "entryPoint": "نقطة الدخول",
+        "duration": "المدة"
+      },
+      "timeline": {
+        "panelTitle": "سجل الأحداث",
+        "button": {
+          "cancel": "إلغاء",
+          "registerEvent": "تسجيل حدث"
+        },
+        "form": {
+          "eventType": "نوع الحدث",
+          "startDate": "تاريخ البداية",
+          "endDate": "تاريخ النهاية",
+          "newPosition": "المسمى الجديد",
+          "newDepartment": "القسم الجديد",
+          "reason": "السبب / ملاحظات",
+          "save": "حفظ الحدث"
+        }
+      },
+      "employmentStatus": {
+        "ACTIVE": "على رأس العمل",
+        "ON_LEAVE": "في إجازة",
+        "SUSPENDED": "موقوف",
+        "TERMINATED": "منتهي الخدمة"
+      },
+      "employmentType": {
+        "PERMANENT": "دائم",
+        "CONTRACT": "بعقد",
+        "TEMPORARY": "مؤقت",
+        "CONSULTANT": "استشاري",
+        "INTERN": "تدريب"
+      },
+      "timelineEvent": {
+        "HIRE": "توظيف",
+        "PROMOTION": "ترقية",
+        "TRANSFER": "نقل",
+        "DEMOTION": "خفض",
+        "LEAVE_START": "بدء إجازة",
+        "LEAVE_END": "انتهاء إجازة",
+        "SUSPENSION": "إيقاف",
+        "TERMINATION": "إنهاء خدمة",
+        "REINSTATE": "إعادة تعيين",
+        "PROBATION_END": "نهاية فترة الاختبار",
+        "CONTRACT_RENEWAL": "تجديد عقد"
+      }
+    },
+    "leave": {
+      "pageHeader": {
+        "title": "الإجازات",
+        "subtitle": "الرصيد يُحسب من الطلبات: أيام معتمدة تُخصم وأيام مُقدَّمة تُحجز"
+      },
+      "button": {
+        "allRequests": "كل الطلبات",
+        "balances": "الأرصدة",
+        "saveDraft": "حفظ كمسودة",
+        "submitForApproval": "حفظ وإرسال للاعتماد",
+        "viewAllBalances": "عرض كل الأرصدة"
+      },
+      "label": {
+        "employee": "الموظف",
+        "leaveType": "نوع الإجازة",
+        "startDate": "من تاريخ",
+        "endDate": "إلى تاريخ",
+        "duration": "المدة",
+        "reason": "المبرِّر",
+        "document": "المرفق",
+        "unpaid": " (بلا راتب)"
+      },
+      "duration": {
+        "fullDay": "أيام كاملة",
+        "halfDay": "نصف يوم"
+      },
+      "messages": {
+        "submitted": "تم رفع الطلب للاعتماد",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الطلب"
+      },
+      "hint": {
+        "documentRequired": "مرجع المستند المرفوع — لا يُعتمد الطلب بدونه",
+        "requiresDocument": "هذا النوع يطلب مستنداً عند الاعتماد"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "summary": {
+        "myBalance": "رصيدي {year}",
+        "totalAvailable": "الإجمالي المتاح",
+        "days": "يوم"
+      },
+      "scope": {
+        "adminBalances": "أرصدة نطاقي الإداري",
+        "availableOf": "{available} متاح من {total}"
+      },
+      "balance": {
+        "available": "متاح",
+        "consumed": "استُهلك {taken}",
+        "reserved": "محجوز {pending}",
+        "of": "من {entitled}"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectLeaveType": "حدّد نوع الإجازة",
+        "invalidDate": "تاريخ غير صالح",
+        "endDateBeforeStartDate": "تاريخ النهاية لا يسبق تاريخ البداية",
+        "halfDaySingleDay": "نصف اليوم ليوم واحد فقط"
+      }
+    },
+    "employeeForm": {
+      "button": {
+        "backToList": "رجوع للقائمة",
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التعديلات",
+        "createFile": "إنشاء الملف"
+      },
+      "pageHeader": {
+        "titleEdit": "تعديل الملف الوظيفي",
+        "titleNew": "ملف وظيفي جديد",
+        "subtitleNew": "إنشاء حساب وظيفية داخل نطاقك"
+      },
+      "errors": {
+        "loadFailed": "تعذر تحميل بيانات الموظف",
+        "saveFailed": "تعذر حفظ الملف الوظيفي"
+      },
+      "messages": {
+        "updated": "تم تحديث الملف الوظيفي",
+        "created": "تم إنشاء الملف الوظيفي"
+      },
+      "account": {
+        "title": "حساب الدخول",
+        "subtitle": "يُنشأ حساب بصلاحيات صفرية؛ منح الصلاحيات يتم لاحقاً من إدارة المستخدمين.",
+        "newAccount": "حساب جديد",
+        "linkExisting": "ربط حساب موجود"
+      },
+      "sections": {
+        "jobData": "البيانات الوظيفية",
+        "educationContact": "المؤهلات والاتصال"
+      },
+      "fields": {
+        "email": "البريد الإلكتروني",
+        "username": "اسم المستخدم",
+        "fullName": "الاسم الكامل (على الحساب)",
+        "phone": "الهاتف",
+        "password": "كلمة المرور",
+        "userId": "الحساب المرتبط",
+        "employeeNumber": "الرقم الوظيفي",
+        "fullNameAr": "الاسم بالعربية",
+        "fullNameEn": "الاسم بالإنجليزية",
+        "jobTitle": "المسمى الوظيفي",
+        "gender": "الجنس",
+        "employmentType": "نوع التعيين",
+        "employmentStatus": "حالة التوظيف",
+        "hireDate": "تاريخ التعيين",
+        "probationEnd": "نهاية فترة الاختبار",
+        "birthDate": "تاريخ الميلاد",
+        "reportingManager": "المدير المباشر",
+        "degree": "الشهادة",
+        "specialization": "التخصص",
+        "office": "المكتب",
+        "internalPhone": "هاتف داخلي",
+        "homeAddress": "العنوان",
+        "emergencyContactName": "جهة الاتصال الطارئة",
+        "emergencyContactPhone": "هاتف الطوارئ",
+        "emergencyContactRelation": "صلة القرابة"
+      },
+      "hints": {
+        "emailLogin": "يستخدم لتسجيل الدخول",
+        "usernameDerived": "يُشتق من البريد إن تُرك فارغاً",
+        "passwordOptional": "اتركها فارغة إن أردت تعيينها لاحقاً",
+        "employeeNumberAuto": "يولَّد تلقائياً إن تُرك فارغاً",
+        "linkableUsers": "حسابات نشطة بلا ملف وظيفي"
+      },
+      "autocomplete": {
+        "clear": "مسح",
+        "noCandidates": "لا يوجد مرشحون",
+        "noLinkableUsers": "لا توجد حسابات متاحة للربط"
+      }
+    },
+    "employeeSchema": {
+      "validation": {
+        "maxLength": "الحد الأقصى {max} حرفاً",
+        "invalidEmail": "بريد إلكتروني غير صالح",
+        "fullNameArRequired": "الاسم بالعربية مطلوب",
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "passwordMinLength": "كلمة المرور 8 أحرف على الأقل",
+        "selectUserAccount": "اختر حساب الموظف",
+        "probationBeforeHire": "نهاية فترة الاختبار لا تسبق تاريخ التعيين",
+        "birthDateBeforeHire": "تاريخ الميلاد يجب أن يسبق تاريخ التعيين"
+      }
+    },
+    "training": {
+      "pageHeader": {
+        "title": "التدريب",
+        "subtitle": "اشترك في دورة، واعتمد اشتراكك، ثم تُسجَّل الدرجة فيُشتق الإتمام منها"
+      },
+      "button": {
+        "allEnrollments": "كل التسجيلات",
+        "submitAndRequest": "اشتراك وإرسال للاعتماد",
+        "saveDraft": "حفظ كمسودة"
+      },
+      "section": {
+        "enrollInCycle": "اشتراك في دورة",
+        "myEnrollments": "تسجيلاتي"
+      },
+      "label": {
+        "employee": "الموظف",
+        "plan": "الدورة"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "chip": {
+        "mandatory": "إلزامي",
+        "durationHours": "{hours} ساعة",
+        "registeredCount": "{count} مسجَّل"
+      },
+      "messages": {
+        "submitted": "تم إرسال طلب الاشتراك",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء التسجيل"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectPlan": "حدّد الدورة"
+      }
+    },
+    "performanceCycleForm": {
+      "pageHeader": {
+        "title": "دورة تقييم جديدة",
+        "subtitle": "تُنشأ كمسودة: عرّف المؤشرات بأوزانها ثم افتح الدورة للتقييم"
+      },
+      "button": {
+        "back": "رجوع",
+        "createCycle": "إنشاء الدورة",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "cycleName": "اسم الدورة",
+        "department": "الإدارة",
+        "periodStart": "بداية الفترة",
+        "periodEnd": "نهاية الفترة",
+        "reviewDueDate": "موعد اعتماد التقييمات",
+        "notes": "ملاحظات"
+      },
+      "helperText": {
+        "nationalCycle": "اتركه فارغاً لدورة وطنية"
+      },
+      "select": {
+        "national": "— وطني —"
+      },
+      "messages": {
+        "created": "تم إنشاء الدورة — عرّف مؤشراتها الآن"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الدورة"
+      },
+      "validation": {
+        "nameMinLength": "اسم الدورة مطلوب",
+        "selectStartDate": "حدّد بداية الفترة",
+        "selectEndDate": "حدّد نهاية الفترة"
+      }
+    },
+    "performanceReviewForm": {
+      "pageHeader": {
+        "title": "تقييم أداء جديد",
+        "subtitle": "الدرجات تُدخل في صفحة التقييم؛ الدرجة النهائية والتقدير يُشتقّان منها"
+      },
+      "button": {
+        "back": "رجوع",
+        "createReview": "إنشاء التقييم",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "cycle": "الدورة",
+        "employee": "الموظف",
+        "strengths": "نقاط القوة",
+        "improvements": "نقاط التحسين",
+        "comments": "ملاحظات"
+      },
+      "helperText": {
+        "noCycles": "مرّر ?cycle=<id> أو اختر من القائمة"
+      },
+      "kpiSection": {
+        "title": "مؤشرات هذه الدورة — تُدخال درجاتها بعد الإنشاء"
+      },
+      "messages": {
+        "created": "تم إنشاء التقييم — أضف درجات المؤشرات ثم أرسله"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء التقييم"
+      },
+      "validation": {
+        "selectCycle": "حدّد الدورة",
+        "selectEmployee": "حدّد الموظف",
+        "textTooLong": "النص طويل جداً"
+      }
+    },
+    "postingRequestForm": {
+      "pageHeader": {
+        "title": "طلب نقل أو ترقية",
+        "subtitle": "يُحفظ الطلب كمسودة، أو يُرسل مباشرةً للاعتماد"
+      },
+      "button": {
+        "back": "رجوع",
+        "saveDraft": "حفظ كمسودة",
+        "submitForApproval": "حفظ وإرسال للاعتماد",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "employee": "الموظف",
+        "kind": "نوع الطلب",
+        "targetDepartment": "القسم الهدف",
+        "effectiveDate": "تاريخ النفاذ المطلوب",
+        "reason": "المبرِّر"
+      },
+      "hint": {
+        "employeeScope": "الموظفون ضمن نطاقك الإداري",
+        "kind": "النقل: تغيير القسم — الترقية: تغيير الصفة بمنصب أعلى",
+        "targetDepartment": "اتركه فارغاً للنقل دون تغيير القسم",
+        "effectiveDate": "اتركه فارغاً للتطبيق فور الاعتماد",
+        "reason": "يظهر للمعتمد عند المراجعة"
+      },
+      "select": {
+        "choose": "— اختر —",
+        "noChange": "— بدون تغيير —"
+      },
+      "messages": {
+        "submitted": "تم رفع الطلب للاعتماد",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الطلب"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "targetDepartmentRequired": "الترقية والخفض يتطلّبان قسماً هدفاً"
+      }
+    },
+    "attendance": {
+      "pageHeader": {
+        "title": "الحضور والانصراف",
+        "subtitle": "سجل يومي لكل موظف — يُوثَّق من مصدره ثم يُعتمد من طرف ثالث"
+      },
+      "button": {
+        "allRecords": "كل السجلات",
+        "postingRequests": "طلبات النقل",
+        "recordAttendance": "تسجيل الحضور",
+        "clearForm": "مسح النموذج"
+      },
+      "kpi": {
+        "presentDays": "أيام الحضور (30 يوم)",
+        "absentDays": "أيام الغياب",
+        "lateCount": "مرات التأخر",
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "label": {
+        "employee": "الموظف",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "checkIn": "وقت الحضور",
+        "checkOut": "وقت الانصراف",
+        "overtimeMinutes": "دقائق إضافية",
+        "shiftCode": "رمز الوردية",
+        "notes": "ملاحظات"
+      },
+      "hint": {
+        "noSelfService": "لا يُسجَّل الحضور الذاتي من هنا",
+        "oneRecordPerDay": "سجل واحد لكل موظف في اليوم",
+        "shiftCodeOptional": "اختياري — تُنظَّم كمناوبات في مرحلة لاحقة"
+      },
+      "messages": {
+        "recorded": "تم تسجيل الحضور"
+      },
+      "errors": {
+        "recordFailed": "تعذر تسجيل الحضور"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectDate": "التاريخ مطلوب",
+        "invalidTime": "وقت غير صالح (HH:MM)",
+        "negativeOvertime": "لا يمكن أن يكون سالباً",
+        "noPunchForStatus": "حالة «{status}» لا تقبل أوقات حضور/انصراف",
+        "punchRequired": "هذه الحالة تتطلّب وقت حضور",
+        "checkOutAfterCheckIn": "وقت الانصراف يجب أن يكون بعد وقت الحضور",
+        "futureDate": "لا يُسجَّل حضور لتاريخ مستقبلي"
+      }
+    }
   }
 }

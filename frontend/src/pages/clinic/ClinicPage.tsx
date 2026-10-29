@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -29,15 +30,15 @@ import { PassportChip, PersonAvatar } from './ui';
 const referralStatusOptions = Object.entries(referralStatus).map(([v, m]) => ({ value: v, label: m.label }));
 const visitStatusOptions = Object.entries(visitStatus).map(([v, m]) => ({ value: v, label: m.label }));
 
-const phaseLabels: Record<string, { label: string; color: string }> = {
-  REGISTERED: { label: 'مسجلة', color: '#8a8f98' },
-  TRIAGED: { label: 'تم الفرز', color: '#b7791f' },
-  EXAMINED: { label: 'فحص طبي', color: 'primary.main' },
-  LABORATORY: { label: 'مختبر', color: 'info.main' },
-  DECISION: { label: 'القرار', color: '#7b4fb3' },
-  CERTIFICATE: { label: 'الشهادة', color: '#0e7490' },
-  CLOSED: { label: 'مغلقة', color: 'error.main' },
-};
+const getPhaseLabels = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  REGISTERED: { label: t('clinic.clinic.status.registered'), color: '#8a8f98' },
+  TRIAGED: { label: t('clinic.clinic.status.triaged'), color: '#b7791f' },
+  EXAMINED: { label: t('clinic.clinic.status.examined'), color: 'primary.main' },
+  LABORATORY: { label: t('clinic.clinic.status.laboratory'), color: 'info.main' },
+  DECISION: { label: t('clinic.clinic.status.decision'), color: '#7b4fb3' },
+  CERTIFICATE: { label: t('clinic.clinic.status.certificate'), color: '#0e7490' },
+  CLOSED: { label: t('clinic.clinic.status.closed'), color: 'error.main' },
+});
 
 const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) => (
   <Stack direction="row" spacing={1.5} alignItems="center">
@@ -53,6 +54,7 @@ const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) =>
 
 const ReferralsTab = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const table = useServerTable<ClinicReferral>({ fetchData: getReferrals });
   const { rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder, setSorting, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
 
@@ -68,11 +70,11 @@ const ReferralsTab = () => {
     setSubmitting(true);
     try {
       const res = await acceptReferral(acceptTarget.id);
-      notifySuccess('تم قبول الإحالة وفتح زيارة جديدة');
+      notifySuccess(t('clinic.clinic.messages.referralAccepted'));
       setAcceptTarget(null);
       navigate(`/app/clinic/visits/${res.data.data.id}`);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر قبول الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.clinic.messages.acceptReferralFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -83,12 +85,12 @@ const ReferralsTab = () => {
     setSubmitting(true);
     try {
       await rejectReferral(rejectTarget.id, rejectReason.trim() ? { notes: rejectReason.trim() } : {});
-      notifySuccess('تم رفض الإحالة');
+      notifySuccess(t('clinic.clinic.messages.referralRejected'));
       setRejectTarget(null);
       setRejectReason('');
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر رفض الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.clinic.messages.rejectReferralFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +99,7 @@ const ReferralsTab = () => {
   const handleExport = () =>
     exportAll({
       filename: `clinic-referrals-${new Date().toISOString().slice(0, 10)}.csv`,
-      headers: ['المسافر', 'جواز السفر', 'المنفذ', 'الحالة', 'تاريخ الإنشاء'],
+      headers: [t('clinic.clinic.cols.traveler'), t('clinic.clinic.cols.passport'), t('clinic.clinic.cols.port'), t('clinic.clinic.cols.status'), t('clinic.clinic.cols.createdAt')],
       mapRow: (r: ClinicReferral) => [
         r.traveler_name || '',
         r.passport_number || '',
@@ -105,7 +107,7 @@ const ReferralsTab = () => {
         referralStatus[r.status]?.label || r.status,
         formatDateTime(r.created_at),
       ],
-      message: 'تم تصدير الإحالات',
+      message: t('clinic.clinic.messages.referralsExported'),
     });
 
   return (
@@ -114,13 +116,13 @@ const ReferralsTab = () => {
         columns={[
           {
             key: 'traveler_name',
-            label: 'المسافر',
+            label: t('clinic.clinic.cols.traveler'),
             render: (r) => <AvatarCell name={r.traveler_name} passport={r.passport_number} />,
           },
-          { key: 'port_name', label: 'المنفذ', render: (r) => r.port_name || '—', hideOnMobile: true, noWrap: false },
+          { key: 'port_name', label: t('clinic.clinic.cols.port'), render: (r) => r.port_name || '—', hideOnMobile: true, noWrap: false },
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('clinic.clinic.cols.status'),
             sortable: true,
             render: (r) => {
               const m = referralStatus[r.status];
@@ -129,7 +131,7 @@ const ReferralsTab = () => {
           },
           {
             key: 'created_at',
-            label: 'تاريخ الإنشاء',
+            label: t('clinic.clinic.cols.createdAt'),
             sortable: true,
             render: (r) => formatDateTime(r.created_at),
             hideOnMobile: true,
@@ -143,13 +145,13 @@ const ReferralsTab = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="إحالات العيادة"
-        subtitle={`${count} إحالة`}
+        title={t('clinic.clinic.tabs.referrals')}
+        subtitle={t('clinic.clinic.subtitles.referrals', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالاسم أو جواز السفر..."
+        searchPlaceholder={t('clinic.clinic.search.referrals')}
         filters={[
-          { key: 'status', label: 'الحالة', options: referralStatusOptions, value: '', onChange: (v) => setFilter('status', v) },
+          { key: 'status', label: t('clinic.clinic.cols.status'), options: referralStatusOptions, value: '', onChange: (v) => setFilter('status', v) },
         ]}
         sortBy={sortBy}
         sortOrder={sortOrder}
@@ -159,15 +161,15 @@ const ReferralsTab = () => {
         onExport={handleExport}
         exporting={exporting}
         onRefresh={refresh}
-        emptyTitle="لا توجد إحالات"
-        emptyDescription="إحالات العيادة من الفحوصات تظهر هنا"
+        emptyTitle={t('clinic.clinic.empty.referralsTitle')}
+        emptyDescription={t('clinic.clinic.empty.referralsDesc')}
         actions={(r) => {
           if (r.status !== 'PENDING') return null;
           return (
             <>
-              <Tooltip title="قبول الإحالة">
+              <Tooltip title={t('clinic.clinic.actions.acceptReferral')}>
                 <IconButton
-                  aria-label="قبول الإحالة"
+                  aria-label={t('clinic.clinic.actions.acceptReferral')}
                   size="small"
                   color="success"
                   onClick={() => setAcceptTarget(r)}
@@ -176,9 +178,9 @@ const ReferralsTab = () => {
                   <CheckCircleIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="رفض الإحالة">
+              <Tooltip title={t('clinic.clinic.actions.rejectReferral')}>
                 <IconButton
-                  aria-label="رفض الإحالة"
+                  aria-label={t('clinic.clinic.actions.rejectReferral')}
                   size="small"
                   color="error"
                   onClick={() => { setRejectReason(''); setRejectTarget(r); }}
@@ -195,9 +197,9 @@ const ReferralsTab = () => {
       <ConfirmDialog
         open={Boolean(acceptTarget)}
         tone="success"
-        title="قبول الإحالة"
-        message={acceptTarget ? `سيتم قبول إحالة «${acceptTarget.traveler_name}» وفتح زيارة عيادة جديدة للمسافر.` : ''}
-        confirmLabel="قبول الإحالة"
+        title={t('clinic.clinic.dialogs.acceptReferralTitle')}
+        message={acceptTarget ? t('clinic.clinic.dialogs.acceptReferralMessage', { traveler: acceptTarget.traveler_name }) : ''}
+        confirmLabel={t('clinic.clinic.dialogs.acceptReferralConfirm')}
         loading={submitting}
         onConfirm={handleAccept}
         onClose={() => setAcceptTarget(null)}
@@ -206,15 +208,15 @@ const ReferralsTab = () => {
       <ConfirmDialog
         open={Boolean(rejectTarget)}
         tone="error"
-        title="رفض الإحالة"
-        message={rejectTarget ? `سيتم رفض إحالة «${rejectTarget.traveler_name}». يمكنك إضافة سبب الرفض.` : ''}
-        confirmLabel="تأكيد الرفض"
+        title={t('clinic.clinic.dialogs.rejectReferralTitle')}
+        message={rejectTarget ? t('clinic.clinic.dialogs.rejectReferralMessage', { traveler: rejectTarget.traveler_name }) : ''}
+        confirmLabel={t('clinic.clinic.dialogs.rejectReferralConfirm')}
         loading={submitting}
         onConfirm={handleReject}
         onClose={() => { setRejectTarget(null); setRejectReason(''); }}
       >
         <TextField
-          label="سبب الرفض (اختياري)"
+          label={t('clinic.clinic.dialogs.rejectReasonLabel')}
           value={rejectReason}
           onChange={(e) => setRejectReason(e.target.value)}
           fullWidth
@@ -231,6 +233,8 @@ const ReferralsTab = () => {
 
 const VisitsTab = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const phaseLabels = useMemo(() => getPhaseLabels(t), [t]);
   const table = useServerTable<ClinicVisit>({ fetchData: getClinicVisits });
   const { rows, count, loading, error, searchInput, setSearchInput, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
 
@@ -242,11 +246,11 @@ const VisitsTab = () => {
     setClosing(true);
     try {
       await closeVisit(closeTarget.id);
-      notifySuccess('تم إغلاق الزيارة');
+      notifySuccess(t('clinic.clinic.messages.visitClosed'));
       setCloseTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إغلاق الزيارة'));
+      notifyError(extractErrorMessage(err, t('clinic.clinic.messages.closeVisitFailed')));
     } finally {
       setClosing(false);
     }
@@ -258,13 +262,13 @@ const VisitsTab = () => {
         columns={[
           {
             key: 'traveler_name',
-            label: 'المسافر',
+            label: t('clinic.clinic.cols.traveler'),
             render: (v) => <AvatarCell name={v.traveler_name} passport={v.passport_number} />,
           },
-          { key: 'doctor_name', label: 'الطبيب', render: (v) => v.doctor_name || '—', hideOnMobile: true },
+          { key: 'doctor_name', label: t('clinic.clinic.cols.doctor'), render: (v) => v.doctor_name || '—', hideOnMobile: true },
           {
             key: 'visit_status',
-            label: 'الحالة',
+            label: t('clinic.clinic.cols.status'),
             render: (v) => {
               const m = visitStatus[v.visit_status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.visit_status;
@@ -272,7 +276,7 @@ const VisitsTab = () => {
           },
           {
             key: 'phase',
-            label: 'المرحلة',
+            label: t('clinic.clinic.cols.phase'),
             hideOnMobile: true,
             render: (v) => {
               const meta = phaseLabels[v.phase ?? ''];
@@ -283,7 +287,7 @@ const VisitsTab = () => {
               );
             },
           },
-          { key: 'opened_at', label: 'وقت الفتح', sortable: true, render: (v) => formatDateTime(v.opened_at), hideOnMobile: true },
+          { key: 'opened_at', label: t('clinic.clinic.cols.openedAt'), sortable: true, render: (v) => formatDateTime(v.opened_at), hideOnMobile: true },
         ]}
         rows={rows}
         rowKey={(v) => v.id}
@@ -293,24 +297,24 @@ const VisitsTab = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="زيارات العيادة"
-        subtitle={`${count} زيارة`}
+        title={t('clinic.clinic.tabs.visits')}
+        subtitle={t('clinic.clinic.subtitles.visits', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالاسم أو جواز السفر..."
+        searchPlaceholder={t('clinic.clinic.search.visits')}
         filters={[
-          { key: 'visit_status', label: 'الحالة', options: visitStatusOptions, value: '', onChange: (v) => setFilter('visit_status', v) },
+          { key: 'visit_status', label: t('clinic.clinic.cols.status'), options: visitStatusOptions, value: '', onChange: (v) => setFilter('visit_status', v) },
         ]}
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
-        emptyTitle="لا توجد زيارات"
-        emptyDescription="الزيارات تظهر عند قبول الإحالات"
+        emptyTitle={t('clinic.clinic.empty.visitsTitle')}
+        emptyDescription={t('clinic.clinic.empty.visitsDesc')}
         actions={(v) => (
           <>
-            <Tooltip title="فتح الزيارة">
+            <Tooltip title={t('clinic.clinic.actions.openVisit')}>
               <IconButton
-                aria-label="عرض"
+                aria-label={t('clinic.common.view')}
                 size="small"
                 color="primary"
                 onClick={() => navigate(`/app/clinic/visits/${v.id}`)}
@@ -320,9 +324,9 @@ const VisitsTab = () => {
               </IconButton>
             </Tooltip>
             {v.visit_status === 'OPEN' && (
-              <Tooltip title="إغلاق الزيارة">
+              <Tooltip title={t('clinic.clinic.actions.closeVisit')}>
                 <IconButton
-                  aria-label="قفل"
+                  aria-label={t('clinic.clinic.actions.closeVisit')}
                   size="small"
                   color="error"
                   onClick={() => setCloseTarget(v)}
@@ -339,9 +343,9 @@ const VisitsTab = () => {
       <ConfirmDialog
         open={Boolean(closeTarget)}
         tone="error"
-        title="إغلاق الزيارة"
-        message={closeTarget ? `هل أنت متأكد من إغلاق زيارة «${closeTarget.traveler_name}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع.` : ''}
-        confirmLabel="إغلاق الزيارة"
+        title={t('clinic.clinic.dialogs.closeVisitTitle')}
+        message={closeTarget ? t('clinic.clinic.dialogs.closeVisitMessage', { traveler: closeTarget.traveler_name }) : ''}
+        confirmLabel={t('clinic.clinic.dialogs.closeVisitConfirm')}
         loading={closing}
         onConfirm={handleClose}
         onClose={() => setCloseTarget(null)}
@@ -351,6 +355,7 @@ const VisitsTab = () => {
 };
 
 const ClinicPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get('tab') === 'visits' ? 1 : 0;
 
@@ -364,9 +369,9 @@ const ClinicPage = () => {
   return (
     <Box>
       <PageHeader
-        title="العيادة"
-        subtitle="إدارة إحالات وزيارات العيادات الطبية بسلاسة"
-        eyebrow="العمليات"
+        title={t('clinic.clinic.header.title')}
+        subtitle={t('clinic.clinic.header.subtitle')}
+        eyebrow={t('clinic.clinic.header.eyebrow')}
       />
       <Tabs
         value={tab}
@@ -377,8 +382,8 @@ const ClinicPage = () => {
           '& .MuiTabs-indicator': { height: 3, borderRadius: '999px' },
         }}
       >
-        <Tab icon={<ReceiptLongIcon />} iconPosition="start" label="إحالات العيادة" />
-        <Tab icon={<MedicalServicesIcon />} iconPosition="start" label="زيارات العيادة" />
+        <Tab icon={<ReceiptLongIcon />} iconPosition="start" label={t('clinic.clinic.tabs.referrals')} />
+        <Tab icon={<MedicalServicesIcon />} iconPosition="start" label={t('clinic.clinic.tabs.visits')} />
       </Tabs>
       {tab === 0 ? <ReferralsTab /> : <VisitsTab />}
     </Box>

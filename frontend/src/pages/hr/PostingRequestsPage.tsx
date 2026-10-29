@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -19,28 +20,33 @@ import type { PostingRequest } from '../../types/hr';
 import {
   POSTING_KIND_LABELS,
   POSTING_STATUS_LABELS,
-  postingKindLabel,
-  postingStatusLabel,
   POSTING_STATUS_TONES,
 } from '../../utils/hrLabels';
 import { formatDate } from '../../utils/formatters';
 
-const KIND_OPTIONS = [
-  { value: '', label: 'كل الأنواع' },
-  ...Object.entries(POSTING_KIND_LABELS).map(([value, label]) => ({ value, label })),
-];
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'كل الحالات' },
-  ...Object.entries(POSTING_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-];
-
 const PostingRequestsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   // التطبيق يحرس بالدور لا بالصلاحية المفردة (ProtectedRoute)، فيُشتق
   // «من يستطيع الإنشاء» من الدور: المعتمد وحده لا يُدخل.
   const canAdd = user?.role !== 'HR_APPROVER';
+
+  const KIND_OPTIONS = useMemo(
+    () => [
+      { value: '', label: t('hr.postingRequests.filters.allKinds') },
+      ...Object.entries(POSTING_KIND_LABELS).map(([value]) => ({ value, label: t(`hr.postingRequests.kindLabels.${value}`) })),
+    ],
+    [t],
+  );
+
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { value: '', label: t('hr.postingRequests.filters.allStatuses') },
+      ...Object.entries(POSTING_STATUS_LABELS).map(([value]) => ({ value, label: t(`hr.postingRequests.statusLabels.${value}`) })),
+    ],
+    [t],
+  );
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -56,7 +62,7 @@ const PostingRequestsPage = () => {
     () => [
       {
         key: 'employee_name',
-        label: 'الموظف',
+        label: t('hr.postingRequests.columns.employee'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
@@ -70,42 +76,42 @@ const PostingRequestsPage = () => {
       },
       {
         key: 'kind',
-        label: 'النوع',
-        render: (row) => <StatusChip label={postingKindLabel(row.kind)} tone="info" showIcon={false} />,
+        label: t('hr.postingRequests.columns.kind'),
+        render: (row) => <StatusChip label={t(`hr.postingRequests.kindLabels.${row.kind}`)} tone="info" showIcon={false} />,
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.postingRequests.columns.status'),
         render: (row) => (
           <StatusChip
-            label={postingStatusLabel(row.status)}
+            label={t(`hr.postingRequests.statusLabels.${row.status}`)}
             tone={POSTING_STATUS_TONES[row.status] ?? 'neutral'}
           />
         ),
       },
       {
         key: 'target_summary',
-        label: 'الوجهة',
+        label: t('hr.postingRequests.columns.destination'),
         render: (row) => (
           <Typography variant="body2">{row.target_summary}</Typography>
         ),
       },
       {
         key: 'effective_date',
-        label: 'تاريخ النفاذ',
+        label: t('hr.postingRequests.columns.effectiveDate'),
         hideOnMobile: true,
         render: (row) => (row.effective_date ? formatDate(row.effective_date) : '—'),
       },
       {
         key: 'requested_by_name',
-        label: 'مقدّم الطلب',
+        label: t('hr.postingRequests.columns.requestedBy'),
         hideOnMobile: true,
         render: (row) => (
           <Box>
             <Typography variant="body2">{row.requested_by_name || '—'}</Typography>
             {row.is_self_service && (
               <Typography variant="caption" color="text.secondary">
-                خدمة ذاتية
+                {t('hr.postingRequests.selfService')}
               </Typography>
             )}
           </Box>
@@ -113,19 +119,19 @@ const PostingRequestsPage = () => {
       },
       {
         key: 'decided_by_name',
-        label: 'المعتمد',
+        label: t('hr.postingRequests.columns.approvedBy'),
         hideOnMobile: true,
         render: (row) => row.decided_by_name || '—',
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="طلبات النقل والترقية"
-        subtitle="الاعتماد ينقل الموظف فعلياً: يُغلق تعيينه القديم ويفتح الجديد ويُسجَّل في المسار الوظيفي"
+        title={t('hr.postingRequests.header.title')}
+        subtitle={t('hr.postingRequests.header.subtitle')}
         action={
           canAdd && (
             <Button
@@ -133,7 +139,7 @@ const PostingRequestsPage = () => {
               startIcon={<AddIcon />}
               onClick={() => navigate('/app/hr/postings/new')}
             >
-              طلب جديد
+              {t('hr.postingRequests.actions.new')}
             </Button>
           )
         }
@@ -151,10 +157,10 @@ const PostingRequestsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم الموظف أو رقمه الوظيفي..."
+        searchPlaceholder={t('hr.postingRequests.searchPlaceholder')}
         filters={[
-          { key: 'kind', label: 'النوع', options: KIND_OPTIONS, value: '', onChange: (v) => setFilter('kind', v) },
-          { key: 'status', label: 'الحالة', options: STATUS_OPTIONS, value: '', onChange: (v) => setFilter('status', v) },
+          { key: 'kind', label: t('hr.postingRequests.columns.kind'), options: KIND_OPTIONS, value: '', onChange: (v) => setFilter('kind', v) },
+          { key: 'status', label: t('hr.postingRequests.columns.status'), options: STATUS_OPTIONS, value: '', onChange: (v) => setFilter('status', v) },
         ]}
         sortBy={sortBy}
         sortOrder={sortOrder}
@@ -165,7 +171,16 @@ const PostingRequestsPage = () => {
         onExport={() =>
           exportAll({
             filename: 'hr_posting_requests.csv',
-            headers: ['الموظف', 'الرقم الوظيفي', 'النوع', 'الحالة', 'الوجهة', 'تاريخ النفاذ', 'مقدّم الطلب', 'المعتمد'],
+            headers: [
+              t('hr.postingRequests.columns.employee'),
+              t('hr.postingRequests.export.employeeNumber'),
+              t('hr.postingRequests.columns.kind'),
+              t('hr.postingRequests.columns.status'),
+              t('hr.postingRequests.columns.destination'),
+              t('hr.postingRequests.columns.effectiveDate'),
+              t('hr.postingRequests.columns.requestedBy'),
+              t('hr.postingRequests.columns.approvedBy'),
+            ],
             mapRow: (r) => [
               r.employee_name,
               r.employee_number,
@@ -176,20 +191,20 @@ const PostingRequestsPage = () => {
               r.requested_by_name,
               r.decided_by_name ?? '',
             ],
-            message: 'تم تصدير الطلبات',
+            message: t('hr.postingRequests.export.message'),
           })
         }
         exporting={exporting}
-        actionsLabel="إجراءات"
+        actionsLabel={t('hr.postingRequests.actions.label')}
         actions={(row) => (
-          <Tooltip title="تفاصيل الطلب">
+          <Tooltip title={t('hr.postingRequests.actions.viewRequest')}>
             <IconButton onClick={() => navigate(`/app/hr/postings/${row.id}`)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>
         )}
-        emptyTitle="لا توجد طلبات نقل"
-        emptyDescription="ستظهر هنا طلبات النقل والترقية المرفوعة من الموظفين أو من الموارد البشرية."
+        emptyTitle={t('hr.postingRequests.empty.title')}
+        emptyDescription={t('hr.postingRequests.empty.description')}
       />
     </Box>
   );

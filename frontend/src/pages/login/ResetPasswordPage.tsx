@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -20,6 +21,7 @@ import BrandLogo from '../../components/common/BrandLogo';
 import { staffResetPassword } from '../../api/endpoints/auth';
 
 const StaffResetPasswordPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const uidb64 = searchParams.get('uidb64') || '';
   const token = searchParams.get('token') || '';
@@ -36,15 +38,15 @@ const StaffResetPasswordPage = () => {
     setError(null);
 
     if (password.length < 8) {
-      setError('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      setError(t('login.resetStaff.errors.passwordMin'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('كلمتا المرور غير متطابقتين');
+      setError(t('login.resetStaff.errors.passwordMismatch'));
       return;
     }
     if (!uidb64 || !token) {
-      setError('رابط إعادة التعيين غير صالح أو منتهي الصلاحية');
+      setError(t('login.resetStaff.errors.invalidLink'));
       return;
     }
 
@@ -54,7 +56,7 @@ const StaffResetPasswordPage = () => {
       setSuccess(true);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setError(axiosErr.response?.data?.detail || 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية');
+      setError(axiosErr.response?.data?.detail || t('login.resetStaff.errors.invalidLink'));
     } finally {
       setSubmitting(false);
     }
@@ -75,13 +77,13 @@ const StaffResetPasswordPage = () => {
                     <LockResetIcon fontSize="large" />
                   </Box>
                   <Typography variant="h5" fontWeight={700} textAlign="center">
-                    تم إعادة تعيين كلمة المرور
+                    {t('login.resetStaff.successTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                    يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة
+                    {t('login.resetStaff.successSubtitle')}
                   </Typography>
                   <Button component={RouterLink} to="/login" variant="contained" fullWidth sx={{ py: 1.5, fontWeight: 600 }}>
-                    تسجيل الدخول
+                    {t('login.resetStaff.successButton')}
                   </Button>
                 </Stack>
               </CardContent>
@@ -106,10 +108,10 @@ const StaffResetPasswordPage = () => {
                   <LockResetIcon fontSize="large" />
                 </Box>
                 <Typography variant="h5" fontWeight={700} textAlign="center">
-                  إعادة تعيين كلمة المرور
+                  {t('login.resetStaff.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  أدخل كلمة المرور الجديدة
+                  {t('login.resetStaff.subtitle')}
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
@@ -117,7 +119,7 @@ const StaffResetPasswordPage = () => {
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                   <Stack spacing={2.5}>
                     <TextField
-                      label="كلمة المرور الجديدة"
+                      label={t('login.resetStaff.newPasswordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -128,7 +130,7 @@ const StaffResetPasswordPage = () => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                              aria-label={showPassword ? t('login.resetStaff.hidePassword') : t('login.resetStaff.showPassword')}
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               size="small"
@@ -140,7 +142,7 @@ const StaffResetPasswordPage = () => {
                       }}
                     />
                     <TextField
-                      label="تأكيد كلمة المرور"
+                      label={t('login.resetStaff.confirmPasswordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -156,7 +158,7 @@ const StaffResetPasswordPage = () => {
                       disabled={submitting}
                       sx={{ py: 1.5, fontWeight: 600 }}
                     >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'إعادة تعيين كلمة المرور'}
+                      {submitting ? <CircularProgress size={24} color="inherit" /> : t('login.resetStaff.submit')}
                     </Button>
                   </Stack>
                 </Box>
@@ -166,7 +168,7 @@ const StaffResetPasswordPage = () => {
 
           <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
             <Button component={RouterLink} to="/login" startIcon={<ArrowBackIcon />} size="small" sx={{ textTransform: 'none' }}>
-              العودة لتسجيل الدخول
+              {t('login.resetStaff.backToLogin')}
             </Button>
           </Stack>
         </Container>

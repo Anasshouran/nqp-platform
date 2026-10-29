@@ -1,25 +1,35 @@
-export const isolationTypeMeta: Record<string, { label: string; tone: 'error' | 'primary' | 'info' }> = {
-  HOSPITAL: { label: 'تحويل للمستشفى', tone: 'error' },
-  CLINIC_ISOLATION: { label: 'عزل بالعيادة', tone: 'info' },
-  QUARANTINE: { label: 'حجر صحي إجباري', tone: 'primary' },
-};
+import type { TFunction } from 'i18next';
 
-export const isolationStatusMeta: Record<string, { label: string; tone: 'success' | 'primary' | 'error' }> = {
-  ACTIVE: { label: 'جاري', tone: 'success' },
-  RELEASED: { label: 'خروج', tone: 'primary' },
-  REMOVED: { label: 'إنهاء/إلغاء', tone: 'error' },
-};
+export const getIsolationTypeMeta = (
+  t: TFunction,
+): Record<string, { label: string; tone: 'error' | 'primary' | 'info' }> => ({
+  HOSPITAL: { label: t('clinic.shared.isolationType.hospital'), tone: 'error' },
+  CLINIC_ISOLATION: { label: t('clinic.shared.isolationType.clinicIsolation'), tone: 'info' },
+  QUARANTINE: { label: t('clinic.shared.isolationType.quarantine'), tone: 'primary' },
+});
 
-export const healthStatusMeta: Record<string, { label: string; tone: 'success' | 'primary' | 'warning' | 'error' }> = {
-  STABLE: { label: 'مستقر', tone: 'success' },
-  IMPROVING: { label: 'أفضل', tone: 'primary' },
-  WORSENING: { label: 'تدهور', tone: 'warning' },
-  CRITICAL: { label: 'حرج', tone: 'error' },
-};
+export const getIsolationStatusMeta = (
+  t: TFunction,
+): Record<string, { label: string; tone: 'success' | 'primary' | 'error' }> => ({
+  ACTIVE: { label: t('clinic.shared.isolationStatus.active'), tone: 'success' },
+  RELEASED: { label: t('clinic.shared.isolationStatus.released'), tone: 'primary' },
+  REMOVED: { label: t('clinic.shared.isolationStatus.removed'), tone: 'error' },
+});
 
-export const isoSeverityMeta: Record<string, { label: string; color: 'success' | 'warning' | 'error' }> = {
-  LOW: { label: 'منخفض', color: 'success' },
-  MEDIUM: { label: 'متوسط', color: 'warning' },
-  HIGH: { label: 'مرتفع', color: 'error' },
-  CRITICAL: { label: 'حرج', color: 'error' },
-};
+export const getHealthStatusMeta = (
+  t: TFunction,
+): Record<string, { label: string; tone: 'success' | 'primary' | 'warning' | 'error' }> => ({
+  STABLE: { label: t('clinic.shared.healthStatus.stable'), tone: 'success' },
+  IMPROVING: { label: t('clinic.shared.healthStatus.improving'), tone: 'primary' },
+  WORSENING: { label: t('clinic.shared.healthStatus.worsening'), tone: 'warning' },
+  CRITICAL: { label: t('clinic.shared.healthStatus.critical'), tone: 'error' },
+});
+
+export const getIsoSeverityMeta = (
+  t: TFunction,
+): Record<string, { label: string; color: 'success' | 'warning' | 'error' }> => ({
+  LOW: { label: t('clinic.shared.isoSeverity.low'), color: 'success' },
+  MEDIUM: { label: t('clinic.shared.isoSeverity.medium'), color: 'warning' },
+  HIGH: { label: t('clinic.shared.isoSeverity.high'), color: 'error' },
+  CRITICAL: { label: t('clinic.shared.isoSeverity.critical'), color: 'error' },
+});

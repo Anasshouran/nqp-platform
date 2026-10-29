@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Box from '@mui/material/Box';
@@ -26,9 +27,9 @@ import type { AppDispatch } from '../../store/store';
 import { roleHomePathFor } from '../../utils/roleHome';
 import { sanitizeNextPath } from '../../utils/navigation';
 
-const errorMessage = (err: unknown): string => {
+const errorMessage = (err: unknown, t: (k: string) => string): string => {
   const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data;
-  if (!data) return 'بيانات الدخول غير صحيحة';
+  if (!data) return t('login.travelerLogin.invalidCredentials');
   const detail = data.detail;
   if (typeof detail === 'string' && detail) return detail;
   if (Array.isArray(detail) && detail.length) return String(detail[0]);
@@ -36,10 +37,11 @@ const errorMessage = (err: unknown): string => {
     return String((data.non_field_errors as string[])[0]);
   }
   if (typeof data.message === 'string' && data.message) return data.message;
-  return 'بيانات الدخول غير صحيحة';
+  return t('login.travelerLogin.invalidCredentials');
 };
 
 const TravelerLoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
@@ -69,7 +71,7 @@ const TravelerLoginPage = () => {
         sanitizeNextPath(next) ?? roleHomePathFor(payload.user);
       navigate(target, { replace: true });
     } catch (err: unknown) {
-      setError(errorMessage(err));
+      setError(errorMessage(err, t));
     } finally {
       setSubmitting(false);
     }
@@ -94,10 +96,10 @@ const TravelerLoginPage = () => {
                   <HealthAndSafetyIcon fontSize="large" />
                 </Box>
                 <Typography variant="h5" fontWeight={700} textAlign="center">
-                  دخول المسافر
+                  {t('login.travelerLogin.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  سجّل دخولك لإدارة رحلتك ومتابعة طلبك
+                  {t('login.travelerLogin.subtitle')}
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
@@ -105,7 +107,7 @@ const TravelerLoginPage = () => {
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                   <Stack spacing={2.5}>
                     <TextField
-                      label="البريد الإلكتروني"
+                      label={t('login.travelerLogin.emailLabel')}
                       type="email"
                       fullWidth
                       required
@@ -114,7 +116,7 @@ const TravelerLoginPage = () => {
                       inputProps={{ dir: 'ltr', autoComplete: 'email' }}
                     />
                     <TextField
-                      label="كلمة المرور"
+                      label={t('login.travelerLogin.passwordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -125,7 +127,7 @@ const TravelerLoginPage = () => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                              aria-label={showPassword ? t('login.travelerLogin.hidePassword') : t('login.travelerLogin.showPassword')}
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               size="small"
@@ -144,7 +146,7 @@ const TravelerLoginPage = () => {
                       disabled={submitting}
                       sx={{ py: 1.5, fontWeight: 600 }}
                     >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'تسجيل الدخول'}
+                      {submitting ? <CircularProgress size={24} color="inherit" /> : t('login.travelerLogin.submit')}
                     </Button>
                   </Stack>
                 </Box>
@@ -157,12 +159,12 @@ const TravelerLoginPage = () => {
                     underline="hover"
                     color="primary.main"
                   >
-                    نسيت كلمة المرور؟
+                    {t('login.travelerLogin.forgotPassword')}
                   </Link>
                   <Divider sx={{ width: '100%' }} />
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <Typography variant="body2" color="text.secondary">
-                      ليس لديك حساب؟
+                      {t('login.travelerLogin.noAccount')}
                     </Typography>
                     <Link
                       component={RouterLink}
@@ -171,7 +173,7 @@ const TravelerLoginPage = () => {
                       fontWeight={600}
                       underline="hover"
                     >
-                      أنشئ حساباً جديداً
+                      {t('login.travelerLogin.signup')}
                     </Link>
                   </Stack>
                 </Stack>
@@ -187,7 +189,7 @@ const TravelerLoginPage = () => {
               size="small"
               sx={{ textTransform: 'none' }}
             >
-              العودة للرئيسية
+              {t('login.travelerLogin.backToHome')}
             </Button>
           </Stack>
         </Container>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -25,12 +26,8 @@ import { getIsolations, releaseIsolation, updateIsolationStatus } from '../../ap
 import type { IsolationRow } from '../../types/clinic';
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
-import { healthStatusMeta, isolationStatusMeta, isolationTypeMeta, isoSeverityMeta } from '../../utils/clinicStatus';
+import { getHealthStatusMeta, getIsoSeverityMeta, getIsolationStatusMeta, getIsolationTypeMeta } from '../../utils/clinicStatus';
 import { PassportChip, PersonAvatar } from './ui';
-
-const statusOptions = Object.entries(isolationStatusMeta).map(([v, m]) => ({ value: v, label: m.label }));
-const isolationOptions = Object.entries(isolationTypeMeta).map(([v, m]) => ({ value: v, label: m.label }));
-const healthOptions = Object.entries(healthStatusMeta).map(([v, m]) => ({ value: v, label: m.label }));
 
 const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) => (
   <Stack direction="row" spacing={1.5} alignItems="center">
@@ -45,6 +42,19 @@ const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) =>
 );
 
 const IsolationPage = () => {
+  const { t } = useTranslation();
+  const statusOptions = useMemo(
+    () => Object.entries(getIsolationStatusMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
+  const isolationOptions = useMemo(
+    () => Object.entries(getIsolationTypeMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
+  const healthOptions = useMemo(
+    () => Object.entries(getHealthStatusMeta(t)).map(([v, m]) => ({ value: v, label: m.label })),
+    [t]
+  );
   const navigate = useNavigate();
   const table = useServerTable<IsolationRow>({ fetchData: getIsolations });
   const { rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder, setSorting, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions, setFilter } = table;
@@ -61,11 +71,11 @@ const IsolationPage = () => {
     setSubmitting(true);
     try {
       await updateIsolationStatus(statusTarget.id, healthStatus);
-      notifySuccess('تم تحديث الحالة الصحية');
+      notifySuccess(t('clinic.isolation.messages.statusUpdated'));
       setStatusTarget(null);
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تحديث الحالة الصحية'));
+      notifyError(extractErrorMessage(err, t('clinic.isolation.messages.statusUpdateFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -79,13 +89,13 @@ const IsolationPage = () => {
         end_date: endDate || undefined,
         discharge_summary: dischargeSummary,
       });
-      notifySuccess('تم تسجيل خروج المريض من العزل');
+      notifySuccess(t('clinic.isolation.messages.released'));
       setReleaseTarget(null);
       setDischargeSummary('');
       setEndDate('');
       refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تسجيل الخروج'));
+      notifyError(extractErrorMessage(err, t('clinic.isolation.messages.releaseFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -94,12 +104,12 @@ const IsolationPage = () => {
   return (
     <>
       <PageHeader
-        title="العزل والحجر الصحي"
-        subtitle="متابعة حالات العزل داخل العيادة والمستشفى والحجر الإجباري"
-        eyebrow="العمليات"
+        title={t('clinic.isolation.header.title')}
+        subtitle={t('clinic.isolation.header.subtitle')}
+        eyebrow={t('clinic.isolation.header.eyebrow')}
         action={
           <Stack direction="row" spacing={1}>
-            <Chip icon={<MonitorHeartIcon />} label="جاري" sx={{ fontWeight: 700 }} variant="outlined" />
+            <Chip icon={<MonitorHeartIcon />} label={t('clinic.isolation.chip.active')} sx={{ fontWeight: 700 }} variant="outlined" />
           </Stack>
         }
       />
@@ -107,53 +117,53 @@ const IsolationPage = () => {
         columns={[
           {
             key: 'traveler_name',
-            label: 'المسافر',
+            label: t('clinic.isolation.cols.traveler'),
             render: (v) => <AvatarCell name={v.traveler_name} passport={v.passport_number} />,
           },
           {
             key: 'isolation_type',
-            label: 'نوع العزل',
+            label: t('clinic.isolation.cols.isolationType'),
             hideOnMobile: true,
             render: (v) => {
-              const m = isolationTypeMeta[v.isolation_type];
+              const m = getIsolationTypeMeta(t)[v.isolation_type];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.isolation_type;
             },
           },
           {
             key: 'severity',
-            label: 'الخطورة',
+            label: t('clinic.isolation.cols.severity'),
             hideOnMobile: true,
             render: (v) => {
-              const m = isoSeverityMeta[v.severity];
+              const m = getIsoSeverityMeta(t)[v.severity];
               return m ? <Chip size="small" color={m.color} label={m.label} sx={{ fontWeight: 700 }} /> : (v.severity ?? '—');
             },
           },
           {
             key: 'health_status',
-            label: 'الحالة الصحية',
+            label: t('clinic.isolation.cols.healthStatus'),
             hideOnMobile: true,
             render: (v) => {
-              const m = healthStatusMeta[v.health_status];
+              const m = getHealthStatusMeta(t)[v.health_status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : (v.health_status ?? '—');
             },
           },
           {
             key: 'start_date',
-            label: 'بداية العزل',
+            label: t('clinic.isolation.cols.startDate'),
             sortable: true,
             render: (v) => formatDate(v.start_date),
           },
           {
             key: 'required_days',
-            label: 'المدة (يوم)',
+            label: t('clinic.isolation.cols.duration'),
             hideOnMobile: true,
             render: (v) => v.required_days,
           },
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('clinic.isolation.cols.status'),
             render: (v) => {
-              const m = isolationStatusMeta[v.status];
+              const m = getIsolationStatusMeta(t)[v.status];
               return m ? <StatusChip label={m.label} tone={m.tone} /> : v.status;
             },
           },
@@ -166,22 +176,22 @@ const IsolationPage = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="سجلات العزل"
-        subtitle={`${count} سجل`}
+        title={t('clinic.isolation.table.title')}
+        subtitle={t('clinic.isolation.table.subtitle', { count })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث بالاسم أو جواز السفر..."
+        searchPlaceholder={t('clinic.isolation.search.placeholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('clinic.isolation.filters.status'),
             options: statusOptions,
             value: '',
             onChange: (v) => setFilter('status', v),
           },
           {
             key: 'isolation_type',
-            label: 'النوع',
+            label: t('clinic.isolation.filters.type'),
             options: isolationOptions,
             value: '',
             onChange: (v) => setFilter('isolation_type', v),
@@ -190,13 +200,13 @@ const IsolationPage = () => {
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
-        emptyTitle="لا توجد سجلات عزل"
-        emptyDescription="سجلات العزل تظهر عند عزل حالات من الزيارات"
+        emptyTitle={t('clinic.isolation.empty.title')}
+        emptyDescription={t('clinic.isolation.empty.desc')}
         actions={(v) => (
           <>
-            <Tooltip title="فتح الزيارة">
+            <Tooltip title={t('clinic.isolation.actions.openVisit')}>
               <IconButton
-                aria-label="فتح الزيارة"
+                aria-label={t('clinic.isolation.actions.viewAria')}
                 size="small"
                 color="primary"
                 onClick={() => navigate(`/app/clinic/visits/${v.visit}`)}
@@ -207,9 +217,9 @@ const IsolationPage = () => {
             </Tooltip>
             {v.status === 'ACTIVE' && (
               <>
-                <Tooltip title="تحديث الحالة الصحية">
+                <Tooltip title={t('clinic.isolation.actions.updateStatus')}>
                   <IconButton
-                    aria-label="تحديث الحالة"
+                    aria-label={t('clinic.isolation.actions.updateAria')}
                     size="small"
                     color="info"
                     onClick={() => {
@@ -221,9 +231,9 @@ const IsolationPage = () => {
                     <MonitorHeartIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="تسجيل الخروج">
+                <Tooltip title={t('clinic.isolation.actions.release')}>
                   <IconButton
-                    aria-label="خروج"
+                    aria-label={t('clinic.isolation.actions.releaseAria')}
                     size="small"
                     color="error"
                     onClick={() => {
@@ -243,12 +253,12 @@ const IsolationPage = () => {
       />
 
       <Dialog open={Boolean(statusTarget)} onClose={() => setStatusTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>تحديث الحالة الصحية</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('clinic.isolation.dialogs.updateStatusTitle')}</DialogTitle>
         <DialogContent dividers>
           <TextField
             select
             fullWidth
-            label="الحالة الصحية"
+            label={t('clinic.isolation.dialogs.updateStatusLabel')}
             value={healthStatus}
             onChange={(e) => setHealthStatus(e.target.value)}
           >
@@ -258,7 +268,7 @@ const IsolationPage = () => {
           </TextField>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>{t('clinic.common.cancel')}</Button>
           <Button
             variant="contained"
             startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <MonitorHeartIcon />}
@@ -266,22 +276,22 @@ const IsolationPage = () => {
             disabled={submitting}
             sx={{ fontWeight: 700 }}
           >
-            حفظ
+            {t('clinic.common.save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={Boolean(releaseTarget)} onClose={() => setReleaseTarget(null)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>تسجيل خروج من العزل</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('clinic.isolation.dialogs.checkoutTitle')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <Typography variant="body2" color="text.secondary">
-              سيتم توثيق خروج {releaseTarget?.traveler_name} وتسجيل تاريخ الانتهاء الفعلي.
+              {t('clinic.isolation.dialogs.checkoutMessage', { name: releaseTarget?.traveler_name })}
             </Typography>
             <TextField
               type="date"
               fullWidth
-              label="تاريخ الانتهاء الفعلي"
+              label={t('clinic.isolation.dialogs.endDateLabel')}
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
@@ -289,14 +299,14 @@ const IsolationPage = () => {
               multiline
               minRows={3}
               fullWidth
-              label="ملخص الخروج"
+              label={t('clinic.isolation.dialogs.dischargeSummaryLabel')}
               value={dischargeSummary}
               onChange={(e) => setDischargeSummary(e.target.value)}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setReleaseTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+          <Button onClick={() => setReleaseTarget(null)} sx={{ fontWeight: 700 }}>{t('clinic.common.cancel')}</Button>
           <Button
             variant="contained"
             color="error"
@@ -305,7 +315,7 @@ const IsolationPage = () => {
             disabled={submitting}
             sx={{ fontWeight: 700 }}
           >
-            تسجيل الخروج
+            {t('clinic.isolation.dialogs.releaseConfirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -20,6 +21,7 @@ import BrandLogo from '../../components/common/BrandLogo';
 import { travelerResetPassword } from '../../api/endpoints/travelers';
 
 const ResetPasswordPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const uidb64 = searchParams.get('uidb64') || '';
   const token = searchParams.get('token') || '';
@@ -36,15 +38,15 @@ const ResetPasswordPage = () => {
     setError(null);
 
     if (password.length < 8) {
-      setError('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      setError(t('login.reset.errors.passwordMin'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('كلمتا المرور غير متطابقتين');
+      setError(t('login.reset.errors.passwordMismatch'));
       return;
     }
     if (!uidb64 || !token) {
-      setError('رابط إعادة التعيين غير صالح أو منتهي الصلاحية');
+      setError(t('login.reset.errors.invalidLink'));
       return;
     }
 
@@ -54,7 +56,7 @@ const ResetPasswordPage = () => {
       setSuccess(true);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setError(axiosErr.response?.data?.detail || 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية');
+      setError(axiosErr.response?.data?.detail || t('login.reset.errors.invalidLink'));
     } finally {
       setSubmitting(false);
     }
@@ -75,13 +77,13 @@ const ResetPasswordPage = () => {
                     <LockResetIcon fontSize="large" />
                   </Box>
                   <Typography variant="h5" fontWeight={700} textAlign="center">
-                    تم إعادة تعيين كلمة المرور
+                    {t('login.reset.successTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                    يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة
+                    {t('login.reset.successSubtitle')}
                   </Typography>
                   <Button component={RouterLink} to="/traveler/login" variant="contained" fullWidth sx={{ py: 1.5, fontWeight: 600 }}>
-                    تسجيل الدخول
+                    {t('login.reset.successButton')}
                   </Button>
                 </Stack>
               </CardContent>
@@ -106,10 +108,10 @@ const ResetPasswordPage = () => {
                   <LockResetIcon fontSize="large" />
                 </Box>
                 <Typography variant="h5" fontWeight={700} textAlign="center">
-                  إعادة تعيين كلمة المرور
+                  {t('login.reset.travelerTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  أدخل كلمة المرور الجديدة
+{t('login.reset.travelerSubtitle')}
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
@@ -117,7 +119,7 @@ const ResetPasswordPage = () => {
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                   <Stack spacing={2.5}>
                     <TextField
-                      label="كلمة المرور الجديدة"
+                      label={t('login.reset.newPasswordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -128,7 +130,7 @@ const ResetPasswordPage = () => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                              aria-label={showPassword ? t('login.reset.hidePassword') : t('login.reset.showPassword')}
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               size="small"
@@ -140,7 +142,7 @@ const ResetPasswordPage = () => {
                       }}
                     />
                     <TextField
-                      label="تأكيد كلمة المرور"
+                      label={t('login.reset.confirmPasswordLabel')}
                       type={showPassword ? 'text' : 'password'}
                       fullWidth
                       required
@@ -156,16 +158,16 @@ const ResetPasswordPage = () => {
                       disabled={submitting}
                       sx={{ py: 1.5, fontWeight: 600 }}
                     >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'إعادة تعيين كلمة المرور'}
+                      {submitting ? <CircularProgress size={24} color="inherit" /> : t('login.reset.submit')}
                     </Button>
                   </Stack>
                 </Box>
 
                 <Stack spacing={1.5} alignItems="center">
                   <Typography variant="body2" color="text.secondary">
-                    لم تتلقى الرابط؟{' '}
+                    {t('login.reset.noLinkReceived')}{' '}
                     <RouterLink to="/traveler/forgot-password" style={{ color: 'inherit' }}>
-                      اطلب رابطاً جديداً
+                      {t('login.reset.requestNewLink')}
                     </RouterLink>
                   </Typography>
                 </Stack>
@@ -175,7 +177,7 @@ const ResetPasswordPage = () => {
 
           <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
             <Button component={RouterLink} to="/traveler/login" startIcon={<ArrowBackIcon />} size="small" sx={{ textTransform: 'none' }}>
-              العودة لتسجيل الدخول
+              {t('login.reset.backToLogin')}
             </Button>
           </Stack>
         </Container>

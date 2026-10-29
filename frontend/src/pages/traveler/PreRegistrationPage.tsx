@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -152,6 +153,50 @@ const computeRisk = (data: WizardData) => {
 };
 
 const PreRegistrationPage = () => {
+  const { t } = useTranslation();
+
+  const symptomQuestions = useMemo<Array<{ key: string; label: string; hasExtra?: 'temperature' | 'patient_name' | 'details' }>>(
+    () => [
+      { key: 'fever', label: t('traveler.preRegistration.symptoms.fever'), hasExtra: 'temperature' },
+      { key: 'headache', label: t('traveler.preRegistration.symptoms.headache') },
+      { key: 'body_pain', label: t('traveler.preRegistration.symptoms.bodyPain') },
+      { key: 'vomiting', label: t('traveler.preRegistration.symptoms.vomiting') },
+      { key: 'diarrhea', label: t('traveler.preRegistration.symptoms.diarrhea') },
+      { key: 'loss_of_appetite', label: t('traveler.preRegistration.symptoms.lossOfAppetite') },
+      { key: 'difficulty_swallowing', label: t('traveler.preRegistration.symptoms.difficultySwallowing') },
+      { key: 'bleeding', label: t('traveler.preRegistration.symptoms.bleeding') },
+      { key: 'contact_with_patient', label: t('traveler.preRegistration.symptoms.contactWithPatient'), hasExtra: 'patient_name' },
+      { key: 'other_symptoms', label: t('traveler.preRegistration.symptoms.otherSymptoms'), hasExtra: 'details' },
+    ],
+    [t],
+  );
+
+  const purposeOptions = useMemo(
+    () => [
+      { value: 'سياحة', label: t('traveler.preRegistration.purpose.tourism') },
+      { value: 'عمل', label: t('traveler.preRegistration.purpose.work') },
+      { value: 'زيارة', label: t('traveler.preRegistration.purpose.visit') },
+      { value: 'دراسة', label: t('traveler.preRegistration.purpose.study') },
+      { value: 'عبور', label: t('traveler.preRegistration.purpose.transit') },
+      { value: 'دبلوماسي', label: t('traveler.preRegistration.purpose.diplomatic') },
+      { value: 'منظمة دولية', label: t('traveler.preRegistration.purpose.internationalOrg') },
+      { value: 'آخر', label: t('traveler.preRegistration.purpose.other') },
+    ],
+    [t],
+  );
+
+  const stepMeta = useMemo(
+    () => [
+      { label: t('traveler.preRegistration.steps.start'), icon: <LanguageIcon /> },
+      { label: t('traveler.preRegistration.steps.personal'), icon: <PersonIcon /> },
+      { label: t('traveler.preRegistration.steps.trip'), icon: <FlightTakeoffIcon /> },
+      { label: t('traveler.preRegistration.steps.purposeContact'), icon: <ContactMailIcon /> },
+      { label: t('traveler.preRegistration.steps.health'), icon: <HealthAndSafetyIcon /> },
+      { label: t('traveler.preRegistration.steps.review'), icon: <FactCheckIcon /> },
+    ],
+    [t],
+  );
+
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardData>(() => {
@@ -220,7 +265,7 @@ const PreRegistrationPage = () => {
     const e: Record<string, string> = {};
     if (s === 1) {
       if (data.full_name.trim().length < 2) e.full_name = 'يرجى إدخال الاسم الكامل.';
-      if (!/^[A-Za-z0-9]{6,20}$/.test(data.passport_number.trim())) e.passport_number = 'رقم الجواز غير صحيح (6-20 حرفاً).';
+      if (!/^[A-Za-z0-9]{6,20}$/.test(data.passport_number.trim())) e.passport_number = t('traveler.preRegistration.validation.passport');
       if (!data.date_of_birth) {
         e.date_of_birth = 'يرجى إدخال تاريخ الميلاد.';
       }
@@ -231,7 +276,7 @@ const PreRegistrationPage = () => {
       if (!data.port_of_entry) e.port_of_entry = 'يرجى اختيار منفذ الدخول.';
       if (!data.transport_mode) e.transport_mode = 'يرجى اختيار وسيلة النقل.';
       if (data.transport_mode === 'AIR' && !/^[A-Za-z0-9]{2,10}$/.test(data.flight_number.trim())) {
-        e.flight_number = 'رقم الرحلة غير صحيح.';
+        e.flight_number = t('traveler.preRegistration.validation.flight');
       }
       if (!data.arrival_date) {
         e.arrival_date = 'يرجى إدخال تاريخ الوصول.';
@@ -506,7 +551,7 @@ const PreRegistrationPage = () => {
             {data.transport_mode !== 'LAND' && (
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label={data.transport_mode === 'SEA' ? 'رقم الرحلة / اسم السفينة' : 'رقم الرحلة'}
+                  label={data.transport_mode === 'SEA' ? t('traveler.preRegistration.form.flightNumberOrShip') : t('traveler.preRegistration.form.flightNumber')}
                   value={data.flight_number}
                   onChange={(e) => update('flight_number', e.target.value)}
                   fullWidth
@@ -520,10 +565,10 @@ const PreRegistrationPage = () => {
               <TextField
                 label={
                   data.transport_mode === 'SEA'
-                    ? 'رقم المقعد / الكابينة (اختياري)'
+                    ? t('traveler.preRegistration.form.seatOrCabin')
                     : data.transport_mode === 'LAND'
-                      ? 'رقم الحجز / الرحلة (اختياري)'
-                      : 'رقم المقعد (اختياري)'
+                      ? t('traveler.preRegistration.form.bookingOrFlight')
+                      : t('traveler.preRegistration.form.seat')
                 }
                 value={data.seat_number}
                 onChange={(e) => update('seat_number', e.target.value)}
@@ -587,7 +632,7 @@ const PreRegistrationPage = () => {
                 <FormLabel>الغرض من الزيارة</FormLabel>
                 <RadioGroup row value={data.purpose} onChange={(e) => update('purpose', e.target.value)}>
                   {purposeOptions.map((option) => (
-                    <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                    <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
                   ))}
                 </RadioGroup>
                 {errors.purpose && <FormHelperText error>{errors.purpose}</FormHelperText>}
@@ -737,7 +782,7 @@ const PreRegistrationPage = () => {
                 <Typography variant="body1"><b>الغرض:</b> {data.purpose}{data.purpose === 'آخر' ? ` - ${data.purpose_other}` : ''}</Typography>
                 <Typography variant="body1"><b>الهاتف:</b> {data.phone}</Typography>
                 <Typography variant="body1">
-                  <b>الأعراض:</b> {symptomQuestions.filter((q) => data.symptoms[q.key].has).map((q) => q.label).join('، ') || 'لا توجد أعراض'}
+                  <b>الأعراض:</b> {symptomQuestions.filter((q) => data.symptoms[q.key].has).map((q) => q.label).join('، ') || t('traveler.preRegistration.noSymptoms')}
                 </Typography>
                 <Typography variant="body1"><b>تصنيف المخاطر:</b> {risk.level} ({risk.score} نقطة)</Typography>
               </Stack>
@@ -831,8 +876,8 @@ const PreRegistrationPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
       <PageHeader
-        title="التسجيل المسبق للمسافر"
-        subtitle="استمارة إلكترونية متعددة الخطوات لتسريع إجراءات وصولك إلى المنافذ"
+        title={t('traveler.preRegistration.pageTitle')}
+        subtitle={t('traveler.preRegistration.pageSubtitle')}
         eyebrow="بوابة المسافرين"
       />
 
@@ -854,7 +899,7 @@ const PreRegistrationPage = () => {
           <LinearProgress variant="determinate" value={progress} sx={{ mb: 3, borderRadius: 2 }} />
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
-              الخطوة {step + 1} من 6
+              {t('traveler.preRegistration.stepProgress')} {step + 1} {t('traveler.preRegistration.of')} 6
             </Typography>
           </Stack>
         </Box>

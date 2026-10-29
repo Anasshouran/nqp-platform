@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -56,7 +57,7 @@ import type { Clinic, ClinicDashboard, ClinicReferral, ClinicReport, ClinicVisit
 import { formatDateTime, formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { referralStatus } from '../../utils/status';
-import { healthStatusMeta, isolationStatusMeta, isolationTypeMeta } from '../../utils/clinicStatus';
+import { getHealthStatusMeta, getIsolationTypeMeta } from '../../utils/clinicStatus';
 import { GlassPanel, NotificationPanel, PassportChip, PersonAvatar, QueueRail, type NotifItem, ScreenReaderText, SectionHeader, type QueueRailItem } from './ui';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import { ReferralDecisionDrawer } from './ReferralDecisionDrawer';
@@ -72,16 +73,6 @@ const DONUT_COLORS: Record<string, string> = {
 
 const VISIT_PHASES = ['REGISTERED', 'TRIAGED', 'EXAMINED', 'LABORATORY', 'DECISION', 'CERTIFICATE'] as const;
 
-const phaseShortLabel: Record<string, string> = {
-  REGISTERED: 'مسجلة',
-  TRIAGED: 'تم الفرز',
-  EXAMINED: 'فحص طبي',
-  LABORATORY: 'مختبر',
-  DECISION: 'القرار',
-  CERTIFICATE: 'الشهادة',
-  CLOSED: 'مغلقة',
-};
-
 const phaseColor: Record<string, string> = {
   REGISTERED: '#8a8f98',
   TRIAGED: '#b7791f',
@@ -92,18 +83,9 @@ const phaseColor: Record<string, string> = {
   CLOSED: '#c63a3a',
 };
 
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <MedicalServicesIcon fontSize="small" /> },
-  { id: 'referrals', label: 'قرارات الإحالة', icon: <PendingActionsIcon fontSize="small" /> },
-  { id: 'visits', label: 'الزيارات المفتوحة', icon: <ScheduleIcon fontSize="small" /> },
-  { id: 'charts', label: 'المخططات والنشاط', icon: <InsightsIcon fontSize="small" /> },
-  { id: 'isolation', label: 'العزل والحجر الصحي', icon: <VaccinesIcon fontSize="small" /> },
-  { id: 'report', label: 'تقرير وحدات العيادة', icon: <HealthAndSafetyIcon fontSize="small" /> },
-] as const;
-
 const dayKey = (iso: string): string => iso.slice(0, 10);
 
-const buildActivity = (visits: ClinicVisit[]) => {
+const buildActivity = (visits: ClinicVisit[], locale = 'ar') => {
   const now = new Date();
   const days: { date: string; label: string; opened: number; closed: number }[] = [];
   for (let i = 6; i >= 0; i -= 1) {
@@ -113,7 +95,7 @@ const buildActivity = (visits: ClinicVisit[]) => {
     const day = String(d.getDate()).padStart(2, '0');
     days.push({
       date: `${year}-${month}-${day}`,
-      label: d.toLocaleDateString('ar', { weekday: 'long' }),
+      label: d.toLocaleDateString(locale, { weekday: 'long' }),
       opened: 0,
       closed: 0,
     });
@@ -128,6 +110,33 @@ const buildActivity = (visits: ClinicVisit[]) => {
 
 export const ClinicDashboardPage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isolationTypeMeta = useMemo(() => getIsolationTypeMeta(t), [t]);
+  const healthStatusMeta = useMemo(() => getHealthStatusMeta(t), [t]);
+  const phaseShortLabel = useMemo<Record<string, string>>(
+    () => ({
+      REGISTERED: t('clinic.dashboard.phase.registered'),
+      TRIAGED: t('clinic.dashboard.phase.triaged'),
+      EXAMINED: t('clinic.dashboard.phase.examined'),
+      LABORATORY: t('clinic.dashboard.phase.laboratory'),
+      DECISION: t('clinic.dashboard.phase.decision'),
+      CERTIFICATE: t('clinic.dashboard.phase.certificate'),
+      CLOSED: t('clinic.dashboard.phase.closed'),
+    }),
+    [t]
+  );
+  const SECTIONS = useMemo(
+    () =>
+      [
+        { id: 'overview', label: t('clinic.dashboard.sections.overview'), icon: <MedicalServicesIcon fontSize="small" /> },
+        { id: 'referrals', label: t('clinic.dashboard.sections.referrals'), icon: <PendingActionsIcon fontSize="small" /> },
+        { id: 'visits', label: t('clinic.dashboard.sections.visits'), icon: <ScheduleIcon fontSize="small" /> },
+        { id: 'charts', label: t('clinic.dashboard.sections.charts'), icon: <InsightsIcon fontSize="small" /> },
+        { id: 'isolation', label: t('clinic.dashboard.sections.isolation'), icon: <VaccinesIcon fontSize="small" /> },
+        { id: 'report', label: t('clinic.dashboard.sections.report'), icon: <HealthAndSafetyIcon fontSize="small" /> },
+      ] as const,
+    [t]
+  );
   const { user } = useAuth();
   const [data, setData] = useState<ClinicDashboard | null>(null);
   const [referrals, setReferrals] = useState<ClinicReferral[]>([]);
@@ -176,7 +185,7 @@ export const ClinicDashboardPage = () => {
         setClinics(c);
         if (c.length > 0 && !selectedClinic) setSelectedClinic(c[0].id);
       }
-      setLastUpdated(new Date().toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' }));
+      setLastUpdated(new Date().toLocaleTimeString(i18n.language || 'ar', { hour: '2-digit', minute: '2-digit' }));
     }).finally(() => {
       if (!light) setLoading(false);
     });
@@ -188,7 +197,7 @@ export const ClinicDashboardPage = () => {
     getClinicReport(id)
       .then((res) => setClinicReport(res.data.data))
       .catch(() => {
-        notifyError('تعذر تحميل تقرير العيادة');
+        notifyError(t('clinic.dashboard.errors.loadReportFailed'));
         setClinicReport(null);
       })
       .finally(() => setReportLoading(false));
@@ -196,6 +205,7 @@ export const ClinicDashboardPage = () => {
 
   useEffect(() => {
     if (selectedClinic) loadReport(selectedClinic);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClinic]);
 
   useEffect(() => {
@@ -233,10 +243,10 @@ export const ClinicDashboardPage = () => {
       nextRef.current = pickNext(referral);
       setHasNext(Boolean(nextRef.current));
       setAcceptedVisit(visit);
-      notifySuccess('تم قبول الإحالة وفتح زيارة جديدة');
+      notifySuccess(t('clinic.dashboard.messages.referralAccepted'));
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر قبول الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.acceptReferralFailed')));
     } finally {
       setDeciding(false);
     }
@@ -247,12 +257,12 @@ export const ClinicDashboardPage = () => {
     setDeciding(true);
     try {
       await holdReferral(referral.id);
-      notifySuccess('تم تأجيل الإحالة للمراجعة');
+      notifySuccess(t('clinic.dashboard.messages.referralHeld'));
       setDecisionTarget(null);
       setAcceptedVisit(null);
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر تأجيل الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.holdReferralFailed')));
     } finally {
       setDeciding(false);
     }
@@ -263,12 +273,12 @@ export const ClinicDashboardPage = () => {
     setDeciding(true);
     try {
       await releaseReferral(referral.id);
-      notifySuccess('أُعيدت الإحالة إلى قائمة الانتظار');
+      notifySuccess(t('clinic.dashboard.messages.referralReleased'));
       setDecisionTarget(null);
       setAcceptedVisit(null);
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إعادة الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.releaseReferralFailed')));
     } finally {
       setDeciding(false);
     }
@@ -298,13 +308,15 @@ export const ClinicDashboardPage = () => {
     setClosing(true);
     try {
       await closeVisit(closeTarget.id, {
-        summary: `أُغلقت الزيارة من لوحة العيادة بتأكيد ${user?.full_name || 'الطبيب'}`,
+        summary: t('clinic.dashboard.messages.visitClosedBy', {
+          by: user?.full_name || t('common.fallback.doctor'),
+        }),
       });
-      notifySuccess('تم إغلاق الزيارة');
+      notifySuccess(t('clinic.dashboard.messages.visitClosed'));
       setCloseTarget(null);
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر إغلاق الزيارة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.closeVisitFailed')));
     } finally {
       setClosing(false);
     }
@@ -315,12 +327,12 @@ export const ClinicDashboardPage = () => {
     setRejecting(true);
     try {
       await rejectReferral(rejectTarget.id, rejectReason.trim() ? { notes: rejectReason.trim() } : {});
-      notifySuccess('تم رفض الإحالة');
+      notifySuccess(t('clinic.dashboard.messages.referralRejected'));
       setRejectTarget(null);
       setRejectReason('');
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر رفض الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.rejectReferralFailed')));
     } finally {
       setRejecting(false);
     }
@@ -331,17 +343,17 @@ export const ClinicDashboardPage = () => {
     setDeciding(true);
     try {
       await rejectReferral(referral.id, reason ? { notes: reason } : {});
-      notifySuccess('تم رفض الإحالة');
+      notifySuccess(t('clinic.dashboard.messages.referralRejected'));
       setDecisionTarget(null);
       load(true);
     } catch (err) {
-      notifyError(extractErrorMessage(err, 'تعذر رفض الإحالة'));
+      notifyError(extractErrorMessage(err, t('clinic.dashboard.errors.rejectReferralFailed')));
     } finally {
       setDeciding(false);
     }
   };
 
-  const today = new Date().toLocaleDateString('ar', {
+  const today = new Date().toLocaleDateString(i18n.language || 'ar', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -357,89 +369,105 @@ export const ClinicDashboardPage = () => {
   ).length;
   const shownVisits = visitPhase === 'ALL' ? openVisits : openVisits.filter((v) => v.phase === visitPhase);
 
-  const railItems: QueueRailItem[] = [
-    { id: 'overview', label: 'نظرة عامة', icon: <MedicalServicesIcon fontSize="small" /> },
-    { id: 'referrals', label: 'قرارات الإحالة', icon: <PendingActionsIcon fontSize="small" />, count: queuePending, tone: '#b7791f', hint: 'بانتظار قرارك' },
-    { id: 'visits', label: 'الزيارات المفتوحة', icon: <ScheduleIcon fontSize="small" />, count: openVisits.length, tone: '#0c7f6a', hint: 'قيد المتابعة' },
-    { id: 'charts', label: 'المخططات والنشاط', icon: <InsightsIcon fontSize="small" /> },
-    { id: 'isolation', label: 'العزل والحجر', icon: <VaccinesIcon fontSize="small" />, count: isolations.length, tone: '#7b4fb3', hint: 'حالات نشطة' },
-    { id: 'report', label: 'تقرير الوحدات', icon: <HealthAndSafetyIcon fontSize="small" /> },
-  ];
+  const railItems = useMemo<QueueRailItem[]>(
+    () => [
+      { id: 'overview', label: t('clinic.dashboard.sections.overview'), icon: <MedicalServicesIcon fontSize="small" /> },
+      { id: 'referrals', label: t('clinic.dashboard.sections.referrals'), icon: <PendingActionsIcon fontSize="small" />, count: queuePending, tone: '#b7791f', hint: t('clinic.dashboard.rail.hintPending') },
+      { id: 'visits', label: t('clinic.dashboard.sections.visits'), icon: <ScheduleIcon fontSize="small" />, count: openVisits.length, tone: '#0c7f6a', hint: t('clinic.dashboard.rail.hintProgress') },
+      { id: 'charts', label: t('clinic.dashboard.sections.charts'), icon: <InsightsIcon fontSize="small" /> },
+      { id: 'isolation', label: t('clinic.dashboard.rail.isolation'), icon: <VaccinesIcon fontSize="small" />, count: isolations.length, tone: '#7b4fb3', hint: t('clinic.dashboard.rail.hintActive') },
+      { id: 'report', label: t('clinic.dashboard.rail.report'), icon: <HealthAndSafetyIcon fontSize="small" /> },
+    ],
+    [t, queuePending, openVisits, isolations]
+  );
 
-  const notifItems: NotifItem[] = [
-    {
-      id: 'decisions',
-      label: 'إحالات تنتظر قرارك',
-      detail: 'مراجعة الفحص ثم قبول أو رفض أو تأجيل',
-      count: queuePending,
-      tone: '#b7791f',
-      icon: <PendingActionsIcon fontSize="small" />,
-      onClick: () => scrollTo('referrals'),
-    },
-    {
-      id: 'held',
-      label: 'إحالات قيد المراجعة',
-      detail: 'مؤجلة — تُعاد للانتظار أو تُقبل كزيارة',
-      count: queueHeld,
-      tone: '#0891b2',
-      icon: <ScheduleIcon fontSize="small" />,
-      onClick: () => scrollTo('referrals'),
-    },
-    {
-      id: 'decision-visits',
-      label: 'زيارات بانتظار القرار الطبي',
-      detail: 'في مرحلة القرار أو الشهادة',
-      count: awaitingDecision,
-      tone: '#2f6dd0',
-      icon: <HealthAndSafetyIcon fontSize="small" />,
-      onClick: () => scrollTo('visits'),
-    },
-    {
-      id: 'isolation',
-      label: 'حالات عزل نشطة',
-      detail: 'تحتاج بلاغات حالة ومتابعة ووثائق خروج',
-      count: isolations.length,
-      tone: '#7b4fb3',
-      icon: <VaccinesIcon fontSize="small" />,
-      onClick: () => scrollTo('isolation'),
-    },
-  ].filter((n) => n.count > 0);
+  const notifItems = useMemo<NotifItem[]>(
+    () =>
+      [
+        {
+          id: 'decisions',
+          label: t('clinic.dashboard.notif.decisions.label'),
+          detail: t('clinic.dashboard.notif.decisions.detail'),
+          count: queuePending,
+          tone: '#b7791f',
+          icon: <PendingActionsIcon fontSize="small" />,
+          onClick: () => scrollTo('referrals'),
+        },
+        {
+          id: 'held',
+          label: t('clinic.dashboard.notif.held.label'),
+          detail: t('clinic.dashboard.notif.held.detail'),
+          count: queueHeld,
+          tone: '#0891b2',
+          icon: <ScheduleIcon fontSize="small" />,
+          onClick: () => scrollTo('referrals'),
+        },
+        {
+          id: 'decision-visits',
+          label: t('clinic.dashboard.notif.decisionVisits.label'),
+          detail: t('clinic.dashboard.notif.decisionVisits.detail'),
+          count: awaitingDecision,
+          tone: '#2f6dd0',
+          icon: <HealthAndSafetyIcon fontSize="small" />,
+          onClick: () => scrollTo('visits'),
+        },
+        {
+          id: 'isolation',
+          label: t('clinic.dashboard.notif.isolation.label'),
+          detail: t('clinic.dashboard.notif.isolation.detail'),
+          count: isolations.length,
+          tone: '#7b4fb3',
+          icon: <VaccinesIcon fontSize="small" />,
+          onClick: () => scrollTo('isolation'),
+        },
+      ].filter((n) => n.count > 0),
+    [t, queuePending, queueHeld, awaitingDecision, isolations, scrollTo]
+  );
 
-  const kpis = [
-    {
-      value: loading ? '…' : queuePending,
-      label: 'قرار بانتظارك',
-      icon: <PendingActionsIcon />,
-      accent: 'warning.main',
-      trend: stats ? { label: `${queueHeld} قيد المراجعة` } : undefined,
-    },
-    {
-      value: loading ? '…' : openVisits.length,
-      label: 'زيارات مفتوحة',
-      icon: <MedicalServicesIcon />,
-      accent: 'primary.main',
-      trend: stats ? { label: `منها ${stats.closed_visits} مغلقة` } : undefined,
-    },
-    {
-      value: loading ? '…' : awaitingDecision,
-      label: 'بانتظار القرار الطبي',
-      icon: <ScheduleIcon />,
-      accent: 'info.main',
-    },
-    {
-      value: loading || !stats ? '…' : stats.completed_today,
-      label: 'مكتملة اليوم',
-      icon: <EventAvailableIcon />,
-      accent: 'success.main',
-    },
-    {
-      value: loading || !stats ? '…' : stats.total_patients,
-      label: 'المرضى',
-      icon: <GroupsIcon />,
-      accent: 'neutral',
-      trend: stats ? { label: `${isolations.length} في العزل` } : undefined,
-    },
-  ];
+  const kpis = useMemo(
+    () => [
+      {
+        value: loading ? '...' : queuePending,
+        label: t('clinic.dashboard.kpi.yourDecisions'),
+        icon: <PendingActionsIcon />,
+        accent: 'warning.main',
+        trend: stats
+          ? { label: t('clinic.dashboard.kpi.trend.inReview', { count: queueHeld }) }
+          : undefined,
+      },
+      {
+        value: loading ? '...' : openVisits.length,
+        label: t('clinic.dashboard.kpi.openVisits'),
+        icon: <MedicalServicesIcon />,
+        accent: 'primary.main',
+        trend: stats
+          ? { label: t('clinic.dashboard.kpi.trend.ofClosed', { count: stats.closed_visits }) }
+          : undefined,
+      },
+      {
+        value: loading ? '...' : awaitingDecision,
+        label: t('clinic.dashboard.kpi.awaitingDecision'),
+        icon: <ScheduleIcon />,
+        accent: 'info.main',
+      },
+      {
+        value: loading || !stats ? '...' : stats.completed_today,
+        label: t('clinic.dashboard.kpi.completedToday'),
+        icon: <EventAvailableIcon />,
+        accent: 'success.main',
+      },
+      {
+        value: loading || !stats ? '...' : stats.total_patients,
+        label: t('clinic.dashboard.kpi.patients'),
+        icon: <GroupsIcon />,
+        accent: 'neutral',
+        trend: stats
+          ? { label: t('clinic.dashboard.kpi.trend.inIsolation', { count: isolations.length }) }
+          : undefined,
+      },
+    ],
+    [t, loading, queuePending, queueHeld, openVisits, awaitingDecision, stats, isolations]
+  );
 
   const donut = useMemo(() => {
     const counts = Object.fromEntries(DONUT_ORDER.map((s) => [s, 0])) as Record<string, number>;
@@ -458,7 +486,7 @@ export const ClinicDashboardPage = () => {
     };
   }, [referrals]);
 
-  const activity = useMemo(() => buildActivity(visits), [visits]);
+  const activity = useMemo(() => buildActivity(visits, i18n.language || 'ar'), [visits, i18n.language]);
 
   const tableRows = referrals.slice(0, 10);
 
@@ -500,7 +528,7 @@ export const ClinicDashboardPage = () => {
           </Box>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h5" component="h1" sx={{ fontWeight: 700, lineHeight: 1.25 }}>
-              لوحة العيادة الطبية
+              {t('clinic.dashboard.header.title')}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
               <ScheduleIcon sx={{ fontSize: 14, opacity: 0.7 }} />
@@ -523,7 +551,7 @@ export const ClinicDashboardPage = () => {
             onClick={() => navigate('/app/clinic/register')}
             sx={{ fontWeight: 700, borderRadius: 2.5, color: 'primary.main', borderColor: 'rgba(12,127,106,0.45)' }}
           >
-            تسجيل حالة
+            {t('clinic.dashboard.actions.registerCase')}
           </Button>
           <Button
             variant="contained"
@@ -538,12 +566,12 @@ export const ClinicDashboardPage = () => {
               '&:hover': { bgcolor: '#0a6b58' },
             }}
           >
-            إدارة الإحالات
+            {t('clinic.dashboard.actions.manageReferrals')}
           </Button>
-          <Tooltip title="تحديث البيانات">
+          <Tooltip title={t('clinic.dashboard.actions.refresh')}>
             <Box component="span" sx={{ display: 'inline-flex' }}>
               <IconButton
-                aria-label="تحديث البيانات"
+                aria-label={t('clinic.dashboard.actions.refresh')}
                 size="small"
                 onClick={() => load()}
                 disabled={loading}
@@ -561,7 +589,7 @@ export const ClinicDashboardPage = () => {
         {/* Queue rail (lg+) */}
         <Box
           component="nav"
-          aria-label="أقسام اللوحة"
+          aria-label={t('clinic.shared.queueRail.label')}
           sx={{
             display: { xs: 'none', lg: 'block' },
             position: 'sticky',
@@ -582,7 +610,7 @@ export const ClinicDashboardPage = () => {
           active={active}
           onNavigate={scrollTo}
           accent="primary.main"
-          label="أقسام اللوحة"
+          label={t('clinic.shared.queueRail.label')}
         />
       </Box>
 
@@ -606,7 +634,7 @@ export const ClinicDashboardPage = () => {
           <Box sx={{ p: { xs: 2, md: 3 } }}>
             <SectionHeader
               icon={<PendingActionsIcon fontSize="small" />}
-              title="قرارات الإحالة"
+              title={t('clinic.dashboard.sections.referrals')}
               count={referrals.length}
               action={
                 <Button
@@ -615,7 +643,7 @@ export const ClinicDashboardPage = () => {
                   onClick={() => navigate('/app/clinic?tab=referrals')}
                   sx={{ fontWeight: 700, textTransform: 'none' }}
                 >
-                  عرض الكل
+                  {t('clinic.dashboard.actions.viewAll')}
                 </Button>
               }
             />
@@ -628,19 +656,19 @@ export const ClinicDashboardPage = () => {
             ) : tableRows.length === 0 ? (
               <EmptyState
                 icon={<MedicalServicesIcon sx={{ fontSize: 40 }} />}
-                title="لا توجد إحالات"
-                description="الإحالات الجديدة القادمة من محطات الفحص ستظهر هنا"
+                title={t('clinic.dashboard.table.emptyTitle')}
+                description={t('clinic.dashboard.table.emptyDesc')}
               />
             ) : (
               <TableContainer sx={{ mt: 1, overflowX: 'auto' }}>
                 <Table size="small" sx={{ minWidth: 760 }}>
                   <TableHead>
                     <TableRow sx={{ '& th': { bgcolor: 'rgba(16,40,34,0.03)', color: 'text.secondary', fontSize: 11.5, fontWeight: 700, letterSpacing: '0.02em' } }}>
-                      <TableCell>المسافر</TableCell>
-                      <TableCell>الأعراض والفحص</TableCell>
-                      <TableCell>المنفذ · الوقت</TableCell>
-                      <TableCell>الحالة</TableCell>
-                      <TableCell align="center">إجراءات</TableCell>
+                      <TableCell>{t('clinic.dashboard.table.cols.traveler')}</TableCell>
+                      <TableCell>{t('clinic.dashboard.table.cols.symptoms')}</TableCell>
+                      <TableCell>{t('clinic.dashboard.table.cols.station')}</TableCell>
+                      <TableCell>{t('clinic.dashboard.table.cols.status')}</TableCell>
+                      <TableCell align="center">{t('clinic.dashboard.table.cols.actions')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -662,7 +690,7 @@ export const ClinicDashboardPage = () => {
                           }}
                           role={actionable ? 'button' : undefined}
                           tabIndex={actionable ? 0 : undefined}
-                          aria-label={actionable ? `فتح قرار إحالة ${r.traveler_name}` : undefined}
+                          aria-label={actionable ? t('clinic.dashboard.table.openDecisionAria', { name: r.traveler_name }) : undefined}
                           sx={{
                             cursor: actionable ? 'pointer' : 'default',
                             '& td': { borderBottomColor: 'rgba(16,40,34,0.07)', py: 1.25 },
@@ -680,8 +708,8 @@ export const ClinicDashboardPage = () => {
                                 </Typography>
                                 <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 0.25 }} flexWrap="wrap">
                                   <PassportChip number={r.passport_number} />
-                                  {fever && <Chip size="small" label="حمّى" color="error" sx={{ height: 22, fontWeight: 700, fontSize: 12 }} />}
-                                  {r.queue_no != null && <Chip size="small" label={`دور ${r.queue_no}`} sx={{ height: 22, fontWeight: 700, fontSize: 12 }} />}
+                                  {fever && <Chip size="small" label={t('clinic.dashboard.chips.fever')} color="error" sx={{ height: 22, fontWeight: 700, fontSize: 12 }} />}
+                                  {r.queue_no != null && <Chip size="small" label={t('clinic.dashboard.chips.queueTurn', { no: r.queue_no })} sx={{ height: 22, fontWeight: 700, fontSize: 12 }} />}
                                 </Stack>
                               </Box>
                             </Stack>
@@ -710,7 +738,7 @@ export const ClinicDashboardPage = () => {
                               ))}
                               {symptoms.length === 0 && r.body_temperature == null && (
                                 <Typography variant="caption" color="text.secondary">
-                                  لا أعراض
+                                  {t('clinic.dashboard.table.noSymptoms')}
                                 </Typography>
                               )}
                               {symptoms.length > 3 && (
@@ -732,33 +760,33 @@ export const ClinicDashboardPage = () => {
 <TableCell align="center" sx={{ flex: 1, minWidth: 0 }}>
                             {actionable ? (
                               <Stack direction="row" spacing={0.5} justifyContent="center">
-                                <Tooltip title="عرض تفاصيل الفحص">
+                                <Tooltip title={t('clinic.dashboard.referrals.viewExamination')}>
                                   <IconButton
                                     size="small"
                                     color="primary"
-                                    aria-label={`عرض تفاصيل إحالة ${r.traveler_name}`}
+                                    aria-label={t('clinic.dashboard.referrals.viewExaminationAria', { name: r.traveler_name })}
                                     onClick={(e) => { e.stopPropagation(); setDecisionTarget(r); }}
                                     sx={{ bgcolor: 'primary.light', '&:hover': { bgcolor: 'primary.main', color: '#fff' } }}
                                   >
                                     <VisibilityIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="قبول الإحالة">
+                                <Tooltip title={t('clinic.dashboard.referrals.acceptReferral')}>
                                   <IconButton
                                     size="small"
                                     color="success"
-                                    aria-label={`قبول إحالة ${r.traveler_name}`}
+                                    aria-label={t('clinic.dashboard.referrals.acceptAria', { name: r.traveler_name })}
                                     onClick={(e) => { e.stopPropagation(); setDecisionTarget(r); }}
                                     sx={{ bgcolor: 'rgba(12,127,106,0.1)', '&:hover': { bgcolor: 'primary.main', color: '#fff' } }}
                                   >
                                     <CheckCircleOutlineIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="رفض الإحالة">
+                                <Tooltip title={t('clinic.dashboard.referrals.rejectReferral')}>
                                   <IconButton
                                     size="small"
                                     color="error"
-                                    aria-label={`رفض إحالة ${r.traveler_name}`}
+                                    aria-label={t('clinic.dashboard.referrals.rejectAria', { name: r.traveler_name })}
                                     onClick={(e) => { e.stopPropagation(); setRejectReason(''); setRejectTarget(r); }}
                                     sx={{ bgcolor: 'error.light', '&:hover': { bgcolor: 'error.main', color: '#fff' } }}
                                   >
@@ -768,7 +796,7 @@ export const ClinicDashboardPage = () => {
                               </Stack>
                             ) : (
                               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                {r.status === 'COMPLETED' ? 'مكتملة' : '—'}
+                                {r.status === 'COMPLETED' ? t('clinic.dashboard.table.completed') : '—'}
                               </Typography>
                             )}
                           </TableCell>
@@ -789,7 +817,7 @@ export const ClinicDashboardPage = () => {
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <SectionHeader
             icon={<MedicalServicesIcon fontSize="small" />}
-            title="الزيارات المفتوحة"
+            title={t('clinic.dashboard.sections.visits')}
             count={openVisits.length}
             action={
               <Button
@@ -798,7 +826,7 @@ export const ClinicDashboardPage = () => {
                 onClick={() => navigate('/app/clinic?tab=visits')}
                 sx={{ fontWeight: 700, textTransform: 'none' }}
               >
-                كل الزيارات
+                {t('clinic.dashboard.actions.allVisits')}
               </Button>
             }
           />
@@ -812,14 +840,14 @@ export const ClinicDashboardPage = () => {
             </Grid>
           ) : openVisits.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 2.5, textAlign: 'center' }}>
-              لا توجد زيارات مفتوحة حالياً — عند قبول إحالة تُفتح زيارة جديدة تظهر هنا
+              {t('clinic.dashboard.visits.emptyNote')}
             </Typography>
           ) : (
             <>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 2.5 }}>
                 <Chip
                   size="small"
-                  label="الكل"
+                  label={t('clinic.dashboard.visits.allChip')}
                   onClick={() => setVisitPhase('ALL')}
                   variant={visitPhase === 'ALL' ? 'filled' : 'outlined'}
                   color={visitPhase === 'ALL' ? 'primary' : 'default'}
@@ -850,7 +878,7 @@ export const ClinicDashboardPage = () => {
               </Stack>
               {shownVisits.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 2.5, textAlign: 'center' }}>
-                  لا توجد زيارات في هذه المرحلة — اختر مرحلة أخرى
+                  {t('clinic.dashboard.visits.emptyPhase')}
                 </Typography>
               ) : (
                 <Grid container spacing={2}>
@@ -890,22 +918,22 @@ export const ClinicDashboardPage = () => {
                             />
                           </Stack>
                           <Stack direction="row" spacing={0.75} justifyContent="flex-end">
-                            <Tooltip title="فتح ملف الزيارة">
+                            <Tooltip title={t('clinic.dashboard.visits.openFile')}>
                               <IconButton
                                 size="small"
                                 color="primary"
-                                aria-label={`فتح زيارة ${v.traveler_name}`}
+                                aria-label={t('clinic.dashboard.visits.openFileAria', { name: v.traveler_name })}
                                 onClick={() => navigate(`/app/clinic/visits/${v.id}`)}
                                 sx={{ bgcolor: 'primary.light', '&:hover': { bgcolor: 'primary.main', color: '#fff' } }}
                               >
                                 <MedicalServicesIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="إغلاق الزيارة">
+                            <Tooltip title={t('clinic.dashboard.dialogs.closeVisit')}>
                               <IconButton
                                 size="small"
                                 color="error"
-                                aria-label={`إغلاق زيارة ${v.traveler_name}`}
+                                aria-label={t('clinic.dashboard.visits.closeVisitAria', { name: v.traveler_name })}
                                 onClick={() => setCloseTarget(v)}
                                 sx={{ bgcolor: 'error.light', '&:hover': { bgcolor: 'error.main', color: '#fff' } }}
                               >
@@ -933,10 +961,10 @@ export const ClinicDashboardPage = () => {
         {/* Donut: referral funnel */}
         <Grid item xs={12} lg={5}>
           <GlassPanel accent="linear-gradient(90deg, #a86400, transparent)">
-            <Box sx={{ p: { xs: 2, md: 3 } }} aria-label="توزيع حالات الإحالات">
+            <Box sx={{ p: { xs: 2, md: 3 } }} aria-label={t('clinic.dashboard.charts.funnelAria')}>
               <SectionHeader
                 icon={<PendingActionsIcon fontSize="small" />}
-                title="مسار الإحالات"
+                title={t('clinic.dashboard.charts.funnelTitle')}
                 count={donut.total}
                 tone="#a86400"
               />
@@ -947,15 +975,18 @@ export const ClinicDashboardPage = () => {
               ) : donut.total === 0 ? (
                 <EmptyState
                   icon={<PendingActionsIcon sx={{ fontSize: 40 }} />}
-                  title="لا توجد إحالات بعد"
-                  description="ستظهر هنا إحالات العيادة بمجرد وصولها من الفحص المبدئي"
+                  title={t('clinic.dashboard.charts.emptyTitle')}
+                  description={t('clinic.dashboard.charts.emptyDesc')}
                 />
               ) : (
                 <Box sx={{ position: 'relative', height: 220 }}>
                   <ScreenReaderText>
-                    {`توزيع حالات الإحالات — الإجمالي ${donut.total}: ${donut.items
-                      .map((i) => `${i.meta?.label}: ${i.value}`)
-                      .join('، ')}.`}
+                    {t('clinic.dashboard.charts.srDonut', {
+                      total: donut.total,
+                      items: donut.items
+                        .map((i) => `${i.meta?.label}: ${i.value}`)
+                        .join(t('clinic.dashboard.charts.srDonutSep')),
+                    })}
                   </ScreenReaderText>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -974,7 +1005,7 @@ export const ClinicDashboardPage = () => {
                       </Pie>
                       <ChartTooltip
                         formatter={(value: number | string | Array<number | string>) => (
-                          [value, 'إحالة']
+                          [value, t('clinic.dashboard.charts.referralUnit')]
                         )}
                         contentStyle={{
                           borderRadius: 12,
@@ -999,7 +1030,7 @@ export const ClinicDashboardPage = () => {
                       {donut.total}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      إحالة
+                      {t('clinic.dashboard.charts.referralUnit')}
                     </Typography>
                   </Box>
                 </Box>
@@ -1026,15 +1057,15 @@ export const ClinicDashboardPage = () => {
         {/* Area: 7-day activity */}
         <Grid item xs={12} lg={7}>
           <GlassPanel accent="linear-gradient(90deg, #0c7f6a, transparent)">
-            <Box sx={{ p: { xs: 2, md: 3 } }} aria-label="نشاط العيادة خلال سبعة أيام">
+            <Box sx={{ p: { xs: 2, md: 3 } }} aria-label={t('clinic.dashboard.charts.activityAria')}>
               <SectionHeader
                 icon={<EventAvailableIcon fontSize="small" />}
-                title="نشاط الأيام السبعة الأخيرة"
+                title={t('clinic.dashboard.charts.activityTitle')}
                 count={visits.length}
                 action={
                   <Chip
                     size="small"
-                    label="الزيارات المفتوحة مقابل المغلقة"
+                    label={t('clinic.dashboard.charts.openedVsClosed')}
                     sx={{
                       bgcolor: 'rgba(12,127,106,0.08)',
                       color: 'text.secondary',
@@ -1051,15 +1082,23 @@ export const ClinicDashboardPage = () => {
               ) : activity.every((d) => d.opened === 0 && d.closed === 0) ? (
                 <EmptyState
                   icon={<EventAvailableIcon sx={{ fontSize: 40 }} />}
-                  title="لا يوجد نشاط خلال الأسبوع"
-                  description="سيتحدث الرسم البياني تلقائياً مع فتح وإغلاق الزيارات"
+                  title={t('clinic.dashboard.charts.emptyActivityTitle')}
+                  description={t('clinic.dashboard.charts.emptyActivityDesc')}
                 />
               ) : (
                 <Box sx={{ height: 260 }}>
                   <ScreenReaderText>
-                    {`نشاط الزيارات خلال الأيام السبعة: ${activity
-                      .map((d) => `${d.label}: ${d.opened} مفتوحة و${d.closed} مغلقة`)
-                      .join('، ')}.`}
+                    {t('clinic.dashboard.charts.srActivity', {
+                      items: activity
+                        .map((d) =>
+                          t('clinic.dashboard.charts.srDay', {
+                            label: d.label,
+                            opened: d.opened,
+                            closed: d.closed,
+                          })
+                        )
+                        .join(t('clinic.dashboard.charts.srActivitySep')),
+                    })}
                   </ScreenReaderText>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={activity} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
@@ -1079,7 +1118,7 @@ export const ClinicDashboardPage = () => {
                       <ChartTooltip
                         formatter={(value: number | string | Array<number | string>, name: string) => [
                           value,
-                          name === 'opened' ? 'زيارات مفتوحة' : 'زيارات مغلقة',
+                          name === 'opened' ? t('clinic.dashboard.kpi.openVisits') : t('clinic.dashboard.kpi.closedVisits'),
                         ]}
                         contentStyle={{
                           borderRadius: 12,
@@ -1101,10 +1140,10 @@ export const ClinicDashboardPage = () => {
       ) : (
         <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column', minHeight: 170, borderRadius: 3.5, border: '1px dashed rgba(16,40,34,0.14)', bgcolor: 'rgba(255,255,255,0.42)' }}>
           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-            مرِّر إليه لعرض المخططات المرتبطة بالشريحة الحالية
+            {t('clinic.dashboard.charts.lazyHint')}
           </Typography>
           <Typography variant="caption" color="text.disabled">
-            تشمل مسار الإحالات ونشاط الأيام السبعة الأخيرة
+            {t('clinic.dashboard.charts.lazyNote')}
           </Typography>
         </Box>
       )}
@@ -1117,7 +1156,7 @@ export const ClinicDashboardPage = () => {
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <SectionHeader
             icon={<VaccinesIcon fontSize="small" />}
-            title="العزل والحجر الصحي"
+            title={t('clinic.dashboard.sections.isolation')}
             count={isolations.length}
             action={
               <Button
@@ -1126,7 +1165,7 @@ export const ClinicDashboardPage = () => {
                 onClick={() => navigate('/app/clinic/isolation')}
                 sx={{ fontWeight: 700, textTransform: 'none' }}
               >
-                عرض الكل
+                {t('clinic.dashboard.actions.viewAll')}
               </Button>
             }
           />
@@ -1138,18 +1177,18 @@ export const ClinicDashboardPage = () => {
           ) : isolations.length === 0 ? (
             <EmptyState
               icon={<VaccinesIcon sx={{ fontSize: 40 }} />}
-              title="لا توجد حالات عزل"
-              description="سجلات العزل والحجر الصحي ستظهر هنا"
+              title={t('clinic.dashboard.isolation.emptyTitle')}
+              description={t('clinic.dashboard.isolation.emptyDesc')}
             />
           ) : (
             <TableContainer sx={{ borderRadius: 3, '& .MuiTableCell-root': { borderColor: 'rgba(16,40,34,0.08)' } }}>
-              <Table size="small" aria-label="العزل والحجر الصحي">
+              <Table size="small" aria-label={t('clinic.dashboard.sections.isolation')}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>المسافر</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12, display: { xs: 'none', sm: 'table-cell' } }}>نوع العزل</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>الحالة الصحية</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>البداية</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.dashboard.table.cols.traveler')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12, display: { xs: 'none', sm: 'table-cell' } }}>{t('clinic.dashboard.isolation.cols.type')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.dashboard.isolation.cols.health')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>{t('clinic.dashboard.isolation.cols.started')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1197,7 +1236,7 @@ export const ClinicDashboardPage = () => {
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <SectionHeader
             icon={<InsightsIcon fontSize="small" />}
-            title="تقرير وحدات العيادة"
+            title={t('clinic.dashboard.sections.report')}
             tone="#a86400"
             action={
               <TextField
@@ -1221,31 +1260,31 @@ export const ClinicDashboardPage = () => {
           ) : clinicReport ? (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.total_visits} label="إجمالي الزيارات" icon={<MedicalServicesIcon />} accent="success.main" />
+                <KpiCard value={clinicReport.stats.total_visits} label={t('clinic.dashboard.report.totalVisits')} icon={<MedicalServicesIcon />} accent="success.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.open_visits} label="زيارات مفتوحة" icon={<ScheduleIcon />} accent="info.main" />
+                <KpiCard value={clinicReport.stats.open_visits} label={t('clinic.dashboard.kpi.openVisits')} icon={<ScheduleIcon />} accent="info.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.closed_visits} label="زيارات مغلقة" icon={<CheckCircleIcon />} accent="warning.main" />
+                <KpiCard value={clinicReport.stats.closed_visits} label={t('clinic.dashboard.kpi.closedVisits')} icon={<CheckCircleIcon />} accent="warning.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.isolated} label="حالات عزل" icon={<VaccinesIcon />} accent="secondary.main" />
+                <KpiCard value={clinicReport.stats.isolated} label={t('clinic.dashboard.report.isolated')} icon={<VaccinesIcon />} accent="secondary.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.certificates} label="شهادات صادرة" icon={<HealthAndSafetyIcon />} accent="info.main" />
+                <KpiCard value={clinicReport.stats.certificates} label={t('clinic.dashboard.report.certificates')} icon={<HealthAndSafetyIcon />} accent="info.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.patients} label="مريض فريد" icon={<GroupsIcon />} accent="success.main" />
+                <KpiCard value={clinicReport.stats.patients} label={t('clinic.dashboard.report.uniquePatients')} icon={<GroupsIcon />} accent="success.main" />
               </Box>
               <Box sx={{ flex: '1 1 150px', minWidth: 150 }}>
-                <KpiCard value={clinicReport.stats.completed_today} label="أُنجز اليوم" icon={<EventAvailableIcon />} accent="warning.main" />
+                <KpiCard value={clinicReport.stats.completed_today} label={t('clinic.dashboard.report.completedToday')} icon={<EventAvailableIcon />} accent="warning.main" />
               </Box>
               <Box sx={{ flexBasis: '100%' }}>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  <Typography sx={{ fontWeight: 700, fontSize: 13, pt: 0.5 }}>توزيع المراحل:</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: 13, pt: 0.5 }}>{t('clinic.dashboard.report.phaseDistribution')}</Typography>
                   {Object.keys(clinicReport.stats.by_phase).length === 0 ? (
-                    <Chip size="small" label="لا بيانات" variant="outlined" />
+                    <Chip size="small" label={t('clinic.dashboard.report.noData')} variant="outlined" />
                   ) : (
                     Object.entries(clinicReport.stats.by_phase).map(([p, n]) => (
                       <Chip
@@ -1260,7 +1299,7 @@ export const ClinicDashboardPage = () => {
               </Box>
             </Box>
           ) : (
-            <Typography color="text.secondary">لا توجد بيانات تقرير لهذه الوحدة بعد.</Typography>
+            <Typography color="text.secondary">{t('clinic.dashboard.report.empty')}</Typography>
           )}
         </Box>
       </GlassPanel>
@@ -1280,10 +1319,10 @@ export const ClinicDashboardPage = () => {
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            آخر تحديث: {lastUpdated || 'جاري التحميل…'}
+            {t('clinic.dashboard.footer.updatedPrefix')}{lastUpdated || t('clinic.dashboard.footer.loading')}
           </Typography>
           <Typography variant="caption" color="text.disabled">
-            منصة الحجر الصحي القومي · لوحة العيادة الطبية
+            {t('clinic.dashboard.footer.brand')}
           </Typography>
         </Box>
         </Box>
@@ -1291,7 +1330,7 @@ export const ClinicDashboardPage = () => {
         {/* Notification rail (xl+) */}
         <Box
           component="aside"
-          aria-label="منطقة التنبيهات والمتابعة"
+          aria-label={t('clinic.dashboard.a11y.notifRegion')}
           sx={{
             display: { xs: 'none', xl: 'block' },
             position: 'sticky',
@@ -1308,19 +1347,19 @@ export const ClinicDashboardPage = () => {
       <ConfirmDialog
         open={Boolean(rejectTarget)}
         tone="error"
-        title="رفض الإحالة"
+        title={t('clinic.dashboard.referrals.rejectReferral')}
         message={
           rejectTarget
-            ? `هل أنت متأكد من رفض إحالة «${rejectTarget.traveler_name}»؟ لن يتم فتح زيارة عيادة لهذا المسافر.`
+            ? t('clinic.dashboard.dialogs.rejectQuestion', { name: rejectTarget.traveler_name })
             : ''
         }
-        confirmLabel="تأكيد الرفض"
+        confirmLabel={t('clinic.dashboard.dialogs.rejectConfirm')}
         loading={rejecting}
         onConfirm={handleReject}
         onClose={() => { setRejectTarget(null); setRejectReason(''); }}
       >
         <TextField
-          label="سبب الرفض (اختياري)"
+          label={t('clinic.dashboard.dialogs.rejectReason')}
           value={rejectReason}
           onChange={(e) => setRejectReason(e.target.value)}
           fullWidth
@@ -1333,13 +1372,13 @@ export const ClinicDashboardPage = () => {
       </ConfirmDialog>
     <ConfirmDialog
         open={Boolean(closeTarget)}
-        title="إغلاق الزيارة"
+        title={t('clinic.dashboard.dialogs.closeVisit')}
         message={
           closeTarget
-            ? `هل أنت متأكد من إغلاق زيارة «${closeTarget.traveler_name}»؟ سيتم توثيق الإغلاق في السجل الطبي ولا يمكن التراجع.`
+            ? t('clinic.dashboard.dialogs.closeQuestion', { name: closeTarget.traveler_name })
             : ''
         }
-        confirmLabel="إغلاق الزيارة"
+        confirmLabel={t('clinic.dashboard.dialogs.closeVisit')}
         loading={closing}
         onConfirm={handleCloseVisit}
         onClose={() => setCloseTarget(null)}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -20,10 +21,10 @@ import {
   REVIEW_STATUS_LABELS,
   REVIEW_STATUS_TONES,
   RATING_LABELS,
-  reviewStatusLabel,
 } from '../../utils/hrLabels';
 
 const PerformanceReviewsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cycles, setCycles] = useState<PerformanceCycle[]>([]);
 
@@ -47,74 +48,74 @@ const PerformanceReviewsPage = () => {
     () => [
       {
         key: 'employee_name',
-        label: 'الموظف',
+        label: t('hr.performanceReviews.columns.employee'),
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
               {row.employee_name || '—'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.reviewed_by_name ? `المُقيِّم: ${row.reviewed_by_name}` : ''}
+              {row.reviewed_by_name ? `${t('hr.performanceReviews.columns.reviewer')}: ${row.reviewed_by_name}` : ''}
             </Typography>
           </Box>
         ),
       },
       {
         key: 'cycle_name',
-        label: 'الدورة',
+        label: t('hr.performanceReviews.columns.cycle'),
         render: (row) => row.cycle_name,
       },
       {
         key: 'total_score',
-        label: 'الدرجة',
+        label: t('hr.performanceReviews.columns.score'),
         sortable: true,
         align: 'center' as const,
         render: (row) => (row.total_score === null ? '—' : row.total_score),
       },
       {
         key: 'rating',
-        label: 'التقدير',
+        label: t('hr.performanceReviews.columns.rating'),
         render: (row) => (row.rating ? RATING_LABELS[row.rating] ?? row.rating : '—'),
       },
       {
         key: 'status',
-        label: 'الحالة',
+        label: t('hr.performanceReviews.columns.status'),
         render: (row) => (
           <StatusChip
-            label={reviewStatusLabel(row.status)}
+            label={t(`hr.performanceReviews.statusLabels.${row.status}`)}
             tone={REVIEW_STATUS_TONES[row.status] ?? 'neutral'}
           />
         ),
       },
       {
         key: 'decided_by_name',
-        label: 'المعتمد',
+        label: t('hr.performanceReviews.columns.approvedBy'),
         hideOnMobile: true,
         render: (row) => row.decided_by_name || '—',
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <Box>
       <PageHeader
-        title="تقييمات الأداء"
-        subtitle="الدرجة والتقدير يُشتقّان من درجات المؤشرات وأوزانها — لا يُرسلان من العميل"
+        title={t('hr.performanceReviews.header.title')}
+        subtitle={t('hr.performanceReviews.header.subtitle')}
         action={
           <Stack direction="row" spacing={1}>
             <Button
               variant="outlined"
               onClick={() => navigate('/app/hr/performance/cycles')}
             >
-              الدورات
+              {t('hr.performanceReviews.actions.cycles')}
             </Button>
             <Button
               variant="contained"
               disabled={cycles.length === 0}
               onClick={() => navigate(`/app/hr/performance/reviews/new?cycle=${cycles[0]?.id}`)}
             >
-              تقييم جديد
+              {t('hr.performanceReviews.actions.new')}
             </Button>
           </Stack>
         }
@@ -122,7 +123,7 @@ const PerformanceReviewsPage = () => {
 
       {cycles.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          لا توجد دورة مفتوحة — أنشئ دورة وافتحها قبل بدء التقييم.
+          {t('hr.performanceReviews.alert.noOpenCycle')}
         </Alert>
       )}
 
@@ -138,23 +139,23 @@ const PerformanceReviewsPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم الموظف أو الدورة..."
+        searchPlaceholder={t('hr.performanceReviews.searchPlaceholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: t('hr.performanceReviews.columns.status'),
             options: [
-              { value: '', label: 'كل الحالات' },
-              ...Object.entries(REVIEW_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+              { value: '', label: t('hr.performanceReviews.filters.allStatuses') },
+              ...Object.entries(REVIEW_STATUS_LABELS).map(([value]) => ({ value, label: t(`hr.performanceReviews.statusLabels.${value}`) })),
             ],
             value: '',
             onChange: (v) => setFilter('status', v),
           },
           {
             key: 'cycle',
-            label: 'الدورة',
+            label: t('hr.performanceReviews.columns.cycle'),
             options: [
-              { value: '', label: 'كل الدورات' },
+              { value: '', label: t('hr.performanceReviews.filters.allCycles') },
               ...cycles.map((c) => ({ value: c.id, label: c.name })),
             ],
             value: '',
@@ -170,7 +171,14 @@ const PerformanceReviewsPage = () => {
         onExport={() =>
           exportAll({
             filename: 'hr_performance_reviews.csv',
-            headers: ['الموظف', 'الدورة', 'الدرجة', 'التقدير', 'الحالة', 'المعتمد'],
+            headers: [
+              t('hr.performanceReviews.columns.employee'),
+              t('hr.performanceReviews.columns.cycle'),
+              t('hr.performanceReviews.columns.score'),
+              t('hr.performanceReviews.columns.rating'),
+              t('hr.performanceReviews.columns.status'),
+              t('hr.performanceReviews.columns.approvedBy'),
+            ],
             mapRow: (r) => [
               r.employee_name,
               r.cycle_name,
@@ -179,20 +187,20 @@ const PerformanceReviewsPage = () => {
               r.status_display,
               r.decided_by_name ?? '',
             ],
-            message: 'تم تصدير تقييمات الأداء',
+            message: t('hr.performanceReviews.export.message'),
           })
         }
         exporting={exporting}
-        actionsLabel="تفاصيل"
+        actionsLabel={t('hr.performanceReviews.actions.details')}
         actions={(row) => (
-          <Tooltip title="تفاصيل التقييم">
+          <Tooltip title={t('hr.performanceReviews.actions.viewReview')}>
             <IconButton onClick={() => navigate(`/app/hr/performance/reviews/${row.id}`)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>
         )}
-        emptyTitle="لا توجد تقييمات"
-        emptyDescription="ستظهر هنا تقييمات الأداء داخل الدورات المفتوحة."
+        emptyTitle={t('hr.performanceReviews.empty.title')}
+        emptyDescription={t('hr.performanceReviews.empty.description')}
       />
     </Box>
   );
