@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -24,19 +26,20 @@ import {
 import type { Employee, PerformanceCycle } from '../../types/hr';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
-const reviewSchema = z.object({
-  cycle: z.string().min(1, 'حدّد الدورة'),
-  employee: z.string().min(1, 'حدّد الموظف'),
-  strengths: z.string().max(2000, 'النص طويل جداً').optional(),
-  improvements: z.string().max(2000, 'النص طويل جداً').optional(),
-  comments: z.string().max(2000, 'النص طويل جداً').optional(),
+const createReviewSchema = (t: TFunction) => z.object({
+  cycle: z.string().min(1, t('hr.performanceReviewForm.validation.selectCycle')),
+  employee: z.string().min(1, t('hr.performanceReviewForm.validation.selectEmployee')),
+  strengths: z.string().max(2000, t('hr.performanceReviewForm.validation.textTooLong')).optional(),
+  improvements: z.string().max(2000, t('hr.performanceReviewForm.validation.textTooLong')).optional(),
+  comments: z.string().max(2000, t('hr.performanceReviewForm.validation.textTooLong')).optional(),
 });
 
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+type ReviewFormValues = z.infer<ReturnType<typeof createReviewSchema>>;
 
 const PerformanceReviewFormPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { t } = useTranslation();
   const [cycles, setCycles] = useState<PerformanceCycle[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +55,8 @@ const PerformanceReviewFormPage = () => {
       () => setEmployees([]),
     );
   }, [params]);
+
+  const reviewSchema = useMemo(() => createReviewSchema(t), [t]);
 
   const {
     control, handleSubmit, watch, setValue,
@@ -92,20 +97,22 @@ const PerformanceReviewFormPage = () => {
         improvements: values.improvements ?? '',
         comments: values.comments ?? '',
       });
-      notifySuccess('تم إنشاء التقييم — أضف درجات المؤشرات ثم أرسله');
+      notifySuccess(t('hr.performanceReviewForm.messages.created'));
       navigate(`/app/hr/performance/reviews/${data.data.id}`);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر إنشاء التقييم'));
+      setError(extractErrorMessage(err, t('hr.performanceReviewForm.errors.createFailed')));
     }
   };
 
   return (
     <Box>
       <PageHeader
-        title="تقييم أداء جديد"
-        subtitle="الدرجات تُدخل في صفحة التقييم؛ الدرجة النهائية والتقدير يُشتقّان منها"
+        title={t('hr.performanceReviewForm.pageHeader.title')}
+        subtitle={t('hr.performanceReviewForm.pageHeader.subtitle')}
         action={
-          <Button onClick={() => navigate('/app/hr/performance/reviews')}>رجوع</Button>
+          <Button onClick={() => navigate('/app/hr/performance/reviews')}>
+            {t('hr.performanceReviewForm.button.back')}
+          </Button>
         }
       />
 
@@ -132,12 +139,12 @@ const PerformanceReviewFormPage = () => {
                       field.onChange(e);
                       setValue('cycle', e.target.value);
                     }}
-                    label="الدورة"
+                    label={t('hr.performanceReviewForm.label.cycle')}
                     required
                     error={Boolean(errors.cycle)}
                     helperText={
                       errors.cycle?.message ??
-                      (cycles.length === 0 ? 'مرّر ?cycle=<id> أو اختر من القائمة' : undefined)
+                      (cycles.length === 0 ? t('hr.performanceReviewForm.helperText.noCycles') : undefined)
                     }
                   >
                     {cycles.map((c) => (
@@ -157,7 +164,7 @@ const PerformanceReviewFormPage = () => {
                     select
                     value={field.value}
                     onChange={field.onChange}
-                    label="الموظف"
+                    label={t('hr.performanceReviewForm.label.employee')}
                     required
                     error={Boolean(errors.employee)}
                     helperText={errors.employee?.message}
@@ -178,7 +185,7 @@ const PerformanceReviewFormPage = () => {
                     {...field}
                     value={field.value}
                     onChange={field.onChange}
-                    label="نقاط القوة"
+                    label={t('hr.performanceReviewForm.label.strengths')}
                     multiline
                     minRows={2}
                   />
@@ -192,7 +199,7 @@ const PerformanceReviewFormPage = () => {
                     {...field}
                     value={field.value}
                     onChange={field.onChange}
-                    label="نقاط التحسين"
+                    label={t('hr.performanceReviewForm.label.improvements')}
                     multiline
                     minRows={2}
                   />
@@ -206,7 +213,7 @@ const PerformanceReviewFormPage = () => {
                     {...field}
                     value={field.value}
                     onChange={field.onChange}
-                    label="ملاحظات"
+                    label={t('hr.performanceReviewForm.label.comments')}
                     multiline
                     minRows={2}
                   />
@@ -217,7 +224,7 @@ const PerformanceReviewFormPage = () => {
             {kpiList.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  مؤشرات هذه الدورة — تُدخال درجاتها بعد الإنشاء
+                  {t('hr.performanceReviewForm.kpiSection.title')}
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                   {kpiList.map((k) => (
@@ -229,9 +236,11 @@ const PerformanceReviewFormPage = () => {
 
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button type="submit" variant="contained" disabled={isSubmitting}>
-                إنشاء التقييم
+                {t('hr.performanceReviewForm.button.createReview')}
               </Button>
-              <Button onClick={() => navigate('/app/hr/performance/reviews')}>إلغاء</Button>
+              <Button onClick={() => navigate('/app/hr/performance/reviews')}>
+                {t('hr.performanceReviewForm.button.cancel')}
+              </Button>
             </Stack>
           </CardContent>
         </Card>

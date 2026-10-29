@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -23,23 +25,21 @@ import {
   ATTENDANCE_NEEDS_PUNCH,
   ATTENDANCE_NO_PUNCH,
   ATTENDANCE_STATUS_LABELS,
-  attendanceStatusLabel,
 } from '../../utils/hrLabels';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
-/** الخادم يفرض هذه القواعد أيضاً؛ نكرّرها هنا ليُصحَّح الحقل فوره. */
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-const attendanceSchema = z
+const createAttendanceSchema = (t: TFunction) => z
   .object({
-    employee: z.string().uuid('حدّد الموظف'),
-    date: z.string().min(1, 'التاريخ مطلوب'),
+    employee: z.string().uuid(t('hr.attendance.validation.selectEmployee')),
+    date: z.string().min(1, t('hr.attendance.validation.selectDate')),
     status: z.enum([
       'PRESENT', 'ABSENT', 'LATE', 'EARLY_LEAVE', 'REMOTE', 'ON_LEAVE', 'OFF_DAY',
     ]),
-    checkIn: z.string().regex(HHMM, 'وقت غير صالح (HH:MM)').or(z.literal('')),
-    checkOut: z.string().regex(HHMM, 'وقت غير صالح (HH:MM)').or(z.literal('')),
-    overtimeMinutes: z.coerce.number().int().min(0, 'لا يمكن أن يكون سالباً'),
+    checkIn: z.string().regex(HHMM, t('hr.attendance.validation.invalidTime')).or(z.literal('')),
+    checkOut: z.string().regex(HHMM, t('hr.attendance.validation.invalidTime')).or(z.literal('')),
+    overtimeMinutes: z.coerce.number().int().min(0, t('hr.attendance.validation.negativeOvertime')),
     shiftCode: z.string().max(40).optional(),
     notes: z.string().max(2000).optional(),
   })
@@ -52,30 +52,30 @@ const attendanceSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['checkIn'],
-        message: `حالة «${attendanceStatusLabel(status)}» لا تقبل أوقات حضور/انصراف`,
+        message: t('hr.attendance.validation.noPunchForStatus', { status }),
       });
     }
     if (ATTENDANCE_NEEDS_PUNCH.includes(status) && !hasIn) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['checkIn'],
-        message: 'هذه الحالة تتطلّب وقت حضور',
+        message: t('hr.attendance.validation.punchRequired'),
       });
     }
     if (hasIn && hasOut && data.checkOut! <= data.checkIn!) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['checkOut'],
-        message: 'وقت الانصراف يجب أن يكون بعد وقت الحضور',
+        message: t('hr.attendance.validation.checkOutAfterCheckIn'),
       });
     }
     const today = new Date().toISOString().slice(0, 10);
     if (data.date > today) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['date'], message: 'لا يُسجَّل حضور لتاريخ مستقبلي' });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['date'], message: t('hr.attendance.validation.futureDate') });
     }
   });
 
-type AttendanceFormValues = z.infer<typeof attendanceSchema>;
+type AttendanceFormValues = z.infer<ReturnType<typeof createAttendanceSchema>>;
 
 const emptyForm: AttendanceFormValues = {
   employee: '',
@@ -92,6 +92,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 const AttendancePage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [summary, setSummary] = useState<{
     present: number; absent: number; late: number; overtime: number;
@@ -118,6 +119,8 @@ const AttendancePage = () => {
       }
     }).finally(() => setLoading(false));
   }, []);
+
+  const attendanceSchema = useMemo(() => createAttendanceSchema(t), [t]);
 
   const {
     control, handleSubmit, watch, reset,
@@ -148,10 +151,10 @@ const AttendancePage = () => {
 
     try {
       await createAttendanceRecord(payload);
-      notifySuccess('تم تسجيل الحضور');
+      notifySuccess(t('hr.attendance.messages.recorded'));
       reset({ ...emptyForm, date: today() });
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر تسجيل الحضور'));
+      setFormError(extractErrorMessage(err, t('hr.attendance.errors.recordFailed')));
     }
   };
 
@@ -166,14 +169,16 @@ const AttendancePage = () => {
   return (
     <Box>
       <PageHeader
-        title="الحضور والانصراف"
-        subtitle="سجل يومي لكل موظف — يُوثَّق من مصدره ثم يُعتمد من طرف ثالث"
+        title={t('hr.attendance.pageHeader.title')}
+        subtitle={t('hr.attendance.pageHeader.subtitle')}
         action={
           <Stack direction="row" spacing={1}>
             <Button onClick={() => navigate('/app/hr/attendance/records')}>
-              كل السجلات
+              {t('hr.attendance.button.allRecords')}
             </Button>
-            <Button onClick={() => navigate('/app/hr/postings')}>طلبات النقل</Button>
+            <Button onClick={() => navigate('/app/hr/postings')}>
+              {t('hr.attendance.button.postingRequests')}
+            </Button>
           </Stack>
         }
       />
@@ -181,20 +186,20 @@ const AttendancePage = () => {
       {summary && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={6} md={3}>
-            <KpiCard label="أيام الحضور (30 يوم)" value={summary.present} accent="success.main" />
+            <KpiCard label={t('hr.attendance.kpi.presentDays')} value={summary.present} accent="success.main" />
           </Grid>
           <Grid item xs={6} md={3}>
-            <KpiCard label="أيام الغياب" value={summary.absent} accent="error.main" />
+            <KpiCard label={t('hr.attendance.kpi.absentDays')} value={summary.absent} accent="error.main" />
           </Grid>
           <Grid item xs={6} md={3}>
-            <KpiCard label="مرات التأخر" value={summary.late} accent="warning.main" />
+            <KpiCard label={t('hr.attendance.kpi.lateCount')} value={summary.late} accent="warning.main" />
           </Grid>
           <Grid item xs={6} md={3}>
-            <KpiCard
-              label="دقائق إضافية"
-              value={summary.overtime}
-              accent="info.main"
-            />
+              <KpiCard
+                label={t('hr.attendance.kpi.overtimeMinutes')}
+                value={summary.overtime}
+                accent="info.main"
+              />
           </Grid>
         </Grid>
       )}
@@ -214,15 +219,15 @@ const AttendancePage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="الموظف"
+                  label={t('hr.attendance.label.employee')}
                   required
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.employee)}
                   helperText={errors.employee?.message}
-                  hint="لا يُسجَّل الحضور الذاتي من هنا"
+                  hint={t('hr.attendance.hint.noSelfService')}
                 >
-                  <MenuItem value="">— اختر —</MenuItem>
+                  <MenuItem value="">{t('hr.attendance.select.choose')}</MenuItem>
                   {employees.map((e) => (
                     <MenuItem key={e.id} value={e.id}>
                       {e.full_name} — {e.employee_number}
@@ -241,14 +246,14 @@ const AttendancePage = () => {
                 <FormTextField
                   {...field}
                   type="date"
-                  label="التاريخ"
+                  label={t('hr.attendance.label.date')}
                   required
                   InputLabelProps={{ shrink: true }}
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.date)}
                   helperText={errors.date?.message}
-                  hint="سجل واحد لكل موظف في اليوم"
+                  hint={t('hr.attendance.hint.oneRecordPerDay')}
                 />
               )}
             />
@@ -262,12 +267,12 @@ const AttendancePage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="الحالة"
+                  label={t('hr.attendance.label.status')}
                   required
                   value={field.value}
                   onChange={field.onChange}
                 >
-                  {Object.entries(ATTENDANCE_STATUS_LABELS).map(([v, l]) => (
+                  {Object.entries(ATTENDANCE_STATUS_LABELS as Record<string, string>).map(([v, l]) => (
                     <MenuItem key={v} value={v}>
                       {l}
                     </MenuItem>
@@ -287,7 +292,7 @@ const AttendancePage = () => {
                     <FormTextField
                       {...field}
                       type="time"
-                      label="وقت الحضور"
+                      label={t('hr.attendance.label.checkIn')}
                       InputLabelProps={{ shrink: true }}
                       value={field.value}
                       onChange={field.onChange}
@@ -305,7 +310,7 @@ const AttendancePage = () => {
                     <FormTextField
                       {...field}
                       type="time"
-                      label="وقت الانصراف"
+                      label={t('hr.attendance.label.checkOut')}
                       InputLabelProps={{ shrink: true }}
                       value={field.value}
                       onChange={field.onChange}
@@ -326,7 +331,7 @@ const AttendancePage = () => {
                 <FormTextField
                   {...field}
                   type="number"
-                  label="دقائق إضافية"
+                  label={t('hr.attendance.label.overtimeMinutes')}
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.overtimeMinutes)}
@@ -343,10 +348,10 @@ const AttendancePage = () => {
               render={({ field }) => (
                 <FormTextField
                   {...field}
-                  label="رمز الوردية"
+                  label={t('hr.attendance.label.shiftCode')}
                   value={field.value}
                   onChange={field.onChange}
-                  hint="اختياري — تُنظَّم كمناوبات في مرحلة لاحقة"
+                  hint={t('hr.attendance.hint.shiftCodeOptional')}
                 />
               )}
             />
@@ -361,7 +366,7 @@ const AttendancePage = () => {
                   {...field}
                   multiline
                   minRows={2}
-                  label="ملاحظات"
+                  label={t('hr.attendance.label.notes')}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -372,7 +377,7 @@ const AttendancePage = () => {
 
         <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            تسجيل الحضور
+            {t('hr.attendance.button.recordAttendance')}
           </Button>
           <Button
             onClick={() => {
@@ -381,7 +386,7 @@ const AttendancePage = () => {
             }}
             disabled={isSubmitting}
           >
-            مسح النموذج
+            {t('hr.attendance.button.clearForm')}
           </Button>
         </Box>
       </Box>

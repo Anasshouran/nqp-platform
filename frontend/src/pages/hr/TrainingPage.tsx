@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -35,18 +37,19 @@ import {
 import { formatDate } from '../../utils/formatters';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
-const enrollmentSchema = z.object({
-  employee: z.string().min(1, 'حدّد الموظف'),
-  plan: z.string().uuid('حدّد الدورة'),
+const createEnrollmentSchema = (t: TFunction) => z.object({
+  employee: z.string().min(1, t('hr.training.validation.selectEmployee')),
+  plan: z.string().uuid(t('hr.training.validation.selectPlan')),
 });
 
-type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
+type EnrollmentFormValues = z.infer<ReturnType<typeof createEnrollmentSchema>>;
 
 const emptyForm: EnrollmentFormValues = { employee: '', plan: '' };
 
 const TrainingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const isEmployee = !['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
   const [plans, setPlans] = useState<TrainingPlan[]>([]);
@@ -77,6 +80,8 @@ const TrainingPage = () => {
     load();
   }, [isEmployee]);
 
+  const enrollmentSchema = useMemo(() => createEnrollmentSchema(t), [t]);
+
   const {
     control, handleSubmit,
     formState: { errors, isSubmitting },
@@ -94,10 +99,10 @@ const TrainingPage = () => {
         plan: values.plan,
       });
       if (now) await submitTrainingEnrollment(data.data.id);
-      notifySuccess(now ? 'تم إرسال طلب الاشتراك' : 'تم حفظ المسودة');
+      notifySuccess(now ? t('hr.training.messages.submitted') : t('hr.training.messages.draftSaved'));
       navigate(`/app/hr/training/${data.data.id}`);
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر إنشاء التسجيل'));
+      setFormError(extractErrorMessage(err, t('hr.training.errors.createFailed')));
     }
   };
 
@@ -114,11 +119,11 @@ const TrainingPage = () => {
   return (
     <Box>
       <PageHeader
-        title="التدريب"
-        subtitle="اشترك في دورة، واعتمد اشتراكك، ثم تُسجَّل الدرجة فيُشتق الإتمام منها"
+        title={t('hr.training.pageHeader.title')}
+        subtitle={t('hr.training.pageHeader.subtitle')}
         action={
           <Button onClick={() => navigate('/app/hr/training/enrollments')}>
-            كل التسجيلات
+            {t('hr.training.button.allEnrollments')}
           </Button>
         }
       />
@@ -137,7 +142,7 @@ const TrainingPage = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              اشتراك في دورة
+              {t('hr.training.section.enrollInCycle')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
@@ -150,14 +155,14 @@ const TrainingPage = () => {
                       <FormTextField
                         {...field}
                         select
-                        label="الموظف"
+                        label={t('hr.training.label.employee')}
                         required
                         value={field.value}
                         onChange={field.onChange}
                         error={Boolean(errors.employee)}
                         helperText={errors.employee?.message}
                       >
-                        <MenuItem value="">— اختر —</MenuItem>
+                        <MenuItem value="">{t('hr.training.select.choose')}</MenuItem>
                         {employees.map((e) => (
                           <MenuItem key={e.id} value={e.id}>
                             {e.full_name} — {e.employee_number}
@@ -176,14 +181,14 @@ const TrainingPage = () => {
                     <FormTextField
                       {...field}
                       select
-                      label="الدورة"
+                      label={t('hr.training.label.plan')}
                       required
                       value={field.value}
                       onChange={field.onChange}
                       error={Boolean(errors.plan)}
                       helperText={errors.plan?.message}
                     >
-                      <MenuItem value="">— اختر —</MenuItem>
+                      <MenuItem value="">{t('hr.training.select.choose')}</MenuItem>
                       {activePlans.map((p) => (
                         <MenuItem key={p.id} value={p.id}>
                           {p.name_ar} ({p.duration_hours}س)
@@ -201,7 +206,7 @@ const TrainingPage = () => {
                 disabled={isSubmitting}
                 onClick={() => setSubmitNow(true)}
               >
-                اشتراك وإرسال للاعتماد
+                {t('hr.training.button.submitAndRequest')}
               </Button>
               <Button
                 type="submit"
@@ -209,7 +214,7 @@ const TrainingPage = () => {
                 disabled={isSubmitting}
                 onClick={() => setSubmitNow(false)}
               >
-                حفظ كمسودة
+                {t('hr.training.button.saveDraft')}
               </Button>
             </Stack>
           </CardContent>
@@ -225,7 +230,7 @@ const TrainingPage = () => {
                   <Typography variant="body1" fontWeight={700}>
                     {plan.name_ar}
                   </Typography>
-                  {plan.is_mandatory && <Chip size="small" color="warning" label="إلزامي" />}
+                  {plan.is_mandatory && <Chip size="small" color="warning" label={t('hr.training.chip.mandatory')} />}
                 </Stack>
                 <Typography variant="caption" color="text.secondary" dir="ltr">
                   {plan.code}
@@ -242,8 +247,8 @@ const TrainingPage = () => {
                     variant="outlined"
                     label={DELIVERY_MODE_LABELS[plan.delivery_mode] ?? plan.delivery_mode}
                   />
-                  <Chip size="small" variant="outlined" label={`${plan.duration_hours} ساعة`} />
-                  <Chip size="small" variant="outlined" label={`${plan.employee_count} مسجَّل`} />
+                  <Chip size="small" variant="outlined" label={t('hr.training.chip.durationHours', { hours: plan.duration_hours })} />
+                  <Chip size="small" variant="outlined" label={t('hr.training.chip.registeredCount', { count: plan.employee_count })} />
                 </Stack>
               </CardContent>
             </Card>
@@ -255,7 +260,7 @@ const TrainingPage = () => {
         <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              تسجيلاتي
+              {t('hr.training.section.myEnrollments')}
             </Typography>
             <Divider sx={{ mb: 1 }} />
             {mine.map((e) => (

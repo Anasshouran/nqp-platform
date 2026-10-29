@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -31,12 +33,12 @@ import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-const leaveSchema = z
+const createLeaveSchema = (t: TFunction) => z
   .object({
-    employee: z.string().min(1, 'حدّد الموظف'),
-    leaveType: z.string().min(1, 'حدّد نوع الإجازة'),
-    startDate: z.string().regex(ISO, 'تاريخ غير صالح'),
-    endDate: z.string().regex(ISO, 'تاريخ غير صالح'),
+    employee: z.string().min(1, t('hr.leave.validation.selectEmployee')),
+    leaveType: z.string().min(1, t('hr.leave.validation.selectLeaveType')),
+    startDate: z.string().regex(ISO, t('hr.leave.validation.invalidDate')),
+    endDate: z.string().regex(ISO, t('hr.leave.validation.invalidDate')),
     isHalfDay: z.boolean(),
     reason: z.string().trim().max(2000).optional(),
     document: z.string().trim().max(255).optional(),
@@ -46,19 +48,19 @@ const leaveSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endDate'],
-        message: 'تاريخ النهاية لا يسبق تاريخ البداية',
+        message: t('hr.leave.validation.endDateBeforeStartDate'),
       });
     }
     if (data.isHalfDay && data.startDate !== data.endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['isHalfDay'],
-        message: 'نصف اليوم ليوم واحد فقط',
+        message: t('hr.leave.validation.halfDaySingleDay'),
       });
     }
   });
 
-type LeaveFormValues = z.infer<typeof leaveSchema>;
+type LeaveFormValues = z.infer<ReturnType<typeof createLeaveSchema>>;
 
 const emptyForm: LeaveFormValues = {
   employee: '',
@@ -73,7 +75,7 @@ const emptyForm: LeaveFormValues = {
 const num = (v: string | number) => (typeof v === 'number' ? v : parseFloat(v) || 0);
 
 /** شريط الاستهلاك: مأخوذ + محجوز مقابل المتاح. */
-const BalanceBar = ({ balance }: { balance: LeaveBalance }) => {
+const BalanceBar = ({ balance, t }: { balance: LeaveBalance; t: (key: string, opts?: Record<string, string | number>) => string }) => {
   const entitled = num(balance.entitled_days) + num(balance.carried_over_days);
   const taken = num(balance.taken_days);
   const pending = num(balance.pending_days);
@@ -85,14 +87,14 @@ const BalanceBar = ({ balance }: { balance: LeaveBalance }) => {
           {balance.leave_type_name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {num(balance.available_days)} متاح
+          {num(balance.available_days)} {t('hr.leave.balance.available')}
         </Typography>
       </Stack>
       <LinearProgress variant="determinate" value={pct} sx={{ height: 6, borderRadius: 3 }} />
       <Typography variant="caption" color="text.secondary">
-        استُهلك {taken}
-        {pending > 0 && ` · محجوز ${pending}`}
-        {` من ${entitled}`}
+        {t('hr.leave.balance.consumed', { taken })}
+        {pending > 0 && ` · ${t('hr.leave.balance.reserved', { pending })}`}
+        {` ${t('hr.leave.balance.of', { entitled })}`}
       </Typography>
     </Box>
   );
@@ -101,6 +103,7 @@ const BalanceBar = ({ balance }: { balance: LeaveBalance }) => {
 const LeavePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const isEmployee = !['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
   const [types, setTypes] = useState<LeaveType[]>([]);
@@ -133,6 +136,8 @@ const LeavePage = () => {
     load();
   }, [isEmployee]);
 
+  const leaveSchema = useMemo(() => createLeaveSchema(t), [t]);
+
   const {
     control, handleSubmit, watch,
     formState: { errors, isSubmitting },
@@ -144,7 +149,7 @@ const LeavePage = () => {
 
   const leaveTypeId = watch('leaveType');
   const selectedType = useMemo(
-    () => types.find((t) => t.id === leaveTypeId) ?? null,
+    () => types.find((lt) => lt.id === leaveTypeId) ?? null,
     [types, leaveTypeId],
   );
 
@@ -171,10 +176,10 @@ const LeavePage = () => {
         // والمستند، فلا يُوجد طلب «مُقدَّم» تجاوز تلك الفحوص.
         await submitLeaveRequest(created.id);
       }
-      notifySuccess(submitNow ? 'تم رفع الطلب للاعتماد' : 'تم حفظ المسودة');
+      notifySuccess(submitNow ? t('hr.leave.messages.submitted') : t('hr.leave.messages.draftSaved'));
       navigate(`/app/hr/leave/${created.id}`);
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر إنشاء الطلب'));
+      setFormError(extractErrorMessage(err, t('hr.leave.errors.createFailed')));
     }
   };
 
@@ -189,13 +194,17 @@ const LeavePage = () => {
   return (
     <Box>
       <PageHeader
-        title="الإجازات"
-        subtitle="الرصيد يُحسب من الطلبات: أيام معتمدة تُخصم وأيام مُقدَّمة تُحجز"
+        title={t('hr.leave.pageHeader.title')}
+        subtitle={t('hr.leave.pageHeader.subtitle')}
         action={
           <Stack direction="row" spacing={1}>
-            <Button onClick={() => navigate('/app/hr/leave/requests')}>كل الطلبات</Button>
+            <Button onClick={() => navigate('/app/hr/leave/requests')}>
+              {t('hr.leave.button.allRequests')}
+            </Button>
             {!isEmployee && (
-              <Button onClick={() => navigate('/app/hr/leave/balances')}>الأرصدة</Button>
+              <Button onClick={() => navigate('/app/hr/leave/balances')}>
+                {t('hr.leave.button.balances')}
+              </Button>
             )}
           </Stack>
         }
@@ -205,18 +214,18 @@ const LeavePage = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              رصيدي {mySummary.year}
+              {t('hr.leave.summary.myBalance', { year: mySummary.year })}
             </Typography>
             <Divider sx={{ mb: 1 }} />
             <Grid container>
               {mySummary.items.map((b) => (
                 <Grid item xs={12} sm={6} md={4} key={b.id}>
-                  <BalanceBar balance={b} />
+                  <BalanceBar balance={b} t={t} />
                 </Grid>
               ))}
             </Grid>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              الإجمالي المتاح: <strong>{num(mySummary.total_available)}</strong> يوم
+              {t('hr.leave.summary.totalAvailable')}: <strong>{num(mySummary.total_available)}</strong> {t('hr.leave.summary.days')}
             </Typography>
           </CardContent>
         </Card>
@@ -226,7 +235,7 @@ const LeavePage = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              أرصدة نطاقي الإداري
+              {t('hr.leave.scope.adminBalances')}
             </Typography>
             <Divider sx={{ mb: 1 }} />
             <Grid container>
@@ -237,8 +246,7 @@ const LeavePage = () => {
                       {b.employee_name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {b.leave_type_name} — {num(b.available_days)} متاح من{' '}
-                      {num(b.entitled_days) + num(b.carried_over_days)}
+                      {b.leave_type_name} — {t('hr.leave.scope.availableOf', { available: num(b.available_days), total: num(b.entitled_days) + num(b.carried_over_days) })}
                     </Typography>
                   </Box>
                 </Grid>
@@ -246,7 +254,7 @@ const LeavePage = () => {
             </Grid>
             {balances.length > 12 && (
               <Button size="small" onClick={() => navigate('/app/hr/leave/balances')}>
-                عرض كل الأرصدة
+                {t('hr.leave.button.viewAllBalances')}
               </Button>
             )}
           </CardContent>
@@ -276,14 +284,14 @@ const LeavePage = () => {
                   <FormTextField
                     {...field}
                     select
-                    label="الموظف"
+                    label={t('hr.leave.label.employee')}
                     required
                     value={field.value}
                     onChange={field.onChange}
                     error={Boolean(errors.employee)}
                     helperText={errors.employee?.message}
                   >
-                    <MenuItem value="">— اختر —</MenuItem>
+                    <MenuItem value="">{t('hr.leave.select.choose')}</MenuItem>
                     {employees.map((e) => (
                       <MenuItem key={e.id} value={e.id}>
                         {e.full_name} — {e.employee_number}
@@ -303,7 +311,7 @@ const LeavePage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="نوع الإجازة"
+                  label={t('hr.leave.label.leaveType')}
                   required
                   value={field.value}
                   onChange={field.onChange}
@@ -311,15 +319,15 @@ const LeavePage = () => {
                   helperText={errors.leaveType?.message}
                   hint={
                     selectedType?.requires_document
-                      ? 'هذا النوع يطلب مستنداً عند الاعتماد'
+                      ? t('hr.leave.hint.requiresDocument')
                       : undefined
                   }
                 >
-                  <MenuItem value="">— اختر —</MenuItem>
-                  {types.map((t) => (
-                    <MenuItem key={t.id} value={t.id}>
-                      {t.name_ar}
-                      {t.is_paid ? '' : ' (بلا راتب)'}
+                  <MenuItem value="">{t('hr.leave.select.choose')}</MenuItem>
+                  {types.map((lt) => (
+                    <MenuItem key={lt.id} value={lt.id}>
+                      {lt.name_ar}
+                      {lt.is_paid ? '' : ` ${t('hr.leave.label.unpaid')}`}
                     </MenuItem>
                   ))}
                 </FormTextField>
@@ -335,7 +343,7 @@ const LeavePage = () => {
                 <FormTextField
                   {...field}
                   type="date"
-                  label="من تاريخ"
+                  label={t('hr.leave.label.startDate')}
                   required
                   InputLabelProps={{ shrink: true }}
                   value={field.value}
@@ -355,7 +363,7 @@ const LeavePage = () => {
                 <FormTextField
                   {...field}
                   type="date"
-                  label="إلى تاريخ"
+                  label={t('hr.leave.label.endDate')}
                   required
                   InputLabelProps={{ shrink: true }}
                   value={field.value}
@@ -375,14 +383,14 @@ const LeavePage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="المدة"
+                  label={t('hr.leave.label.duration')}
                   value={field.value ? 'true' : 'false'}
                   onChange={(e) => field.onChange(e.target.value === 'true')}
                   error={Boolean(errors.isHalfDay)}
                   helperText={errors.isHalfDay?.message}
                 >
-                  <MenuItem value="false">أيام كاملة</MenuItem>
-                  <MenuItem value="true">نصف يوم</MenuItem>
+                  <MenuItem value="false">{t('hr.leave.duration.fullDay')}</MenuItem>
+                  <MenuItem value="true">{t('hr.leave.duration.halfDay')}</MenuItem>
                 </FormTextField>
               )}
             />
@@ -396,11 +404,11 @@ const LeavePage = () => {
                 render={({ field }) => (
                   <FormTextField
                     {...field}
-                    label="المرفق"
+                    label={t('hr.leave.label.document')}
                     required
                     value={field.value}
                     onChange={field.onChange}
-                    hint="مرجع المستند المرفوع — لا يُعتمد الطلب بدونه"
+                    hint={t('hr.leave.hint.documentRequired')}
                   />
                 )}
               />
@@ -416,7 +424,7 @@ const LeavePage = () => {
                   {...field}
                   multiline
                   minRows={2}
-                  label="المبرِّر"
+                  label={t('hr.leave.label.reason')}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -432,7 +440,7 @@ const LeavePage = () => {
             disabled={isSubmitting}
             onClick={() => setSubmitNow(true)}
           >
-            حفظ وإرسال للاعتماد
+            {t('hr.leave.button.submitForApproval')}
           </Button>
           <Button
             type="submit"
@@ -440,7 +448,7 @@ const LeavePage = () => {
             disabled={isSubmitting}
             onClick={() => setSubmitNow(false)}
           >
-            حفظ كمسودة
+            {t('hr.leave.button.saveDraft')}
           </Button>
         </Box>
       </Box>

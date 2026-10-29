@@ -31,6 +31,13 @@ import HrDashboardPage from '../HrDashboardPage';
 import PerformanceCyclesPage from '../PerformanceCyclesPage';
 import TrainingDetailPage from '../TrainingDetailPage';
 import EmployeeDetailPage from '../EmployeeDetailPage';
+import TrainingPage from '../TrainingPage';
+import PerformanceCycleFormPage from '../PerformanceCycleFormPage';
+import PerformanceReviewFormPage from '../PerformanceReviewFormPage';
+import PostingRequestFormPage from '../PostingRequestFormPage';
+import AttendancePage from '../AttendancePage';
+import LeavePage from '../LeavePage';
+import EmployeeFormPage from '../EmployeeFormPage';
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -134,6 +141,17 @@ vi.mock('../../../api/endpoints/hr', () => ({
   } } }),
   getEmployeeTimeline: vi.fn().mockResolvedValue({ data: { data: [] } }),
   createTimelineEvent: vi.fn().mockResolvedValue({}),
+  // Round 5a-Zod pages
+  getTrainingPlans: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  getMyAttendanceSummary: vi.fn().mockResolvedValue({ data: { data: {
+    period_days: 30, present_days: 20, absent_days: 5, late_days: 3, total_overtime_minutes: 60
+  } } }),
+  getLeaveBalances: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  getLeaveTypes: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  getMyLeaveSummary: vi.fn().mockResolvedValue({ data: { data: { items: [], total_available: 0, year: 2026 } } }),
+  getLinkableUsers: vi.fn().mockResolvedValue({ data: { data: { results: [] } } }),
+  createEmployee: vi.fn().mockResolvedValue({ data: { data: { id: '1' } } }),
+  updateEmployee: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock('../../../hooks/useAuth', () => ({
@@ -312,5 +330,62 @@ describe('HR pages language reactivity (Round 3)', () => {
     await screen.findByText('رجوع للقائمة');
     await i18n.changeLanguage('en');
     await screen.findByText('Back to List');
+  });
+});
+
+describe('HR pages language reactivity (Round 5a-Zod)', () => {
+  vi.setConfig({ testTimeout: 15000 });
+  afterEach(() => {
+    i18n.changeLanguage('ar');
+    vi.clearAllMocks();
+  });
+
+  it('TrainingPage AR→EN', async () => {
+    render(wrap(<TrainingPage />));
+    await screen.findByText('التدريب');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Training');
+  });
+
+  it('PerformanceCycleFormPage AR→EN', async () => {
+    render(wrap(<PerformanceCycleFormPage />));
+    await screen.findByText('دورة تقييم جديدة');
+    await i18n.changeLanguage('en');
+    await screen.findByText('New Performance Cycle');
+  });
+
+  it('PerformanceReviewFormPage AR→EN', async () => {
+    render(wrap(<PerformanceReviewFormPage />));
+    await screen.findByText('تقييم أداء جديد');
+    await i18n.changeLanguage('en');
+    await screen.findByText('New Performance Review');
+  });
+
+  it('PostingRequestFormPage AR→EN', async () => {
+    render(wrap(<PostingRequestFormPage />));
+    await screen.findByText('طلب نقل أو ترقية');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Transfer or Promotion Request');
+  });
+
+  it('AttendancePage AR→EN', async () => {
+    render(wrap(<AttendancePage />));
+    await screen.findByText('الحضور والانصراف');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Attendance');
+  });
+
+  it('LeavePage AR→EN', async () => {
+    render(wrap(<LeavePage />));
+    await screen.findByText('الإجازات');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Leaves');
+  });
+
+  it('EmployeeFormPage AR→EN', async () => {
+    render(wrap(<EmployeeFormPage />));
+    await screen.findByText('تعديل الملف الوظيفي');
+    await i18n.changeLanguage('en');
+    await screen.findByText('Edit Employee File');
   });
 });
