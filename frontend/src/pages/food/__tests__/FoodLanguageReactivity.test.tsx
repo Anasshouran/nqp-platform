@@ -16,10 +16,10 @@ i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
 
 vi.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }) => (
+  Line: ({ data, options }: { data?: any; options?: any }) => (
     <div data-testid="chart-line">{JSON.stringify(data?.labels)}</div>
   ),
-  Bar: ({ data, options }) => (
+  Bar: ({ data, options }: { data?: any; options?: any }) => (
     <div data-testid="chart-bar">{JSON.stringify(data?.labels)}</div>
   ),
 }));
