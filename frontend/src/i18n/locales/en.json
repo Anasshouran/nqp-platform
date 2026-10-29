@@ -5463,6 +5463,353 @@
         "PROBATION_END": "Probation End",
         "CONTRACT_RENEWAL": "Contract Renewal"
       }
+    },
+    "leave": {
+      "pageHeader": {
+        "title": "Leaves",
+        "subtitle": "Balance computed from requests: approved days deducted, pending days reserved"
+      },
+      "button": {
+        "allRequests": "All Requests",
+        "balances": "Balances",
+        "saveDraft": "Save as Draft",
+        "submitForApproval": "Save and Submit for Approval",
+        "viewAllBalances": "View All Balances"
+      },
+      "label": {
+        "employee": "Employee",
+        "leaveType": "Leave Type",
+        "startDate": "From Date",
+        "endDate": "To Date",
+        "duration": "Duration",
+        "reason": "Justification",
+        "document": "Attachment",
+        "unpaid": " (unpaid)"
+      },
+      "duration": {
+        "fullDay": "Full Days",
+        "halfDay": "Half Day"
+      },
+      "messages": {
+        "submitted": "Request submitted for approval",
+        "draftSaved": "Draft saved"
+      },
+      "errors": {
+        "createFailed": "Failed to create request"
+      },
+      "hint": {
+        "documentRequired": "Reference of uploaded document \u2014 request not approved without it",
+        "requiresDocument": "This type requires a document upon approval"
+      },
+      "select": {
+        "choose": "\u2014 Choose \u2014"
+      },
+      "summary": {
+        "myBalance": "My Balance {year}",
+        "totalAvailable": "Total Available",
+        "days": "days"
+      },
+      "scope": {
+        "adminBalances": "My Administrative Scope Balances",
+        "availableOf": "{available} available of {total}"
+      },
+      "balance": {
+        "available": "Available",
+        "consumed": "Consumed {taken}",
+        "reserved": "Reserved {pending}",
+        "of": "of {entitled}"
+      },
+      "validation": {
+        "selectEmployee": "Select employee",
+        "selectLeaveType": "Select leave type",
+        "invalidDate": "Invalid date",
+        "endDateBeforeStartDate": "End date must not precede start date",
+        "halfDaySingleDay": "Half day for single day only"
+      }
+    },
+    "employeeForm": {
+      "button": {
+        "backToList": "Back to List",
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes",
+        "createFile": "Create File"
+      },
+      "pageHeader": {
+        "titleEdit": "Edit Employee File",
+        "titleNew": "New Employee File",
+        "subtitleNew": "Create employee account within your scope"
+      },
+      "errors": {
+        "loadFailed": "Failed to load employee data",
+        "saveFailed": "Failed to save employee file"
+      },
+      "messages": {
+        "updated": "Employee file updated",
+        "created": "Employee file created"
+      },
+      "account": {
+        "title": "Login Account",
+        "subtitle": "Account created with zero permissions; permissions assigned later via user management.",
+        "newAccount": "New Account",
+        "linkExisting": "Link Existing Account"
+      },
+      "sections": {
+        "jobData": "Job Data",
+        "educationContact": "Education and Contact"
+      },
+      "fields": {
+        "email": "Email",
+        "username": "Username",
+        "fullName": "Full Name (on account)",
+        "phone": "Phone",
+        "password": "Password",
+        "userId": "Linked Account",
+        "employeeNumber": "Employee Number",
+        "fullNameAr": "Name in Arabic",
+        "fullNameEn": "Name in English",
+        "jobTitle": "Job Title",
+        "gender": "Gender",
+        "employmentType": "Employment Type",
+        "employmentStatus": "Employment Status",
+        "hireDate": "Hire Date",
+        "probationEnd": "Probation End",
+        "birthDate": "Date of Birth",
+        "reportingManager": "Reporting Manager",
+        "degree": "Degree",
+        "specialization": "Specialization",
+        "office": "Office",
+        "internalPhone": "Internal Phone",
+        "homeAddress": "Address",
+        "emergencyContactName": "Emergency Contact",
+        "emergencyContactPhone": "Emergency Phone",
+        "emergencyContactRelation": "Relation"
+      },
+      "hints": {
+        "emailLogin": "Used for login",
+        "usernameDerived": "Derived from email if left blank",
+        "passwordOptional": "Leave blank to set later",
+        "employeeNumberAuto": "Generated automatically if left blank",
+        "linkableUsers": "Active accounts without employee file"
+      },
+      "autocomplete": {
+        "clear": "Clear",
+        "noCandidates": "No candidates",
+        "noLinkableUsers": "No accounts available for linking"
+      }
+    },
+    "employeeSchema": {
+      "validation": {
+        "maxLength": "Maximum {max} characters",
+        "invalidEmail": "Invalid email",
+        "fullNameArRequired": "Name in Arabic required",
+        "emailRequired": "Email required",
+        "passwordMinLength": "Password at least 8 characters",
+        "selectUserAccount": "Select employee account",
+        "probationBeforeHire": "Probation end must not precede hire date",
+        "birthDateBeforeHire": "Birth date must precede hire date"
+      }
+    },
+    "training": {
+      "pageHeader": {
+        "title": "Training",
+        "subtitle": "Enroll in a course, have your enrollment approved, then record the grade to derive completion"
+      },
+      "button": {
+        "allEnrollments": "All Enrollments",
+        "submitAndRequest": "Enroll and Submit for Approval",
+        "saveDraft": "Save as Draft"
+      },
+      "section": {
+        "enrollInCycle": "Enroll in Cycle",
+        "myEnrollments": "My Enrollments"
+      },
+      "label": {
+        "employee": "Employee",
+        "plan": "Course"
+      },
+      "select": {
+        "choose": "\u2014 Choose \u2014"
+      },
+      "chip": {
+        "mandatory": "Mandatory",
+        "durationHours": "{hours} hours",
+        "registeredCount": "{count} registered"
+      },
+      "messages": {
+        "submitted": "Enrollment submitted",
+        "draftSaved": "Draft saved"
+      },
+      "errors": {
+        "createFailed": "Failed to create enrollment"
+      },
+      "validation": {
+        "selectEmployee": "Select employee",
+        "selectPlan": "Select course"
+      }
+    },
+    "performanceCycleForm": {
+      "pageHeader": {
+        "title": "New Performance Cycle",
+        "subtitle": "Created as draft: define KPIs with weights, then open the cycle for evaluation"
+      },
+      "button": {
+        "back": "Back",
+        "createCycle": "Create Cycle",
+        "cancel": "Cancel"
+      },
+      "label": {
+        "cycleName": "Cycle Name",
+        "department": "Department",
+        "periodStart": "Period Start",
+        "periodEnd": "Period End",
+        "reviewDueDate": "Review Due Date",
+        "notes": "Notes"
+      },
+      "helperText": {
+        "nationalCycle": "Leave blank for national cycle"
+      },
+      "select": {
+        "national": "\u2014 National \u2014"
+      },
+      "messages": {
+        "created": "Cycle created \u2014 define its KPIs now"
+      },
+      "errors": {
+        "createFailed": "Failed to create cycle"
+      },
+      "validation": {
+        "nameMinLength": "Cycle name required",
+        "selectStartDate": "Select period start",
+        "selectEndDate": "Select period end"
+      }
+    },
+    "performanceReviewForm": {
+      "pageHeader": {
+        "title": "New Performance Review",
+        "subtitle": "Grades are entered on the review page; final grade and rating are derived from them"
+      },
+      "button": {
+        "back": "Back",
+        "createReview": "Create Review",
+        "cancel": "Cancel"
+      },
+      "label": {
+        "cycle": "Cycle",
+        "employee": "Employee",
+        "strengths": "Strengths",
+        "improvements": "Improvements",
+        "comments": "Comments"
+      },
+      "helperText": {
+        "noCycles": "Pass ?cycle=<id> or choose from list"
+      },
+      "kpiSection": {
+        "title": "KPIs of this cycle \u2014 enter grades after creation"
+      },
+      "messages": {
+        "created": "Review created \u2014 add KPI grades then submit"
+      },
+      "errors": {
+        "createFailed": "Failed to create review"
+      },
+      "validation": {
+        "selectCycle": "Select cycle",
+        "selectEmployee": "Select employee",
+        "textTooLong": "Text too long"
+      }
+    },
+    "postingRequestForm": {
+      "pageHeader": {
+        "title": "Transfer or Promotion Request",
+        "subtitle": "Saved as draft, or sent directly for approval"
+      },
+      "button": {
+        "back": "Back",
+        "saveDraft": "Save as Draft",
+        "submitForApproval": "Save and Submit for Approval",
+        "cancel": "Cancel"
+      },
+      "label": {
+        "employee": "Employee",
+        "kind": "Request Type",
+        "targetDepartment": "Target Department",
+        "effectiveDate": "Requested Effective Date",
+        "reason": "Justification"
+      },
+      "hint": {
+        "employeeScope": "Employees within your administrative scope",
+        "kind": "Transfer: change department \u2014 Promotion: change grade to higher position",
+        "targetDepartment": "Leave blank for transfer without department change",
+        "effectiveDate": "Leave blank to apply immediately upon approval",
+        "reason": "Shown to approver during review"
+      },
+      "select": {
+        "choose": "\u2014 Choose \u2014",
+        "noChange": "\u2014 No Change \u2014"
+      },
+      "messages": {
+        "submitted": "Request submitted for approval",
+        "draftSaved": "Draft saved"
+      },
+      "errors": {
+        "createFailed": "Failed to create request"
+      },
+      "validation": {
+        "selectEmployee": "Select employee",
+        "targetDepartmentRequired": "Promotion and demotion require a target department"
+      }
+    },
+    "attendance": {
+      "pageHeader": {
+        "title": "Attendance",
+        "subtitle": "Daily record per employee \u2014 documented from source, then approved by third party"
+      },
+      "button": {
+        "allRecords": "All Records",
+        "postingRequests": "Transfer Requests",
+        "recordAttendance": "Record Attendance",
+        "clearForm": "Clear Form"
+      },
+      "kpi": {
+        "presentDays": "Present Days (30 Days)",
+        "absentDays": "Absent Days",
+        "lateCount": "Late Count",
+        "overtimeMinutes": "Overtime Minutes"
+      },
+      "label": {
+        "employee": "Employee",
+        "date": "Date",
+        "status": "Status",
+        "checkIn": "Check In",
+        "checkOut": "Check Out",
+        "overtimeMinutes": "Overtime Minutes",
+        "shiftCode": "Shift Code",
+        "notes": "Notes"
+      },
+      "hint": {
+        "noSelfService": "Self-attendance not recorded here",
+        "oneRecordPerDay": "One record per employee per day",
+        "shiftCodeOptional": "Optional \u2014 shifts organized in a later phase"
+      },
+      "messages": {
+        "recorded": "Attendance recorded"
+      },
+      "errors": {
+        "recordFailed": "Failed to record attendance"
+      },
+      "select": {
+        "choose": "\u2014 Choose \u2014"
+      },
+      "validation": {
+        "selectEmployee": "Select employee",
+        "selectDate": "Date required",
+        "invalidTime": "Invalid time (HH:MM)",
+        "negativeOvertime": "Cannot be negative",
+        "noPunchForStatus": "Status \u00ab{status}\u00bb does not accept check-in/check-out times",
+        "punchRequired": "This status requires check-in time",
+        "checkOutAfterCheckIn": "Check out must be after check in",
+        "futureDate": "Attendance not recorded for future date"
+      }
     }
   }
 }

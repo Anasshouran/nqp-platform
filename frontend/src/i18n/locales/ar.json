@@ -5463,6 +5463,353 @@
         "PROBATION_END": "نهاية فترة الاختبار",
         "CONTRACT_RENEWAL": "تجديد عقد"
       }
+    },
+    "leave": {
+      "pageHeader": {
+        "title": "الإجازات",
+        "subtitle": "الرصيد يُحسب من الطلبات: أيام معتمدة تُخصم وأيام مُقدَّمة تُحجز"
+      },
+      "button": {
+        "allRequests": "كل الطلبات",
+        "balances": "الأرصدة",
+        "saveDraft": "حفظ كمسودة",
+        "submitForApproval": "حفظ وإرسال للاعتماد",
+        "viewAllBalances": "عرض كل الأرصدة"
+      },
+      "label": {
+        "employee": "الموظف",
+        "leaveType": "نوع الإجازة",
+        "startDate": "من تاريخ",
+        "endDate": "إلى تاريخ",
+        "duration": "المدة",
+        "reason": "المبرِّر",
+        "document": "المرفق",
+        "unpaid": " (بلا راتب)"
+      },
+      "duration": {
+        "fullDay": "أيام كاملة",
+        "halfDay": "نصف يوم"
+      },
+      "messages": {
+        "submitted": "تم رفع الطلب للاعتماد",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الطلب"
+      },
+      "hint": {
+        "documentRequired": "مرجع المستند المرفوع — لا يُعتمد الطلب بدونه",
+        "requiresDocument": "هذا النوع يطلب مستنداً عند الاعتماد"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "summary": {
+        "myBalance": "رصيدي {year}",
+        "totalAvailable": "الإجمالي المتاح",
+        "days": "يوم"
+      },
+      "scope": {
+        "adminBalances": "أرصدة نطاقي الإداري",
+        "availableOf": "{available} متاح من {total}"
+      },
+      "balance": {
+        "available": "متاح",
+        "consumed": "استُهلك {taken}",
+        "reserved": "محجوز {pending}",
+        "of": "من {entitled}"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectLeaveType": "حدّد نوع الإجازة",
+        "invalidDate": "تاريخ غير صالح",
+        "endDateBeforeStartDate": "تاريخ النهاية لا يسبق تاريخ البداية",
+        "halfDaySingleDay": "نصف اليوم ليوم واحد فقط"
+      }
+    },
+    "employeeForm": {
+      "button": {
+        "backToList": "رجوع للقائمة",
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التعديلات",
+        "createFile": "إنشاء الملف"
+      },
+      "pageHeader": {
+        "titleEdit": "تعديل الملف الوظيفي",
+        "titleNew": "ملف وظيفي جديد",
+        "subtitleNew": "إنشاء حساب وظيفية داخل نطاقك"
+      },
+      "errors": {
+        "loadFailed": "تعذر تحميل بيانات الموظف",
+        "saveFailed": "تعذر حفظ الملف الوظيفي"
+      },
+      "messages": {
+        "updated": "تم تحديث الملف الوظيفي",
+        "created": "تم إنشاء الملف الوظيفي"
+      },
+      "account": {
+        "title": "حساب الدخول",
+        "subtitle": "يُنشأ حساب بصلاحيات صفرية؛ منح الصلاحيات يتم لاحقاً من إدارة المستخدمين.",
+        "newAccount": "حساب جديد",
+        "linkExisting": "ربط حساب موجود"
+      },
+      "sections": {
+        "jobData": "البيانات الوظيفية",
+        "educationContact": "المؤهلات والاتصال"
+      },
+      "fields": {
+        "email": "البريد الإلكتروني",
+        "username": "اسم المستخدم",
+        "fullName": "الاسم الكامل (على الحساب)",
+        "phone": "الهاتف",
+        "password": "كلمة المرور",
+        "userId": "الحساب المرتبط",
+        "employeeNumber": "الرقم الوظيفي",
+        "fullNameAr": "الاسم بالعربية",
+        "fullNameEn": "الاسم بالإنجليزية",
+        "jobTitle": "المسمى الوظيفي",
+        "gender": "الجنس",
+        "employmentType": "نوع التعيين",
+        "employmentStatus": "حالة التوظيف",
+        "hireDate": "تاريخ التعيين",
+        "probationEnd": "نهاية فترة الاختبار",
+        "birthDate": "تاريخ الميلاد",
+        "reportingManager": "المدير المباشر",
+        "degree": "الشهادة",
+        "specialization": "التخصص",
+        "office": "المكتب",
+        "internalPhone": "هاتف داخلي",
+        "homeAddress": "العنوان",
+        "emergencyContactName": "جهة الاتصال الطارئة",
+        "emergencyContactPhone": "هاتف الطوارئ",
+        "emergencyContactRelation": "صلة القرابة"
+      },
+      "hints": {
+        "emailLogin": "يستخدم لتسجيل الدخول",
+        "usernameDerived": "يُشتق من البريد إن تُرك فارغاً",
+        "passwordOptional": "اتركها فارغة إن أردت تعيينها لاحقاً",
+        "employeeNumberAuto": "يولَّد تلقائياً إن تُرك فارغاً",
+        "linkableUsers": "حسابات نشطة بلا ملف وظيفي"
+      },
+      "autocomplete": {
+        "clear": "مسح",
+        "noCandidates": "لا يوجد مرشحون",
+        "noLinkableUsers": "لا توجد حسابات متاحة للربط"
+      }
+    },
+    "employeeSchema": {
+      "validation": {
+        "maxLength": "الحد الأقصى {max} حرفاً",
+        "invalidEmail": "بريد إلكتروني غير صالح",
+        "fullNameArRequired": "الاسم بالعربية مطلوب",
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "passwordMinLength": "كلمة المرور 8 أحرف على الأقل",
+        "selectUserAccount": "اختر حساب الموظف",
+        "probationBeforeHire": "نهاية فترة الاختبار لا تسبق تاريخ التعيين",
+        "birthDateBeforeHire": "تاريخ الميلاد يجب أن يسبق تاريخ التعيين"
+      }
+    },
+    "training": {
+      "pageHeader": {
+        "title": "التدريب",
+        "subtitle": "اشترك في دورة، واعتمد اشتراكك، ثم تُسجَّل الدرجة فيُشتق الإتمام منها"
+      },
+      "button": {
+        "allEnrollments": "كل التسجيلات",
+        "submitAndRequest": "اشتراك وإرسال للاعتماد",
+        "saveDraft": "حفظ كمسودة"
+      },
+      "section": {
+        "enrollInCycle": "اشتراك في دورة",
+        "myEnrollments": "تسجيلاتي"
+      },
+      "label": {
+        "employee": "الموظف",
+        "plan": "الدورة"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "chip": {
+        "mandatory": "إلزامي",
+        "durationHours": "{hours} ساعة",
+        "registeredCount": "{count} مسجَّل"
+      },
+      "messages": {
+        "submitted": "تم إرسال طلب الاشتراك",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء التسجيل"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectPlan": "حدّد الدورة"
+      }
+    },
+    "performanceCycleForm": {
+      "pageHeader": {
+        "title": "دورة تقييم جديدة",
+        "subtitle": "تُنشأ كمسودة: عرّف المؤشرات بأوزانها ثم افتح الدورة للتقييم"
+      },
+      "button": {
+        "back": "رجوع",
+        "createCycle": "إنشاء الدورة",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "cycleName": "اسم الدورة",
+        "department": "الإدارة",
+        "periodStart": "بداية الفترة",
+        "periodEnd": "نهاية الفترة",
+        "reviewDueDate": "موعد اعتماد التقييمات",
+        "notes": "ملاحظات"
+      },
+      "helperText": {
+        "nationalCycle": "اتركه فارغاً لدورة وطنية"
+      },
+      "select": {
+        "national": "— وطني —"
+      },
+      "messages": {
+        "created": "تم إنشاء الدورة — عرّف مؤشراتها الآن"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الدورة"
+      },
+      "validation": {
+        "nameMinLength": "اسم الدورة مطلوب",
+        "selectStartDate": "حدّد بداية الفترة",
+        "selectEndDate": "حدّد نهاية الفترة"
+      }
+    },
+    "performanceReviewForm": {
+      "pageHeader": {
+        "title": "تقييم أداء جديد",
+        "subtitle": "الدرجات تُدخل في صفحة التقييم؛ الدرجة النهائية والتقدير يُشتقّان منها"
+      },
+      "button": {
+        "back": "رجوع",
+        "createReview": "إنشاء التقييم",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "cycle": "الدورة",
+        "employee": "الموظف",
+        "strengths": "نقاط القوة",
+        "improvements": "نقاط التحسين",
+        "comments": "ملاحظات"
+      },
+      "helperText": {
+        "noCycles": "مرّر ?cycle=<id> أو اختر من القائمة"
+      },
+      "kpiSection": {
+        "title": "مؤشرات هذه الدورة — تُدخال درجاتها بعد الإنشاء"
+      },
+      "messages": {
+        "created": "تم إنشاء التقييم — أضف درجات المؤشرات ثم أرسله"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء التقييم"
+      },
+      "validation": {
+        "selectCycle": "حدّد الدورة",
+        "selectEmployee": "حدّد الموظف",
+        "textTooLong": "النص طويل جداً"
+      }
+    },
+    "postingRequestForm": {
+      "pageHeader": {
+        "title": "طلب نقل أو ترقية",
+        "subtitle": "يُحفظ الطلب كمسودة، أو يُرسل مباشرةً للاعتماد"
+      },
+      "button": {
+        "back": "رجوع",
+        "saveDraft": "حفظ كمسودة",
+        "submitForApproval": "حفظ وإرسال للاعتماد",
+        "cancel": "إلغاء"
+      },
+      "label": {
+        "employee": "الموظف",
+        "kind": "نوع الطلب",
+        "targetDepartment": "القسم الهدف",
+        "effectiveDate": "تاريخ النفاذ المطلوب",
+        "reason": "المبرِّر"
+      },
+      "hint": {
+        "employeeScope": "الموظفون ضمن نطاقك الإداري",
+        "kind": "النقل: تغيير القسم — الترقية: تغيير الصفة بمنصب أعلى",
+        "targetDepartment": "اتركه فارغاً للنقل دون تغيير القسم",
+        "effectiveDate": "اتركه فارغاً للتطبيق فور الاعتماد",
+        "reason": "يظهر للمعتمد عند المراجعة"
+      },
+      "select": {
+        "choose": "— اختر —",
+        "noChange": "— بدون تغيير —"
+      },
+      "messages": {
+        "submitted": "تم رفع الطلب للاعتماد",
+        "draftSaved": "تم حفظ المسودة"
+      },
+      "errors": {
+        "createFailed": "تعذر إنشاء الطلب"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "targetDepartmentRequired": "الترقية والخفض يتطلّبان قسماً هدفاً"
+      }
+    },
+    "attendance": {
+      "pageHeader": {
+        "title": "الحضور والانصراف",
+        "subtitle": "سجل يومي لكل موظف — يُوثَّق من مصدره ثم يُعتمد من طرف ثالث"
+      },
+      "button": {
+        "allRecords": "كل السجلات",
+        "postingRequests": "طلبات النقل",
+        "recordAttendance": "تسجيل الحضور",
+        "clearForm": "مسح النموذج"
+      },
+      "kpi": {
+        "presentDays": "أيام الحضور (30 يوم)",
+        "absentDays": "أيام الغياب",
+        "lateCount": "مرات التأخر",
+        "overtimeMinutes": "دقائق إضافية"
+      },
+      "label": {
+        "employee": "الموظف",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "checkIn": "وقت الحضور",
+        "checkOut": "وقت الانصراف",
+        "overtimeMinutes": "دقائق إضافية",
+        "shiftCode": "رمز الوردية",
+        "notes": "ملاحظات"
+      },
+      "hint": {
+        "noSelfService": "لا يُسجَّل الحضور الذاتي من هنا",
+        "oneRecordPerDay": "سجل واحد لكل موظف في اليوم",
+        "shiftCodeOptional": "اختياري — تُنظَّم كمناوبات في مرحلة لاحقة"
+      },
+      "messages": {
+        "recorded": "تم تسجيل الحضور"
+      },
+      "errors": {
+        "recordFailed": "تعذر تسجيل الحضور"
+      },
+      "select": {
+        "choose": "— اختر —"
+      },
+      "validation": {
+        "selectEmployee": "حدّد الموظف",
+        "selectDate": "التاريخ مطلوب",
+        "invalidTime": "وقت غير صالح (HH:MM)",
+        "negativeOvertime": "لا يمكن أن يكون سالباً",
+        "noPunchForStatus": "حالة «{status}» لا تقبل أوقات حضور/انصراف",
+        "punchRequired": "هذه الحالة تتطلّب وقت حضور",
+        "checkOutAfterCheckIn": "وقت الانصراف يجب أن يكون بعد وقت الحضور",
+        "futureDate": "لا يُسجَّل حضور لتاريخ مستقبلي"
+      }
     }
   }
 }

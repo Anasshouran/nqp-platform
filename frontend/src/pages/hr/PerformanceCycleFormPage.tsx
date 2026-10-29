@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -19,21 +21,24 @@ import { getDepartments } from '../../api/endpoints/organization';
 import type { Department } from '../../types/organization';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
-const cycleSchema = z.object({
-  name: z.string().min(3, 'اسم الدورة مطلوب'),
-  period_start: z.string().min(1, 'حدّد بداية الفترة'),
-  period_end: z.string().min(1, 'حدّد نهاية الفترة'),
+const createCycleSchema = (t: TFunction) => z.object({
+  name: z.string().min(3, t('hr.performanceCycleForm.validation.nameMinLength')),
+  period_start: z.string().min(1, t('hr.performanceCycleForm.validation.selectStartDate')),
+  period_end: z.string().min(1, t('hr.performanceCycleForm.validation.selectEndDate')),
   review_due_date: z.string().optional(),
   department: z.string().optional(),
   notes: z.string().optional(),
 });
 
-type CycleFormValues = z.infer<typeof cycleSchema>;
+type CycleFormValues = z.infer<ReturnType<typeof createCycleSchema>>;
 
 const PerformanceCycleFormPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const cycleSchema = useMemo(() => createCycleSchema(t), [t]);
 
   useEffect(() => {
     getDepartments({ page_size: 100 })
@@ -65,19 +70,19 @@ const PerformanceCycleFormPage = () => {
         department: values.department || null,
         review_due_date: values.review_due_date || null,
       });
-      notifySuccess('تم إنشاء الدورة — عرّف مؤشراتها الآن');
+      notifySuccess(t('hr.performanceCycleForm.messages.created'));
       navigate(`/app/hr/performance/cycles/${data.data.id}`);
     } catch (err) {
-      setError(extractErrorMessage(err, 'تعذر إنشاء الدورة'));
+      setError(extractErrorMessage(err, t('hr.performanceCycleForm.errors.createFailed')));
     }
   };
 
   return (
     <Box>
       <PageHeader
-        title="دورة تقييم جديدة"
-        subtitle="تُنشأ كمسودة: عرّف المؤشرات بأوزانها ثم افتح الدورة للتقييم"
-        action={<Button onClick={() => navigate('/app/hr/performance/cycles')}>رجوع</Button>}
+        title={t('hr.performanceCycleForm.pageHeader.title')}
+        subtitle={t('hr.performanceCycleForm.pageHeader.subtitle')}
+        action={<Button onClick={() => navigate('/app/hr/performance/cycles')}>{t('hr.performanceCycleForm.button.back')}</Button>}
       />
 
       {error && (
@@ -100,7 +105,7 @@ const PerformanceCycleFormPage = () => {
                       {...field}
                       value={field.value}
                       onChange={field.onChange}
-                      label="اسم الدورة"
+                      label={t('hr.performanceCycleForm.label.cycleName')}
                       required
                       error={Boolean(errors.name)}
                       helperText={errors.name?.message}
@@ -118,10 +123,10 @@ const PerformanceCycleFormPage = () => {
                       select
                       value={field.value}
                       onChange={field.onChange}
-                      label="الإدارة"
-                      helperText="اتركه فارغاً لدورة وطنية"
+                      label={t('hr.performanceCycleForm.label.department')}
+                      helperText={t('hr.performanceCycleForm.helperText.nationalCycle')}
                     >
-                      <MenuItem value="">— وطني —</MenuItem>
+                      <MenuItem value="">{t('hr.performanceCycleForm.select.national')}</MenuItem>
                       {departments.map((d) => (
                         <MenuItem key={d.id} value={d.id}>
                           {d.name_ar}
@@ -141,7 +146,7 @@ const PerformanceCycleFormPage = () => {
                       value={field.value}
                       onChange={field.onChange}
                       type="date"
-                      label="بداية الفترة"
+                      label={t('hr.performanceCycleForm.label.periodStart')}
                       required
                       error={Boolean(errors.period_start)}
                       helperText={errors.period_start?.message}
@@ -160,7 +165,7 @@ const PerformanceCycleFormPage = () => {
                       value={field.value}
                       onChange={field.onChange}
                       type="date"
-                      label="نهاية الفترة"
+                      label={t('hr.performanceCycleForm.label.periodEnd')}
                       required
                       error={Boolean(errors.period_end)}
                       helperText={errors.period_end?.message}
@@ -179,7 +184,7 @@ const PerformanceCycleFormPage = () => {
                       value={field.value}
                       onChange={field.onChange}
                       type="date"
-                      label="موعد اعتماد التقييمات"
+                      label={t('hr.performanceCycleForm.label.reviewDueDate')}
                       InputLabelProps={{ shrink: true }}
                     />
                   )}
@@ -194,7 +199,7 @@ const PerformanceCycleFormPage = () => {
                       {...field}
                       value={field.value}
                       onChange={field.onChange}
-                      label="ملاحظات"
+                      label={t('hr.performanceCycleForm.label.notes')}
                       multiline
                       minRows={3}
                     />
@@ -204,9 +209,9 @@ const PerformanceCycleFormPage = () => {
             </Grid>
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Button type="submit" variant="contained" disabled={isSubmitting}>
-                إنشاء الدورة
+                {t('hr.performanceCycleForm.button.createCycle')}
               </Button>
-              <Button onClick={() => navigate('/app/hr/performance/cycles')}>إلغاء</Button>
+              <Button onClick={() => navigate('/app/hr/performance/cycles')}>{t('hr.performanceCycleForm.button.cancel')}</Button>
             </Stack>
           </CardContent>
         </Card>

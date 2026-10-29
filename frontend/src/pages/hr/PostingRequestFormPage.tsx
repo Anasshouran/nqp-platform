@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -21,10 +23,9 @@ import type { Employee, HrEstablishment } from '../../types/hr';
 import { POSTING_KIND_LABELS } from '../../utils/hrLabels';
 import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
-/** الترقية/الخفض يتطلّب وجهة، والنقل يقبل وجهة أو لا. */
-const postingSchema = z
+const createPostingSchema = (t: TFunction) => z
   .object({
-    employee: z.string().uuid('حدّد الموظف'),
+    employee: z.string().uuid(t('hr.postingRequestForm.validation.selectEmployee')),
     kind: z.enum(['TRANSFER', 'PROMOTION', 'DEMOTION']),
     status: z.enum(['DRAFT', 'SUBMITTED']),
     targetDepartment: z.string().uuid().or(z.literal('')),
@@ -36,12 +37,12 @@ const postingSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['targetDepartment'],
-        message: 'الترقية والخفض يتطلّبان قسماً هدفاً',
+        message: t('hr.postingRequestForm.validation.targetDepartmentRequired'),
       });
     }
   });
 
-type PostingFormValues = z.infer<typeof postingSchema>;
+type PostingFormValues = z.infer<ReturnType<typeof createPostingSchema>>;
 
 const emptyForm: PostingFormValues = {
   employee: '',
@@ -54,10 +55,13 @@ const emptyForm: PostingFormValues = {
 
 const PostingRequestFormPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<HrEstablishment[]>([]);
   const [loading, setLoading] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const postingSchema = useMemo(() => createPostingSchema(t), [t]);
 
   useEffect(() => {
     Promise.allSettled([
@@ -96,10 +100,10 @@ const PostingRequestFormPage = () => {
         // صلاحية صاحب الملف، فلا يُنشأ طلب «مُقدَّم» بغير مراجعة.
         await submitPostingRequest(created.id);
       }
-      notifySuccess(values.status === 'SUBMITTED' ? 'تم رفع الطلب للاعتماد' : 'تم حفظ المسودة');
+      notifySuccess(values.status === 'SUBMITTED' ? t('hr.postingRequestForm.messages.submitted') : t('hr.postingRequestForm.messages.draftSaved'));
       navigate(`/app/hr/postings/${created.id}`);
     } catch (err) {
-      setFormError(extractErrorMessage(err, 'تعذر إنشاء الطلب'));
+      setFormError(extractErrorMessage(err, t('hr.postingRequestForm.errors.createFailed')));
     }
   };
 
@@ -114,10 +118,12 @@ const PostingRequestFormPage = () => {
   return (
     <Box>
       <PageHeader
-        title="طلب نقل أو ترقية"
-        subtitle="يُحفظ الطلب كمسودة، أو يُرسل مباشرةً للاعتماد"
+        title={t('hr.postingRequestForm.pageHeader.title')}
+        subtitle={t('hr.postingRequestForm.pageHeader.subtitle')}
         action={
-          <Button onClick={() => navigate('/app/hr/postings')}>رجوع</Button>
+          <Button onClick={() => navigate('/app/hr/postings')}>
+            {t('hr.postingRequestForm.button.back')}
+          </Button>
         }
       />
 
@@ -137,15 +143,15 @@ const PostingRequestFormPage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="الموظف"
+                  label={t('hr.postingRequestForm.label.employee')}
                   required
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.employee)}
                   helperText={errors.employee?.message}
-                  hint="الموظفون ضمن نطاقك الإداري"
+                  hint={t('hr.postingRequestForm.hint.employeeScope')}
                 >
-                  <MenuItem value="">— اختر —</MenuItem>
+                  <MenuItem value="">{t('hr.postingRequestForm.select.choose')}</MenuItem>
                   {employees.map((e) => (
                     <MenuItem key={e.id} value={e.id}>
                       {e.full_name} — {e.employee_number}
@@ -164,11 +170,11 @@ const PostingRequestFormPage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="نوع الطلب"
+                  label={t('hr.postingRequestForm.label.kind')}
                   required
                   value={field.value}
                   onChange={field.onChange}
-                  hint="النقل: تغيير القسم — الترقية: تغيير الصفة بمنصب أعلى"
+                  hint={t('hr.postingRequestForm.hint.kind')}
                 >
                   {Object.entries(POSTING_KIND_LABELS).map(([v, l]) => (
                     <MenuItem key={v} value={v}>
@@ -188,14 +194,14 @@ const PostingRequestFormPage = () => {
                 <FormTextField
                   {...field}
                   select
-                  label="القسم الهدف"
+                  label={t('hr.postingRequestForm.label.targetDepartment')}
                   value={field.value}
                   onChange={field.onChange}
                   error={Boolean(errors.targetDepartment)}
                   helperText={errors.targetDepartment?.message}
-                  hint="اتركه فارغاً للنقل دون تغيير القسم"
+                  hint={t('hr.postingRequestForm.hint.targetDepartment')}
                 >
-                  <MenuItem value="">— بدون تغيير —</MenuItem>
+                  <MenuItem value="">{t('hr.postingRequestForm.select.noChange')}</MenuItem>
                   {departments.map((d) => (
                     <MenuItem key={d.id} value={d.id}>
                       {d.name_ar}
@@ -215,11 +221,11 @@ const PostingRequestFormPage = () => {
                 <FormTextField
                   {...field}
                   type="date"
-                  label="تاريخ النفاذ المطلوب"
+                  label={t('hr.postingRequestForm.label.effectiveDate')}
                   InputLabelProps={{ shrink: true }}
                   value={field.value}
                   onChange={field.onChange}
-                  hint="اتركه فارغاً للتطبيق فور الاعتماد"
+                  hint={t('hr.postingRequestForm.hint.effectiveDate')}
                 />
               )}
             />
@@ -234,10 +240,10 @@ const PostingRequestFormPage = () => {
                   {...field}
                   multiline
                   minRows={3}
-                  label="المبرِّر"
+                  label={t('hr.postingRequestForm.label.reason')}
                   value={field.value}
                   onChange={field.onChange}
-                  hint="يظهر للمعتمد عند المراجعة"
+                  hint={t('hr.postingRequestForm.hint.reason')}
                 />
               )}
             />
@@ -246,17 +252,17 @@ const PostingRequestFormPage = () => {
 
         <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            حفظ كمسودة
+            {t('hr.postingRequestForm.button.saveDraft')}
           </Button>
           <Button
             variant="outlined"
             disabled={isSubmitting}
             onClick={handleSubmit((v) => onSubmit({ ...v, status: 'SUBMITTED' }))}
           >
-            حفظ وإرسال للاعتماد
+            {t('hr.postingRequestForm.button.submitForApproval')}
           </Button>
           <Button onClick={() => navigate('/app/hr/postings')} disabled={isSubmitting}>
-            إلغاء
+            {t('hr.postingRequestForm.button.cancel')}
           </Button>
         </Box>
       </Box>

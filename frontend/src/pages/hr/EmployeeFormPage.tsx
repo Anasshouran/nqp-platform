@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -22,7 +23,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { FormTextField } from '../../components/ui';
 import { PageHeader } from '../../components/common';
-import { employeeSchema, emptyEmployeeForm } from '../../components/forms/schemas/hr';
+import { createEmployeeSchema, emptyEmployeeForm } from '../../components/forms/schemas/hr';
 import type { EmployeeFormValues } from '../../components/forms/schemas/hr';
 import {
   createEmployee,
@@ -56,12 +57,15 @@ const EmployeeFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [formError, setFormError] = useState<string | null>(null);
   const [current, setCurrent] = useState<EmployeeDetail | null>(null);
   const [loadingCurrent, setLoadingCurrent] = useState(false);
   const [linkable, setLinkable] = useState<LinkableUser[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+
+  const employeeSchema = useMemo(() => createEmployeeSchema(t), [t]);
 
   const {
     control,
@@ -120,7 +124,7 @@ const EmployeeFormPage = () => {
         });
       })
       .catch((err) => {
-        if (!cancelled) setFormError(extractErrorMessage(err, 'تعذر تحميل بيانات الموظف'));
+        if (!cancelled) setFormError(extractErrorMessage(err, t('hr.employeeForm.errors.loadFailed')));
       })
       .finally(() => {
         if (!cancelled) setLoadingCurrent(false);
@@ -128,7 +132,7 @@ const EmployeeFormPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isEdit, id, reset]);
+  }, [isEdit, id, reset, t]);
 
   // مرشحو «ربط حساب موجود»: حسابات نشطة **بلا** ملف وظيفي.
   // لا تصلح `getEmployees` هنا: كل من فيها له ملف مسبقاً، والخادم يرفض ربط
@@ -209,10 +213,10 @@ const EmployeeFormPage = () => {
     try {
       if (isEdit) {
         await updateEmployee(id as string, payload);
-        notifySuccess('تم تحديث الملف الوظيفي');
+        notifySuccess(t('hr.employeeForm.messages.updated'));
       } else {
         const { data } = await createEmployee(payload);
-        notifySuccess('تم إنشاء الملف الوظيفي');
+        notifySuccess(t('hr.employeeForm.messages.created'));
         const created = data.data;
         if (created?.id) {
           navigate(`/app/hr/employees/${created.id}`);
@@ -222,7 +226,7 @@ const EmployeeFormPage = () => {
       navigate('/app/hr/employees');
     } catch (err) {
       const response = (err as { response?: { data?: unknown } })?.response;
-      const message = serverErrorMessage(response?.data) ?? extractErrorMessage(err, 'تعذر حفظ الملف الوظيفي');
+      const message = serverErrorMessage(response?.data) ?? extractErrorMessage(err, t('hr.employeeForm.errors.saveFailed'));
       setFormError(message);
       // ربط الأخطاء بالحقول عندما يعيد الخادم أسماءها.
       const data = response?.data as Record<string, unknown> | undefined;
@@ -249,12 +253,12 @@ const EmployeeFormPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/app/hr/employees')} sx={{ mb: 2 }}>
-        رجوع للقائمة
+        {t('hr.employeeForm.button.backToList')}
       </Button>
 
       <PageHeader
-        title={isEdit ? 'تعديل الملف الوظيفي' : 'ملف وظيفي جديد'}
-        subtitle={isEdit ? current?.full_name : 'إنشاء حساب وظيفية داخل نطاقك'}
+        title={isEdit ? t('hr.employeeForm.pageHeader.titleEdit') : t('hr.employeeForm.pageHeader.titleNew')}
+        subtitle={isEdit ? current?.full_name : t('hr.employeeForm.pageHeader.subtitleNew')}
       />
 
       {formError && (
@@ -269,10 +273,10 @@ const EmployeeFormPage = () => {
             <Card>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                  حساب الدخول
+                  {t('hr.employeeForm.account.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  يُنشأ حساب بصلاحيات صفرية؛ منح الصلاحيات يتم لاحقاً من إدارة المستخدمين.
+                  {t('hr.employeeForm.account.subtitle')}
                 </Typography>
                 <ToggleButtonGroup
                   exclusive
@@ -282,9 +286,9 @@ const EmployeeFormPage = () => {
                   sx={{ mb: 2 }}
                 >
                   <ToggleButton value="new">
-                    <PersonAddIcon sx={{ ml: 1 }} /> حساب جديد
+                    <PersonAddIcon sx={{ ml: 1 }} /> {t('hr.employeeForm.account.newAccount')}
                   </ToggleButton>
-                  <ToggleButton value="existing">ربط حساب موجود</ToggleButton>
+                  <ToggleButton value="existing">{t('hr.employeeForm.account.linkExisting')}</ToggleButton>
                 </ToggleButtonGroup>
 
                 {accountMode === 'new' ? (
@@ -295,14 +299,14 @@ const EmployeeFormPage = () => {
                         control={control}
                         render={({ field }) => (
                           <FormTextField
-                            label="البريد الإلكتروني"
+                            label={t('hr.employeeForm.fields.email')}
                             required
                             dir="ltr"
                             value={field.value}
                             onChange={field.onChange}
                             error={Boolean(errors.email)}
                             helperText={errors.email?.message}
-                            hint="يستخدم لتسجيل الدخول"
+                            hint={t('hr.employeeForm.hints.emailLogin')}
                           />
                         )}
                       />
@@ -313,11 +317,11 @@ const EmployeeFormPage = () => {
                         control={control}
                         render={({ field }) => (
                           <FormTextField
-                            label="اسم المستخدم"
+                            label={t('hr.employeeForm.fields.username')}
                             dir="ltr"
                             value={field.value}
                             onChange={field.onChange}
-                            hint="يُشتق من البريد إن تُرك فارغاً"
+                            hint={t('hr.employeeForm.hints.usernameDerived')}
                           />
                         )}
                       />
@@ -328,7 +332,7 @@ const EmployeeFormPage = () => {
                         control={control}
                         render={({ field }) => (
                           <FormTextField
-                            label="الاسم الكامل (على الحساب)"
+                            label={t('hr.employeeForm.fields.fullName')}
                             value={field.value}
                             onChange={field.onChange}
                           />
@@ -341,7 +345,7 @@ const EmployeeFormPage = () => {
                         control={control}
                         render={({ field }) => (
                           <FormTextField
-                            label="الهاتف"
+                            label={t('hr.employeeForm.fields.phone')}
                             dir="ltr"
                             value={field.value}
                             onChange={field.onChange}
@@ -355,14 +359,14 @@ const EmployeeFormPage = () => {
                         control={control}
                         render={({ field }) => (
                           <FormTextField
-                            label="كلمة المرور"
+                            label={t('hr.employeeForm.fields.password')}
                             type="password"
                             dir="ltr"
                             value={field.value}
                             onChange={field.onChange}
                             error={Boolean(errors.password)}
                             helperText={errors.password?.message}
-                            hint="اتركها فارغة إن أردت تعيينها لاحقاً"
+                            hint={t('hr.employeeForm.hints.passwordOptional')}
                           />
                         )}
                       />
@@ -378,15 +382,15 @@ const EmployeeFormPage = () => {
                         getOptionLabel={(o) => (o.full_name ? `${o.full_name} — ${o.email}` : o.username)}
                         value={linkable.find((u) => u.id === field.value) ?? null}
                         onChange={(_, v) => field.onChange(v?.id ?? '')}
-                        noOptionsText="لا توجد حسابات متاحة للربط"
+                        noOptionsText={t('hr.employeeForm.autocomplete.noLinkableUsers')}
                         renderInput={(params) => (
                           <FormTextField
                             {...params}
-                            label="الحساب المرتبط"
+                            label={t('hr.employeeForm.fields.userId')}
                             required
                             error={Boolean(errors.userId)}
                             helperText={errors.userId?.message}
-                            hint="حسابات نشطة بلا ملف وظيفي"
+                            hint={t('hr.employeeForm.hints.linkableUsers')}
                           />
                         )}
                       />
@@ -400,7 +404,7 @@ const EmployeeFormPage = () => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                البيانات الوظيفية
+                {t('hr.employeeForm.sections.jobData')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Grid container spacing={2}>
@@ -410,10 +414,10 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="الرقم الوظيفي"
+                        label={t('hr.employeeForm.fields.employeeNumber')}
                         value={field.value}
                         onChange={field.onChange}
-                        hint="يولَّد تلقائياً إن تُرك فارغاً"
+                        hint={t('hr.employeeForm.hints.employeeNumberAuto')}
                       />
                     )}
                   />
@@ -424,7 +428,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="الاسم بالعربية"
+                        label={t('hr.employeeForm.fields.fullNameAr')}
                         required
                         value={field.value}
                         onChange={field.onChange}
@@ -440,7 +444,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="الاسم بالإنجليزية"
+                        label={t('hr.employeeForm.fields.fullNameEn')}
                         dir="ltr"
                         value={field.value}
                         onChange={field.onChange}
@@ -454,7 +458,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="المسمى الوظيفي"
+                        label={t('hr.employeeForm.fields.jobTitle')}
                         value={field.value}
                         onChange={field.onChange}
                       />
@@ -468,7 +472,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         select
-                        label="الجنس"
+                        label={t('hr.employeeForm.fields.gender')}
                         value={field.value}
                         onChange={field.onChange}
                       >
@@ -486,7 +490,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         select
-                        label="نوع التعيين"
+                        label={t('hr.employeeForm.fields.employmentType')}
                         required
                         value={field.value}
                         onChange={field.onChange}
@@ -505,7 +509,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         select
-                        label="حالة التوظيف"
+                        label={t('hr.employeeForm.fields.employmentStatus')}
                         required
                         value={field.value}
                         onChange={field.onChange}
@@ -524,7 +528,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         type="date"
-                        label="تاريخ التعيين"
+                        label={t('hr.employeeForm.fields.hireDate')}
                         value={field.value}
                         onChange={field.onChange}
                         InputLabelProps={{ shrink: true }}
@@ -541,7 +545,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         type="date"
-                        label="نهاية فترة الاختبار"
+                        label={t('hr.employeeForm.fields.probationEnd')}
                         value={field.value}
                         onChange={field.onChange}
                         InputLabelProps={{ shrink: true }}
@@ -558,7 +562,7 @@ const EmployeeFormPage = () => {
                     render={({ field }) => (
                       <FormTextField
                         type="date"
-                        label="تاريخ الميلاد"
+                        label={t('hr.employeeForm.fields.birthDate')}
                         value={field.value}
                         onChange={field.onChange}
                         InputLabelProps={{ shrink: true }}
@@ -578,12 +582,12 @@ const EmployeeFormPage = () => {
                         getOptionLabel={(o) => `${o.full_name}${o.job_title ? ` — ${o.job_title}` : ''}`}
                         value={managerOptions.find((u) => u.id === field.value) ?? null}
                         onChange={(_, v) => field.onChange(v?.id ?? '')}
-                        clearText="مسح"
-                        noOptionsText="لا يوجد مرشحون"
+                        clearText={t('hr.employeeForm.autocomplete.clear')}
+                        noOptionsText={t('hr.employeeForm.autocomplete.noCandidates')}
                         renderInput={(params) => (
                           <FormTextField
                             {...params}
-                            label="المدير المباشر"
+                            label={t('hr.employeeForm.fields.reportingManager')}
                             helperText={errors.reportingManager?.message}
                           />
                         )}
@@ -598,7 +602,7 @@ const EmployeeFormPage = () => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                المؤهلات والاتصال
+                {t('hr.employeeForm.sections.educationContact')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Grid container spacing={2}>
@@ -607,7 +611,7 @@ const EmployeeFormPage = () => {
                     name="degree"
                     control={control}
                     render={({ field }) => (
-                      <FormTextField label="الشهادة" value={field.value} onChange={field.onChange} />
+                      <FormTextField label={t('hr.employeeForm.fields.degree')} value={field.value} onChange={field.onChange} />
                     )}
                   />
                 </Grid>
@@ -616,7 +620,7 @@ const EmployeeFormPage = () => {
                     name="specialization"
                     control={control}
                     render={({ field }) => (
-                      <FormTextField label="التخصص" value={field.value} onChange={field.onChange} />
+                      <FormTextField label={t('hr.employeeForm.fields.specialization')} value={field.value} onChange={field.onChange} />
                     )}
                   />
                 </Grid>
@@ -625,7 +629,7 @@ const EmployeeFormPage = () => {
                     name="office"
                     control={control}
                     render={({ field }) => (
-                      <FormTextField label="المكتب" value={field.value} onChange={field.onChange} />
+                      <FormTextField label={t('hr.employeeForm.fields.office')} value={field.value} onChange={field.onChange} />
                     )}
                   />
                 </Grid>
@@ -635,7 +639,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="هاتف داخلي"
+                        label={t('hr.employeeForm.fields.internalPhone')}
                         dir="ltr"
                         value={field.value}
                         onChange={field.onChange}
@@ -648,7 +652,7 @@ const EmployeeFormPage = () => {
                     name="homeAddress"
                     control={control}
                     render={({ field }) => (
-                      <FormTextField label="العنوان" value={field.value} onChange={field.onChange} />
+                      <FormTextField label={t('hr.employeeForm.fields.homeAddress')} value={field.value} onChange={field.onChange} />
                     )}
                   />
                 </Grid>
@@ -658,7 +662,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="جهة الاتصال الطارئة"
+                        label={t('hr.employeeForm.fields.emergencyContactName')}
                         value={field.value}
                         onChange={field.onChange}
                       />
@@ -671,7 +675,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="هاتف الطوارئ"
+                        label={t('hr.employeeForm.fields.emergencyContactPhone')}
                         dir="ltr"
                         value={field.value}
                         onChange={field.onChange}
@@ -685,7 +689,7 @@ const EmployeeFormPage = () => {
                     control={control}
                     render={({ field }) => (
                       <FormTextField
-                        label="صلة القرابة"
+                        label={t('hr.employeeForm.fields.emergencyContactRelation')}
                         value={field.value}
                         onChange={field.onChange}
                       />
@@ -697,14 +701,16 @@ const EmployeeFormPage = () => {
           </Card>
 
           <Stack direction="row" justifyContent="flex-end" spacing={1}>
-            <Button onClick={() => navigate('/app/hr/employees')}>إلغاء</Button>
+            <Button onClick={() => navigate('/app/hr/employees')}>
+              {t('hr.employeeForm.button.cancel')}
+            </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
             >
-              {isEdit ? 'حفظ التعديلات' : 'إنشاء الملف'}
+              {isEdit ? t('hr.employeeForm.button.saveChanges') : t('hr.employeeForm.button.createFile')}
             </Button>
           </Stack>
         </Stack>
