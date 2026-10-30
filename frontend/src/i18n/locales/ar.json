@@ -6320,6 +6320,230 @@
         "MICROBIOLOGY": "الميكروبيولوجيا",
         "HEMATOLOGY": "血液学"
       }
+    },
+    "printBarcode": {
+      "dialogTitle": "ملصق العينة — Barcode / QR",
+      "reference": "مرجعية",
+      "analysis": "للتحليل",
+      "close": "إغلاق",
+      "print": "طباعة"
+    },
+    "microEvaluation": {
+      "dialogTitle": "التقييم الميكروبيولوجي الآلي",
+      "loading": "جارٍ تحميل المواصفات السارية...",
+      "noApplicable": "لا تتوفر مواصفة سارية لهذا الفحص.",
+      "noSpecVersion": "لا توجد مواصفة سارية",
+      "productLabel": "المنتج: {product}",
+      "specRef": "مرجع المواصفة: {ref}",
+      "noLimits": "لا توجد حدود ميكروبيولوجية في الإصدار الساري.",
+      "limitLabel": "الحد الميكروبيولوجي",
+      "unitFallback": "وحدة",
+      "unitLabel": "الوحدة {n}",
+      "valueLabel": "القيمة",
+      "valuePlaceholder": "قيمة رقمية",
+      "evaluating": "جارٍ التقييم...",
+      "evaluateLabel": "تقييم تلقائي وفق المواصفة",
+      "close": "إغلاق",
+      "positive": "موجبة",
+      "negative": "سلبية",
+      "tentative": "غير مؤكدة",
+      "positiveCount": "موجبة: {n}",
+      "negativeCount": "سالبة: {n}",
+      "belowM": "أقل من m: {n}",
+      "betweenMAndM": "بين m و M: {n}",
+      "aboveM": "فوق M: {n}",
+      "errorLoad": "تعذر تحميل المواصفات الميكروبيولوجية",
+      "errorEval": "تعذر التقييم الآلي",
+      "successEval": "تم تقييم النتيجة آلياً وفق المواصفة",
+      "unitResultsLabel": "نتائج وحدات العينة ({n})",
+      "parameterSubtitle": "{name} — مقارنة الوحدات بخطة أخذ العينات (n/c/m/M)"
+    },
+    "shipmentWorkflow": {
+      "pageHeader": {
+        "title": "تفاصيل الشحنة",
+        "eyebrow": "الرقابة الغذائية"
+      },
+      "backToShipments": "العودة إلى الشحنات",
+      "errorExec": "تعذر تنفيذ العملية",
+      "addItem": "أضف بنداً واحداً على الأقل",
+      "invoiceIssued": "تم إصدار الفاتورة",
+      "paySuccess": "تم تسجيل الدفع وإصدار الإيصال",
+      "payError": "تعذر تسجيل الدفع",
+      "selectInspector": "اختر المفتش",
+      "inspectorAssigned": "تم تعيين المفتش",
+      "decisionIssued": "صدر القرار النهائي والشهادة",
+      "selectDecision": "حدد القرار",
+      "referralRegistered": "تم تسجيل الإحالة من المعبر",
+      "loading": "جاري تحميل الشحنة...",
+      "actions": {
+        "invoice": "أصدار الفاتورة",
+        "pay": "تسجيل الدفع",
+        "assignInspector": "تعيين المفتش",
+        "decide": "القرار النهائي",
+        "referral": "إحالة من معبر"
+      },
+      "rows": {
+        "status": "الحالة",
+        "shipmentType": "نوع الشحنة",
+        "port": "المنفذ",
+        "fees": "الرسوم",
+        "manifestNumber": "رقم البيان",
+        "supplier": "المورد",
+        "originCountry": "بلد المنشأ",
+        "arrivalDate": "تاريخ الوصول",
+        "shipmentStatus": "حالة الشحنة",
+        "finalDecision": "القرار النهائي",
+        "decisionReason": "سبب القرار",
+        "assignedInspector": "تعيين المفتش",
+        "recordedBy": "الكاتب المسجّل",
+        "referralSource": "مصدر الإحالة"
+      },
+      "shipmentType": {
+        "import": "وارد",
+        "export": "صادر"
+      },
+      "feesPaid": "مدفوعة",
+      "feesUnpaid": "غير مدفوعة",
+      "details": "بيانات الشحنة",
+      "dash": "—",
+      "dialogs": {
+        "invoice": {
+          "title": "إصدار الفاتورة",
+          "subtitle": "حساب الرسوم المستحقة على الشحنة",
+          "serviceItem": "بند الخدمة",
+          "amount": "المبلغ",
+          "receipt": "الفاتورة",
+          "delete": "حذف",
+          "addItem": "+ إضافة بند"
+        },
+        "pay": {
+          "title": "تسجيل الدفع",
+          "subtitle": "تأكيد تحصيل الرسوم وإصدار الإيصال",
+          "receiptInfo": "سيصدر إيصال دفع بعد تأكيد العملية من قبل المحاسب."
+        },
+        "assignInspector": {
+          "title": "تعيين مفتش",
+          "subtitle": "رئيس القسم يعيّن مفتش رقابة الأغذية لهذه الشحنة",
+          "placeholder": "اختر المفتش"
+        },
+        "decide": {
+          "title": "القرار النهائي",
+          "subtitle": "رئيس القسم يقرر مصير الشحنة بعد نتائج المختبر",
+          "placeholder": "اختر القرار",
+          "reason": "سبب القرار"
+        },
+        "referral": {
+          "title": "إحالة من منفذ",
+          "subtitle": "تسجيل وصول الشحنة كإحالة من نظام الحجر الصحي للمعبر إلى نظام رقابة الأغذية",
+          "placeholder": "اختر مصدر الإحالة",
+          "reference": "مرجع الإحالة (اختياري)"
+        }
+      }
+    },
+    "foodDirector": {
+      "pageHeader": {
+        "title": "🇸🇸 وزارة الصحة الاتحادية — الإدارة العامة للحجر الصحي القومي",
+        "subtitle": "🍎 National Food Safety Command — الإدارة العامة لرقابة الأغذية",
+        "eyebrow": "مركز القيادة التنفيذي القومي · آخر تحديث {time} · تحديث تلقائي كل دقيقة"
+      },
+      "periods": {
+        "day": "اليوم",
+        "week": "أسبوع",
+        "month": "شهر",
+        "quarter": "ربع",
+        "year": "سنة"
+      },
+      "loading": "جارٍ التحديث…",
+      "updated": "محدَث",
+      "errorLoad": "تعذر تحميل اللوحة القومية",
+      "kpis": {
+        "shipments": "الشحنات",
+        "inspections": "التفتيش المكتمل",
+        "samples": "عينات للمختبر",
+        "certificates": "شهادات صادرة",
+        "release": "الإفراج",
+        "rejection": "الرفض",
+        "highRisk": "عالية الخطورة",
+        "sla": "SLA المختبر",
+        "sub": {
+          "shipments": "خلال الفترة — قومي",
+          "period": "خلال الفترة",
+          "certificates": "FCER قوميًا",
+          "release": "من شحنات الفترة",
+          "rejection": "من شحنات الفترة",
+          "highRisk": "نتائج غير مطابقة",
+          "sla": "هدف >90%"
+        }
+      },
+      "sectors": {
+        "title": "🗺️ أداء القطاعات — اضغط القطاع لفتح لوحته",
+        "sector": "القطاع",
+        "shipments": "الشحنات",
+        "inspections": "التفتيش",
+        "samples": "العينات",
+        "rejection": "الرفض",
+        "sla": "SLA",
+        "performance": "الأداء",
+        "noSectors": "لا توجد قطاعات مرتبطة بمنافذ",
+        "viewSector": "عرض لوحة القطاع {name}"
+      },
+      "kpiTable": {
+        "title": "📊 مؤشرات الأداء القومية مقابل الأهداف",
+        "indicator": "المؤشر",
+        "current": "الحالي",
+        "target": "الهدف",
+        "status": "الحالة",
+        "met": "محقق",
+        "needsAction": "تحتاج تدخلاً"
+      },
+      "trade": {
+        "title": "📦 مراقبة التجارة الغذائية — وارد/صادر",
+        "import": "⬅️ الوارد IMPORT",
+        "export": "➡️ الصادر EXPORT",
+        "shipments": "شحنة",
+        "release": "✅ إفراج / اعتماد",
+        "rejected": "🚫 رفض {pct}%",
+        "hold": "⏸️ احتجاز {pct}%"
+      },
+      "lab": {
+        "title": "🔬 أداء المختبرات القومي",
+        "samplesReceived": "عينات مستلمة",
+        "underAnalysis": "قيد التحليل",
+        "resultsCompleted": "نتائج مكتملة",
+        "delayed": "متأخرة (48 ساعة)",
+        "nonConforming": "غير مطابقة",
+        "slaWithin": "🟢 ضمن SLA",
+        "slaNear": "🟠 قريبة من SLA",
+        "slaExceeded": "🔴 متجاوزة SLA"
+      },
+      "staff": {
+        "title": "👥 الموارد القومية",
+        "inspectors": "مفتشو رقابة الأغذية",
+        "busy": "مشغولون (≥3 مهام)",
+        "available": "متاحون",
+        "idle": "بلا مهام"
+      },
+      "certificates": {
+        "title": "📜 الشهادات القومية",
+        "issuedToday": "صادرة اليوم",
+        "issuedPeriod": "خلال الفترة",
+        "awaitingDecision": "بانتظار قرار"
+      },
+      "finance": {
+        "title": "💰 الإيرادات (الشهر — قراءة فقط)",
+        "inspectionFees": "رسوم التفتيش",
+        "labFees": "رسوم المختبر والعينات",
+        "certificateFees": "رسوم الشهادات",
+        "total": "الإجمالي",
+        "note": "فواتير محصّلة SDG — الانتقال للنظام المالي دون تعديل قيود"
+      },
+      "devSections": {
+        "title": "أقسام قيد التطوير في مركز القيادة القومي",
+        "description": "National Risk Command Center (Risk Engine) · Food Alerts & Recall · المخالفات والإنفاذ · المستوردون والمنتجات الأعلى رفضًا · التحليل الزمني · التقارير التنفيذية PDF/Excel · القرارات الاستراتيجية — تُفعَّل بعد بناء نماذجها الخلفية."
+      },
+      "alerts": {
+        "title": "🚨 التنبيهات الغذائية القومية"
+      }
     }
   }
 }

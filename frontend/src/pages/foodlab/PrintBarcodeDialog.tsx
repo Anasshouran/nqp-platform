@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -22,7 +23,7 @@ const BarcodeSvg = ({ value }: { value: string }) => {
       try {
         JsBarcode(ref.current, value, { format: 'CODE128', width: 2, height: 72, margin: 8, displayValue: false });
       } catch {
-        /* قيمة غير صالحة للباركود */
+        /* Invalid barcode value */
       }
     }
   }, [value]);
@@ -36,13 +37,14 @@ interface Props {
 }
 
 const PrintBarcodeDialog = ({ open, sample, onClose }: Props) => {
+  const { t } = useTranslation();
   const [format, setFormat] = useState<LabelFormat>('barcode');
   if (!sample) return null;
   const value = sample.sample_barcode || sample.sample_number;
   const classification =
     sample.classification === 'REFERENCE'
-      ? { code: 'REFERENCE', label: 'مرجعية' }
-      : { code: 'ANALYSIS', label: 'للتحليل' };
+      ? { code: 'REFERENCE', label: t('food.printBarcode.reference') }
+      : { code: 'ANALYSIS', label: t('food.printBarcode.analysis') };
   return (
     <>
       <style>{`
@@ -53,7 +55,7 @@ const PrintBarcodeDialog = ({ open, sample, onClose }: Props) => {
         }
       `}</style>
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>ملصق العينة — Barcode / QR</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('food.printBarcode.dialogTitle')}</DialogTitle>
         <DialogContent>
           <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
             <AppButton size="small" variant={format === 'barcode' ? 'primary' : 'secondary'} onClick={() => setFormat('barcode')}>Barcode (CODE128)</AppButton>
@@ -89,8 +91,8 @@ const PrintBarcodeDialog = ({ open, sample, onClose }: Props) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <AppButton variant="ghost" onClick={onClose}>إغلاق</AppButton>
-          <AppButton startIcon={<PrintIcon />} onClick={() => window.print()}>طباعة</AppButton>
+          <AppButton variant="ghost" onClick={onClose}>{t('food.printBarcode.close')}</AppButton>
+          <AppButton startIcon={<PrintIcon />} onClick={() => window.print()}>{t('food.printBarcode.print')}</AppButton>
         </DialogActions>
       </Dialog>
     </>
