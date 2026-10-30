@@ -3,6 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ReactElement } from 'react';
+import type { AxiosResponse } from 'axios';
+import type { ApiResponse } from '../../../types/api';
+import type { FoodDirectorDashboard } from '../../../types/food';
 
 import { getFoodDirectorDashboard } from '../../../api/endpoints/food';
 import FoodDirectorPage from '../FoodDirectorPage';
@@ -47,7 +50,7 @@ const fullResponse = {
   status: 200,
   statusText: 'OK',
   headers: {},
-  config: {},
+  config: { headers: {} },
 };
 
 describe('FoodDirectorPage', () => {
@@ -61,20 +64,20 @@ describe('FoodDirectorPage', () => {
   });
 
   it('shows a loading state while the dashboard fetches', async () => {
-    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(Promise.resolve());
+    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(fullResponse as unknown as AxiosResponse<ApiResponse<FoodDirectorDashboard>>);
     wrap(<FoodDirectorPage />);
     expect(await screen.findByText(/جارٍ التحديث/)).toBeTruthy();
   });
 
   it('renders real dashboard KPIs on success', async () => {
-    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(fullResponse);
+    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(fullResponse as unknown as AxiosResponse<ApiResponse<FoodDirectorDashboard>>);
     wrap(<FoodDirectorPage />);
     await waitFor(() => expect(screen.getAllByText('الشحنات').length).toBeGreaterThan(0));
     await waitFor(() => expect(screen.getAllByText('الإفراج').length).toBeGreaterThan(0));
   });
 
   it('never renders fabricated station-user names (regression guard)', async () => {
-    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(fullResponse);
+    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(fullResponse as unknown as AxiosResponse<ApiResponse<FoodDirectorDashboard>>);
     wrap(<FoodDirectorPage />);
     await waitFor(() => expect(screen.getAllByText('الشحنات').length).toBeGreaterThan(0));
     expect(screen.queryByText('خالد إبراهيم')).toBeNull();
