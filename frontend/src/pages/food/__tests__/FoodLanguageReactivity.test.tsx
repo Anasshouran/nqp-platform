@@ -16,10 +16,10 @@ i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
 
 vi.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }: { data?: any; options?: any }) => (
+  Line: ({ data }: { data?: any }) => (
     <div data-testid="chart-line">{JSON.stringify(data?.labels)}</div>
   ),
-  Bar: ({ data, options }: { data?: any; options?: any }) => (
+  Bar: ({ data }: { data?: any }) => (
     <div data-testid="chart-bar">{JSON.stringify(data?.labels)}</div>
   ),
 }));
@@ -49,6 +49,10 @@ import LabPricingPage from '../../foodlab/LabPricingPage';
 import FoodWindowPage from '../../foodWindow/FoodWindowPage';
 import ChemistryLabPage from '../../foodlab/ChemistryLabPage';
 import FoodSurveillancePage from '../../foodsurveillance/FoodSurveillancePage';
+import PrintBarcodeDialog from '../../foodlab/PrintBarcodeDialog';
+import MicroEvaluationDialog from '../../foodlab/MicroEvaluationDialog';
+import ShipmentWorkflowPage from '../ShipmentWorkflowPage';
+import FoodDirectorPage from '../../fooddirector/FoodDirectorPage';
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -105,6 +109,20 @@ vi.mock('../../../api/endpoints/foodSurveillance', () => ({
       resolved: 3, closed: 4 }
   } } }),
 }));
+
+vi.mock('../../../api/endpoints/foodlab', async (importOriginal) => {
+  const actual = await importOriginal() as any;
+  return {
+    ...actual,
+    getApplicableLimits: vi.fn().mockResolvedValue({ data: { data: { limits: [] } } }),
+    evaluateSampleTest: vi.fn().mockResolvedValue({ data: { data: {
+      decision: 'APPROVED',
+      counts: { positive: 0, negative: 0, below_m: 0, between_m_M: 0, above_M: 0 },
+      engine: 'mock',
+      reason: 'mock reason'
+    } } }),
+  };
+});
 
 vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: '1', full_name: 'أحمد علي', email: 'food@nqp.gov.sd', role: 'FOOD_OFFICER' } }),
@@ -182,5 +200,45 @@ describe('Food pages language reactivity (Round 1)', () => {
     render(wrap(<FoodSurveillancePage />));
     const arEls = await screen.findAllByText(/الترصد الغذائي/);
     expect(arEls.length).toBeGreaterThan(0);
+  });
+
+  it('PrintBarcodeDialog AR→EN', async () => {
+    const mockSample = {
+      id: 'SMP-001',
+      sample_number: 'SMP-001',
+      sample_barcode: 'BC-12345',
+      sample_type: 'Poultry',
+      classification: 'REFERENCE',
+      received_at: '2026-01-15T10:00:00Z',
+    } as any;
+    render(wrap(<PrintBarcodeDialog open={true} sample={mockSample} onClose={vi.fn()} />));
+    await screen.findByText(/ملصق العينة/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Sample Label/);
+  });
+
+  it('MicroEvaluationDialog AR→EN', async () => {
+    const mockTest = {
+      id: 'TEST-001',
+      parameter: { name_ar: 'إscherichia coli', name_en: 'Escherichia coli' },
+    } as any;
+    render(wrap(<MicroEvaluationDialog open={true} test={mockTest} onClose={vi.fn()} onChanged={vi.fn()} />));
+    await screen.findByText(/التقييم الميكروبيولوجي الآلي/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Automated Microbiological Evaluation/);
+  });
+
+  it('ShipmentWorkflowPage AR→EN', async () => {
+    render(wrap(<ShipmentWorkflowPage />));
+    await screen.findByText(/تفاصيل الشحنة/);
+    await i18n.changeLanguage('en');
+    await screen.findByText('Shipment Details');
+  });
+
+  it('FoodDirectorPage AR→EN', async () => {
+    render(wrap(<FoodDirectorPage />));
+    await screen.findByText(/الإدارة العامة لرقابة الأغذية/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/National Food Safety Command/);
   });
 });
