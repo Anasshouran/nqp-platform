@@ -174,7 +174,7 @@ const ShipmentWorkflowPage = () => {
           <InfoCell label={t("food.shipmentWorkflow.rows.status")} value={statusMeta ? statusMeta.label : shipment.status} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <InfoCell label="t('food.shipmentWorkflow.rows.shipmentType')" value={shipment.shipment_type === 'IMPORT' ? t('food.shipmentWorkflow.shipmentType.import') : t('food.shipmentWorkflow.shipmentType.export')} />
+          <InfoCell label={t("food.shipmentWorkflow.rows.shipmentType")} value={shipment.shipment_type === 'IMPORT' ? t("food.shipmentWorkflow.shipmentType.import") : t("food.shipmentWorkflow.shipmentType.export")} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <InfoCell label={t("food.shipmentWorkflow.rows.port")} value={`${shipment.port_name || shipment.port}${portType[shipment.port_type] ? ` — ${portType[shipment.port_type].label}` : ''}`} />
@@ -188,21 +188,21 @@ const ShipmentWorkflowPage = () => {
         <CardContent>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>t('food.shipmentWorkflow.details')</Typography>
           <Stack spacing={1.5}>
-            <Row label="t('food.shipmentWorkflow.rows.manifestNumber')" value={shipment.manifest_number} />
-            <Row label="t('food.shipmentWorkflow.rows.supplier')" value={shipment.supplier_name} />
-            <Row label="t('food.shipmentWorkflow.rows.originCountry')" value={shipment.origin_country} />
-            <Row label="t('food.shipmentWorkflow.rows.arrivalDate')" value={formatDate(shipment.arrival_date)} />
-            {statusMeta && <Row label="t('food.shipmentWorkflow.rows.shipmentStatus')" value={statusMeta.label} />}
-            <Row label="t('food.shipmentWorkflow.actions.decide')" value={decisionMeta ? decisionMeta.label : t('food.shipmentWorkflow.dash')} />
-            {shipment.decision_reason && <Row label="t('food.shipmentWorkflow.rows.decisionReason')" value={shipment.decision_reason} />}
-            {shipment.assigned_inspector_name && <Row label="t('food.shipmentWorkflow.actions.assignInspector')" value={`${shipment.assigned_inspector_name} (${shipment.assigned_at ? formatDateTime(shipment.assigned_at) : t('food.shipmentWorkflow.dash')})`} />}
-            <Row label="t('food.shipmentWorkflow.rows.recordedBy')" value={shipment.recorded_by_name || t('food.shipmentWorkflow.dash')} />
-            <Row label={t("food.shipmentWorkflow.rows.fees")} value={shipment.fees_paid ? t('food.shipmentWorkflow.feesPaid') : t('food.shipmentWorkflow.feesUnpaid')} />
+            <Row label={t("food.shipmentWorkflow.rows.manifestNumber")} value={shipment.manifest_number} t={t} />
+            <Row label={t("food.shipmentWorkflow.rows.supplier")} value={shipment.supplier_name} t={t} />
+            <Row label={t("food.shipmentWorkflow.rows.originCountry")} value={shipment.origin_country} t={t} />
+            <Row label={t("food.shipmentWorkflow.rows.arrivalDate")} value={formatDate(shipment.arrival_date)} t={t} />
+            {statusMeta && <Row label={t("food.shipmentWorkflow.rows.shipmentStatus")} value={statusMeta.label} t={t} />}
+            <Row label={t("food.shipmentWorkflow.actions.decide")} value={decisionMeta ? decisionMeta.label : t("food.shipmentWorkflow.dash")} t={t} />
+            {shipment.decision_reason && <Row label={t("food.shipmentWorkflow.rows.decisionReason")} value={shipment.decision_reason} t={t} />}
+            {shipment.assigned_inspector_name && <Row label={t("food.shipmentWorkflow.actions.assignInspector")} value={`${shipment.assigned_inspector_name} (${shipment.assigned_at ? formatDateTime(shipment.assigned_at) : t("food.shipmentWorkflow.dash")})`} t={t} />}
+            <Row label={t("food.shipmentWorkflow.rows.recordedBy")} value={shipment.recorded_by_name || t("food.shipmentWorkflow.dash")} t={t} />
+            <Row label={t("food.shipmentWorkflow.rows.fees")} value={shipment.fees_paid ? t("food.shipmentWorkflow.feesPaid") : t("food.shipmentWorkflow.feesUnpaid")} t={t} />
             {shipment.referred_from && (
               <Row
                 label={t("food.shipmentWorkflow.rows.referralSource")}
                 value={`${referralSource[shipment.referred_from]?.label || shipment.referred_from}${shipment.referral_reference ? ` (${shipment.referral_reference})` : ''}`}
-              />
+               t={t}/>
             )}
           </Stack>
         </CardContent>
@@ -235,7 +235,7 @@ const ShipmentWorkflowPage = () => {
 
       <FormDialog
         open={payOpen}
-        title="t('food.shipmentWorkflow.actions.pay')"
+        title={t("food.shipmentWorkflow.dialogs.pay.title")}
         subtitle={t("food.shipmentWorkflow.dialogs.pay.subtitle")}
         icon={<PaymentsIcon />}
         onSubmit={handlePay}
@@ -267,7 +267,7 @@ const ShipmentWorkflowPage = () => {
 
       <FormDialog
         open={decideOpen}
-        title="t('food.shipmentWorkflow.actions.decide')"
+        title={t("food.shipmentWorkflow.dialogs.decide.title")}
         subtitle={t("food.shipmentWorkflow.dialogs.decide.subtitle")}
         icon={<GavelIcon />}
         onSubmit={handleDecide}
@@ -285,7 +285,7 @@ const ShipmentWorkflowPage = () => {
         />
         <Box sx={{ mt: 1.5 }}>
           <TextField
-            label="t('food.shipmentWorkflow.rows.decisionReason')"
+            label={t("food.shipmentWorkflow.rows.decisionReason")}
             value={decideReason}
             onChange={(e) => setDecideReason(e.target.value)}
             multiline
@@ -344,7 +344,7 @@ const InfoCell = ({ label, value }: { label: string; value: string }) => (
   </Card>
 );
 
-const Row = ({ label, value }: { label: string; value: string }) => (
+const Row = ({ label, value, t }: { label: string; value: string; t: (key: string) => string }) => (
   <Stack direction="row" justifyContent="space-between" spacing={2}>
     <Typography color="text.secondary">{label}</Typography>
     <Typography sx={{ fontWeight: 700, textAlign: 'right' }}>{value || t('food.shipmentWorkflow.dash')}</Typography>
