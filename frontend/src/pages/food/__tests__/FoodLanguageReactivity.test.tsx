@@ -16,10 +16,10 @@ i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
 
 vi.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }: { data?: any; options?: any }) => (
+  Line: ({ data }: { data?: any }) => (
     <div data-testid="chart-line">{JSON.stringify(data?.labels)}</div>
   ),
-  Bar: ({ data, options }: { data?: any; options?: any }) => (
+  Bar: ({ data }: { data?: any }) => (
     <div data-testid="chart-bar">{JSON.stringify(data?.labels)}</div>
   ),
 }));
@@ -111,7 +111,7 @@ vi.mock('../../../api/endpoints/foodSurveillance', () => ({
 }));
 
 vi.mock('../../../api/endpoints/foodlab', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal() as any;
   return {
     ...actual,
     getApplicableLimits: vi.fn().mockResolvedValue({ data: { data: { limits: [] } } }),
@@ -210,7 +210,7 @@ describe('Food pages language reactivity (Round 1)', () => {
       sample_type: 'Poultry',
       classification: 'REFERENCE',
       received_at: '2026-01-15T10:00:00Z',
-    };
+    } as any;
     render(wrap(<PrintBarcodeDialog open={true} sample={mockSample} onClose={vi.fn()} />));
     await screen.findByText(/ملصق العينة/);
     await i18n.changeLanguage('en');
@@ -221,7 +221,7 @@ describe('Food pages language reactivity (Round 1)', () => {
     const mockTest = {
       id: 'TEST-001',
       parameter: { name_ar: 'إscherichia coli', name_en: 'Escherichia coli' },
-    };
+    } as any;
     render(wrap(<MicroEvaluationDialog open={true} test={mockTest} onClose={vi.fn()} onChanged={vi.fn()} />));
     await screen.findByText(/التقييم الميكروبيولوجي الآلي/);
     await i18n.changeLanguage('en');
