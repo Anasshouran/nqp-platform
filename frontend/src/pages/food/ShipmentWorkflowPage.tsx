@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -51,6 +52,7 @@ const ShipmentWorkflowPage = () => {
   const [selReferSource, setSelReferSource] = useState('');
   const [referReference, setReferReference] = useState('');
   const [printData, setPrintData] = useState<FinanceReceiptPrint | null>(null);
+  const { t } = useTranslation();
 
   const load = () => {
     if (!id) return;
@@ -73,7 +75,7 @@ const ShipmentWorkflowPage = () => {
       notifySuccess(success);
       load();
     } catch {
-      notifyError('تعذر تنفيذ العملية');
+      notifyError(t('food.shipmentWorkflow.errorExec'));
     } finally {
       setBusy(false);
     }
@@ -83,9 +85,9 @@ const ShipmentWorkflowPage = () => {
     const items = invoiceItems
       .filter((i) => i.name.trim() && i.amount.trim() !== '')
       .map((i) => ({ name: i.name, amount: parseFloat(i.amount) }));
-    if (items.length === 0) { notifyError('أضف بنداً واحداً على الأقل'); return; }
+    if (items.length === 0) { notifyError(t('food.shipmentWorkflow.addItem')); return; }
     if (!id) return;
-    await runAction(() => createInvoice(id, items), 'تم إصدار الفاتورة');
+    await runAction(() => createInvoice(id, items), t('food.shipmentWorkflow.invoiceIssued'));
     setInvoiceOpen(false);
   };
 
@@ -95,39 +97,39 @@ const ShipmentWorkflowPage = () => {
     try {
       const res = await payInvoice(id);
       setPrintData(foodInvoiceToPrintData(res.data.data));
-      notifySuccess('تم تسجيل الدفع وإصدار الإيصال');
+      notifySuccess(t('food.shipmentWorkflow.paySuccess'));
       setPayOpen(false);
       load();
     } catch {
-      notifyError('تعذر تسجيل الدفع');
+      notifyError(t('food.shipmentWorkflow.payError'));
     } finally {
       setBusy(false);
     }
   };
 
   const handleAssign = async () => {
-    if (!id || !selInspector) { notifyError('اختر المفتش'); return; }
-    await runAction(() => assignInspector(id, selInspector), 'تم تعيين المفتش');
+    if (!id || !selInspector) { notifyError(t('food.shipmentWorkflow.selectInspector')); return; }
+    await runAction(() => assignInspector(id, selInspector), t('food.shipmentWorkflow.inspectorAssigned'));
     setAssignOpen(false);
   };
 
   const handleDecide = async () => {
-    if (!id || !selDecision) { notifyError('حدد القرار'); return; }
-    await runAction(() => decideShipment(id, selDecision, decideReason), 'صدر القرار النهائي والشهادة');
+    if (!id || !selDecision) { notifyError(t('food.shipmentWorkflow.selectDecision')); return; }
+    await runAction(() => decideShipment(id, selDecision, decideReason), t('food.shipmentWorkflow.decisionIssued'));
     setDecideOpen(false);
   };
 
   const handleRefer = async () => {
-    if (!id || !selReferSource) { notifyError('حدد مصدر الإحالة'); return; }
-    await runAction(() => referShipment(id, selReferSource, referReference), 'تم تسجيل الإحالة من المعبر');
+    if (!id || !selReferSource) { notifyError(t('food.shipmentWorkflow.selectReferralSource')); return; }
+    await runAction(() => referShipment(id, selReferSource, referReference), t('food.shipmentWorkflow.referralRegistered'));
     setReferOpen(false);
   };
 
   if (!shipment) {
     return (
       <Box>
-        <PageHeader title="تفاصيل الشحنة" eyebrow="الرقابة الغذائية" />
-        <Typography color="text.secondary">جاري تحميل الشحنة...</Typography>
+        <PageHeader title={t("food.shipmentWorkflow.pageHeader.title")} eyebrow={t("food.shipmentWorkflow.pageHeader.eyebrow")} />
+        <Typography color="text.secondary">{t("food.shipmentWorkflow.loading")}</Typography>
       </Box>
     );
   }
@@ -138,29 +140,29 @@ const ShipmentWorkflowPage = () => {
   return (
     <Box>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/app/food')} sx={{ mb: 2 }}>
-        العودة إلى الشحنات
+        t('food.shipmentWorkflow.backToShipments')
       </Button>
       <PageHeader
         title={shipment.manifest_number}
         subtitle={`${shipment.supplier_name} — ${shipment.origin_country}`}
-        eyebrow="دورة حياة الشحنة"
+        eyebrow={t("food.shipmentWorkflow.pageHeader.eyebrow")}
         action={
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <Button variant="outlined" startIcon={<ReceiptIcon />} disabled={!!invoiceOpen || shipment.fees_paid} onClick={() => setInvoiceOpen(true)}>
-              أصدار الفاتورة
+              t('food.shipmentWorkflow.actions.invoice')
             </Button>
             <Button variant="outlined" color="success" startIcon={<PaymentsIcon />} disabled={shipment.fees_paid} onClick={() => setPayOpen(true)}>
-              تسجيل الدفع
+              t('food.shipmentWorkflow.actions.pay')
             </Button>
             <Button variant="outlined" color="info" startIcon={<PersonAssignIcon />} onClick={() => setAssignOpen(true)}>
-              تعيين المفتش
+              t('food.shipmentWorkflow.actions.assignInspector')
             </Button>
 <Button variant="contained" startIcon={<GavelIcon />} onClick={() => setDecideOpen(true)}>
-              القرار النهائي
+              t('food.shipmentWorkflow.actions.decide')
             </Button>
             {!shipment.referred_from && (
               <Button variant="outlined" color="warning" startIcon={<ForwardToInboxIcon />} onClick={() => setReferOpen(true)}>
-                إحالة من معبر
+                t('food.shipmentWorkflow.actions.referral')
               </Button>
             )}
           </Stack>
@@ -169,36 +171,36 @@ const ShipmentWorkflowPage = () => {
 
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <InfoCell label="الحالة" value={statusMeta ? statusMeta.label : shipment.status} />
+          <InfoCell label={t("food.shipmentWorkflow.rows.status")} value={statusMeta ? statusMeta.label : shipment.status} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <InfoCell label="نوع الشحنة" value={shipment.shipment_type === 'IMPORT' ? 'وارد' : 'صادر'} />
+          <InfoCell label="t('food.shipmentWorkflow.rows.shipmentType')" value={shipment.shipment_type === 'IMPORT' ? t('food.shipmentWorkflow.shipmentType.import') : t('food.shipmentWorkflow.shipmentType.export')} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <InfoCell label="المنفذ" value={`${shipment.port_name || shipment.port}${portType[shipment.port_type] ? ` — ${portType[shipment.port_type].label}` : ''}`} />
+          <InfoCell label={t("food.shipmentWorkflow.rows.port")} value={`${shipment.port_name || shipment.port}${portType[shipment.port_type] ? ` — ${portType[shipment.port_type].label}` : ''}`} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <InfoCell label="الرسوم" value={shipment.fees_paid ? 'مدفوعة' : 'غير مدفوعة'} />
+          <InfoCell label={t("food.shipmentWorkflow.rows.fees")} value={shipment.fees_paid ? t('food.shipmentWorkflow.feesPaid') : t('food.shipmentWorkflow.feesUnpaid')} />
         </Grid>
       </Grid>
 
       <Card sx={{ mb: 1 }}>
         <CardContent>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>بيانات الشحنة</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>t('food.shipmentWorkflow.details')</Typography>
           <Stack spacing={1.5}>
-            <Row label="رقم البيان" value={shipment.manifest_number} />
-            <Row label="المورد" value={shipment.supplier_name} />
-            <Row label="بلد المنشأ" value={shipment.origin_country} />
-            <Row label="تاريخ الوصول" value={formatDate(shipment.arrival_date)} />
-            {statusMeta && <Row label="حالة الشحنة" value={statusMeta.label} />}
-            <Row label="القرار النهائي" value={decisionMeta ? decisionMeta.label : '—'} />
-            {shipment.decision_reason && <Row label="سبب القرار" value={shipment.decision_reason} />}
-            {shipment.assigned_inspector_name && <Row label="تعيين المفتش" value={`${shipment.assigned_inspector_name} (${shipment.assigned_at ? formatDateTime(shipment.assigned_at) : '—'})`} />}
-            <Row label="الكاتب المسجّل" value={shipment.recorded_by_name || '—'} />
-            <Row label="الرسوم" value={shipment.fees_paid ? 'مدفوعة' : 'غير مدفوعة'} />
+            <Row label="t('food.shipmentWorkflow.rows.manifestNumber')" value={shipment.manifest_number} />
+            <Row label="t('food.shipmentWorkflow.rows.supplier')" value={shipment.supplier_name} />
+            <Row label="t('food.shipmentWorkflow.rows.originCountry')" value={shipment.origin_country} />
+            <Row label="t('food.shipmentWorkflow.rows.arrivalDate')" value={formatDate(shipment.arrival_date)} />
+            {statusMeta && <Row label="t('food.shipmentWorkflow.rows.shipmentStatus')" value={statusMeta.label} />}
+            <Row label="t('food.shipmentWorkflow.actions.decide')" value={decisionMeta ? decisionMeta.label : t('food.shipmentWorkflow.dash')} />
+            {shipment.decision_reason && <Row label="t('food.shipmentWorkflow.rows.decisionReason')" value={shipment.decision_reason} />}
+            {shipment.assigned_inspector_name && <Row label="t('food.shipmentWorkflow.actions.assignInspector')" value={`${shipment.assigned_inspector_name} (${shipment.assigned_at ? formatDateTime(shipment.assigned_at) : t('food.shipmentWorkflow.dash')})`} />}
+            <Row label="t('food.shipmentWorkflow.rows.recordedBy')" value={shipment.recorded_by_name || t('food.shipmentWorkflow.dash')} />
+            <Row label={t("food.shipmentWorkflow.rows.fees")} value={shipment.fees_paid ? t('food.shipmentWorkflow.feesPaid') : t('food.shipmentWorkflow.feesUnpaid')} />
             {shipment.referred_from && (
               <Row
-                label="مصدر الإحالة"
+                label={t("food.shipmentWorkflow.rows.referralSource")}
                 value={`${referralSource[shipment.referred_from]?.label || shipment.referred_from}${shipment.referral_reference ? ` (${shipment.referral_reference})` : ''}`}
               />
             )}
@@ -208,8 +210,8 @@ const ShipmentWorkflowPage = () => {
 
       <FormDialog
         open={invoiceOpen}
-        title="إصدار الفاتورة"
-        subtitle="حساب الرسوم المستحقة على الشحنة"
+        title={t("food.shipmentWorkflow.dialogs.invoice.title")}
+        subtitle={t("food.shipmentWorkflow.dialogs.invoice.subtitle")}
         icon={<ReceiptIcon />}
         onSubmit={handleInvoice}
         loading={busy}
@@ -218,35 +220,35 @@ const ShipmentWorkflowPage = () => {
         <Stack spacing={1.5}>
           {invoiceItems.map((item, idx) => (
             <Stack key={idx} direction="row" spacing={1}>
-              <TextField label="بند الخدمة" value={item.name} onChange={(e) => {
+              <TextField label={t("food.shipmentWorkflow.dialogs.invoice.serviceItem")} value={item.name} onChange={(e) => {
                 const next = [...invoiceItems]; next[idx] = { ...next[idx], name: e.target.value }; setInvoiceItems(next);
               }} fullWidth size="small" />
-              <TextField label="المبلغ" type="number" value={item.amount} onChange={(e) => {
+              <TextField label={t("food.shipmentWorkflow.dialogs.invoice.amount")} type="number" value={item.amount} onChange={(e) => {
                 const next = [...invoiceItems]; next[idx] = { ...next[idx], amount: e.target.value }; setInvoiceItems(next);
               }} size="small" sx={{ width: 140 }} />
-              <IconButton aria-label="الفاتورة" onClick={() => setInvoiceItems((prev) => prev.filter((_, i) => i !== idx))}><Tooltip title="حذف"><ReceiptIcon sx={{ fontSize: 18 }} /></Tooltip></IconButton>
+              <IconButton aria-label={t("food.shipmentWorkflow.dialogs.invoice.receipt")} onClick={() => setInvoiceItems((prev) => prev.filter((_, i) => i !== idx))}><Tooltip title={t("food.shipmentWorkflow.dialogs.invoice.delete")}><ReceiptIcon sx={{ fontSize: 18 }} /></Tooltip></IconButton>
             </Stack>
           ))}
-          <Button size="small" variant="text" onClick={() => setInvoiceItems((prev) => [...prev, { name: '', amount: '' }])}>+ إضافة بند</Button>
+          <Button size="small" variant="text" onClick={() => setInvoiceItems((prev) => [...prev, { name: '', amount: '' }])}>{t('food.shipmentWorkflow.dialogs.invoice.addItem')}</Button>
         </Stack>
       </FormDialog>
 
       <FormDialog
         open={payOpen}
-        title="تسجيل الدفع"
-        subtitle="تأكيد تحصيل الرسوم وإصدار الإيصال"
+        title="t('food.shipmentWorkflow.actions.pay')"
+        subtitle={t("food.shipmentWorkflow.dialogs.pay.subtitle")}
         icon={<PaymentsIcon />}
         onSubmit={handlePay}
         loading={busy}
         onClose={() => !busy && setPayOpen(false)}
       >
-        <Typography color="text.secondary">سيصدر إيصال دفع بعد تأكيد العملية من قبل المحاسب.</Typography>
+        <Typography color="text.secondary">{t('food.shipmentWorkflow.dialogs.pay.receiptInfo')}</Typography>
       </FormDialog>
 
       <FormDialog
         open={assignOpen}
-        title="تعيين مفتش"
-        subtitle="رئيس القسم يعيّن مفتش رقابة الأغذية لهذه الشحنة"
+        title={t("food.shipmentWorkflow.dialogs.assignInspector.title")}
+        subtitle={t("food.shipmentWorkflow.dialogs.assignInspector.subtitle")}
         icon={<PersonAssignIcon />}
         onSubmit={handleAssign}
         loading={busy}
@@ -254,19 +256,19 @@ const ShipmentWorkflowPage = () => {
         onClose={() => !busy && setAssignOpen(false)}
       >
         <FormSelect
-          label="المفتش"
+          label={t("food.shipmentWorkflow.dialogs.assignInspector.placeholder")}
           value={selInspector}
           onChange={setSelInspector}
           options={inspectors.map((u) => ({ value: u.id, label: u.full_name }))}
-          placeholder="اختر المفتش"
+          placeholder={t("food.shipmentWorkflow.dialogs.assignInspector.placeholder")}
           requiredMark
         />
       </FormDialog>
 
       <FormDialog
         open={decideOpen}
-        title="القرار النهائي"
-        subtitle="رئيس القسم يقرر مصير الشحنة بعد نتائج المختبر"
+        title="t('food.shipmentWorkflow.actions.decide')"
+        subtitle={t("food.shipmentWorkflow.dialogs.decide.subtitle")}
         icon={<GavelIcon />}
         onSubmit={handleDecide}
         loading={busy}
@@ -274,16 +276,16 @@ const ShipmentWorkflowPage = () => {
         onClose={() => !busy && setDecideOpen(false)}
       >
         <FormSelect
-          label="القرار"
+          label={t("food.shipmentWorkflow.dialogs.decide.placeholder")}
           value={selDecision}
           onChange={setSelDecision}
           options={decisionOptions}
-          placeholder="اختر القرار"
+          placeholder={t("food.shipmentWorkflow.dialogs.decide.placeholder")}
           requiredMark
         />
         <Box sx={{ mt: 1.5 }}>
           <TextField
-            label="سبب القرار"
+            label="t('food.shipmentWorkflow.rows.decisionReason')"
             value={decideReason}
             onChange={(e) => setDecideReason(e.target.value)}
             multiline
@@ -296,8 +298,8 @@ const ShipmentWorkflowPage = () => {
 
       <FormDialog
         open={referOpen}
-        title="إحالة من منفذ"
-        subtitle="تسجيل وصول الشحنة كإحالة من نظام الحجر الصحي للمعبر إلى نظام رقابة الأغذية"
+        title={t("food.shipmentWorkflow.dialogs.referral.title")}
+        subtitle={t("food.shipmentWorkflow.dialogs.referral.subtitle")}
         icon={<ForwardToInboxIcon />}
         onSubmit={handleRefer}
         loading={busy}
@@ -305,16 +307,16 @@ const ShipmentWorkflowPage = () => {
         onClose={() => !busy && setReferOpen(false)}
       >
         <FormSelect
-          label="مصدر الإحالة"
+          label={t("food.shipmentWorkflow.rows.referralSource")}
           value={selReferSource}
           onChange={setSelReferSource}
           options={referralSourceOptions}
-          placeholder="اختر مصدر الإحالة"
+          placeholder={t("food.shipmentWorkflow.dialogs.referral.placeholder")}
           requiredMark
         />
         <Box sx={{ mt: 1.5 }}>
           <TextField
-            label="مرجع الإحالة (اختياري)"
+            label={t("food.shipmentWorkflow.dialogs.referral.reference")}
             value={referReference}
             onChange={(e) => setReferReference(e.target.value)}
             fullWidth
@@ -345,7 +347,7 @@ const InfoCell = ({ label, value }: { label: string; value: string }) => (
 const Row = ({ label, value }: { label: string; value: string }) => (
   <Stack direction="row" justifyContent="space-between" spacing={2}>
     <Typography color="text.secondary">{label}</Typography>
-    <Typography sx={{ fontWeight: 700, textAlign: 'right' }}>{value || '—'}</Typography>
+    <Typography sx={{ fontWeight: 700, textAlign: 'right' }}>{value || t('food.shipmentWorkflow.dash')}</Typography>
   </Stack>
 );
 

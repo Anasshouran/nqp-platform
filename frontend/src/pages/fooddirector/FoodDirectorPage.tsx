@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -31,27 +32,9 @@ import TimerIcon from '@mui/icons-material/Timer';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PublicIcon from '@mui/icons-material/Public';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as ChartTooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts';
 import { getFoodDirectorDashboard } from '../../api/endpoints/food';
 import type { FoodDirectorDashboard } from '../../types/food';
 import { notifyError } from '../../utils/toast';
-
-const PERIODS = [
-  { value: 'DAY', label: 'اليوم' },
-  { value: 'WEEK', label: 'أسبوع' },
-  { value: 'MONTH', label: 'شهر' },
-  { value: 'QUARTER', label: 'ربع' },
-  { value: 'YEAR', label: 'سنة' },
-];
 
 const DOT_META = {
   green: { emoji: '🟢', color: 'success.main' },
@@ -75,6 +58,15 @@ const FoodDirectorPage = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const periodRef = useRef(period);
   const reqId = useRef(0);
+  const { t } = useTranslation();
+
+  const PERIODS = [
+    { value: 'DAY', label: t('food.foodDirector.periods.day') },
+    { value: 'WEEK', label: t('food.foodDirector.periods.week') },
+    { value: 'MONTH', label: t('food.foodDirector.periods.month') },
+    { value: 'QUARTER', label: t('food.foodDirector.periods.quarter') },
+    { value: 'YEAR', label: t('food.foodDirector.periods.year') },
+  ];
 
   const loadData = useCallback(async (p: string) => {
     const current = ++reqId.current;
@@ -85,11 +77,11 @@ const FoodDirectorPage = () => {
       setLastUpdated(new Date());
     } catch (e) {
       if (reqId.current !== current) return;
-      notifyError(getErrMessage(e, 'تعذر تحميل اللوحة القومية'));
+      notifyError(getErrMessage(e, t('food.foodDirector.errorLoad')));
     } finally {
       if (reqId.current === current) setLoadingData(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     periodRef.current = period;
@@ -105,17 +97,17 @@ const FoodDirectorPage = () => {
 
   return (
     <Box sx={{ maxWidth: 1500, mx: 'auto', pb: 4 }}>
-      {/* ===== الترويسة القومية ===== */}
+      {/* ===== National Header ===== */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
         <Box>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-            🇸🇩 وزارة الصحة الاتحادية — الإدارة العامة للحجر الصحي القومي
+            {t('food.foodDirector.pageHeader.title')}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            🍎 National Food Safety Command — الإدارة العامة لرقابة الأغذية
+            {t('food.foodDirector.pageHeader.subtitle')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            مركز القيادة التنفيذي القومي · آخر تحديث {fmtTime(lastUpdated)} · تحديث تلقائي كل دقيقة
+            {t('food.foodDirector.pageHeader.eyebrow', { time: fmtTime(lastUpdated) })}
           </Typography>
         </Box>
         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -134,7 +126,7 @@ const FoodDirectorPage = () => {
             size="small"
             color={loadingData ? 'default' : 'success'}
             icon={loadingData ? <WarningAmberIcon /> : <CheckCircleIcon />}
-            label={loadingData ? 'جارٍ التحديث…' : 'محدَث'}
+            label={loadingData ? t('food.foodDirector.loading') : t('food.foodDirector.updated')}
             variant="outlined"
           />
         </Stack>
@@ -142,26 +134,26 @@ const FoodDirectorPage = () => {
 
       {dash && (
         <>
-          {/* ===== الصف الأول: الحجم التشغيلي ===== */}
+          {/* ===== Row 1: Operational Volume ===== */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <KpiCard title="الشحنات" value={fmtNum(dash.kpis.shipments_period)} sub="خلال الفترة — قومي" icon={<Inventory2Icon />} accent="#0a6b58" />
-            <KpiCard title="التفتيش المكتمل" value={fmtNum(dash.kpis.inspections_completed)} sub="خلال الفترة" icon={<SearchIcon />} accent="#b45309" />
-            <KpiCard title="عينات للمختبر" value={fmtNum(dash.kpis.samples_lab)} sub="خلال الفترة" icon={<ScienceIcon />} accent="#6f42c1" />
-            <KpiCard title="شهادات صادرة" value={fmtNum(dash.kpis.certificates_issued)} sub="FCER قوميًا" icon={<WorkspacePremiumIcon />} accent="#0d6efd" />
+            <KpiCard title={t("food.foodDirector.kpis.shipments")} value={fmtNum(dash.kpis.shipments_period)} sub={t("food.foodDirector.kpis.sub.shipments")} icon={<Inventory2Icon />} accent="#0a6b58" />
+            <KpiCard title={t("food.foodDirector.kpis.inspections")} value={fmtNum(dash.kpis.inspections_completed)} sub={t("food.foodDirector.kpis.sub.period")} icon={<SearchIcon />} accent="#b45309" />
+            <KpiCard title={t("food.foodDirector.kpis.samples")} value={fmtNum(dash.kpis.samples_lab)} sub={t("food.foodDirector.kpis.sub.period")} icon={<ScienceIcon />} accent="#6f42c1" />
+            <KpiCard title={t("food.foodDirector.kpis.certificates")} value={fmtNum(dash.kpis.certificates_issued)} sub={t("food.foodDirector.kpis.sub.certificates")} icon={<WorkspacePremiumIcon />} accent="#0d6efd" />
           </Grid>
 
-          {/* ===== الصف الثاني: النسب الوطنية ===== */}
+          {/* ===== Row 2: National Ratios ===== */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <KpiCard title="الإفراج" value={`${dash.outcomes.released_pct}%`} sub="من شحنات الفترة" icon={<TaskAltIcon />} accent="#1d7a54" good={dash.outcomes.released_pct >= 80} />
-            <KpiCard title="الرفض" value={`${dash.outcomes.rejected_pct}%`} sub="من شحنات الفترة" icon={<BlockIcon />} accent="#c63a3a" bad={dash.outcomes.rejected_pct > 10} />
-            <KpiCard title="عالية الخطورة" value={`${dash.outcomes.high_risk_pct}%`} sub="نتائج غير مطابقة" icon={<ReportProblemIcon />} accent="#f0ad4e" bad={dash.outcomes.high_risk_pct > 8} />
-            <KpiCard title="SLA المختبر" value={`${dash.outcomes.sla_pct}%`} sub="هدف >90%" icon={<TimerIcon />} accent="#0dcaf0" good={dash.outcomes.sla_pct >= 90} bad={dash.outcomes.sla_pct < 80} />
+            <KpiCard title={t("food.foodDirector.kpis.release")} value={`${dash.outcomes.released_pct}%`} sub={t("food.foodDirector.kpis.sub.release")} icon={<TaskAltIcon />} accent="#1d7a54" good={dash.outcomes.released_pct >= 80} />
+            <KpiCard title={t("food.foodDirector.kpis.rejection")} value={`${dash.outcomes.rejected_pct}%`} sub={t("food.foodDirector.kpis.sub.release")} icon={<BlockIcon />} accent="#c63a3a" bad={dash.outcomes.rejected_pct > 10} />
+            <KpiCard title={t("food.foodDirector.kpis.highRisk")} value={`${dash.outcomes.high_risk_pct}%`} sub={t("food.foodDirector.kpis.sub.highRisk")} icon={<ReportProblemIcon />} accent="#f0ad4e" bad={dash.outcomes.high_risk_pct > 8} />
+            <KpiCard title={t("food.foodDirector.kpis.sla")} value={`${dash.outcomes.sla_pct}%`} sub={t("food.foodDirector.kpis.sub.sla")} icon={<TimerIcon />} accent="#0dcaf0" good={dash.outcomes.sla_pct >= 90} bad={dash.outcomes.sla_pct < 80} />
           </Grid>
 
-          {/* ===== قسم 4: التنبيهات القومية ===== */}
+          {/* ===== Section 4: National Alerts ===== */}
           {dash.alerts.length > 0 && (
             <Paper elevation={0} sx={{ p: 1.25, borderRadius: 3, border: '1px solid rgba(198,58,58,.35)', bgcolor: 'rgba(198,58,58,.04)', mb: 3 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: '#b02a37' }}>🚨 التنبيهات الغذائية القومية</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#b02a37' }}>{t('food.foodDirector.alerts.title')}</Typography>
               <Stack spacing={0.75} sx={{ mt: 0.75 }}>
                 {dash.alerts.map((a, idx) => (
                   <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -173,19 +165,19 @@ const FoodDirectorPage = () => {
             </Paper>
           )}
 
-          {/* ===== قسم 2: أداء القطاعات ===== */}
-          <SectionTitle title="🗺️ أداء القطاعات — اضغط القطاع لفتح لوحته" />
+          {/* ===== Section 2: Sector Performance ===== */}
+          <SectionTitle title={t("food.foodDirector.sectors.title")} />
           <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ bgcolor: '#f6f8fb' }}>
-                  <TableCell sx={{ fontWeight: 700 }}>القطاع</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>الشحنات</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>التفتيش</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>العينات</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>الرفض</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>SLA</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>الأداء</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.sector")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.shipments")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.inspections")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.samples")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.rejection")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.sla")}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.sectors.performance")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -202,7 +194,7 @@ const FoodDirectorPage = () => {
                     }}
                     tabIndex={0}
                     role="button"
-                    aria-label={`عرض لوحة القطاع ${s.name_ar}`}
+                    aria-label={t('food.foodDirector.sectors.viewSector', { name: s.name_ar })}
                     sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'rgba(10,107,88,.05)' }, '&:focus-visible td': { bgcolor: 'rgba(10,107,88,.12)', outline: '2px solid #0a6b58', outlineOffset: '-2px' } }}
                   >
                     <TableCell>
@@ -234,7 +226,7 @@ const FoodDirectorPage = () => {
                 {dash.sectors_overview.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7}>
-                      <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 3 }}>لا توجد قطاعات مرتبطة بمنافذ</Typography>
+                      <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 3 }}>t('food.foodDirector.sectors.noSectors')</Typography>
                     </TableCell>
                   </TableRow>
                 )}
@@ -242,18 +234,18 @@ const FoodDirectorPage = () => {
             </Table>
           </TableContainer>
 
-          {/* ===== قسم 7: مؤشرات الأداء القومية + قسم 8: الوارد والصادر ===== */}
+          {/* ===== Section 7: National KPIs + Section 8: Import/Export ===== */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <SectionTitle title="📊 مؤشرات الأداء القومية مقابل الأهداف" />
+              <SectionTitle title={t("food.foodDirector.kpiTable.title")} />
               <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ bgcolor: '#f6f8fb' }}>
-                      <TableCell sx={{ fontWeight: 700 }}>المؤشر</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700 }}>الحالي</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700 }}>الهدف</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700 }}>الحالة</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t("food.foodDirector.kpiTable.indicator")}</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.kpiTable.current")}</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.kpiTable.target")}</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>{t("food.foodDirector.kpiTable.status")}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -266,12 +258,12 @@ const FoodDirectorPage = () => {
                           {k.ok ? (
                             <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center">
                               <span aria-hidden>✅</span>
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>محقق</Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>t('food.foodDirector.kpiTable.met')</Typography>
                             </Stack>
                           ) : (
                             <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center">
                               <span aria-hidden>⚠️</span>
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'warning.main' }}>تحتاج تدخلاً</Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: 'warning.main' }}>t('food.foodDirector.kpiTable.needsAction')</Typography>
                             </Stack>
                           )}
                         </TableCell>
@@ -283,7 +275,7 @@ const FoodDirectorPage = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <SectionTitle title="📦 مراقبة التجارة الغذائية — وارد/صادر" />
+              <SectionTitle title={t("food.foodDirector.trade.title")} />
               <Grid container spacing={2}>
                 <TradeCard kind="import" data={dash.trade.import} accent="#0d6efd" />
                 <TradeCard kind="export" data={dash.trade.export} accent="#1d7a54" />
@@ -291,67 +283,67 @@ const FoodDirectorPage = () => {
             </Grid>
           </Grid>
 
-          {/* ===== قسم 6: أداء المختبرات القومي ===== */}
-          <SectionTitle title="🔬 أداء المختبرات القومي" />
+          {/* ===== Section 6: National Lab Performance ===== */}
+          <SectionTitle title={t("food.foodDirector.lab.title")} />
           <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
             <Grid container spacing={1.5}>
-              <DetailCell label="عينات مستلمة" value={fmtNum(dash.lab_performance.samples_received)} />
-              <DetailCell label="قيد التحليل" value={fmtNum(dash.lab_performance.under_analysis)} />
-              <DetailCell label="نتائج مكتملة" value={fmtNum(dash.lab_performance.results_completed)} good />
-              <DetailCell label="متأخرة (48 ساعة)" value={fmtNum(dash.lab_performance.delayed)} bad={dash.lab_performance.delayed > 0} />
-              <DetailCell label="غير مطابقة" value={fmtNum(dash.lab_performance.non_conforming)} bad={dash.lab_performance.non_conforming > 0} />
-              <DetailCell label="🟢 ضمن SLA" value={fmtNum(dash.lab_performance.sla_within)} good />
-              <DetailCell label="🟠 قريبة من SLA" value={fmtNum(dash.lab_performance.sla_near)} />
-              <DetailCell label="🔴 متجاوزة SLA" value={fmtNum(dash.lab_performance.sla_exceeded)} bad={dash.lab_performance.sla_exceeded > 0} />
+              <DetailCell label={t("food.foodDirector.lab.samplesReceived")} value={fmtNum(dash.lab_performance.samples_received)} />
+              <DetailCell label={t("food.foodDirector.lab.underAnalysis")} value={fmtNum(dash.lab_performance.under_analysis)} />
+              <DetailCell label={t("food.foodDirector.lab.resultsCompleted")} value={fmtNum(dash.lab_performance.results_completed)} good />
+              <DetailCell label={t("food.foodDirector.lab.delayed")} value={fmtNum(dash.lab_performance.delayed)} bad={dash.lab_performance.delayed > 0} />
+              <DetailCell label={t("food.foodDirector.lab.nonConforming")} value={fmtNum(dash.lab_performance.non_conforming)} bad={dash.lab_performance.non_conforming > 0} />
+              <DetailCell label={t("food.foodDirector.lab.slaWithin")} value={fmtNum(dash.lab_performance.sla_within)} good />
+              <DetailCell label={t("food.foodDirector.lab.slaNear")} value={fmtNum(dash.lab_performance.sla_near)} />
+              <DetailCell label={t("food.foodDirector.lab.slaExceeded")} value={fmtNum(dash.lab_performance.sla_exceeded)} bad={dash.lab_performance.sla_exceeded > 0} />
             </Grid>
           </Paper>
 
-          {/* ===== قسم 12+13+شهادات: موارد ومال وشهادات ===== */}
+          {/* ===== Section 12+13+Certificates: Resources, Money, Certificates ===== */}
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <SectionTitle title="👥 الموارد القومية" />
+              <SectionTitle title={t("food.foodDirector.staff.title")} />
               <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: { xs: 3, md: 0 } }}>
                 <Stack spacing={1.25}>
-                  <Row label="مفتشو رقابة الأغذية" value={dash.staff.inspectors} icon={<GroupsIcon fontSize="small" />} />
-                  <Row label="مشغولون (≥3 مهام)" value={dash.staff.busy} />
-                  <Row label="متاحون" value={dash.staff.available} good />
-                  <Row label="بلا مهام" value={dash.staff.idle} />
+                  <Row label={t("food.foodDirector.staff.inspectors")} value={dash.staff.inspectors} icon={<GroupsIcon fontSize="small" />} />
+                  <Row label={t("food.foodDirector.staff.busy")} value={dash.staff.busy} />
+                  <Row label={t("food.foodDirector.staff.available")} value={dash.staff.available} good />
+                  <Row label={t("food.foodDirector.staff.idle")} value={dash.staff.idle} />
                 </Stack>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <SectionTitle title="📜 الشهادات القومية" />
+              <SectionTitle title={t("food.foodDirector.certificates.title")} />
               <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: { xs: 3, md: 0 } }}>
                 <Stack spacing={1.25}>
-                  <Row label="صادرة اليوم" value={dash.certificates.issued_today} />
-                  <Row label="خلال الفترة" value={dash.certificates.issued_period} good />
-                  <Row label="بانتظار قرار" value={dash.certificates.awaiting_decision} bad={dash.certificates.awaiting_decision > 10} />
+                  <Row label={t("food.foodDirector.certificates.issuedToday")} value={dash.certificates.issued_today} />
+                  <Row label={t("food.foodDirector.certificates.issuedPeriod")} value={dash.certificates.issued_period} good />
+                  <Row label={t("food.foodDirector.certificates.awaitingDecision")} value={dash.certificates.awaiting_decision} bad={dash.certificates.awaiting_decision > 10} />
                 </Stack>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <SectionTitle title="💰 الإيرادات (الشهر — قراءة فقط)" />
+              <SectionTitle title={t("food.foodDirector.finance.title")} />
               <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                 <Stack spacing={1}>
-                  <FinanceRow label="رسوم التفتيش" value={dash.finance.inspection_fees} />
-                  <FinanceRow label="رسوم المختبر والعينات" value={dash.finance.lab_fees} />
-                  <FinanceRow label="رسوم الشهادات" value={dash.finance.certificate_fees} />
+                  <FinanceRow label={t("food.foodDirector.finance.inspectionFees")} value={dash.finance.inspection_fees} />
+                  <FinanceRow label={t("food.foodDirector.finance.labFees")} value={dash.finance.lab_fees} />
+                  <FinanceRow label={t("food.foodDirector.finance.certificateFees")} value={dash.finance.certificate_fees} />
                   <Divider />
-                  <FinanceRow label="الإجمالي" value={dash.finance.total} bold />
+                  <FinanceRow label={t("food.foodDirector.finance.total")} value={dash.finance.total} bold />
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
                   <PaymentsIcon fontSize="small" sx={{ color: 'success.main' }} />
-                  <Typography variant="caption" color="text.secondary">فواتير محصّلة SDG — الانتقال للنظام المالي دون تعديل قيود</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('food.foodDirector.finance.note')}</Typography>
                 </Stack>
               </Paper>
             </Grid>
           </Grid>
 
-          {/* ===== أقسام قيد التطوير ===== */}
+          {/* ===== Sections Under Development ===== */}
           <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px dashed rgba(10,107,88,.45)', bgcolor: 'rgba(10,107,88,.03)', mt: 3 }}>
-            <Typography variant="body2" sx={{ fontWeight: 700, color: '#085c4b' }}>أقسام قيد التطوير في مركز القيادة القومي</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: '#085c4b' }}>{t('food.foodDirector.devSections.title')}</Typography>
             <Typography variant="caption" color="text.secondary">
-              National Risk Command Center (Risk Engine) · Food Alerts & Recall · المخالفات والإنفاذ · المستوردون والمنتجات الأعلى رفضًا · التحليل الزمني · التقارير التنفيذية PDF/Excel · القرارات الاستراتيجية — تُفعَّل بعد بناء نماذجها الخلفية.
+              {t('food.foodDirector.devSections.description')}
             </Typography>
           </Paper>
         </>
@@ -360,7 +352,7 @@ const FoodDirectorPage = () => {
   );
 };
 
-/* ===================== عناصر مساعدة ===================== */
+/* ===================== Helper Components ===================== */
 
 const SectionTitle = ({ title }: { title: string }) => (
   <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{title}</Typography>
@@ -411,28 +403,30 @@ const TradeCard = ({ kind, data, accent }: {
   kind: 'import' | 'export';
   data: { total: number; released_pct: number; rejected_pct: number; hold_pct: number };
   accent: string;
-}) => (
-  <Grid item xs={12} sm={6}>
-    <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 700 }}>{kind === 'import' ? '⬅️ الوارد IMPORT' : '➡️ الصادر EXPORT'}</Typography>
-        <Chip size="small" label={`${fmtNum(data.total)} شحنة`} sx={{ bgcolor: `${accent}14`, color: accent, fontWeight: 700 }} />
-      </Stack>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
-        <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>✅ إفراج / اعتماد</Typography>
-        <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>{data.released_pct}%</Typography>
-      </Stack>
-      <Box sx={{ height: 8, borderRadius: 4, bgcolor: '#e9ecef', overflow: 'hidden', mb: 1 }}>
-        <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: 'success.main' }} />
-      </Box>
-      <Stack direction="row" justifyContent="space-between">
-        <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>🚫 رفض {data.rejected_pct}%</Typography>
-        <Typography variant="caption" sx={{ fontWeight: 700, color: '#fd7e14' }}>⏸️ احتجاز {data.hold_pct}%</Typography>
-      </Stack>
-    </Paper>
-  </Grid>
-);
-
+}) => {
+  const { t } = useTranslation();
+  return (
+    <Grid item xs={12} sm={6}>
+      <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 700 }}>{kind === 'import' ? t('food.foodDirector.trade.import') : t('food.foodDirector.trade.export')}</Typography>
+          <Chip size="small" label={`${fmtNum(data.total)} ${t('food.foodDirector.trade.shipments')}`} sx={{ bgcolor: `${accent}14`, color: accent, fontWeight: 700 }} />
+        </Stack>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: 'success.main' }}>{t('food.foodDirector.trade.release')}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>{data.released_pct}%</Typography>
+        </Stack>
+        <Box sx={{ height: 8, borderRadius: 4, bgcolor: '#e9ecef', overflow: 'hidden', mb: 1 }}>
+          <Box sx={{ width: `${data.released_pct}%`, height: '100%', bgcolor: 'success.main' }} />
+        </Box>
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>{t('food.foodDirector.trade.rejected', { pct: data.rejected_pct })}</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#fd7e14' }}>{t('food.foodDirector.trade.hold', { pct: data.hold_pct })}</Typography>
+        </Stack>
+      </Paper>
+    </Grid>
+  );
+};
 const FinanceRow = ({ label, value, bold }: { label: string; value: number; bold?: boolean }) => (
   <Stack direction="row" justifyContent="space-between" alignItems="center">
     <Typography variant="body2" sx={{ fontWeight: bold ? 900 : 500 }}>{label}</Typography>

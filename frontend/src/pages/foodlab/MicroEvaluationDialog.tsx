@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
@@ -35,6 +36,7 @@ interface Props {
 }
 
 const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
+  const { t } = useTranslation();
   const [applicable, setApplicable] = useState<ApplicableLimits | null>(null);
   const [loadingLimits, setLoadingLimits] = useState(false);
   const [selLimitId, setSelLimitId] = useState('');
@@ -63,7 +65,7 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
         }
       })
       .catch(() => {
-        if (!cancelled) notifyError('تعذر تحميل المواصفات الميكروبيولوجية');
+        if (!cancelled) notifyError(t('food.microEvaluation.errorLoad'));
       })
       .finally(() => {
         if (!cancelled) setLoadingLimits(false);
@@ -71,7 +73,7 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
     return () => {
       cancelled = true;
     };
-  }, [open, test]);
+  }, [open, test, t]);
 
   const selLimit = applicable?.limits.find((l) => l.id === selLimitId) ?? null;
 
@@ -97,10 +99,10 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
       }));
       const res = await evaluateSampleTest(test.id, { limit: selLimit.id, units: payload });
       setResult(res.data.data);
-      notifySuccess('تم تقييم النتيجة آلياً وفق المواصفة');
+      notifySuccess(t('food.microEvaluation.successEval'));
       onChanged();
     } catch {
-      notifyError('تعذر التقييم الآلي');
+      notifyError(t('food.microEvaluation.errorEval'));
     } finally {
       setEvaluating(false);
     }
@@ -117,42 +119,42 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-            التقييم الميكروبيولوجي الآلي
+            {t('food.microEvaluation.dialogTitle')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {test ? `${test.parameter.name_ar} — مقارنة الوحدات بخطة أخذ العينات (n/c/m/M)` : ''}
+            {test ? t('food.microEvaluation.parameterSubtitle', { name: test.parameter.name_ar }) : ''}
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
-        {loadingLimits && <Typography variant="body2" color="text.secondary">جارٍ تحميل المواصفات السارية...</Typography>}
-        {!loadingLimits && !applicable && <Typography variant="body2" color="text.secondary">لا تتوفر مواصفة سارية لهذا الفحص.</Typography>}
+        {loadingLimits && <Typography variant="body2" color="text.secondary">{t('food.microEvaluation.loading')}</Typography>}
+        {!loadingLimits && !applicable && <Typography variant="body2" color="text.secondary">{t('food.microEvaluation.noApplicable')}</Typography>}
         {!loadingLimits && applicable && (
           <>
             <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1.5, bgcolor: 'background.default' }}>
               <Stack spacing={0.5}>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                  {applicable.spec_version?.label ?? 'لا توجد مواصفة سارية'}
+                  {applicable.spec_version?.label ?? t('food.microEvaluation.noSpecVersion')}
                 </Typography>
                 {applicable.product && (
                   <Typography variant="caption" color="text.secondary">
-                    المنتج: {applicable.product.name_ar}
+                    {t('food.microEvaluation.productLabel', { product: applicable.product.name_ar })}
                   </Typography>
                 )}
                 {applicable.spec_version?.spec_code && (
                   <Typography variant="caption" color="text.secondary">
-                    مرجع المواصفة: {applicable.spec_version.spec_code}
+                    {t('food.microEvaluation.specRef', { ref: applicable.spec_version.spec_code })}
                   </Typography>
                 )}
               </Stack>
             </Box>
 
             {applicable.limits.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">لا توجد حدود ميكروبيولوجية في الإصدار الساري.</Typography>
+              <Typography variant="body2" color="text.secondary">{t('food.microEvaluation.noLimits')}</Typography>
             ) : (
               <>
                 <FormSelect
-                  label="الحد الميكروبيولوجي"
+                  label={t('food.microEvaluation.limitLabel')}
                   value={selLimitId}
                   onChange={selectLimit}
                   options={applicable.limits.map((l) => ({ value: l.id, label: limitLabel(l) }))}
@@ -163,25 +165,25 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
                     <Chip size="small" variant="outlined" label={`c = ${selLimit.c}`} />
                     {selLimit.m != null && <Chip size="small" variant="outlined" label={`m = ${selLimit.m}`} />}
                     {selLimit.M != null && <Chip size="small" variant="outlined" label={`M = ${selLimit.M}`} />}
-                    <Chip size="small" variant="outlined" label={selLimit.unit || 'وحدة'} />
+                    <Chip size="small" variant="outlined" label={selLimit.unit || t('food.microEvaluation.unitFallback')} />
                   </Stack>
                 )}
 
                 <Divider />
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  نتائج وحدات العينة ({units.length})
+                  {t('food.microEvaluation.unitResultsLabel', { n: units.length })}
                 </Typography>
                 {selLimit && isPresenceAbsence(selLimit) ? (
                   units.map((u, idx) => (
                     <FormSelect
                       key={u.unit_number}
-                      label={`الوحدة ${u.unit_number}`}
+                      label={t('food.microEvaluation.unitLabel', { n: u.unit_number })}
                       value={u.qualifier}
                       onChange={(v) => updateUnit(idx, { qualifier: v })}
                       options={[
-                        { value: 'NEGATIVE', label: 'سلبية' },
-                        { value: 'POSITIVE', label: 'موجبة' },
-                        { value: 'TENTATIVE', label: 'غير مؤكدة' },
+                        { value: 'NEGATIVE', label: t('food.microEvaluation.negative') },
+                        { value: 'POSITIVE', label: t('food.microEvaluation.positive') },
+                        { value: 'TENTATIVE', label: t('food.microEvaluation.tentative') },
                       ]}
                     />
                   ))
@@ -190,14 +192,14 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
                     {units.map((u, idx) => (
                       <Box key={u.unit_number} sx={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 1, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
-                          الوحدة {u.unit_number}
+                          {t('food.microEvaluation.unitLabel', { n: u.unit_number })}
                         </Typography>
                         <FormTextField
-                          label="القيمة"
+                          label={t('food.microEvaluation.valueLabel')}
                           type="number"
                           value={u.result_value}
                           onChange={(e) => updateUnit(idx, { result_value: e.target.value })}
-                          placeholder={selLimit?.unit || 'قيمة رقمية'}
+                          placeholder={selLimit?.unit || t('food.microEvaluation.valuePlaceholder')}
                           size="small"
                         />
                       </Box>
@@ -206,7 +208,7 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
                 )}
 
                 <AppButton startIcon={<ScienceIcon />} onClick={submitEvaluation} disabled={evaluating || !selLimit}>
-                  {evaluating ? 'جارٍ التقييم...' : 'تقييم تلقائي وفق المواصفة'}
+                  {evaluating ? t('food.microEvaluation.evaluating') : t('food.microEvaluation.evaluateLabel')}
                 </AppButton>
 
                 {result && (
@@ -220,14 +222,14 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                         {selLimit && isPresenceAbsence(selLimit) ? (
                           <>
-                            <Chip size="small" variant="outlined" label={`موجبة: ${result.counts.positive}`} />
-                            <Chip size="small" variant="outlined" label={`سالبة: ${result.counts.negative}`} />
+                            <Chip size="small" variant="outlined" label={t('food.microEvaluation.positiveCount', { n: result.counts.positive })} />
+                            <Chip size="small" variant="outlined" label={t('food.microEvaluation.negativeCount', { n: result.counts.negative })} />
                           </>
                         ) : (
                           <>
-                            <Chip size="small" variant="outlined" label={`أقل من m: ${result.counts.below_m}`} />
-                            <Chip size="small" variant="outlined" label={`بين m و M: ${result.counts.between_m_M}`} />
-                            <Chip size="small" variant="outlined" label={`فوق M: ${result.counts.above_M}`} />
+                            <Chip size="small" variant="outlined" label={t('food.microEvaluation.belowM', { n: result.counts.below_m })} />
+                            <Chip size="small" variant="outlined" label={t('food.microEvaluation.betweenMAndM', { n: result.counts.between_m_M })} />
+                            <Chip size="small" variant="outlined" label={t('food.microEvaluation.aboveM', { n: result.counts.above_M })} />
                           </>
                         )}
                       </Stack>
@@ -240,7 +242,7 @@ const MicroEvaluationDialog = ({ open, test, onClose, onChanged }: Props) => {
         )}
       </DialogContent>
       <DialogActions>
-        <AppButton variant="ghost" onClick={onClose} disabled={loadingLimits || evaluating}>إغلاق</AppButton>
+        <AppButton variant="ghost" onClick={onClose} disabled={loadingLimits || evaluating}>{t('food.microEvaluation.close')}</AppButton>
       </DialogActions>
     </Dialog>
   );

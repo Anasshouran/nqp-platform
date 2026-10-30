@@ -48,7 +48,7 @@ const fullResponse = {
   statusText: 'OK',
   headers: {},
   config: {},
-} as any;
+};
 
 describe('FoodDirectorPage', () => {
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('FoodDirectorPage', () => {
   });
 
   it('shows a loading state while the dashboard fetches', async () => {
-    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(new Promise(() => {}) as any);
+    vi.mocked(getFoodDirectorDashboard).mockResolvedValue(Promise.resolve());
     wrap(<FoodDirectorPage />);
     expect(await screen.findByText(/جارٍ التحديث/)).toBeTruthy();
   });
