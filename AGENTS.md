@@ -113,3 +113,35 @@ GitHub Actions pipeline:
 3. **Mobile:** typecheck + lint + jest (path-filtered on `mobile/**` + `contracts/**`)
 4. **Docker:** Build and push backend/frontend images to GHCR (on main branch)
 5. **Mirroring:** `mirror-infra-images.yml`, `mirror-postgres-image.yml` keep base images mirrored to GHCR
+
+## Git Workflow (mandatory — enforced by branch protection)
+
+### PR-first
+- **ALL** changes to `main` MUST go through a Pull Request.
+- **NEVER** push directly to `main` (`git push origin main` = violation).
+- Feature work flow: `feature-branch` → `main` (PR) → `main` → `staging` (sync).
+
+### PR source branches
+- PRs to `main` must come from `feature/*`, `fix/*`, `chore/*`, `docs/*`, `test/*`.
+- **NEVER** create PRs from `staging` → `main` (leaks staging-only files: audit reports, logo variants, BrandLogo).
+- `staging` is a deployment target, **not** a feature branch.
+
+### Required CI checks (must pass before merge)
+- Backend — Django tests
+- Frontend — typecheck + lint + build
+- Contract — OpenAPI mobile + breaking-change gate
+- Security baseline (new surfaces)
+- Build & publish backend image
+- Build & publish frontend image
+
+### Violations & remediation
+- **Direct push to `main`:** revert + re-apply via PR, document in incident log.
+- **PR from `staging`:** close PR, cherry-pick into a feature branch, re-PR.
+- **Examples of past violations:** commit `2c07a4e` (direct push to main), PR #127 (staging → main, leaked staging-only files).
+
+### Branch protection (main)
+- Require PR before merging (no direct pushes).
+- Require status checks (list above) to pass.
+- Require branches to be up to date before merging.
+- Do not allow bypassing (including admins).
+- Enforced via GitHub branch protection rules.
