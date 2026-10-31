@@ -43,25 +43,26 @@ import type { AccountingSummaryReport, ExportInspectionForm as ExportFormData, F
 import type { User } from '../../types/user';
 import type { PublicPort } from '../../api/endpoints/public';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
+import { useTranslation } from 'react-i18next';
 
 const statusMeta = shipmentStatus;
 const decisionMeta = foodFinalDecision;
 const messageOptions = Object.entries(messageType).map(([v, m]) => ({ value: v, label: m.label }));
 const samplingReasonOptions = Object.entries(samplingReason).map(([v, m]) => ({ value: v, label: m.label }));
 
-const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+const todayArabic = (locale: string) => new Date().toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 const formatNumber = (value: number): string => {
   if (Number.isNaN(value)) return '0';
   return value.toLocaleString('en-US');
 };
 
-const SECTIONS = [
-  { id: 'clerk', label: 'الكاتب', icon: <Inventory2Icon fontSize="small" /> },
-  { id: 'accountant', label: 'المحاسب', icon: <PaymentsIcon fontSize="small" /> },
-  { id: 'inspector', label: 'المفتش', icon: <FactCheckIcon fontSize="small" /> },
-  { id: 'manager', label: 'مدير القسم', icon: <GavelIcon fontSize="small" /> },
-  { id: 'export-form', label: 'استمارة الكشف', icon: <AssignmentOutlinedIcon fontSize="small" /> },
+const getSections = (t: (key: string) => string) => [
+  { id: 'clerk', label: t('food.ops.sections.clerk'), icon: <Inventory2Icon fontSize="small" /> },
+  { id: 'accountant', label: t('food.ops.sections.accountant'), icon: <PaymentsIcon fontSize="small" /> },
+  { id: 'inspector', label: t('food.ops.sections.inspector'), icon: <FactCheckIcon fontSize="small" /> },
+  { id: 'manager', label: t('food.ops.sections.manager'), icon: <GavelIcon fontSize="small" /> },
+  { id: 'export-form', label: t('food.ops.sections.exportForm'), icon: <AssignmentOutlinedIcon fontSize="small" /> },
 ] as const;
 
 const emptyItem = (): FoodOrderItem => ({
@@ -69,21 +70,23 @@ const emptyItem = (): FoodOrderItem => ({
 });
 
 const FoodOpsPage = () => {
+  const { t, i18n } = useTranslation();
+  const SECTIONS = getSections(t);
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
 
   return (
     <Box>
       <DashboardHero
-        eyebrow="الرقابة الغذائية"
-        title="عمليات رقابة الأغذية"
-        subtitle="تسجيل الطلبات، تحصيل الرسوم، التفتيش وسحب العينات، وإصدار القرارات النهائية"
+        eyebrow={t('food.ops.hero.eyebrow')}
+        title={t('food.ops.hero.title')}
+        subtitle={t('food.ops.hero.subtitle')}
         gradient="emerald"
-        avatarLabel="ع"
+        avatarLabel={t('food.ops.hero.avatar')}
         chips={[
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic(i18n.language === 'ar' ? 'ar' : 'en')}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('food.ops.hero.live')}
           </Box>,
         ]}
       />
@@ -121,6 +124,7 @@ const FoodOpsPage = () => {
 };
 
 const ClerkPanel = () => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ports, setPorts] = useState<PublicPort[]>([]);
@@ -170,13 +174,13 @@ const ClerkPanel = () => {
       const created = await createShipment({ ...form, items: validItems });
       const id = created.data.data.id;
       await submitShipment(id, validItems);
-      notifySuccess('تم تسجيل الطلب وإحالته لتحصيل الرسوم');
+      notifySuccess(t('food.ops.notify.requestRegistered'));
       setOpen(false);
       setForm({ manifest_number: '', port: '', supplier_name: '', origin_country: '', arrival_date: '', shipment_type: 'IMPORT', customs_number: '', certificate_no: '', vessel_name: '', clearing_agent: '', message_type: 'COMMERCIAL', loading_port: '', bill_of_lading: '' });
       setItems([emptyItem()]);
       load();
     } catch {
-      notifyError('تعذر تسجيل الطلب');
+      notifyError(t('food.ops.notify.requestRegisterFailed'));
     } finally {
       setBusy(false);
     }
@@ -274,13 +278,13 @@ const ClerkPanel = () => {
         <Stack spacing={1}>
           {items.map((item, idx) => (
             <Stack key={idx} direction="row" spacing={1}>
-              <TextField label="اسم الصنف" value={item.product_name} onChange={(e) => editItem(idx, 'product_name', e.target.value)} size="small" sx={{ flex: 2 }} />
-              <TextField label="الماركة" value={item.brand} onChange={(e) => editItem(idx, 'brand', e.target.value)} size="small" sx={{ flex: 1 }} />
-              <TextField label="المنشأ" value={item.origin} onChange={(e) => editItem(idx, 'origin', e.target.value)} size="small" sx={{ flex: 1 }} />
-              <TextField label="الوزن (كغ)" type="number" value={item.weight_kg} onChange={(e) => editItem(idx, 'weight_kg', e.target.value)} size="small" sx={{ width: 110 }} />
-              <TextField label="العبوات" type="number" value={item.package_count} onChange={(e) => editItem(idx, 'package_count', e.target.value)} size="small" sx={{ width: 90 }} />
-              <TextField label="نوع العبوة" value={item.package_type} onChange={(e) => editItem(idx, 'package_type', e.target.value)} size="small" sx={{ flex: 1 }} />
-              <IconButton aria-label="حذف" onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))}><Tooltip title="حذف"><DeleteIcon fontSize="small" /></Tooltip></IconButton>
+              <TextField label={t('food.ops.clerk.itemName')} value={item.product_name} onChange={(e) => editItem(idx, 'product_name', e.target.value)} size="small" sx={{ flex: 2 }} />
+              <TextField label={t('food.ops.clerk.brand')} value={item.brand} onChange={(e) => editItem(idx, 'brand', e.target.value)} size="small" sx={{ flex: 1 }} />
+              <TextField label={t('food.ops.clerk.origin')} value={item.origin} onChange={(e) => editItem(idx, 'origin', e.target.value)} size="small" sx={{ flex: 1 }} />
+              <TextField label={t('food.ops.clerk.weightKg')} type="number" value={item.weight_kg} onChange={(e) => editItem(idx, 'weight_kg', e.target.value)} size="small" sx={{ width: 110 }} />
+              <TextField label={t('food.ops.clerk.packages')} type="number" value={item.package_count} onChange={(e) => editItem(idx, 'package_count', e.target.value)} size="small" sx={{ width: 90 }} />
+              <TextField label={t('food.ops.clerk.packageType')} value={item.package_type} onChange={(e) => editItem(idx, 'package_type', e.target.value)} size="small" sx={{ flex: 1 }} />
+              <IconButton aria-label={t('food.ops.clerk.delete')} onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))}><Tooltip title={t('food.ops.clerk.delete')}><DeleteIcon fontSize="small" /></Tooltip></IconButton>
             </Stack>
           ))}
           <Stack direction="row" spacing={2} alignItems="center">

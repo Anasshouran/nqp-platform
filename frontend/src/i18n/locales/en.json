@@ -6544,6 +6544,140 @@
       "alerts": {
         "title": "🚨 National Food Alerts"
       }
+    },
+    "exportInspection": {
+      "title": "Export Food Resources Inspection Form",
+      "subtitle": "Electronic record — data read automatically from request, inspection, lab and decision",
+      "print": "Print / PDF",
+      "section1": "1) Request Information",
+      "section2": "2) Exporter Information",
+      "section3": "3) Food Resources Data",
+      "section4": "4) Inspection",
+      "section5": "5) Samples & Laboratory",
+      "section6": "6) Decision",
+      "section7": "7) Export Certificate",
+      "noSamples": "No samples",
+      "noItems": "No items",
+      "noInspection": "No inspection recorded for this shipment yet.",
+      "noFinalDecision": "No final decision yet.",
+      "noCertificate": "No certificate issued yet.",
+      "bench": {
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "toxicology": "Toxicology",
+        "molecular": "Molecular"
+      },
+      "sampleStatus": {
+        "received": "Received",
+        "underTesting": "Under Testing",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "sentToLab": "Sent to Lab"
+      },
+      "decision": {
+        "needsAnalysis": "Needs Analysis",
+        "nonCompliant": "Non-Compliant",
+        "compliant": "Compliant"
+      },
+      "field": {
+        "manifestNumber": "Request/Manifest No.",
+        "date": "Date",
+        "customsNumber": "Customs No.",
+        "submittedAt": "Submitted At",
+        "messageType": "Message Type",
+        "port": "Port",
+        "exporterName": "Exporter Name",
+        "supplierName": "Company/Supplier",
+        "clearingAgent": "Clearing Agent",
+        "originCountry": "Origin Country",
+        "vesselName": "Vessel/Transport",
+        "loadingPort": "Loading Port",
+        "billOfLading": "Bill of Lading",
+        "certificateNo": "Certificate No.",
+        "totalWeightKg": "Total Weight (kg)",
+        "status": "Status",
+        "inspectionDate": "Inspection Date",
+        "inspector": "Inspector",
+        "result": "Result",
+        "temperature": "Temperature (°C)",
+        "productionDate": "Production Date",
+        "expiryDate": "Expiry Date",
+        "batchNumber": "Batch No.",
+        "containerStatus": "Container Status",
+        "packageCondition": "Package Condition",
+        "damagedSound": "Damaged / Sound",
+        "damagedSoundWeight": "Damaged / Sound Weight (kg)",
+        "notes": "Notes",
+        "inspectionNotes": "Inspection Notes",
+        "finalDecision": "Final Decision",
+        "finalApproval": "Final Approval",
+        "decisionDate": "Decision Date",
+        "decisionReason": "Reason",
+        "certificateNumber": "Certificate No.",
+        "certificateType": "Type",
+        "issuedAt": "Issued At",
+        "damaged": "Damaged Packages",
+        "sound": "Sound Packages",
+        "damagedWeight": "Damaged Weight (kg)",
+        "soundWeight": "Sound Weight (kg)"
+      },
+      "table": {
+        "item": "Item",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packageCount": "Packages",
+        "packageType": "Package Type"
+      },
+      "sampleTable": {
+        "sampleNumber": "Sample No.",
+        "sampleType": "Type",
+        "reason": "Reason",
+        "lab": "Lab",
+        "labBranch": "Lab/Branch",
+        "status": "Status"
+      },
+      "sign": {
+        "inspector": "Inspector",
+        "sectionHead": "Section Head",
+        "foodDirector": "Food Control Director"
+      },
+      "footer": "Electronic document from National Quarantine Platform — Food Control System · {date}"
+    },
+    "ops": {
+      "hero": {
+        "eyebrow": "Food Control",
+        "title": "Food Control Operations",
+        "subtitle": "Register requests, collect fees, inspection & sampling, and issue final decisions",
+        "avatar": "F",
+        "live": "Live"
+      },
+      "sections": {
+        "clerk": "Clerk",
+        "accountant": "Accountant",
+        "inspector": "Inspector",
+        "manager": "Section Manager",
+        "exportForm": "Inspection Form"
+      },
+      "notify": {
+        "requestRegistered": "Request registered and referred for fee collection",
+        "requestRegisterFailed": "Failed to register request"
+      },
+      "clerk": {
+        "itemName": "Item Name",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packages": "Packages",
+        "packageType": "Package Type",
+        "delete": "Delete"
+      },
+      "common": {
+        "none": "None",
+        "noneRequests": "No requests",
+        "noneInspection": "No requests awaiting inspection",
+        "noneMovement": "No movements in this period."
+      }
     }
   }
 }

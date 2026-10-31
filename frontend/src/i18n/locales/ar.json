@@ -6544,6 +6544,140 @@
       "alerts": {
         "title": "🚨 التنبيهات الغذائية القومية"
       }
+    },
+    "exportInspection": {
+      "title": "استمارة كشف الموارد الغذائية الصادرة",
+      "subtitle": "سجل إلكتروني — بيانات تُقرأ تلقائياً من الطلب والكشف والمختبر والقرار",
+      "print": "طباعة / PDF",
+      "section1": "1) بيانات الطلب",
+      "section2": "2) بيانات المصدّر",
+      "section3": "3) بيانات الموارد الغذائية",
+      "section4": "4) الكشف والتفتيش",
+      "section5": "5) العينات والفحص المخبري",
+      "section6": "6) القرار",
+      "section7": "7) شهادة الصادر",
+      "noSamples": "لا توجد عينات",
+      "noItems": "لا توجد أصناف",
+      "noInspection": "لم يُسجَّل كشف تفتيش بعد لهذه الشحنة.",
+      "noFinalDecision": "لا يوجد قرار نهائي بعد.",
+      "noCertificate": "لم تُصدر شهادة بعد.",
+      "bench": {
+        "microbiology": "الأحياء الدقيقة",
+        "chemistry": "الكيمياء",
+        "toxicology": "السموم",
+        "molecular": "الجزيئي"
+      },
+      "sampleStatus": {
+        "received": "مستلمة",
+        "underTesting": "قيد التحليل",
+        "completed": "مكتملة",
+        "rejected": "مرفوضة",
+        "sentToLab": "أُرسلت للمختبر"
+      },
+      "decision": {
+        "needsAnalysis": "يحتاج تحليل",
+        "nonCompliant": "غير مطابق",
+        "compliant": "مطابق"
+      },
+      "field": {
+        "manifestNumber": "رقم الطلب / البيان",
+        "date": "التاريخ",
+        "customsNumber": "الرقم الجمركي",
+        "submittedAt": "تاريخ الإحالة",
+        "messageType": "نوع الرسالة",
+        "port": "المنفذ",
+        "exporterName": "اسم المصدر",
+        "supplierName": "الشركة / المورّد",
+        "clearingAgent": "المخلص الجمركي",
+        "originCountry": "بلد المنشأ",
+        "vesselName": "وسيلة النقل / الباخرة",
+        "loadingPort": "ميناء الشحن",
+        "billOfLading": "بوليصة الشحن",
+        "certificateNo": "رقم شهادة الاعتماد",
+        "totalWeightKg": "الوزن الإجمالي (كغ)",
+        "status": "الحالة",
+        "inspectionDate": "تاريخ الكشف",
+        "inspector": "المفتش",
+        "result": "النتيجة",
+        "temperature": "درجة الحرارة (م°)",
+        "productionDate": "تاريخ الإنتاج",
+        "expiryDate": "تاريخ الانتهاء",
+        "batchNumber": "رقم التشغيلة",
+        "containerStatus": "حالة الحاوية",
+        "packageCondition": "حالة العبوات",
+        "damagedSound": "عبوات تالفة / سليمة",
+        "damagedSoundWeight": "وزن تالف / سليم (كغ)",
+        "notes": "ملاحظات",
+        "inspectionNotes": "ملاحظات الكشف",
+        "finalDecision": "القرار النهائي",
+        "finalApproval": "الاعتماد النهائي",
+        "decisionDate": "تاريخ القرار",
+        "decisionReason": "السبب",
+        "certificateNumber": "رقم الشهادة",
+        "certificateType": "النوع",
+        "issuedAt": "تاريخ الإصدار",
+        "damaged": "عبوات تالفة",
+        "sound": "عبوات سليمة",
+        "damagedWeight": "وزن تالف (كغ)",
+        "soundWeight": "وزن سليم (كغ)"
+      },
+      "table": {
+        "item": "اسم المادة",
+        "brand": "الماركة",
+        "origin": "المنشأ",
+        "weightKg": "الوزن (كغ)",
+        "packageCount": "العبوات",
+        "packageType": "نوع التعبئة"
+      },
+      "sampleTable": {
+        "sampleNumber": "رقم العينة",
+        "sampleType": "النوع",
+        "reason": "سبب السحب",
+        "lab": "المختبر",
+        "labBranch": "المختبر / الشعبة",
+        "status": "الحالة"
+      },
+      "sign": {
+        "inspector": "المفتش",
+        "sectionHead": "رئيس القسم",
+        "foodDirector": "مدير إدارة رقابة الأغذية"
+      },
+      "footer": "وثيقة إلكترونية من منصة الحجر الصحي القومي — نظام رقابة الأغذية · {date}"
+    },
+    "ops": {
+      "hero": {
+        "eyebrow": "الرقابة الغذائية",
+        "title": "عمليات رقابة الأغذية",
+        "subtitle": "تسجيل الطلبات، تحصيل الرسوم، التفتيش وسحب العينات، وإصدار القرارات النهائية",
+        "avatar": "ع",
+        "live": "مباشر"
+      },
+      "sections": {
+        "clerk": "الكاتب",
+        "accountant": "المحاسب",
+        "inspector": "المفتش",
+        "manager": "مدير القسم",
+        "exportForm": "استمارة الكشف"
+      },
+      "notify": {
+        "requestRegistered": "تم تسجيل الطلب وإحالته لتحصيل الرسوم",
+        "requestRegisterFailed": "تعذر تسجيل الطلب"
+      },
+      "clerk": {
+        "itemName": "اسم الصنف",
+        "brand": "الماركة",
+        "origin": "المنشأ",
+        "weightKg": "الوزن (كغ)",
+        "packages": "العبوات",
+        "packageType": "نوع العبوة",
+        "delete": "حذف"
+      },
+      "common": {
+        "none": "لا توجد",
+        "noneRequests": "لا توجد طلبات",
+        "noneInspection": "لا توجد طلبات بانتظار التفتيش",
+        "noneMovement": "لا توجد حركة في هذه الفترة."
+      }
     }
   }
 }
