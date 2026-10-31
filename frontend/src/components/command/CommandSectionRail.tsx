@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import type { Theme } from '@mui/material/styles';
 import type { CommandSectionDef } from './useCommandSections';
 
@@ -38,8 +39,9 @@ const CommandSectionRail = ({
   active,
   onNavigate,
   accent = 'primary.main',
-  label = 'الأقسام',
+  label = 'sidebar.sections',
 }: CommandSectionRailProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isWide = useMediaQuery(theme.breakpoints.up('md'));
   const color = resolveToken(theme, accent);
@@ -64,7 +66,7 @@ const CommandSectionRail = ({
           variant="overline"
           sx={{ mr: 0.5, color: 'text.disabled', fontWeight: 700, fontSize: 11, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}
         >
-          {label}
+          {t(label)}
         </Typography>
       ) : null}
       {sections.map((s) => {
@@ -73,7 +75,7 @@ const CommandSectionRail = ({
           <Chip
             key={s.id}
             icon={s.icon}
-            label={s.label}
+            label={t(s.label)}
             onClick={() => onNavigate(s.id)}
             sx={{
               flexShrink: 0,
