@@ -6661,7 +6661,19 @@
       },
       "notify": {
         "requestRegistered": "تم تسجيل الطلب وإحالته لتحصيل الرسوم",
-        "requestRegisterFailed": "تعذر تسجيل الطلب"
+        "requestRegisterFailed": "تعذر تسجيل الطلب",
+        "inspectorAssigned": "تم التعيين",
+        "assignFailed": "تعذر التعيين",
+        "selectDecision": "حدد القرار",
+        "decisionIssued": "صدر القرار النهائي والشهادة",
+        "formLoadFailed": "تعذر تحميل الاستمارة",
+        "inspectionRegistered": "تم تسجيل تقرير التفتيش",
+        "inspectionSaveFailed": "تعذر حفظ التفتيش",
+        "selectSampleType": "حدد نوع العينة",
+        "sampleSent": "تم سحب العينة وإرسالها للمختبر",
+        "sampleRegisterFailed": "تعذر تسجيل العينة",
+        "reviewApproved": "اعتمدت",
+        "reviewFailed": "تعذر المراجعة"
       },
       "clerk": {
         "itemName": "اسم الصنف",
@@ -6670,13 +6682,137 @@
         "weightKg": "الوزن (كغ)",
         "packages": "العبوات",
         "packageType": "نوع العبوة",
-        "delete": "حذف"
+        "delete": "حذف",
+        "sections": "أقسام اللوحة",
+        "completeFields": "أكمل الحقول الأساسية",
+        "newRequest": "طلب وارد جديد",
+        "title": "تسجيل طلب وارد (الكاتب)",
+        "subtitle": "إدخال بيانات الطلب والأصناف؛ تُحسب العينات والرسوم تلقائياً بعد الحفظ",
+        "manifestNumber": "رقم البيان",
+        "supplierName": "اسم المورد",
+        "originCountry": "بلد المنشأ",
+        "arrivalDate": "تاريخ الوصول",
+        "customsNumber": "الرقم الجمركي",
+        "certificateNo": "رقم شهادة الاعتماد",
+        "vesselName": "اسم الباخرة",
+        "clearingAgent": "المخلّص الجمركي",
+        "loadingPort": "ميناء الشحن",
+        "billOfLading": "رقم البوليصة",
+        "port": "المنفذ",
+        "messageType": "نوع الرسالة",
+        "items": "الأصناف",
+        "addItem": "إضافة صنف",
+        "totalWeight": "الوزن الإجمالي:",
+        "samplingPolicy": " سياسة العينات:",
+        "samplesAuto": "سيُحسب عدد العينات تلقائياً حسب الخدة."
       },
       "common": {
         "none": "لا توجد",
         "noneRequests": "لا توجد طلبات",
         "noneInspection": "لا توجد طلبات بانتظار التفتيش",
         "noneMovement": "لا توجد حركة في هذه الفترة."
+      },
+      "bench": {
+        "microbiology": "الأحياء الدقيقة",
+        "chemistry": "الكيمياء",
+        "toxicology": "السموم",
+        "molecular": "الجزيئي"
+      },
+      "table": {
+        "manifestNumber": "رقم البيان",
+        "supplier": "المورد",
+        "origin": "المنشأ",
+        "type": "النوع",
+        "message": "الرسالة",
+        "weight": "الوزن",
+        "samples": "عينات",
+        "arrival": "الوصول",
+        "status": "الحالة",
+        "decision": "القرار",
+        "inspector": "المفتش",
+        "feesDue": "الرسوم المستحقة",
+        "action": "الإجراء"
+      },
+      "kpi": {
+        "totalRequests": "إجمالي الطلبات",
+        "receiptsToday": "إيصالات (اليوم)",
+        "totalCollected": "إجمالي المحصَّل",
+        "pendingCollection": "طلبات بانتظار التحصيل"
+      },
+      "manager": {
+        "assignInspector": "تعيين مفتش",
+        "review": "مراجعة",
+        "finalDecision": "قرار نهائي",
+        "pendingTitle": "طلبات بانتظار المفتش",
+        "assignTitle": "تعيين مفتش (مدير القسم)",
+        "inspector": "المفتش",
+        "decisionTitle": "القرار النهائي (مدير القسم)",
+        "decisionSubtitle": "إفراج / إفراج جزئي أو مؤقت / إعادة تصدير / تحويل / حجز / إتلاف",
+        "decisionLabel": "القرار",
+        "decisionReason": "سبب القرار",
+        "section": "مدير القسم"
+      },
+      "inspector": {
+        "inspect": "تفتيش",
+        "sample": "سحب عينة",
+        "assign": "تعيين",
+        "assignInspector": "المفتش للتعيين",
+        "selectInspector": "اختر المفتش",
+        "pendingTitle": "طلبات بانتظار المفتش",
+        "reportsTitle": " Koreports التفتيش الميداني",
+        "reportsSubtitle": "بيانات التفتيش والنتيجة (مطابق / غير مطابق / يحتاج تحليل)"
+      },
+      "empty": {
+        "none": "لا توجد",
+        "noRequests": "لا توجد طلبات",
+        "registerFirst": "سجّل أول طلب استيراد",
+        "noMovement": "لا توجد حركة في هذه الفترة.",
+        "noInspection": "لا توجد طلبات بانتظار التفتيش"
+      },
+      "report": {
+        "title": "تقرير التحصيل",
+        "print": "طباعة الإيصال"
+      },
+      "period": {
+        "day": "اليوم",
+        "week": "الأسبوع",
+        "month": "الشهر"
+      },
+      "accountant": {
+        "pendingTitle": "طلبات بانتظار تحصيل الرسوم",
+        "pendingDesc": "الطلبات المسجلة تنتقل هنا بعد إحالتها من الكاتب",
+        "collect": "تحصيل وإصدار إيصال"
+      },
+      "export": {
+        "title": "شحنات الصادر — استمارة كشف الموارد الغذائية",
+        "emptyTitle": "لا توجد شحنات صادر",
+        "emptyDesc": "سجّل طلب صادر من تبويب الكاتب لعرض استمارة الكشف",
+        "formTitle": "استمارة كشف الموارد الغذائية الصادرة",
+        "formSubtitle": "سجل إلكتروني مكوّن من بيانات الطلب والكشف والمختبر والقرار",
+        "close": "إغلاق",
+        "loading": "جارٍ تجميع بيانات الاستمارة…",
+        "noData": "لا توجد بيانات للاستمارة."
+      },
+      "inspection": {
+        "productionDate": "تاريخ الإنتاج",
+        "expiryDate": "تاريخ الانتهاء",
+        "temperature": "الحرارة (م)",
+        "batchNumber": "رقم التشغيلة",
+        "containerCondition": "حالة الماعون",
+        "containerStatus": "حالة الحاوية",
+        "packageCondition": "حالة العبوات",
+        "damagedPackages": "عبوات تالفة",
+        "soundPackages": "عبوات سليمة",
+        "damagedWeight": "وزن تالف",
+        "soundWeight": "وزن سليم",
+        "notes": "ملاحظات"
+      },
+      "sampling": {
+        "title": "سحب عينة للتحليل",
+        "subtitle": "تسجيل العينة وتسكين سبب أخذها ودفعت المختبر",
+        "sampleType": "نوع العينة",
+        "reason": "سبب أخذ العينة",
+        "bench": "دكتة المختبر"
       }
     }
   }
