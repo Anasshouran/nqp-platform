@@ -6544,6 +6544,276 @@
       "alerts": {
         "title": "🚨 National Food Alerts"
       }
+    },
+    "exportInspection": {
+      "title": "Export Food Resources Inspection Form",
+      "subtitle": "Electronic record — data read automatically from request, inspection, lab and decision",
+      "print": "Print / PDF",
+      "section1": "1) Request Information",
+      "section2": "2) Exporter Information",
+      "section3": "3) Food Resources Data",
+      "section4": "4) Inspection",
+      "section5": "5) Samples & Laboratory",
+      "section6": "6) Decision",
+      "section7": "7) Export Certificate",
+      "noSamples": "No samples",
+      "noItems": "No items",
+      "noInspection": "No inspection recorded for this shipment yet.",
+      "noFinalDecision": "No final decision yet.",
+      "noCertificate": "No certificate issued yet.",
+      "bench": {
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "toxicology": "Toxicology",
+        "molecular": "Molecular"
+      },
+      "sampleStatus": {
+        "received": "Received",
+        "underTesting": "Under Testing",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "sentToLab": "Sent to Lab"
+      },
+      "decision": {
+        "needsAnalysis": "Needs Analysis",
+        "nonCompliant": "Non-Compliant",
+        "compliant": "Compliant"
+      },
+      "field": {
+        "manifestNumber": "Request/Manifest No.",
+        "date": "Date",
+        "customsNumber": "Customs No.",
+        "submittedAt": "Submitted At",
+        "messageType": "Message Type",
+        "port": "Port",
+        "exporterName": "Exporter Name",
+        "supplierName": "Company/Supplier",
+        "clearingAgent": "Clearing Agent",
+        "originCountry": "Origin Country",
+        "vesselName": "Vessel/Transport",
+        "loadingPort": "Loading Port",
+        "billOfLading": "Bill of Lading",
+        "certificateNo": "Certificate No.",
+        "totalWeightKg": "Total Weight (kg)",
+        "status": "Status",
+        "inspectionDate": "Inspection Date",
+        "inspector": "Inspector",
+        "result": "Result",
+        "temperature": "Temperature (°C)",
+        "productionDate": "Production Date",
+        "expiryDate": "Expiry Date",
+        "batchNumber": "Batch No.",
+        "containerStatus": "Container Status",
+        "packageCondition": "Package Condition",
+        "damagedSound": "Damaged / Sound",
+        "damagedSoundWeight": "Damaged / Sound Weight (kg)",
+        "notes": "Notes",
+        "inspectionNotes": "Inspection Notes",
+        "finalDecision": "Final Decision",
+        "finalApproval": "Final Approval",
+        "decisionDate": "Decision Date",
+        "decisionReason": "Reason",
+        "certificateNumber": "Certificate No.",
+        "certificateType": "Type",
+        "issuedAt": "Issued At",
+        "damaged": "Damaged Packages",
+        "sound": "Sound Packages",
+        "damagedWeight": "Damaged Weight (kg)",
+        "soundWeight": "Sound Weight (kg)"
+      },
+      "table": {
+        "item": "Item",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packageCount": "Packages",
+        "packageType": "Package Type"
+      },
+      "sampleTable": {
+        "sampleNumber": "Sample No.",
+        "sampleType": "Type",
+        "reason": "Reason",
+        "lab": "Lab",
+        "labBranch": "Lab/Branch",
+        "status": "Status"
+      },
+      "sign": {
+        "inspector": "Inspector",
+        "sectionHead": "Section Head",
+        "foodDirector": "Food Control Director"
+      },
+      "footer": "Electronic document from National Quarantine Platform — Food Control System · {date}"
+    },
+    "ops": {
+      "hero": {
+        "eyebrow": "Food Control",
+        "title": "Food Control Operations",
+        "subtitle": "Register requests, collect fees, inspection & sampling, and issue final decisions",
+        "avatar": "F",
+        "live": "Live"
+      },
+      "sections": {
+        "clerk": "Clerk",
+        "accountant": "Accountant",
+        "inspector": "Inspector",
+        "manager": "Section Manager",
+        "exportForm": "Inspection Form"
+      },
+      "notify": {
+        "requestRegistered": "Request registered and referred for fee collection",
+        "requestRegisterFailed": "Failed to register request",
+        "inspectorAssigned": "Assigned",
+        "assignFailed": "Failed to assign",
+        "selectDecision": "Select decision",
+        "decisionIssued": "Final decision and certificate issued",
+        "formLoadFailed": "Failed to load form",
+        "inspectionRegistered": "Inspection report registered",
+        "inspectionSaveFailed": "Failed to save inspection",
+        "selectSampleType": "Select sample type",
+        "sampleSent": "Sample withdrawn and sent to lab",
+        "sampleRegisterFailed": "Failed to register sample",
+        "reviewApproved": "Approved",
+        "reviewFailed": "Review failed"
+      },
+      "clerk": {
+        "itemName": "Item Name",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packages": "Packages",
+        "packageType": "Package Type",
+        "delete": "Delete",
+        "sections": "Dashboard Sections",
+        "completeFields": "Complete required fields",
+        "newRequest": "New Inbound Request",
+        "title": "Register Inbound Request (Clerk)",
+        "subtitle": "Enter request and item data; samples and fees calculated automatically after save",
+        "manifestNumber": "Manifest No.",
+        "supplierName": "Supplier Name",
+        "originCountry": "Origin Country",
+        "arrivalDate": "Arrival Date",
+        "customsNumber": "Customs No.",
+        "certificateNo": "Certificate No.",
+        "vesselName": "Vessel Name",
+        "clearingAgent": "Clearing Agent",
+        "loadingPort": "Loading Port",
+        "billOfLading": "Bill of Lading",
+        "port": "Port",
+        "messageType": "Message Type",
+        "items": "Items",
+        "addItem": "Add Item",
+        "totalWeight": "Total Weight:",
+        "samplingPolicy": "Sampling Policy:",
+        "samplesAuto": "Sample count will be calculated automatically per policy."
+      },
+      "common": {
+        "none": "None",
+        "noneRequests": "No requests",
+        "noneInspection": "No requests awaiting inspection",
+        "noneMovement": "No movements in this period."
+      },
+      "bench": {
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "toxicology": "Toxicology",
+        "molecular": "Molecular"
+      },
+      "table": {
+        "manifestNumber": "Manifest No.",
+        "supplier": "Supplier",
+        "origin": "Origin",
+        "type": "Type",
+        "message": "Message",
+        "weight": "Weight",
+        "samples": "Samples",
+        "arrival": "Arrival",
+        "status": "Status",
+        "decision": "Decision",
+        "inspector": "Inspector",
+        "feesDue": "Fees Due",
+        "action": "Action"
+      },
+      "kpi": {
+        "totalRequests": "Total Requests",
+        "receiptsToday": "Receipts (Today)",
+        "totalCollected": "Total Collected",
+        "pendingCollection": "Pending Collection"
+      },
+      "manager": {
+        "assignInspector": "Assign Inspector",
+        "review": "Review",
+        "finalDecision": "Final Decision",
+        "pendingTitle": "Requests Awaiting Inspector",
+        "assignTitle": "Assign Inspector (Section Manager)",
+        "inspector": "Inspector",
+        "decisionTitle": "Final Decision (Section Manager)",
+        "decisionSubtitle": "Release / Partial/Temporary Release / Re-export / Transfer / Detention / Destruction",
+        "decisionLabel": "Decision",
+        "decisionReason": "Decision Reason",
+        "section": "Section Manager"
+      },
+      "inspector": {
+        "inspect": "Inspect",
+        "sample": "Sample",
+        "assign": "Assign",
+        "assignInspector": "Inspector to Assign",
+        "selectInspector": "Select Inspector",
+        "pendingTitle": "Requests Awaiting Inspector",
+        "reportsTitle": "Field Inspection Reports",
+        "reportsSubtitle": "Inspection data and result (Compliant / Non-Compliant / Needs Analysis)"
+      },
+      "empty": {
+        "none": "None",
+        "noRequests": "No requests",
+        "registerFirst": "Register first import request",
+        "noMovement": "No movements in this period.",
+        "noInspection": "No requests awaiting inspection"
+      },
+      "report": {
+        "title": "Collection Report",
+        "print": "Print Receipt"
+      },
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "accountant": {
+        "pendingTitle": "Requests Pending Fee Collection",
+        "pendingDesc": "Registered requests move here after referral from clerk",
+        "collect": "Collect & Issue Receipt"
+      },
+      "export": {
+        "title": "Export Shipments — Food Resources Inspection Form",
+        "emptyTitle": "No export shipments",
+        "emptyDesc": "Register an export request from the clerk tab to view the inspection form",
+        "formTitle": "Export Food Resources Inspection Form",
+        "formSubtitle": "Electronic record composed of request, inspection, lab and decision data",
+        "close": "Close",
+        "loading": "Assembling form data…",
+        "noData": "No form data available."
+      },
+      "inspection": {
+        "productionDate": "Production Date",
+        "expiryDate": "Expiry Date",
+        "temperature": "Temperature (°C)",
+        "batchNumber": "Batch No.",
+        "containerCondition": "Container Condition",
+        "containerStatus": "Container Status",
+        "packageCondition": "Package Condition",
+        "damagedPackages": "Damaged Packages",
+        "soundPackages": "Sound Packages",
+        "damagedWeight": "Damaged Weight",
+        "soundWeight": "Sound Weight",
+        "notes": "Notes"
+      },
+      "sampling": {
+        "title": "Withdraw Sample for Analysis",
+        "subtitle": "Register sample and assign reason and lab bench",
+        "sampleType": "Sample Type",
+        "reason": "Sampling Reason",
+        "bench": "Lab Bench"
+      }
     }
   }
 }
