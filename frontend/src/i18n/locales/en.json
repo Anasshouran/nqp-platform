@@ -7283,6 +7283,315 @@
       "str258": "Translation missing str258",
       "str260": "Translation missing str260",
       "str261": "Translation missing str261"
+    },
+    "receptionLab": {
+      "  ": "  ",
+      "   ": "   ",
+      "   _ ": "   _ ",
+      "   _ _ _ ": "   _ _ _ ",
+      "   _ _ _ _ ": "   _ _ _ _ ",
+      "  200 g": "  200 g",
+      "  6 ": "  6 ",
+      "  _ ": "  _ ",
+      "  _ _ ": "  _ _ ",
+      "  _ _ a": "  _ _ a",
+      "  milk powder": "  milk powder",
+      " _ ": " _ ",
+      " _   ": " _   ",
+      " _   _ ": " _   _ ",
+      " _   _   qr": " _   _   QR",
+      " _   _ _ ": " _   _ _ ",
+      " _   qr _ _ _ ": " _   QR _ _ _ ",
+      " _  _ ": " _  _ ",
+      " _  _ _   _   _ _ _ ": " _  _ _   _   _ _ _ ",
+      " _  _ _ _ _ _ _ _ ": " _  _ _ _ _ _ _ _ ",
+      " _ _ ": " _ _ ",
+      " _ _   ": " _ _   ",
+      " _ _   _ ": " _ _   _ ",
+      " _ _   _ _ ": " _ _   _ _ ",
+      " _ _   _ _ _ _ _ ": " _ _   _ _ _ _ _ ",
+      " _ _   fclis": " _ _   FCLIS",
+      " _ _  _ ": " _ _  _ ",
+      " _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ": " _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ ": " _ _ _ ",
+      " _ _ _   ": " _ _ _   ",
+      " _ _ _   qr _ _ _ _ _ _ ": " _ _ _   QR _ _ _ _ _ _ ",
+      " _ _ _ _ ": " _ _ _ _ ",
+      " _ _ _ _   ": " _ _ _ _   ",
+      " _ _ _ _  catalog ": " _ _ _ _  catalog ",
+      " _ _ _ _ _   ": " _ _ _ _ _   ",
+      " _ _ _ _ _   qr": " _ _ _ _ _   QR",
+      " _ _ _ _ _   qr ": " _ _ _ _ _   QR ",
+      " _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ ": " _ _ _ _ _ _ ",
+      " _ _ _ _ _ _   ": " _ _ _ _ _ _   ",
+      " _ _ _ _ _ _   qr _ _ _ _ _ _ ": " _ _ _ _ _ _   QR _ _ _ _ _ _ ",
+      " _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ": " _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ qr   barcode": " _ _ _ _ _ QR   barcode",
+      " barcode   qr": " barcode   QR",
+      " barcode   qr _ _ _ _ _ _ _ _ _ _ _ _ _ _ ": " barcode   QR _ _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      "alerts": "alerts",
+      "attr29": "attr29",
+      "attr31": "attr31",
+      "attr38": "attr38",
+      "attr40": "attr40",
+      "attr41": "attr41",
+      "attr43": "attr43",
+      "attr44": "attr44",
+      "attr45": "attr45",
+      "attr46": "attr46",
+      "attr47": "attr47",
+      "attr49": "attr49",
+      "attr50": "attr50",
+      "attr51": "attr51",
+      "attr53": "attr53",
+      "attr54": "attr54",
+      "attr56": "attr56",
+      "attr57": "attr57",
+      "attr58": "attr58",
+      "attr59": "attr59",
+      "attr60": "attr60",
+      "attr61": "attr61",
+      "attr62": "attr62",
+      "attr63": "attr63",
+      "attr64": "attr64",
+      "attr65": "attr65",
+      "attr66": "attr66",
+      "attr68": "attr68",
+      "attr69": "attr69",
+      "attr70": "attr70",
+      "attr71": "attr71",
+      "attr72": "attr72",
+      "attr73": "attr73",
+      "attr74": "attr74",
+      "checklist": {
+        "data_match": "checklist data_match",
+        "label": "checklist label",
+        "no_leak": "checklist no_leak",
+        "package_intact": "checklist package_intact",
+        "quantity_ok": "checklist quantity_ok",
+        "seal_match": "checklist seal_match",
+        "stored_ok": "checklist stored_ok"
+      },
+      "classification": {
+        "ANALYSIS": "classification ANALYSIS",
+        "REFERENCE": "classification REFERENCE"
+      },
+      "footer": {
+        "help": "footer help",
+        "settings": "footer settings"
+      },
+      "help_description": "help_description",
+      "help_title": "help_title",
+      "inspector": "inspector",
+      "jsx1": "jsx1",
+      "jsx10": "jsx10",
+      "jsx11": "jsx11",
+      "jsx17": "jsx17",
+      "jsx18": "jsx18",
+      "jsx19": "jsx19",
+      "jsx2": "jsx2",
+      "jsx20": "jsx20",
+      "jsx22": "jsx22",
+      "jsx23": "jsx23",
+      "jsx28": "jsx28",
+      "jsx29": "jsx29",
+      "jsx3": "jsx3",
+      "jsx33": "jsx33",
+      "jsx37": "jsx37",
+      "jsx4": "jsx4",
+      "jsx40": "jsx40",
+      "jsx44": "jsx44",
+      "jsx45": "jsx45",
+      "jsx46": "jsx46",
+      "jsx47": "jsx47",
+      "jsx48": "jsx48",
+      "jsx5": "jsx5",
+      "jsx52": "jsx52",
+      "jsx6": "jsx6",
+      "jsx7": "jsx7",
+      "jsx8": "jsx8",
+      "jsx9": "jsx9",
+      "location": "location",
+      "no_results": "no_results",
+      "not_received": "not_received",
+      "original_sample": "original_sample",
+      "packaging": {
+        "conditions": {
+          "damaged": "packaging conditions damaged",
+          "excellent": "packaging conditions excellent",
+          "intact": "packaging conditions intact",
+          "partially_damaged": "packaging conditions partially_damaged"
+        },
+        "types": {
+          "bags": "packaging types bags",
+          "barrels": "packaging types barrels",
+          "cartons": "packaging types cartons",
+          "glass_bottles": "packaging types glass_bottles",
+          "metal_bottles": "packaging types metal_bottles",
+          "other": "packaging types other"
+        }
+      },
+      "priority": {
+        "HIGH": "priority HIGH",
+        "NORMAL": "priority NORMAL",
+        "URGENT": "priority URGENT"
+      },
+      "quantity": "quantity",
+      "reason": "reason",
+      "received": "received",
+      "received_by": "received_by",
+      "refRetention": {
+        "alternatives_for_review": "refRetention alternatives_for_review",
+        "other": "refRetention other",
+        "re_test_on_appeal": "refRetention re_test_on_appeal"
+      },
+      "rejectReasons": {
+        "data_mismatch": "rejectReasons data_mismatch",
+        "no_analysis_request": "rejectReasons no_analysis_request",
+        "no_sample_definition": "rejectReasons no_sample_definition",
+        "other": "rejectReasons other",
+        "package_damaged": "rejectReasons package_damaged",
+        "quantity_insufficient": "rejectReasons quantity_insufficient",
+        "sample_expired": "rejectReasons sample_expired",
+        "temperature_unsuitable": "rejectReasons temperature_unsuitable"
+      },
+      "rejection_reason": "rejection_reason",
+      "role": "role",
+      "sample_reception_officer": "sample_reception_officer",
+      "seal": "seal",
+      "sections": {
+        "alerts": "sections alerts",
+        "overview": "sections overview",
+        "workflow": "sections workflow"
+      },
+      "sidebar": {
+        "alerts": {
+          "children": {
+            "alerts": "sidebar alerts children alerts"
+          }
+        },
+        "alerts_label": "sidebar alerts_label",
+        "barcode": {
+          "children": {
+            "create": "sidebar barcode children create",
+            "print": "sidebar barcode children print"
+          }
+        },
+        "barcode_label": "sidebar barcode_label",
+        "deliver": {
+          "children": {
+            "log": "sidebar deliver children log",
+            "ready": "sidebar deliver children ready"
+          }
+        },
+        "deliver_label": "sidebar deliver_label",
+        "home": {
+          "children": {
+            "home": "sidebar home children home"
+          }
+        },
+        "home_label": "sidebar home_label",
+        "receive": {
+          "children": {
+            "incoming": "sidebar receive children incoming",
+            "pending": "sidebar receive children pending",
+            "register": "sidebar receive children register"
+          }
+        },
+        "receive_label": "sidebar receive_label",
+        "rejected": {
+          "children": {
+            "rejected": "sidebar rejected children rejected"
+          }
+        },
+        "rejected_label": "sidebar rejected_label",
+        "reports": {
+          "children": {
+            "reports": "sidebar reports children reports"
+          }
+        },
+        "reports_label": "sidebar reports_label",
+        "samples": {
+          "children": {
+            "samples": "sidebar samples children samples"
+          }
+        },
+        "samples_label": "sidebar samples_label",
+        "verify": {
+          "children": {
+            "data": "sidebar verify children data",
+            "request": "sidebar verify children request"
+          }
+        },
+        "verify_label": "sidebar verify_label"
+      },
+      "stations": {
+        "airport": "stations airport",
+        "free_zone": "stations free_zone",
+        "north_port": "stations north_port",
+        "osif_port": "stations osif_port",
+        "osman_diqna_port": "stations osman_diqna_port",
+        "south_port": "stations south_port"
+      },
+      "str51": "str51",
+      "str52": "str52",
+      "str53": "str53",
+      "str54": "str54",
+      "str56": "str56",
+      "str57": "str57",
+      "str58": "str58",
+      "str59": "str59",
+      "str60": "str60",
+      "str61": "str61",
+      "str62": "str62",
+      "str63": "str63",
+      "str64": "str64",
+      "str65": "str65",
+      "str66": "str66",
+      "str67": "str67",
+      "str68": "str68",
+      "str69": "str69",
+      "str70": "str70",
+      "str71": "str71",
+      "str73": "str73",
+      "str74": "str74",
+      "str75": "str75",
+      "str76": "str76",
+      "str77": "str77",
+      "str78": "str78",
+      "str79": "str79",
+      "str80": "str80",
+      "str81": "str81",
+      "str82": "str82",
+      "str83": "str83",
+      "str84": "str84",
+      "str85": "str85",
+      "str87": "str87",
+      "str89": "str89",
+      "str90": "str90",
+      "str91": "str91",
+      "str92": "str92",
+      "str93": "str93",
+      "str94": "str94",
+      "str95": "str95",
+      "str96": "str96",
+      "str97": "str97",
+      "transferred": "transferred",
+      "units": {
+        "count": "units count",
+        "g": "units g",
+        "kg": "units kg",
+        "liter": "units liter",
+        "ml": "units ml"
+      },
+      "workflow_rules": "workflow_rules",
+      "workflow_steps": "workflow_steps"
     }
   }
 }

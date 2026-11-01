@@ -7283,6 +7283,315 @@
       "str258": "翻译缺失 str258",
       "str260": "翻译缺失 str260",
       "str261": "翻译缺失 str261"
+    },
+    "receptionLab": {
+      "  ": "نص:   ",
+      "   ": "نص:    ",
+      "   _ ": "نص:    _ ",
+      "   _ _ _ ": "نص:    _ _ _ ",
+      "   _ _ _ _ ": "نص:    _ _ _ _ ",
+      "  200 g": "نص:   200 g",
+      "  6 ": "نص:   6 ",
+      "  _ ": "نص:   _ ",
+      "  _ _ ": "نص:   _ _ ",
+      "  _ _ a": "نص:   _ _ a",
+      "  milk powder": "نص:   milk powder",
+      " _ ": "نص:  _ ",
+      " _   ": "نص:  _   ",
+      " _   _ ": "نص:  _   _ ",
+      " _   _   qr": "نص:  _   _   qr",
+      " _   _ _ ": "نص:  _   _ _ ",
+      " _   qr _ _ _ ": "نص:  _   qr _ _ _ ",
+      " _  _ ": "نص:  _  _ ",
+      " _  _ _   _   _ _ _ ": "نص:  _  _ _   _   _ _ _ ",
+      " _  _ _ _ _ _ _ _ ": "نص:  _  _ _ _ _ _ _ _ ",
+      " _ _ ": "نص:  _ _ ",
+      " _ _   ": "نص:  _ _   ",
+      " _ _   _ ": "نص:  _ _   _ ",
+      " _ _   _ _ ": "نص:  _ _   _ _ ",
+      " _ _   _ _ _ _ _ ": "نص:  _ _   _ _ _ _ _ ",
+      " _ _   fclis": "نص:  _ _   fclis",
+      " _ _  _ ": "نص:  _ _  _ ",
+      " _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ": "نص:  _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ ": "نص:  _ _ _ ",
+      " _ _ _   ": "نص:  _ _ _   ",
+      " _ _ _   qr _ _ _ _ _ _ ": "نص:  _ _ _   qr _ _ _ _ _ _ ",
+      " _ _ _ _ ": "نص:  _ _ _ _ ",
+      " _ _ _ _   ": "نص:  _ _ _ _   ",
+      " _ _ _ _  catalog ": "نص:  _ _ _ _  catalog ",
+      " _ _ _ _ _   ": "نص:  _ _ _ _ _   ",
+      " _ _ _ _ _   qr": "نص:  _ _ _ _ _   qr",
+      " _ _ _ _ _   qr ": "نص:  _ _ _ _ _   qr ",
+      " _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ ",
+      " _ _ _ _ _ _   ": "نص:  _ _ _ _ _ _   ",
+      " _ _ _ _ _ _   qr _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _   qr _ _ _ _ _ _ ",
+      " _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ _ ": "نص:  _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ qr   barcode": "نص:  _ _ _ _ _ qr   barcode",
+      " barcode   qr": "نص:  barcode   qr",
+      " barcode   qr _ _ _ _ _ _ _ _ _ _ _ _ _ _ ": "نص:  barcode   qr _ _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      "alerts": "نص: alerts",
+      "attr29": "نص: attr29",
+      "attr31": "نص: attr31",
+      "attr38": "نص: attr38",
+      "attr40": "نص: attr40",
+      "attr41": "نص: attr41",
+      "attr43": "نص: attr43",
+      "attr44": "نص: attr44",
+      "attr45": "نص: attr45",
+      "attr46": "نص: attr46",
+      "attr47": "نص: attr47",
+      "attr49": "نص: attr49",
+      "attr50": "نص: attr50",
+      "attr51": "نص: attr51",
+      "attr53": "نص: attr53",
+      "attr54": "نص: attr54",
+      "attr56": "نص: attr56",
+      "attr57": "نص: attr57",
+      "attr58": "نص: attr58",
+      "attr59": "نص: attr59",
+      "attr60": "نص: attr60",
+      "attr61": "نص: attr61",
+      "attr62": "نص: attr62",
+      "attr63": "نص: attr63",
+      "attr64": "نص: attr64",
+      "attr65": "نص: attr65",
+      "attr66": "نص: attr66",
+      "attr68": "نص: attr68",
+      "attr69": "نص: attr69",
+      "attr70": "نص: attr70",
+      "attr71": "نص: attr71",
+      "attr72": "نص: attr72",
+      "attr73": "نص: attr73",
+      "attr74": "نص: attr74",
+      "checklist": {
+        "data_match": "نص: data_match",
+        "label": "نص: label",
+        "no_leak": "نص: no_leak",
+        "package_intact": "نص: package_intact",
+        "quantity_ok": "نص: quantity_ok",
+        "seal_match": "نص: seal_match",
+        "stored_ok": "نص: stored_ok"
+      },
+      "classification": {
+        "ANALYSIS": "نص: ANALYSIS",
+        "REFERENCE": "نص: REFERENCE"
+      },
+      "footer": {
+        "help": "نص: help",
+        "settings": "نص: settings"
+      },
+      "help_description": "نص: help_description",
+      "help_title": "نص: help_title",
+      "inspector": "نص: inspector",
+      "jsx1": "نص: jsx1",
+      "jsx10": "نص: jsx10",
+      "jsx11": "نص: jsx11",
+      "jsx17": "نص: jsx17",
+      "jsx18": "نص: jsx18",
+      "jsx19": "نص: jsx19",
+      "jsx2": "نص: jsx2",
+      "jsx20": "نص: jsx20",
+      "jsx22": "نص: jsx22",
+      "jsx23": "نص: jsx23",
+      "jsx28": "نص: jsx28",
+      "jsx29": "نص: jsx29",
+      "jsx3": "نص: jsx3",
+      "jsx33": "نص: jsx33",
+      "jsx37": "نص: jsx37",
+      "jsx4": "نص: jsx4",
+      "jsx40": "نص: jsx40",
+      "jsx44": "نص: jsx44",
+      "jsx45": "نص: jsx45",
+      "jsx46": "نص: jsx46",
+      "jsx47": "نص: jsx47",
+      "jsx48": "نص: jsx48",
+      "jsx5": "نص: jsx5",
+      "jsx52": "نص: jsx52",
+      "jsx6": "نص: jsx6",
+      "jsx7": "نص: jsx7",
+      "jsx8": "نص: jsx8",
+      "jsx9": "نص: jsx9",
+      "location": "نص: location",
+      "no_results": "نص: no_results",
+      "not_received": "نص: not_received",
+      "original_sample": "نص: original_sample",
+      "packaging": {
+        "conditions": {
+          "damaged": "نص: damaged",
+          "excellent": "نص: excellent",
+          "intact": "نص: intact",
+          "partially_damaged": "نص: partially_damaged"
+        },
+        "types": {
+          "bags": "نص: bags",
+          "barrels": "نص: barrels",
+          "cartons": "نص: cartons",
+          "glass_bottles": "نص: glass_bottles",
+          "metal_bottles": "نص: metal_bottles",
+          "other": "نص: other"
+        }
+      },
+      "priority": {
+        "HIGH": "نص: HIGH",
+        "NORMAL": "نص: NORMAL",
+        "URGENT": "نص: URGENT"
+      },
+      "quantity": "نص: quantity",
+      "reason": "نص: reason",
+      "received": "نص: received",
+      "received_by": "نص: received_by",
+      "refRetention": {
+        "alternatives_for_review": "نص: alternatives_for_review",
+        "other": "نص: other",
+        "re_test_on_appeal": "نص: re_test_on_appeal"
+      },
+      "rejectReasons": {
+        "data_mismatch": "نص: data_mismatch",
+        "no_analysis_request": "نص: no_analysis_request",
+        "no_sample_definition": "نص: no_sample_definition",
+        "other": "نص: other",
+        "package_damaged": "نص: package_damaged",
+        "quantity_insufficient": "نص: quantity_insufficient",
+        "sample_expired": "نص: sample_expired",
+        "temperature_unsuitable": "نص: temperature_unsuitable"
+      },
+      "rejection_reason": "نص: rejection_reason",
+      "role": "نص: role",
+      "sample_reception_officer": "نص: sample_reception_officer",
+      "seal": "نص: seal",
+      "sections": {
+        "alerts": "نص: alerts",
+        "overview": "نص: overview",
+        "workflow": "نص: workflow"
+      },
+      "sidebar": {
+        "alerts": {
+          "children": {
+            "alerts": "نص: alerts"
+          }
+        },
+        "alerts_label": "نص: alerts_label",
+        "barcode": {
+          "children": {
+            "create": "نص: create",
+            "print": "نص: print"
+          }
+        },
+        "barcode_label": "نص: barcode_label",
+        "deliver": {
+          "children": {
+            "log": "نص: log",
+            "ready": "نص: ready"
+          }
+        },
+        "deliver_label": "نص: deliver_label",
+        "home": {
+          "children": {
+            "home": "نص: home"
+          }
+        },
+        "home_label": "نص: home_label",
+        "receive": {
+          "children": {
+            "incoming": "نص: incoming",
+            "pending": "نص: pending",
+            "register": "نص: register"
+          }
+        },
+        "receive_label": "نص: receive_label",
+        "rejected": {
+          "children": {
+            "rejected": "نص: rejected"
+          }
+        },
+        "rejected_label": "نص: rejected_label",
+        "reports": {
+          "children": {
+            "reports": "نص: reports"
+          }
+        },
+        "reports_label": "نص: reports_label",
+        "samples": {
+          "children": {
+            "samples": "نص: samples"
+          }
+        },
+        "samples_label": "نص: samples_label",
+        "verify": {
+          "children": {
+            "data": "نص: data",
+            "request": "نص: request"
+          }
+        },
+        "verify_label": "نص: verify_label"
+      },
+      "stations": {
+        "airport": "نص: airport",
+        "free_zone": "نص: free_zone",
+        "north_port": "نص: north_port",
+        "osif_port": "نص: osif_port",
+        "osman_diqna_port": "نص: osman_diqna_port",
+        "south_port": "نص: south_port"
+      },
+      "str51": "نص: str51",
+      "str52": "نص: str52",
+      "str53": "نص: str53",
+      "str54": "نص: str54",
+      "str56": "نص: str56",
+      "str57": "نص: str57",
+      "str58": "نص: str58",
+      "str59": "نص: str59",
+      "str60": "نص: str60",
+      "str61": "نص: str61",
+      "str62": "نص: str62",
+      "str63": "نص: str63",
+      "str64": "نص: str64",
+      "str65": "نص: str65",
+      "str66": "نص: str66",
+      "str67": "نص: str67",
+      "str68": "نص: str68",
+      "str69": "نص: str69",
+      "str70": "نص: str70",
+      "str71": "نص: str71",
+      "str73": "نص: str73",
+      "str74": "نص: str74",
+      "str75": "نص: str75",
+      "str76": "نص: str76",
+      "str77": "نص: str77",
+      "str78": "نص: str78",
+      "str79": "نص: str79",
+      "str80": "نص: str80",
+      "str81": "نص: str81",
+      "str82": "نص: str82",
+      "str83": "نص: str83",
+      "str84": "نص: str84",
+      "str85": "نص: str85",
+      "str87": "نص: str87",
+      "str89": "نص: str89",
+      "str90": "نص: str90",
+      "str91": "نص: str91",
+      "str92": "نص: str92",
+      "str93": "نص: str93",
+      "str94": "نص: str94",
+      "str95": "نص: str95",
+      "str96": "نص: str96",
+      "str97": "نص: str97",
+      "transferred": "نص: transferred",
+      "units": {
+        "count": "نص: count",
+        "g": "نص: g",
+        "kg": "نص: kg",
+        "liter": "نص: liter",
+        "ml": "نص: ml"
+      },
+      "workflow_rules": "نص: workflow_rules",
+      "workflow_steps": "نص: workflow_steps"
     }
   }
 }
