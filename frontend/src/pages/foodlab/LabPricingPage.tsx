@@ -136,7 +136,7 @@ const LabPricingPage = () => {
               <Typography variant="caption" color="text.secondary">
                 {t('food.labPricing.summary.totalTariff')}
               </Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{fmt(totalPrice)} ج.س</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{t('food.labPricing.amountWithCurrency', { amount: fmt(totalPrice) })}</Typography>
             </Box>
           </Grid>
         )}
@@ -160,7 +160,7 @@ const LabPricingPage = () => {
                 <Stack direction="row" spacing={1} alignItems="baseline">
                   <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{s.count}</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {t('food.labPricing.summary.perTest', { total: fmt(s.total) })} ج.س
+                    {t('food.labPricing.summary.perTestWithCurrency', { total: fmt(s.total) })}
                   </Typography>
                 </Stack>
               </Box>
