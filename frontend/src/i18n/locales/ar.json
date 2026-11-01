@@ -6287,9 +6287,11 @@
       "messages": {
         "deleted": "تم حذف الفحص"
       },
+      "amountWithCurrency": "{{amount}} ج.س",
       "summary": {
         "totalTariff": "إجمالي التعرفة",
-        "perTest": "فحص — {total}"
+        "perTest": "فحص — {total}",
+        "perTestWithCurrency": "{{total}} ج.س لكل اختبار"
       },
       "table": {
         "title": "معاملات التحليل",

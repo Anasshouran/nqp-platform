@@ -6287,9 +6287,11 @@
       "messages": {
         "deleted": "Test deleted"
       },
+      "amountWithCurrency": "{{amount}} SDG",
       "summary": {
         "totalTariff": "Total Tariff",
-        "perTest": "{total} per test"
+        "perTest": "{total} per test",
+        "perTestWithCurrency": "{{total}} SDG per test"
       },
       "table": {
         "title": "Lab Transactions",
