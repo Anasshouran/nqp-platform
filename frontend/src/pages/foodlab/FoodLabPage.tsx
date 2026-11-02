@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -113,15 +114,6 @@ import { useAuth } from '../../hooks/useAuth';
 
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const SECTIONS = [
-  { id: 'dashboard', label: 'لوحة التحكم', icon: <DashboardIcon fontSize="small" /> },
-  { id: 'reception', label: 'الاستلام والتسجيل', icon: <AddIcon fontSize="small" /> },
-  { id: 'custody', label: 'سلسلة الحيازة', icon: <HistoryIcon fontSize="small" /> },
-  { id: 'sources', label: 'مصادر العينات', icon: <CategoryIcon fontSize="small" /> },
-  { id: 'references', label: 'العينات المرجعية', icon: <ArchiveIcon fontSize="small" /> },
-  { id: 'certificates', label: 'الشهادات', icon: <DescriptionIcon fontSize="small" /> },
-] as const;
-
 /* ---------- ثوابت ---------- */
 
 const FLOW_ORDER = ['RECEIVED', 'COORDINATED', 'ASSIGNED', 'UNDER_TESTING', 'READY_FOR_APPROVAL', 'APPROVED', 'DISPATCHED'];
@@ -129,23 +121,25 @@ const FLOW_ORDER = ['RECEIVED', 'COORDINATED', 'ASSIGNED', 'UNDER_TESTING', 'REA
 const LAB_INVOICE_PENDING = new Set(['DRAFT', 'ISSUED', 'PENDING_PAYMENT', 'OVERDUE', 'PENDING']);
 
 const CLASSIFICATION_LABELS: Record<string, string> = {
-  ANALYSIS: 'للتحليل',
-  REFERENCE: 'مرجعية',
+  ANALYSIS: 'analysis',
+  REFERENCE: 'reference',
 };
+
+const classificationLabel = (key: string, t: (k: string) => string) => t(`food.foodLab.classificationLabels.${key}`);
 
 const CLASSIFICATION_TONES: Record<string, 'default' | 'primary'> = {
   ANALYSIS: 'primary',
   REFERENCE: 'default',
 };
 
-const WORKFLOW_ACTIONS: Record<string, { label: string; icon: React.ReactNode; hint: string }> = {
-  coordinate: { label: 'تنسيق العينة', icon: <LinkIcon />, hint: 'تحديد منسّق عينات المختبر' },
-  assignSection: { label: 'إسناد للقسم', icon: <BiotechIcon />, hint: 'تحديد قسم المختبر ورئيس القسم' },
-  assignAnalyst: { label: 'إسناد للمحلل', icon: <ScienceIcon />, hint: 'تحديد المحلّل المسؤول' },
-  submitForApproval: { label: 'رفع للاعتماد', icon: <VerifiedIcon />, hint: 'رفع النتائج لمدير المختبر' },
-  approve: { label: 'اعتماد النتيجة', icon: <VerifiedIcon />, hint: 'الاعتماد النهائي' },
-  invoice: { label: 'فاتورة الرسوم', icon: <PaymentsIcon />, hint: 'إصدار فاتورة رسوم التحليل وسدادها أو إعفاؤها' },
-  dispatch: { label: 'إرسال النتائج', icon: <LocalShippingIcon />, hint: 'إرسال النتيجة للجهة الطالبة' },
+const WORKFLOW_ACTIONS: Record<string, { labelKey: string; icon: React.ReactNode; hintKey: string }> = {
+  coordinate: { labelKey: 'food.foodLab.workflowActions.coordinate.label', icon: <LinkIcon />, hintKey: 'food.foodLab.workflowActions.coordinate.hint' },
+  assignSection: { labelKey: 'food.foodLab.workflowActions.assignSection.label', icon: <BiotechIcon />, hintKey: 'food.foodLab.workflowActions.assignSection.hint' },
+  assignAnalyst: { labelKey: 'food.foodLab.workflowActions.assignAnalyst.label', icon: <ScienceIcon />, hintKey: 'food.foodLab.workflowActions.assignAnalyst.hint' },
+  submitForApproval: { labelKey: 'food.foodLab.workflowActions.submitForApproval.label', icon: <VerifiedIcon />, hintKey: 'food.foodLab.workflowActions.submitForApproval.hint' },
+  approve: { labelKey: 'food.foodLab.workflowActions.approve.label', icon: <VerifiedIcon />, hintKey: 'food.foodLab.workflowActions.approve.hint' },
+  invoice: { labelKey: 'food.foodLab.workflowActions.invoice.label', icon: <PaymentsIcon />, hintKey: 'food.foodLab.workflowActions.invoice.hint' },
+  dispatch: { labelKey: 'food.foodLab.workflowActions.dispatch.label', icon: <LocalShippingIcon />, hintKey: 'food.foodLab.workflowActions.dispatch.hint' },
 };
 
 /* ---------- المكوّن الرئيسي ---------- */
@@ -200,6 +194,15 @@ const FoodDataTable = <T extends { id: string },>({
 
 const FoodLabPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const sections = useMemo(() => [
+    { id: 'dashboard', labelKey: 'food.foodLab.sections.dashboard', icon: <DashboardIcon fontSize="small" /> },
+    { id: 'reception', labelKey: 'food.foodLab.sections.reception', icon: <AddIcon fontSize="small" /> },
+    { id: 'custody', labelKey: 'food.foodLab.sections.custody', icon: <HistoryIcon fontSize="small" /> },
+    { id: 'sources', labelKey: 'food.foodLab.sections.sources', icon: <CategoryIcon fontSize="small" /> },
+    { id: 'references', labelKey: 'food.foodLab.sections.references', icon: <ArchiveIcon fontSize="small" /> },
+    { id: 'certificates', labelKey: 'food.foodLab.sections.certificates', icon: <DescriptionIcon fontSize="small" /> },
+  ], []);
   const [tab, setTab] = useState(0);
   const [dash, setDash] = useState<FoodLabDashboard | null>(null);
 
@@ -256,7 +259,7 @@ const FoodLabPage = () => {
     getLabParameters({ page_size: 100 }).then((r) => setParameters(r.data.data.results)).catch(() => undefined);
   }, [refreshDash, refreshSources, refreshReferences]);
 
-  const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [tab, dash]);
+  const { active, register, scrollTo } = useCommandSections(sections as unknown as CommandSectionDef[], [tab, dash]);
 
   const runAction = async (fn: () => Promise<unknown>, success: string) => {
     setBusy(true);
@@ -265,7 +268,7 @@ const FoodLabPage = () => {
       notifySuccess(success);
       refreshAll();
     } catch {
-      notifyError('تعذر تنفيذ العملية');
+      notifyError(t('food.foodLab.sampleDetail.errors.actionFailed'));
     } finally {
       setBusy(false);
     }
@@ -281,8 +284,8 @@ const FoodLabPage = () => {
   };
 
   const handleReceive = async () => {
-    if (!recType.trim()) return notifyError('اكتب نوع/اسم العينة');
-    if (!recSource) return notifyError('حدد مصدر العينة');
+    if (!recType.trim()) return notifyError(t('food.foodLab.main.errors.writeSampleType'));
+    if (!recSource) return notifyError(t('food.foodLab.main.errors.selectSource'));
     try {
       const payload: Record<string, unknown> = {
         source: recSource,
@@ -292,11 +295,11 @@ const FoodLabPage = () => {
       };
       if (recBench) payload.bench = recBench;
       const res = await createLabSample(payload as never);
-      notifySuccess(`تم استلام العينة ${res.data.data.sample_number}`);
+      notifySuccess(t('food.foodLab.main.success.sampleReceived', { number: res.data.data.sample_number }));
       setReceptionOpen(false);
       refreshAll();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'تعذر استلام العينة';
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? t('food.foodLab.main.errors.receiveFailed');
       notifyError(msg);
     }
   };
@@ -305,11 +308,11 @@ const FoodLabPage = () => {
     if (!deleting) return;
     try {
       await deleteLabSample(deleting.id);
-      notifySuccess('تم حذف العينة');
+      notifySuccess(t('food.foodLab.main.success.sampleDeleted'));
       setDeleting(null);
       refreshAll();
     } catch {
-      notifyError('تعذر حذف العينة');
+      notifyError(t('food.foodLab.main.errors.deleteFailed'));
     }
   };
 
@@ -319,16 +322,16 @@ const FoodLabPage = () => {
     <Box>
       <DashboardHero
         eyebrow="FCLIS — Food Control Lab"
-        title="نظام معلومات المختبر — FCLIS"
-        subtitle="دورة حيازة العينة الكاملة: الاستلام ← التنسيق ← الأقسام ← التحليل ← الاعتماد ← التحصيل ← الإرسال"
+        title={t('food.foodLab.main.hero.title')}
+        subtitle={t('food.foodLab.main.hero.subtitle')}
         gradient="emerald"
-        avatarLabel={(user?.full_name || 'م').slice(0, 1)}
-        action={<AppButton startIcon={<AddIcon />} onClick={openReception}>استلام عينة جديدة</AppButton>}
+        avatarLabel={(user?.full_name || t('food.foodLab.main.hero.avatarFallback')).slice(0, 1)}
+        action={<AppButton startIcon={<AddIcon />} onClick={openReception}>{t('food.foodLab.main.hero.action')}</AppButton>}
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('food.foodLab.main.hero.live')}
           </Box>,
         ]}
       />
@@ -336,11 +339,11 @@ const FoodLabPage = () => {
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={sections as unknown as CommandSectionDef[]}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('food.foodLab.main.nav.label')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -348,12 +351,12 @@ const FoodLabPage = () => {
         value={tab}
         onChange={(v) => setTab(v)}
         tabs={[
-          { label: 'لوحة التحكم', icon: tabIcons[0] },
-          { label: 'الاستلام والتسجيل', icon: tabIcons[1] },
-          { label: 'سلسلة الحيازة', icon: tabIcons[2] },
-          { label: 'مصادر العينات', icon: tabIcons[3] },
-          { label: 'العينات المرجعية', icon: tabIcons[4] },
-          { label: 'الشهادات', icon: tabIcons[5] },
+          { label: t('food.foodLab.main.tabs.dashboard'), icon: tabIcons[0] },
+          { label: t('food.foodLab.main.tabs.reception'), icon: tabIcons[1] },
+          { label: t('food.foodLab.main.tabs.custody'), icon: tabIcons[2] },
+          { label: t('food.foodLab.main.tabs.sources'), icon: tabIcons[3] },
+          { label: t('food.foodLab.main.tabs.references'), icon: tabIcons[4] },
+          { label: t('food.foodLab.main.tabs.certificates'), icon: tabIcons[5] },
         ]}
       />
 
@@ -423,15 +426,15 @@ const FoodLabPage = () => {
         onClose={() => setReceptionOpen(false)}
         onSubmit={handleReceive}
         loading={busy}
-        title="استلام عينة جديدة"
-        subtitle="تسجيل العينة عند الوصول للمختبر وبدء سلسلة الحيازة"
+        title={t('food.foodLab.main.reception.title')}
+        subtitle={t('food.foodLab.main.reception.subtitle')}
         maxWidth="sm"
       >
-        <FormSelect label="مصدر العينة" requiredMark value={recSource} onChange={setRecSource} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} />
-        <FormSelect label="التصنيف" value={recClassification} onChange={setRecClassification} options={Object.entries(CLASSIFICATION_LABELS).map(([v, l]) => ({ value: v, label: l }))} />
-        <FormTextField label="المنتج / نوع العينة" requiredMark value={recType} onChange={(e) => setRecType(e.target.value)} placeholder="مثال: سكر مجروش" />
-        <FormTextField label="الجهة الطالبة" value={recRequesting} onChange={(e) => setRecRequesting(e.target.value)} placeholder="الإدارة العامة لرقابة الأغذية..." />
-        <FormSelect label="قسم المختبر (يمكن إسناده لاحقاً)" value={recBench} onChange={setRecBench} placeholder="بدون" options={Object.entries(labBench).map(([v, m]) => ({ value: v, label: m.label }))} />
+        <FormSelect label={t('food.foodLab.main.reception.source')} requiredMark value={recSource} onChange={setRecSource} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} />
+        <FormSelect label={t('food.foodLab.sampleDetail.dialogs.classify.label')} value={recClassification} onChange={setRecClassification} options={Object.entries(CLASSIFICATION_LABELS).map(([v, l]) => ({ value: v, label: classificationLabel(l, t) }))} />
+        <FormTextField label={t('food.foodLab.main.reception.productType')} requiredMark value={recType} onChange={(e) => setRecType(e.target.value)} placeholder={t('food.foodLab.main.reception.productPlaceholder')} />
+        <FormTextField label={t('food.foodLab.sampleDetail.dispatch.to')} value={recRequesting} onChange={(e) => setRecRequesting(e.target.value)} placeholder={t('food.foodLab.main.reception.requestingPlaceholder')} />
+        <FormSelect label={t('food.foodLab.main.reception.bench')} value={recBench} onChange={setRecBench} placeholder={t('food.foodLab.main.reception.benchPlaceholder')} options={Object.entries(labBench).map(([v, m]) => ({ value: v, label: m.label }))} />
       </FormDialog>
 
       {detailId && (
@@ -446,9 +449,9 @@ const FoodLabPage = () => {
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="تأكيد حذف العينة"
-        message={`هل أنت متأكد من حذف العينة «${deleting?.sample_number}»؟ سيتم حذف سلسلة الحيازة المرتبطة بها أيضاً.`}
-        confirmLabel="حذف"
+        title={t('food.foodLab.main.delete.title')}
+        message={t('food.foodLab.main.delete.message', { number: deleting?.sample_number })}
+        confirmLabel={t('food.foodLab.main.delete.confirm')}
         onClose={() => setDeleting(null)}
         onConfirm={confirmDelete}
       />
@@ -459,6 +462,7 @@ const FoodLabPage = () => {
 /* ================== لوحة التحكم ================== */
 
 const DashboardTab = ({ dash }: { dash: FoodLabDashboard | null }) => {
+  const { t } = useTranslation();
   if (!dash) return null;
   const stat = (label: string, value: number | string, icon: React.ReactNode) => (
     <Grid item xs={6} sm={4} md={2}>
@@ -468,28 +472,28 @@ const DashboardTab = ({ dash }: { dash: FoodLabDashboard | null }) => {
   return (
     <Box>
       <Grid container spacing={1.5}>
-        {stat('إجمالي العينات', dash.total_samples, <ScienceIcon />)}
-        {stat('قيد الاستلام', dash.received, <RadioButtonUncheckedIcon />)}
-        {stat('تم التنسيق', dash.coordinated, <LinkIcon />)}
-        {stat('قيد التحليل', dash.under_testing, <BiotechIcon />)}
-        {stat('جاهزة للاعتماد', dash.ready_for_approval, <VerifiedIcon />)}
-        {stat('معتمدة/مُرسلة', dash.approved + dash.dispatched, <CheckCircleIcon />)}
-        {stat('مرفوضة', dash.rejected, <CircleIcon />)}
-        {stat('بانتظار قرار الاستلام', dash.reception_pending, <RadioButtonUncheckedIcon />)}
-        {stat('قبول مشروط', dash.reception_cond, <VerifiedIcon />)}
-        {stat('غير مسددة الرسوم', dash.unpaid_samples, <PaymentsIcon />)}
-        {stat('فحوصات متأخرة', dash.overdue_tests, <CircleIcon />)}
-        {stat('التزام بـ SLA', dash.sla_compliance_pct != null ? `${dash.sla_compliance_pct}%` : '—', <CheckCircleIcon />)}
-        {stat('عينات مرجعية', dash.reference_samples, <ArchiveIcon />)}
-        {stat('أحداث حيازة', dash.custody_events, <HistoryIcon />)}
-        {stat('شهادات', dash.certificates, <DescriptionIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.totalSamples'), dash.total_samples, <ScienceIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.received'), dash.received, <RadioButtonUncheckedIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.coordinated'), dash.coordinated, <LinkIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.underTesting'), dash.under_testing, <BiotechIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.readyForApproval'), dash.ready_for_approval, <VerifiedIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.approvedDispatched'), dash.approved + dash.dispatched, <CheckCircleIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.rejected'), dash.rejected, <CircleIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.receptionPending'), dash.reception_pending, <RadioButtonUncheckedIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.receptionCond'), dash.reception_cond, <VerifiedIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.unpaid'), dash.unpaid_samples, <PaymentsIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.overdue'), dash.overdue_tests, <CircleIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.slaCompliance'), dash.sla_compliance_pct != null ? `${dash.sla_compliance_pct}%` : '—', <CheckCircleIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.referenceSamples'), dash.reference_samples, <ArchiveIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.custodyEvents'), dash.custody_events, <HistoryIcon />)}
+        {stat(t('food.foodLab.dashboard.kpi.certificates'), dash.certificates, <DescriptionIcon />)}
       </Grid>
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={12} md={6}>
-          <InfoPanel title="العينات حسب المصدر">
+          <InfoPanel title={t('food.foodLab.dashboard.panels.bySource')}>
             {dash.by_source.length === 0 ? (
-              <EmptyHint text="لا توجد بيانات" />
+              <EmptyHint text={t('food.foodLab.dashboard.panels.noData')} />
             ) : (
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {dash.by_source.map((row) => (
@@ -500,9 +504,9 @@ const DashboardTab = ({ dash }: { dash: FoodLabDashboard | null }) => {
           </InfoPanel>
         </Grid>
         <Grid item xs={12} md={6}>
-          <InfoPanel title="العينات حسب القسم">
+          <InfoPanel title={t('food.foodLab.dashboard.panels.byBench')}>
             {Object.keys(dash.by_bench).length === 0 ? (
-              <EmptyHint text="لا توجد بيانات" />
+              <EmptyHint text={t('food.foodLab.dashboard.panels.noData')} />
             ) : (
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {Object.entries(dash.by_bench).map(([k, v]) => (
@@ -552,28 +556,29 @@ const ReceptionTab = ({
   onSubmit: () => void;
   busy: boolean;
 }) => {
+  const { t } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'received_by_name', label: 'موظف الاستلام', render: (s) => s.received_by_name ?? '—' },
-    { key: 'received_at', label: 'وقت الاستلام', render: (s) => formatDateTime(s.received_at) },
-    { key: 'reception_status', label: 'قرار الاستلام', render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
-    { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
-    { key: 'priority', label: 'الأولوية', render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
+    { key: 'sample_number', label: t('food.foodLab.reception.columns.number'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: t('food.foodLab.reception.columns.product') },
+    { key: 'source_name', label: t('food.foodLab.reception.columns.source'), render: (s) => s.source_name ?? '—' },
+    { key: 'received_by_name', label: t('food.foodLab.reception.columns.receivedBy'), render: (s) => s.received_by_name ?? '—' },
+    { key: 'received_at', label: t('food.foodLab.reception.columns.receivedAt'), render: (s) => formatDateTime(s.received_at) },
+    { key: 'reception_status', label: t('food.foodLab.reception.columns.decision'), render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
+    { key: 'status', label: t('food.foodLab.reception.columns.status'), render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
+    { key: 'priority', label: t('food.foodLab.reception.columns.priority'), render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
     {
       key: 'actions', label: '', render: (s) => (
-        <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح</AppButton>
+        <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{t('food.foodLab.reception.actions.open')}</AppButton>
       ),
     },
-  ], [onOpenSample]);
+  ], [onOpenSample, t]);
 
   return (
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <AppButton startIcon={<AddIcon />} onClick={onRegister}>استلام / تسجيل عينة</AppButton>
+        <AppButton startIcon={<AddIcon />} onClick={onRegister}>{t('food.foodLab.reception.actions.receive')}</AppButton>
       </Box>
-      <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title="أحدث العينات المستلمة" />
+      <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title={t('food.foodLab.reception.tableTitle')} />
     </Box>
   );
 };
@@ -587,31 +592,32 @@ const CustodyTab = ({
   onOpenSample: (id: string) => void;
   onDelete: (s: FoodSample) => void;
 }) => {
+  const { t } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'classification', label: 'التصنيف', render: (s) => <Chip size="small" label={CLASSIFICATION_LABELS[s.classification] ?? s.classification} color={CLASSIFICATION_TONES[s.classification]} variant="outlined" /> },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'bench', label: 'القسم', render: (s) => labBench[s.bench]?.label ?? s.bench },
-    { key: 'priority', label: 'الأولوية', render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
-    { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
-    { key: 'collection_status', label: 'التحصيل', render: (s) => <StatusChip label={labCollection[s.collection_status]?.label ?? s.collection_status} tone={labCollection[s.collection_status]?.tone} /> },
-    { key: 'invoice', label: 'الفاتورة', render: (s) => (s.lab_invoice ? <StatusChip label={labInvoiceStatus[s.lab_invoice.status]?.label ?? s.lab_invoice.status} tone={labInvoiceStatus[s.lab_invoice.status]?.tone} /> : <Typography variant="caption" color="text.secondary">—</Typography>) },
+    { key: 'sample_number', label: t('food.foodLab.custody.columns.number'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: t('food.foodLab.custody.columns.product') },
+    { key: 'classification', label: t('food.foodLab.custody.columns.classification'), render: (s) => <Chip size="small" label={CLASSIFICATION_LABELS[s.classification] ? classificationLabel(CLASSIFICATION_LABELS[s.classification], t) : s.classification} color={CLASSIFICATION_TONES[s.classification]} variant="outlined" /> },
+    { key: 'source_name', label: t('food.foodLab.custody.columns.source'), render: (s) => s.source_name ?? '—' },
+    { key: 'bench', label: t('food.foodLab.custody.columns.bench'), render: (s) => labBench[s.bench]?.label ?? s.bench },
+    { key: 'priority', label: t('food.foodLab.custody.columns.priority'), render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
+    { key: 'status', label: t('food.foodLab.custody.columns.status'), render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
+    { key: 'collection_status', label: t('food.foodLab.custody.columns.collection'), render: (s) => <StatusChip label={labCollection[s.collection_status]?.label ?? s.collection_status} tone={labCollection[s.collection_status]?.tone} /> },
+    { key: 'invoice', label: t('food.foodLab.custody.columns.invoice'), render: (s) => (s.lab_invoice ? <StatusChip label={labInvoiceStatus[s.lab_invoice.status]?.label ?? s.lab_invoice.status} tone={labInvoiceStatus[s.lab_invoice.status]?.tone} /> : <Typography variant="caption" color="text.secondary">—</Typography>) },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>سلسلة الحيازة</AppButton>
-          <IconButton aria-label="حذف" size="small" color="error" onClick={() => onDelete(s)}><DeleteIcon fontSize="small" /></IconButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{t('food.foodLab.custody.actions.openChain')}</AppButton>
+          <IconButton aria-label={t('food.foodLab.custody.actions.delete')} size="small" color="error" onClick={() => onDelete(s)}><DeleteIcon fontSize="small" /></IconButton>
         </Stack>
       ),
     },
-  ], [onOpenSample, onDelete]);
+  ], [onOpenSample, onDelete, t]);
 
   return (
     <FoodDataTable<FoodSample>
       columns={columns}
       table={samplesTable}
-      title="دورة العينات وسلسلة الحيازة"
+      title={t('food.foodLab.custody.tableTitle')}
     />
   );
 };
@@ -626,6 +632,7 @@ const SourcesTab = ({
   dialog: SourceDialogState;
   setDialog: React.Dispatch<React.SetStateAction<SourceDialogState>>;
 }) => {
+  const { t } = useTranslation();
   const openNew = () => setDialog({ open: true, editing: null, code: '', nameAr: '', order: sources.length + 1 });
   const openEdit = (s: SampleSource) => setDialog({ open: true, editing: s, code: s.code, nameAr: s.name_ar, order: s.order });
   const [deleteTarget, setDeleteTarget] = useState<SampleSource | null>(null);
@@ -636,37 +643,37 @@ const SourcesTab = ({
     setDeleteBusy(true);
     try {
       await deleteSampleSource(deleteTarget.id);
-      notifySuccess('تم الحذف');
+      notifySuccess(t('food.foodLab.sources.notifications.deleted'));
       setDeleteTarget(null);
       onRefresh();
     } catch {
-      notifyError('تعذر الحذف');
+      notifyError(t('food.foodLab.sources.notifications.deleteFailed'));
     } finally {
       setDeleteBusy(false);
     }
   };
 
   const save = async () => {
-    if (!dialog.nameAr.trim()) return notifyError('اكتب اسم المصدر');
+    if (!dialog.nameAr.trim()) return notifyError(t('food.foodLab.sources.notifications.writeName'));
     try {
       if (dialog.editing) {
         await updateSampleSource(dialog.editing.id, { code: dialog.code || dialog.editing.code, name_ar: dialog.nameAr, order: dialog.order });
-        notifySuccess('تم تحديث المصدر');
+        notifySuccess(t('food.foodLab.sources.notifications.updated'));
       } else {
         await createSampleSource({ code: dialog.code || `SRC_${dialog.nameAr}`, name_ar: dialog.nameAr, order: dialog.order, is_active: true });
-        notifySuccess('تمت إضافة المصدر');
+        notifySuccess(t('food.foodLab.sources.notifications.added'));
       }
       setDialog((d) => ({ ...d, open: false }));
       onRefresh();
     } catch {
-      notifyError('تعذر حفظ المصدر');
+      notifyError(t('food.foodLab.sources.notifications.saveFailed'));
     }
   };
 
   return (
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <AppButton startIcon={<AddIcon />} onClick={openNew}>مصدر جديد</AppButton>
+        <AppButton startIcon={<AddIcon />} onClick={openNew}>{t('food.foodLab.sources.buttons.new')}</AppButton>
       </Box>
       <Grid container spacing={1.5}>
         {sources.map((s) => (
@@ -677,11 +684,11 @@ const SourcesTab = ({
                   <Typography variant="body1" sx={{ fontWeight: 700 }}>{s.name_ar}</Typography>
                   <Typography variant="caption" color="text.secondary">{s.code}</Typography>
                 </Box>
-                <Tooltip title="تعديل">
-                  <IconButton aria-label="تعديل" size="small" onClick={() => openEdit(s)}><EditPencil /></IconButton>
+                <Tooltip title={t('food.foodLab.sources.buttons.edit')}>
+                  <IconButton aria-label={t('food.foodLab.sources.buttons.edit')} size="small" onClick={() => openEdit(s)}><EditPencil /></IconButton>
                 </Tooltip>
-                <Tooltip title="حذف">
-                  <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(s)}><DeleteIcon fontSize="small" /></IconButton>
+                <Tooltip title={t('food.foodLab.sources.buttons.delete')}>
+                  <IconButton aria-label={t('food.foodLab.sources.buttons.delete')} size="small" color="error" onClick={() => setDeleteTarget(s)}><DeleteIcon fontSize="small" /></IconButton>
                 </Tooltip>
               </Stack>
             </Box>
@@ -689,17 +696,17 @@ const SourcesTab = ({
         ))}
       </Grid>
 
-      <FormDialog open={dialog.open} onClose={() => setDialog((d) => ({ ...d, open: false }))} onSubmit={save} title={dialog.editing ? 'تعديل مصدر' : 'مصدر جديد'} maxWidth="xs">
-        <FormTextField label="الاسم بالعربية" requiredMark value={dialog.nameAr} onChange={(e) => setDialog((d) => ({ ...d, nameAr: e.target.value }))} />
-        <FormTextField label="الكود" value={dialog.code} onChange={(e) => setDialog((d) => ({ ...d, code: e.target.value }))} />
-        <FormTextField label="الترتيب" type="number" value={dialog.order} onChange={(e) => setDialog((d) => ({ ...d, order: Number(e.target.value) }))} />
+      <FormDialog open={dialog.open} onClose={() => setDialog((d) => ({ ...d, open: false }))} onSubmit={save} title={dialog.editing ? t('food.foodLab.sources.dialogs.source.titleEdit') : t('food.foodLab.sources.dialogs.source.title')} maxWidth="xs">
+        <FormTextField label={t('food.foodLab.sources.dialogs.source.nameAr')} requiredMark value={dialog.nameAr} onChange={(e) => setDialog((d) => ({ ...d, nameAr: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.sources.dialogs.source.code')} value={dialog.code} onChange={(e) => setDialog((d) => ({ ...d, code: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.sources.dialogs.source.order')} type="number" value={dialog.order} onChange={(e) => setDialog((d) => ({ ...d, order: Number(e.target.value) }))} />
       </FormDialog>
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="حذف مصدر العينة"
-        message={`هل تريد حذف المصدر «${deleteTarget?.name_ar || ''}»؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف"
+        title={t('food.foodLab.sources.dialogs.delete.title')}
+        message={t('food.foodLab.sources.dialogs.delete.message', { name: deleteTarget?.name_ar || '' })}
+        confirmLabel={t('food.foodLab.sources.dialogs.delete.confirm')}
         tone="error"
         loading={deleteBusy}
         onClose={() => {
@@ -724,6 +731,7 @@ const ReferencesTab = ({
   dialog: RefDialogState;
   setDialog: React.Dispatch<React.SetStateAction<RefDialogState>>;
 }) => {
+  const { t } = useTranslation();
   const openNew = () => setDialog({ open: true, source: sources[0]?.id ?? '', product: '', origin: '', storage: '', seal: '', coding: '' });
   const [deleteTarget, setDeleteTarget] = useState<ReferenceSample | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -733,38 +741,38 @@ const ReferencesTab = ({
     setDeleteBusy(true);
     try {
       await deleteReferenceSample(deleteTarget.id);
-      notifySuccess('تم الحذف');
+      notifySuccess(t('food.foodLab.references.notifications.deleted'));
       setDeleteTarget(null);
       onRefresh();
     } catch {
-      notifyError('تعذر الحذف');
+      notifyError(t('food.foodLab.references.notifications.deleteFailed'));
     } finally {
       setDeleteBusy(false);
     }
   };
 
   const save = async () => {
-    if (!dialog.product.trim()) return notifyError('اكتب اسم المادة');
+    if (!dialog.product.trim()) return notifyError(t('food.foodLab.references.notifications.writeName'));
     try {
       await createReferenceSample({ source: dialog.source || undefined, product_name: dialog.product, origin: dialog.origin, storage_location: dialog.storage, seal_number: dialog.seal, coding: dialog.coding });
-      notifySuccess('تم تسجيل العينة المرجعية');
+      notifySuccess(t('food.foodLab.references.notifications.added'));
       setDialog((d) => ({ ...d, open: false }));
       onRefresh();
     } catch {
-      notifyError('تعذر تسجيل العينة المرجعية');
+      notifyError(t('food.foodLab.references.notifications.addFailed'));
     }
   };
 
   const refStatus: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-    STORED: { label: 'مخزنة', tone: 'success' },
-    RETRIEVED: { label: 'تم الرجوع إليها', tone: 'warning' },
-    DISCARDED: { label: 'أُعدمت', tone: 'error' },
+    STORED: { label: t('food.foodLab.references.statuses.stored'), tone: 'success' },
+    RETRIEVED: { label: t('food.foodLab.references.statuses.retrieved'), tone: 'warning' },
+    DISCARDED: { label: t('food.foodLab.references.statuses.discarded'), tone: 'error' },
   };
 
   return (
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <AppButton startIcon={<AddIcon />} onClick={openNew}>تسجيل عينة مرجعية</AppButton>
+        <AppButton startIcon={<AddIcon />} onClick={openNew}>{t('food.foodLab.references.buttons.new')}</AppButton>
       </Box>
       <Grid container spacing={1.5}>
         {references.map((r) => (
@@ -778,19 +786,19 @@ const ReferencesTab = ({
                 <StatusChip label={refStatus[r.status]?.label ?? r.status} tone={refStatus[r.status]?.tone} />
               </Stack>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                الموقع: {r.storage_location || '—'} • الختم: {r.seal_number || '—'}
+                {t('food.foodLab.references.labels.location')}: {r.storage_location || '—'} • {t('food.foodLab.references.labels.seal')}: {r.seal_number || '—'}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                استلام: {formatDateTime(r.received_at)} — {r.received_by_name ?? '—'}
+                {t('food.foodLab.references.labels.received')}: {formatDateTime(r.received_at)} — {r.received_by_name ?? '—'}
               </Typography>
               <Stack direction="row" spacing={1}>
-                <AppButton size="small" variant="secondary" disabled={r.status !== 'STORED'} onClick={async () => { try { await retrieveReferenceSample(r.id, 'الرجوع للعينة المرجعية'); notifySuccess('تم الرجوع'); onRefresh(); } catch { notifyError('تعذر التنفيذ'); } }}>
-                  رجوع
+                <AppButton size="small" variant="secondary" disabled={r.status !== 'STORED'} onClick={async () => { try { await retrieveReferenceSample(r.id, t('food.foodLab.references.buttons.return')); notifySuccess(t('food.foodLab.references.notifications.returned')); onRefresh(); } catch { notifyError(t('food.foodLab.references.notifications.executeFailed')); } }}>
+                  {t('food.foodLab.references.buttons.return')}
                 </AppButton>
-                <AppButton size="small" variant="danger" disabled={r.status === 'DISCARDED'} onClick={async () => { try { await discardReferenceSample(r.id, 'إعدام'); notifySuccess('تم الإعدام'); onRefresh(); } catch { notifyError('تعذر التنفيذ'); } }}>
-                  إعدام
+                <AppButton size="small" variant="danger" disabled={r.status === 'DISCARDED'} onClick={async () => { try { await discardReferenceSample(r.id, t('food.foodLab.references.buttons.discard')); notifySuccess(t('food.foodLab.references.notifications.discarded')); onRefresh(); } catch { notifyError(t('food.foodLab.references.notifications.executeFailed')); } }}>
+                  {t('food.foodLab.references.buttons.discard')}
                 </AppButton>
-                <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(r)}>
+                <IconButton aria-label={t('food.foodLab.references.buttons.delete')} size="small" color="error" onClick={() => setDeleteTarget(r)}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Stack>
@@ -799,20 +807,20 @@ const ReferencesTab = ({
         ))}
       </Grid>
 
-      <FormDialog open={dialog.open} onClose={() => setDialog((d) => ({ ...d, open: false }))} onSubmit={save} title="تسجيل عينة مرجعية" subtitle="لا تدخل دورة التحليل العادية — تحفظ للرجوع إليها" maxWidth="sm">
-        <FormSelect label="المصدر" value={dialog.source} onChange={(v) => setDialog((d) => ({ ...d, source: v }))} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} />
-        <FormTextField label="اسم المادة / العينة" requiredMark value={dialog.product} onChange={(e) => setDialog((d) => ({ ...d, product: e.target.value }))} />
-        <FormTextField label="المنشأ / الدفعة" value={dialog.origin} onChange={(e) => setDialog((d) => ({ ...d, origin: e.target.value }))} />
-        <FormTextField label="موقع التخزين" value={dialog.storage} onChange={(e) => setDialog((d) => ({ ...d, storage: e.target.value }))} />
-        <FormTextField label="رقم الختم" value={dialog.seal} onChange={(e) => setDialog((d) => ({ ...d, seal: e.target.value }))} />
-        <FormTextField label="الترميز" value={dialog.coding} onChange={(e) => setDialog((d) => ({ ...d, coding: e.target.value }))} />
+      <FormDialog open={dialog.open} onClose={() => setDialog((d) => ({ ...d, open: false }))} onSubmit={save} title={t('food.foodLab.references.dialogs.reference.title')} subtitle={t('food.foodLab.references.dialogs.reference.subtitle')} maxWidth="sm">
+        <FormSelect label={t('food.foodLab.references.dialogs.reference.source')} value={dialog.source} onChange={(v) => setDialog((d) => ({ ...d, source: v }))} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} />
+        <FormTextField label={t('food.foodLab.references.dialogs.reference.name')} requiredMark value={dialog.product} onChange={(e) => setDialog((d) => ({ ...d, product: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.references.dialogs.reference.origin')} value={dialog.origin} onChange={(e) => setDialog((d) => ({ ...d, origin: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.references.dialogs.reference.storage')} value={dialog.storage} onChange={(e) => setDialog((d) => ({ ...d, storage: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.references.dialogs.reference.seal')} value={dialog.seal} onChange={(e) => setDialog((d) => ({ ...d, seal: e.target.value }))} />
+        <FormTextField label={t('food.foodLab.references.dialogs.reference.coding')} value={dialog.coding} onChange={(e) => setDialog((d) => ({ ...d, coding: e.target.value }))} />
       </FormDialog>
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="حذف عينة مرجعية"
-        message={`هل تريد حذف العينة المرجعية «${deleteTarget?.product_name || ''}» (${deleteTarget?.ref_number || '—'})؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف"
+        title={t('food.foodLab.references.dialogs.delete.title')}
+        message={t('food.foodLab.references.dialogs.delete.message', { name: deleteTarget?.product_name || '', ref: deleteTarget?.ref_number || '—' })}
+        confirmLabel={t('food.foodLab.references.dialogs.delete.confirm')}
         tone="error"
         loading={deleteBusy}
         onClose={() => {
@@ -827,16 +835,17 @@ const ReferencesTab = ({
 /* ================== الشهادات ================== */
 
 const CertificatesTab = ({ table }: { table: ReturnType<typeof useServerTable<AnalysisCertificate>> }) => {
+  const { t } = useTranslation();
   const columns: DataTableColumn<AnalysisCertificate>[] = useMemo(() => [
-    { key: 'certificate_number', label: 'رقم الشهادة', render: (c) => <b>{c.certificate_number}</b> },
-    { key: 'sample_number', label: 'رقم العينة' },
-    { key: 'decision', label: 'القرار', render: (c) => <StatusChip label={labDecision[c.decision]?.label ?? c.decision} tone={labDecision[c.decision]?.tone} /> },
-    { key: 'status', label: 'الحالة', render: (c) => <StatusChip label={c.status === 'ISSUED' ? 'صادر' : 'مسودة'} tone={c.status === 'ISSUED' ? 'success' : 'neutral'} /> },
-    { key: 'issued_by_name', label: 'الموقّع', render: (c) => c.issued_by_name ?? '—' },
-    { key: 'issued_at', label: 'تاريخ الإصدار', render: (c) => formatDateTime(c.issued_at) },
-  ], []);
+    { key: 'certificate_number', label: t('food.foodLab.certificates.columns.number'), render: (c) => <b>{c.certificate_number}</b> },
+    { key: 'sample_number', label: t('food.foodLab.certificates.columns.sample') },
+    { key: 'decision', label: t('food.foodLab.certificates.columns.decision'), render: (c) => <StatusChip label={labDecision[c.decision]?.label ?? c.decision} tone={labDecision[c.decision]?.tone} /> },
+    { key: 'status', label: t('food.foodLab.certificates.columns.status'), render: (c) => <StatusChip label={c.status === 'ISSUED' ? t('food.foodLab.certificates.status.issued') : t('food.foodLab.certificates.status.draft')} tone={c.status === 'ISSUED' ? 'success' : 'neutral'} /> },
+    { key: 'issued_by_name', label: t('food.foodLab.certificates.columns.signer'), render: (c) => c.issued_by_name ?? '—' },
+    { key: 'issued_at', label: t('food.foodLab.certificates.columns.issuedAt'), render: (c) => formatDateTime(c.issued_at) },
+  ], [t]);
 
-  return <FoodDataTable<AnalysisCertificate> columns={columns} table={table} title="شهادات التحليل" />;
+  return <FoodDataTable<AnalysisCertificate> columns={columns} table={table} title={t('food.foodLab.certificates.tableTitle')} />;
 };
 
 /* ================== تفاصيل العينة + سلسلة الحيازة ================== */
@@ -851,6 +860,7 @@ export const SampleDetailDialog = ({
   onChanged: () => void;
 }) => {
   const { user } = useAuth();
+  const { t: i18nT } = useTranslation();
   const role = user?.role;
   const isReceptionist = role === 'LAB_RECEPTIONIST';
   const canAnalyze = role === 'LAB_TECHNICIAN' || role === 'LAB_MANAGER' || role === 'ADMIN';
@@ -910,12 +920,12 @@ export const SampleDetailDialog = ({
       setPriorityValue(res.data.data.priority || 'NORMAL');
       setClassifyValue(res.data.data.classification || '');
     } catch {
-      notifyError('تعذر تحميل بيانات العينة');
+      notifyError(i18nT('food.foodLab.sampleDetail.errors.loadFailed'));
       onClose();
     } finally {
       setLoading(false);
     }
-  }, [sampleId, onClose]);
+  }, [sampleId, onClose, i18nT]);
 
   useEffect(() => {
     setLoading(true);
@@ -931,14 +941,14 @@ export const SampleDetailDialog = ({
       await load();
       onChanged();
     } catch {
-      notifyError('تعذر تنفيذ العملية');
+      notifyError(i18nT('food.foodLab.sampleDetail.errors.actionFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   if (!sample) {
-    return <Dialog open onClose={onClose} maxWidth="sm" fullWidth><DialogContent sx={{ textAlign: 'center', py: 6 }}>جارٍ تحميل العينة...</DialogContent></Dialog>;
+    return <Dialog open onClose={onClose} maxWidth="sm" fullWidth><DialogContent sx={{ textAlign: 'center', py: 6 }}>{i18nT('food.foodLab.sampleDetail.loading')}</DialogContent></Dialog>;
   }
 
   const userOptions = users.map((u) => ({ value: u.id, label: u.full_name ? `${u.full_name} (${u.email})` : u.email }));
@@ -947,11 +957,11 @@ export const SampleDetailDialog = ({
     setAction(a);
     setSelUser('');
     if (a === 'submitForApproval') {
-      run(() => submitForApproval(sample.id), 'تم رفع العينة للاعتماد');
+      run(() => submitForApproval(sample.id), i18nT('food.foodLab.sampleDetail.actions.submitForApproval'));
       return;
     }
     if (a === 'approve') {
-      run(() => approveSample(sample.id), 'تم اعتماد النتيجة');
+      run(() => approveSample(sample.id), i18nT('food.foodLab.sampleDetail.actions.approve'));
       return;
     }
     if (a === 'invoice') {
@@ -977,36 +987,36 @@ export const SampleDetailDialog = ({
   const runActionSubmit = async () => {
     if (!action) return;
     if (action === 'coordinate') {
-      if (!selUser) return notifyError('حدد المنسّق');
-      await run(() => coordinateSample(sample.id, selUser), 'تم التنسيق');
+      if (!selUser) return notifyError(i18nT('food.foodLab.sampleDetail.dialogs.coordinate.selectCoordinator'));
+      await run(() => coordinateSample(sample.id, selUser), i18nT('food.foodLab.sampleDetail.dialogs.coordinate.success'));
     } else if (action === 'assignSection') {
-      await run(() => assignSampleSection(sample.id, selBench, selUser || undefined), 'تم الإسناد للقسم');
+      await run(() => assignSampleSection(sample.id, selBench, selUser || undefined), i18nT('food.foodLab.sampleDetail.dialogs.assignSection.success'));
     } else if (action === 'assignAnalyst') {
-      if (!selUser) return notifyError('حدد المحلّل');
-      await run(() => assignSampleAnalyst(sample.id, selUser), 'تم الإسناد للمحلل');
+      if (!selUser) return notifyError(i18nT('food.foodLab.sampleDetail.dialogs.assignAnalyst.selectAnalyst'));
+      await run(() => assignSampleAnalyst(sample.id, selUser), i18nT('food.foodLab.sampleDetail.dialogs.assignAnalyst.success'));
     }
     setAction(null);
   };
 
   const submitTransfer = async () => {
-    if (!tfFrom || !tfTo) return notifyError('حدد قسمي النقل');
-    await run(() => transferSample(sample.id, { from_department: tfFrom, to_department: tfTo, condition: tfCond, seal_number: tfSeal, remarks: tfRemarks }), 'تم تسجيل النقل اليدوي');
+    if (!tfFrom || !tfTo) return notifyError(i18nT('food.foodLab.sampleDetail.dialogs.transfer.selectDepartments'));
+    await run(() => transferSample(sample.id, { from_department: tfFrom, to_department: tfTo, condition: tfCond, seal_number: tfSeal, remarks: tfRemarks }), i18nT('food.foodLab.sampleDetail.dialogs.transfer.manualSuccess'));
     setTransferOpen(false);
     setTfFrom(''); setTfTo(''); setTfCond(''); setTfSeal(''); setTfRemarks('');
   };
 
   const submitReception = async () => {
-    if (receptionDecision === 'accept') await run(() => acceptSample(sample.id, receptionNote), 'تم قبول العينة');
-    else if (receptionDecision === 'conditional') await run(() => conditionalAcceptSample(sample.id, receptionNote), 'تم القبول المشروط');
-    else await run(() => rejectSample(sample.id, receptionNote), 'تم رفض العينة');
+    if (receptionDecision === 'accept') await run(() => acceptSample(sample.id, receptionNote), i18nT('food.foodLab.sampleDetail.reception.acceptSuccess'));
+    else if (receptionDecision === 'conditional') await run(() => conditionalAcceptSample(sample.id, receptionNote), i18nT('food.foodLab.sampleDetail.reception.conditionalSuccess'));
+    else await run(() => rejectSample(sample.id, receptionNote), i18nT('food.foodLab.sampleDetail.reception.rejectSuccess'));
     setReceptionOpen(false);
     setReceptionNote('');
   };
 
   const submitInvoice = async () => {
-    if (invoiceAction === 'generate') await run(() => generateSampleInvoice(sample.id), 'تم إصدار فاتورة الرسوم');
-    else if (invoiceAction === 'pay') await run(() => paySampleFee(sample.id, invoiceNote), 'تم تحصيل الرسوم');
-    else await run(() => exemptSampleFee(sample.id, invoiceNote), 'تم إعفاء الرسوم');
+    if (invoiceAction === 'generate') await run(() => generateSampleInvoice(sample.id), i18nT('food.foodLab.sampleDetail.invoice.generateSuccess'));
+    else if (invoiceAction === 'pay') await run(() => paySampleFee(sample.id, invoiceNote), i18nT('food.foodLab.sampleDetail.invoice.paySuccess'));
+    else await run(() => exemptSampleFee(sample.id, invoiceNote), i18nT('food.foodLab.sampleDetail.invoice.exemptSuccess'));
     setInvoiceOpen(false);
     setInvoiceNote('');
   };
@@ -1039,13 +1049,13 @@ export const SampleDetailDialog = ({
 
   const submitResultDraft = async () => {
     if (!resultTest) return;
-    await run(() => saveSampleTestResult(resultTest.id, resultPayload()), 'حُفظت النتيجة كمسودة');
+    await run(() => saveSampleTestResult(resultTest.id, resultPayload()), i18nT('food.foodLab.sampleDetail.tests.saveDraftSuccess'));
     closeResult();
   };
 
   const submitResult = async () => {
     if (!resultTest) return;
-    await run(() => enterSampleTestResult(resultTest.id, resultPayload()), 'أُرسلت النتيجة للمراجعة');
+    await run(() => enterSampleTestResult(resultTest.id, resultPayload()), i18nT('food.foodLab.sampleDetail.tests.submitSuccess'));
     closeResult();
   };
 
@@ -1053,14 +1063,14 @@ export const SampleDetailDialog = ({
     if (!reviewTest) return;
     await run(
       () => reviewSampleTest(reviewTest.id, { notes: reviewNotes, decision: reviewTest.decision }),
-      'تمت مراجعة رئيس القسم',
+      i18nT('food.foodLab.sampleDetail.tests.sectionReviewSuccess'),
     );
     setReviewTest(null);
     setReviewNotes('');
   };
 
-  const submitApproveTest = async (t: SampleTest) => {
-    await run(() => approveSampleTest(t.id), 'تم اعتماد النتيجة');
+  const submitApproveTest = async (st: SampleTest) => {
+    await run(() => approveSampleTest(st.id), i18nT('food.foodLab.sampleDetail.tests.approveSuccess'));
   };
 
   const submitRevise = async () => {
@@ -1071,7 +1081,7 @@ export const SampleDetailDialog = ({
         result_value: reviseTest.result_value,
         decision: reviseTest.decision,
       }),
-      'تم فتح طلب تصحيح النتيجة',
+      i18nT('food.foodLab.sampleDetail.tests.openCorrectionSuccess'),
     );
     setReviseTest(null);
     setReviseReason('');
@@ -1079,7 +1089,7 @@ export const SampleDetailDialog = ({
 
   const submitReturn = async () => {
     if (!returnTest) return;
-    await run(() => returnSampleTest(returnTest.id, returnReason), 'أُعيدت النتيجة للمحلل للتصحيح');
+    await run(() => returnSampleTest(returnTest.id, returnReason), i18nT('food.foodLab.sampleDetail.tests.returnSuccess'));
     setReturnTest(null);
     setReturnReason('');
   };
@@ -1088,14 +1098,14 @@ export const SampleDetailDialog = ({
     if (!qcTest) return;
     await run(
       () => markSampleTestQC(qcTest.id, { qc_status: qcStatus, qc_notes: qcNotes }),
-      qcStatus === 'PASSED' ? 'تم اعتماد الجودة (QC)' : 'سُجِّلت مخالفة جودة (QC)',
+      qcStatus === 'PASSED' ? i18nT('food.foodLab.sampleDetail.tests.qcPassed') : i18nT('food.foodLab.sampleDetail.tests.qcFailed'),
     );
     setQcTest(null);
     setQcNotes('');
   };
 
   const submitDispatch = async () => {
-    await run(() => dispatchResult(sample.id, { requesting_department: dispatchTo, dispatch_notes: dispatchNotes }), 'تم إرسال النتائج');
+    await run(() => dispatchResult(sample.id, { requesting_department: dispatchTo, dispatch_notes: dispatchNotes }), i18nT('food.foodLab.sampleDetail.dispatch.success'));
     setDispatchOpen(false);
   };
 
@@ -1109,7 +1119,7 @@ export const SampleDetailDialog = ({
   };
 
   const submitParams = async () => {
-    await run(() => setSampleParameters(sample.id, selParams), 'تم تحديث الفحوصات المطلوبة');
+    await run(() => setSampleParameters(sample.id, selParams), i18nT('food.foodLab.sampleDetail.parameters.success'));
     setParamsOpen(false);
   };
 
@@ -1117,11 +1127,11 @@ export const SampleDetailDialog = ({
     setLoading(true);
     try {
       await setSamplePriority(sample.id, priorityValue);
-      notifySuccess('تم تحديث أولوية التحليل');
+      notifySuccess(i18nT('food.foodLab.sampleDetail.priority.success'));
       await load();
       onChanged();
     } catch {
-      notifyError('تعذر تحديث الأولوية');
+      notifyError(i18nT('food.foodLab.sampleDetail.priority.error'));
     } finally {
       setLoading(false);
     }
@@ -1131,11 +1141,11 @@ export const SampleDetailDialog = ({
     setLoading(true);
     try {
       await updateLabSample(sample.id, { classification: classifyValue });
-      notifySuccess('تم تحديث تصنيف العينة');
+      notifySuccess(i18nT('food.foodLab.sampleDetail.classification.success'));
       await load();
       onChanged();
     } catch {
-      notifyError('تعذر تحديث التصنيف');
+      notifyError(i18nT('food.foodLab.sampleDetail.classification.error'));
     } finally {
       setLoading(false);
     }
@@ -1160,92 +1170,92 @@ export const SampleDetailDialog = ({
         </Stack>
       </DialogTitle>
       <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        {/* معلومات عامة */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.generalInfo')} */}
         <Grid container spacing={1.5}>
-          <Meta label="المصدر" value={sample.source_name ?? '—'} />
-          <Meta label="التصنيف" value={CLASSIFICATION_LABELS[sample.classification] ?? sample.classification} />
-          <Meta label="الأولوية" value={sample.priority_label ?? '—'} />
-          <Meta label="الجهة الطالبة" value={sample.requesting_department || '—'} />
-          <Meta label="القسم" value={labBench[sample.bench]?.label ?? sample.bench} />
-          <Meta label="استلام" value={sample.received_by_name ? `${sample.received_by_name} — ${formatDateTime(sample.received_at)}` : '—'} />
-          <Meta label="المنسّق" value={sample.coordinator_name ?? '—'} />
-          <Meta label="رئيس القسم" value={sample.department_head_name ?? '—'} />
-          <Meta label="المحلّل" value={sample.analyst_name ?? '—'} />
-          <Meta label="الاعتماد" value={sample.approved_by_name ? `${sample.approved_by_name} — ${formatDateTime(sample.approved_at)}` : '—'} />
-          <Meta label="قرار الاستلام" value={sample.reception_status ? `${labReception[sample.reception_status]?.label ?? sample.reception_status}${sample.reception_note ? ` — ${sample.reception_note}` : ''}` : '—'} />
-          <Meta label="التحصيل" value={`${labCollection[sample.collection_status]?.label ?? sample.collection_status} (${sample.fee_amount})`} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.source')} value={sample.source_name ?? '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.classification')} value={CLASSIFICATION_LABELS[sample.classification] ? classificationLabel(CLASSIFICATION_LABELS[sample.classification], i18nT) : sample.classification} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.priority')} value={sample.priority_label ?? '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.requestingDept')} value={sample.requesting_department || '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.bench')} value={labBench[sample.bench]?.label ?? sample.bench} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.received')} value={sample.received_by_name ? `${sample.received_by_name} — ${formatDateTime(sample.received_at)}` : '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.coordinator')} value={sample.coordinator_name ?? '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.sectionHead')} value={sample.department_head_name ?? '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.analyst')} value={sample.analyst_name ?? '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.approved')} value={sample.approved_by_name ? `${sample.approved_by_name} — ${formatDateTime(sample.approved_at)}` : '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.receptionDecision')} value={sample.reception_status ? `${labReception[sample.reception_status]?.label ?? sample.reception_status}${sample.reception_note ? ` — ${sample.reception_note}` : ''}` : '—'} />
+          <Meta label={i18nT('food.foodLab.sampleDetail.meta.collection')} value={`${labCollection[sample.collection_status]?.label ?? sample.collection_status} (${sample.fee_amount})`} />
           {sample.lab_invoice && (
-            <Meta label="الفاتورة" value={`${sample.lab_invoice.invoice_number} • ${labInvoiceStatus[sample.lab_invoice.status]?.label ?? sample.lab_invoice.status}`} />
+            <Meta label={i18nT('food.foodLab.sampleDetail.meta.invoice')} value={`${sample.lab_invoice.invoice_number} • ${labInvoiceStatus[sample.lab_invoice.status]?.label ?? sample.lab_invoice.status}`} />
           )}
         </Grid>
 
-        {/* خطوات الدورة */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.path')} */}
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>مسار العينة</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.foodLab.sampleDetail.sections.path')}</Typography>
           <FlowStepper status={sample.status} />
         </Box>
 
-        {/* لوحة المنسّق: الأولوية والتصنيف */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.coordinatorPanel')} */}
         {canCoordinate && (
           <Box sx={{ p: 1.5, border: '1px dashed', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>ضبط العينة (منسّق العينات)</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.foodLab.sampleDetail.sections.coordinatorPanel')}</Typography>
             <Grid container spacing={1.5}>
               <Grid item xs={12} sm={6}>
-                <FormSelect label="أولوية التحليل" value={priorityValue} onChange={setPriorityValue} options={Object.entries(labPriority).map(([v, m]) => ({ value: v, label: m.label }))} />
+                <FormSelect label={i18nT('food.foodLab.sampleDetail.priority.label')} value={priorityValue} onChange={setPriorityValue} options={Object.entries(labPriority).map(([v, m]) => ({ value: v, label: m.label }))} />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormSelect label="التصنيف" value={classifyValue} onChange={setClassifyValue} options={Object.entries(CLASSIFICATION_LABELS).map(([v, l]) => ({ value: v, label: l }))} />
+                <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.classify.label')} value={classifyValue} onChange={setClassifyValue} options={Object.entries(CLASSIFICATION_LABELS).map(([v, l]) => ({ value: v, label: classificationLabel(l, i18nT) }))} />
               </Grid>
             </Grid>
             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-              <AppButton size="small" onClick={saveCoordinatorPriority} disabled={priorityValue === (sample.priority || 'NORMAL')}>حفظ الأولوية</AppButton>
-              <AppButton size="small" variant="secondary" onClick={saveCoordinatorClassification} disabled={classifyValue === (sample.classification || '')}>حفظ التصنيف</AppButton>
+              <AppButton size="small" onClick={saveCoordinatorPriority} disabled={priorityValue === (sample.priority || 'NORMAL')}>{i18nT('food.foodLab.sampleDetail.priority.save')}</AppButton>
+              <AppButton size="small" variant="secondary" onClick={saveCoordinatorClassification} disabled={classifyValue === (sample.classification || '')}>{i18nT('food.foodLab.sampleDetail.dialogs.classify.save')}</AppButton>
             </Stack>
           </Box>
         )}
 
-        {/* أزرار العمل */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.actions')} */}
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {sample.reception_status === 'RECEIVED' && (
             <>
-              <WorkflowBtn label="قبول العينة" icon={<CheckCircleIcon />} onClick={() => { setReceptionDecision('accept'); setReceptionNote(''); setReceptionOpen(true); }} />
-              <WorkflowBtn label="قبول مشروط" icon={<VerifiedIcon />} onClick={() => { setReceptionDecision('conditional'); setReceptionNote(''); setReceptionOpen(true); }} />
-              <WorkflowBtn label="رفض العينة" icon={<CircleIcon />} onClick={() => { setReceptionDecision('reject'); setReceptionNote(''); setReceptionOpen(true); }} />
+              <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.accept')} icon={<CheckCircleIcon />} onClick={() => { setReceptionDecision('accept'); setReceptionNote(''); setReceptionOpen(true); }} />
+              <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.acceptConditional')} icon={<VerifiedIcon />} onClick={() => { setReceptionDecision('conditional'); setReceptionNote(''); setReceptionOpen(true); }} />
+              <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.reject')} icon={<CircleIcon />} onClick={() => { setReceptionDecision('reject'); setReceptionNote(''); setReceptionOpen(true); }} />
             </>
           )}
           {!isReceptionist && (
             <>
-              {sample.status === 'RECEIVED' && <WorkflowBtn label={WORKFLOW_ACTIONS.coordinate.label} icon={WORKFLOW_ACTIONS.coordinate.icon} onClick={() => openAction('coordinate')} />}
-              {sample.status === 'COORDINATED' && <WorkflowBtn label={WORKFLOW_ACTIONS.assignSection.label} icon={WORKFLOW_ACTIONS.assignSection.icon} onClick={() => openAction('assignSection')} />}
-              {sample.status === 'COORDINATED' && <WorkflowBtn label="إعادة توزيع" icon={<LinkIcon />} onClick={() => openAction('assignSection')} />}
-              {sample.status === 'ASSIGNED' && <WorkflowBtn label={WORKFLOW_ACTIONS.assignAnalyst.label} icon={WORKFLOW_ACTIONS.assignAnalyst.icon} onClick={() => openAction('assignAnalyst')} />}
+              {sample.status === 'RECEIVED' && <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.coordinate.labelKey)} icon={WORKFLOW_ACTIONS.coordinate.icon} onClick={() => openAction('coordinate')} />}
+              {sample.status === 'COORDINATED' && <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.assignSection.labelKey)} icon={WORKFLOW_ACTIONS.assignSection.icon} onClick={() => openAction('assignSection')} />}
+              {sample.status === 'COORDINATED' && <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.redistribute')} icon={<LinkIcon />} onClick={() => openAction('assignSection')} />}
+              {sample.status === 'ASSIGNED' && <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.assignAnalyst.labelKey)} icon={WORKFLOW_ACTIONS.assignAnalyst.icon} onClick={() => openAction('assignAnalyst')} />}
               {['UNDER_TESTING', 'ASSIGNED'].includes(sample.status) && (
-                <WorkflowBtn label="تحديد الفحوصات" icon={<BiotechIcon />} onClick={openParams} />
+                <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.setParameters')} icon={<BiotechIcon />} onClick={openParams} />
               )}
               {sample.status === 'UNDER_TESTING' && sample.tests.length > 0 && (
-                <WorkflowBtn label={WORKFLOW_ACTIONS.submitForApproval.label} icon={WORKFLOW_ACTIONS.submitForApproval.icon} onClick={() => openAction('submitForApproval')} />
+                <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.submitForApproval.labelKey)} icon={WORKFLOW_ACTIONS.submitForApproval.icon} onClick={() => openAction('submitForApproval')} />
               )}
-              {sample.status === 'READY_FOR_APPROVAL' && <WorkflowBtn label={WORKFLOW_ACTIONS.approve.label} icon={WORKFLOW_ACTIONS.approve.icon} onClick={() => openAction('approve')} />}
+              {sample.status === 'READY_FOR_APPROVAL' && <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.approve.labelKey)} icon={WORKFLOW_ACTIONS.approve.icon} onClick={() => openAction('approve')} />}
               {sample.approval_status === 'APPROVED' && sample.status !== 'DISPATCHED' && sample.status !== 'REJECTED' && (
                 <>
-                  <WorkflowBtn label={WORKFLOW_ACTIONS.invoice.label} icon={WORKFLOW_ACTIONS.invoice.icon} onClick={() => openAction('invoice')} />
-                  <WorkflowBtn label={WORKFLOW_ACTIONS.dispatch.label} icon={WORKFLOW_ACTIONS.dispatch.icon} onClick={() => openAction('dispatch')} />
+                  <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.invoice.labelKey)} icon={WORKFLOW_ACTIONS.invoice.icon} onClick={() => openAction('invoice')} />
+                  <WorkflowBtn label={i18nT(WORKFLOW_ACTIONS.dispatch.labelKey)} icon={WORKFLOW_ACTIONS.dispatch.icon} onClick={() => openAction('dispatch')} />
                 </>
               )}
             </>
           )}
-          <WorkflowBtn label="نقل يدوي" icon={<LocalShippingIcon />} onClick={() => { setTfFrom(''); setTfTo(''); setTransferOpen(true); }} />
-          <WorkflowBtn label="طباعة Barcode" icon={<DescriptionIcon />} onClick={() => setBarcodeSample(sample)} />
+          <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.manualTransfer')} icon={<LocalShippingIcon />} onClick={() => { setTfFrom(''); setTfTo(''); setTransferOpen(true); }} />
+          <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.printBarcode')} icon={<DescriptionIcon />} onClick={() => setBarcodeSample(sample)} />
           {!isReceptionist && (
-            <WorkflowBtn label="إصدار شهادة" icon={<DescriptionIcon />} disabled={!certifiable} onClick={async () => { try { await certifySample(sample.id); notifySuccess('تم إصدار الشهادة'); onChanged(); await load(); } catch { notifyError('تعذر إصدار الشهادة'); } }} />
+            <WorkflowBtn label={i18nT('food.foodLab.sampleDetail.actions.issueCertificate')} icon={<DescriptionIcon />} disabled={!certifiable} onClick={async () => { try { await certifySample(sample.id); notifySuccess(i18nT('food.foodLab.sampleDetail.certificate.success')); onChanged(); await load(); } catch { notifyError(i18nT('food.foodLab.sampleDetail.certificate.error')); } }} />
           )}
         </Stack>
 
-        {/* الفحوصات */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.tests')} */}
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>الفحوصات المطلوبة والنتائج</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.foodLab.sampleDetail.sections.tests')}</Typography>
           {sample.tests.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">لا توجد فحوصات — حدّدها من زر "تحديد الفحوصات".</Typography>
+            <Typography variant="body2" color="text.secondary">{i18nT('food.foodLab.sampleDetail.tests.noTests')}</Typography>
           ) : (
             <Stack spacing={1}>
               {sample.tests.map((t) => (
@@ -1254,48 +1264,48 @@ export const SampleDetailDialog = ({
                     <Box sx={{ flex: 1, minWidth: 220 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.parameter.name_ar} {t.parameter.unit ? `(${t.parameter.unit})` : ''}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        المعدل المرجعي: {t.reference_limit || '—'} • المحلل: {t.assigned_to_name ?? '—'}
-                        {t.sla?.due_at ? ` • استحقاق: ${formatDateTime(t.sla.due_at)}` : ''}
+                        {i18nT('food.foodLab.sampleDetail.tests.referenceLimit', { value: t.reference_limit || '—' })} • {i18nT('food.foodLab.sampleDetail.tests.analyst', { name: t.assigned_to_name ?? '—' })}
+                        {t.sla?.due_at ? ` • {i18nT('food.foodLab.sampleDetail.tests.due', { date: formatDateTime(t.sla.due_at) })}` : ''}
                       </Typography>
                       <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }} flexWrap="wrap" useFlexGap>
                         <StatusChip label={labTestStatus[t.status]?.label ?? t.status} tone={labTestStatus[t.status]?.tone} />
-                        {t.version > 0 && <Chip size="small" variant="outlined" label={`الإصدار v${t.version}`} />}
+                        {t.version > 0 && <Chip size="small" variant="outlined" label={`{i18nT('food.foodLab.sampleDetail.tests.revision', { version: t.version })}`} />}
                         {t.sla?.status && <StatusChip label={labSla[t.sla.status]?.label ?? t.sla.status} tone={labSla[t.sla.status]?.tone} />}
-                        {t.sla?.tat_hours != null && <Chip size="small" variant="outlined" label={`TAT ${t.sla.tat_hours} س`} />}
+                        {t.sla?.tat_hours != null && <Chip size="small" variant="outlined" label={`{i18nT('food.foodLab.sampleDetail.tests.tat', { hours: t.sla.tat_hours })}`} />}
                         {t.qc_status && t.qc_status !== 'PENDING' && <StatusChip label={labQc[t.qc_status]?.label ?? t.qc_status} tone={labQc[t.qc_status]?.tone} />}
-                        {t.revisions && t.revisions.length > 0 && <Chip size="small" variant="outlined" color="warning" label={`تصحيحات: ${t.revisions.length}`} />}
+                        {t.revisions && t.revisions.length > 0 && <Chip size="small" variant="outlined" color="warning" label={`{i18nT('food.foodLab.sampleDetail.tests.corrections', { count: t.revisions.length })}`} />}
                         {t.spec_snapshot && (
-                          <Chip size="small" variant="outlined" color="info" label={`وفق مواصفة v${String((t.spec_snapshot as { version?: unknown }).version ?? '')}`} />
+                          <Chip size="small" variant="outlined" color="info" label={i18nT('food.foodLab.sampleDetail.tests.specVersion', { version: String((t.spec_snapshot as { version?: unknown }).version ?? '') })} />
                         )}
                         {t.micro_limit && (
-                          <Chip size="small" variant="outlined" label={`الحد: ${t.micro_limit.microorganism_code ?? ''}`} />
+                          <Chip size="small" variant="outlined" label={`{i18nT('food.foodLab.sampleDetail.tests.limit', { value: t.micro_limit.microorganism_code ?? '' })}`} />
                         )}
                       </Stack>
                     </Box>
                     <StatusChip label={labDecision[t.decision]?.label ?? t.decision} tone={labDecision[t.decision]?.tone} />
                     {canAnalyze && t.status === 'PENDING' && (
-                      <Tooltip title="بدء الفحص"><span><AppButton size="small" variant="secondary" onClick={() => run(() => startSampleTest(t.id), 'تم البدء')}>بدء</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.start')}><span><AppButton size="small" variant="secondary" onClick={() => run(() => startSampleTest(t.id), i18nT('food.foodLab.sampleDetail.tests.startTest'))}>{i18nT('food.foodLab.sampleDetail.tests.start')}</AppButton></span></Tooltip>
                     )}
                     {canAnalyze && ['IN_PROGRESS', 'DRAFT', 'SUBMITTED', 'REVIEWED'].includes(t.status) && (
-                      <Tooltip title="إدخال النتيجة"><span><AppButton size="small" variant="secondary" onClick={() => openResult(t)}>نتيجة</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.enterResult')}><span><AppButton size="small" variant="secondary" onClick={() => openResult(t)}>{i18nT('food.foodLab.sampleDetail.tests.enterResult')}</AppButton></span></Tooltip>
                     )}
                     {canAnalyze && (
-                      <Tooltip title="تقييم ميكروبيولوجي آلي وفق المواصفة"><span><AppButton size="small" variant="secondary" onClick={() => setMicroEvalTest(t)}>تقييم</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.microEval')}><span><AppButton size="small" variant="secondary" onClick={() => setMicroEvalTest(t)}>{i18nT('food.foodLab.sampleDetail.tests.enterResult')}</AppButton></span></Tooltip>
                     )}
                     {canSectionReview && t.status === 'SUBMITTED' && (
-                      <Tooltip title="مراجعة رئيس القسم"><span><AppButton size="small" variant="secondary" onClick={() => { setReviewTest(t); setReviewNotes(''); }}>مراجعة القسم</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.sectionReview')}><span><AppButton size="small" variant="secondary" onClick={() => { setReviewTest(t); setReviewNotes(''); }}>{i18nT('food.foodLab.sampleDetail.tests.sectionReview')}</AppButton></span></Tooltip>
                     )}
                     {canSectionReview && t.status === 'SUBMITTED' && (
-                      <Tooltip title="إعادة النتيجة للمحلل للتصحيح"><span><AppButton size="small" variant="secondary" onClick={() => { setReturnTest(t); setReturnReason(''); }}>إعادة للتحليل</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.returnForCorrection')}><span><AppButton size="small" variant="secondary" onClick={() => { setReturnTest(t); setReturnReason(''); }}>{i18nT('food.foodLab.sampleDetail.tests.returnForCorrection')}</AppButton></span></Tooltip>
                     )}
                     {canSectionReview && (
-                      <Tooltip title="مراجعة الجودة QC"><span><AppButton size="small" variant="secondary" onClick={() => { setQcTest(t); setQcStatus('PASSED'); setQcNotes(''); }}>مراجعة QC</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.qcReview')}><span><AppButton size="small" variant="secondary" onClick={() => { setQcTest(t); setQcStatus('PASSED'); setQcNotes(''); }}>{i18nT('food.foodLab.sampleDetail.tests.qcReview')}</AppButton></span></Tooltip>
                     )}
                     {canSectionApprove && t.status === 'REVIEWED' && (
-                      <Tooltip title="اعتماد مدير المختبر / رئيس القسم"><span><AppButton size="small" onClick={() => submitApproveTest(t)}>اعتماد</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.actions.approveTest')}><span><AppButton size="small" onClick={() => submitApproveTest(t)}>{i18nT('food.foodLab.sampleDetail.actions.approveTest')}</AppButton></span></Tooltip>
                     )}
                     {canAnalyze && t.status === 'APPROVED' && (
-                      <Tooltip title="طلب تصحيح النتيجة"><span><AppButton size="small" variant="secondary" onClick={() => { setReviseTest(t); setReviseReason(''); }}>تصحيح</AppButton></span></Tooltip>
+                      <Tooltip title={i18nT('food.foodLab.sampleDetail.tests.requestCorrection')}><span><AppButton size="small" variant="secondary" onClick={() => { setReviseTest(t); setReviseReason(''); }}>{i18nT('food.foodLab.sampleDetail.tests.requestCorrection')}</AppButton></span></Tooltip>
                     )}
                   </Stack>
                 </Box>
@@ -1304,54 +1314,54 @@ export const SampleDetailDialog = ({
           )}
         </Box>
 
-        {/* سلسلة الحيازة */}
+        {/* {i18nT('food.foodLab.sampleDetail.sections.custody')} */}
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>سلسلة حيازة العينة ({sample.custody.length})</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.foodLab.sampleDetail.sections.custody')} ({sample.custody.length})</Typography>
           {sample.custody.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">لا توجد انتقالات مسجلة.</Typography>
+            <Typography variant="body2" color="text.secondary">{i18nT('food.foodLab.sampleDetail.custody.noEvents')}</Typography>
           ) : (
             <Stack spacing={1}>
               {[...sample.custody].reverse().map((e, idx) => (
-                <CustodyEvent key={e.id} event={e} isFirst={idx === 0} onAck={async () => { await run(() => acknowledgeCustody(e.id), 'تم تأكيد الاستلام'); }} />
+                <CustodyEvent key={e.id} event={e} isFirst={idx === 0} onAck={async () => { await run(() => acknowledgeCustody(e.id), i18nT('food.foodLab.sampleDetail.custody.ackSuccess')); }} />
               ))}
             </Stack>
           )}
         </Box>
       </DialogContent>
       <DialogActions>
-        <AppButton variant="ghost" onClick={onClose}>إغلاق</AppButton>
+        <AppButton variant="ghost" onClick={onClose}>{i18nT('food.foodLab.sampleDetail.common.close')}</AppButton>
       </DialogActions>
 
-      {/* تنسيق/إسناد */}
+      {/* {i18nT('food.foodLab.sampleDetail.sections.coordinate')} */}
       <FormDialog
         open={Boolean(action) || Boolean(action === 'assignSection')}
         onClose={() => setAction(null)}
         onSubmit={runActionSubmit}
-        title={action ? WORKFLOW_ACTIONS[action].label : ''}
+        title={action ? i18nT(WORKFLOW_ACTIONS[action].labelKey) : ''}
         maxWidth="xs"
       >
         {action === 'coordinate' && (
           <>
-            <FormSelect label="منسّق عينات المختبر" requiredMark value={selUser} onChange={setSelUser} options={userOptions} />
-            <Typography variant="caption" color="text.secondary">{WORKFLOW_ACTIONS.coordinate.hint}</Typography>
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.coordinate.label')} requiredMark value={selUser} onChange={setSelUser} options={userOptions} />
+            <Typography variant="caption" color="text.secondary">{i18nT(WORKFLOW_ACTIONS.coordinate.hintKey)}</Typography>
           </>
         )}
         {action === 'assignSection' && (
           <>
-            <FormSelect label="قسم المختبر" value={selBench} onChange={setSelBench} options={Object.entries(labBench).map(([v, m]) => ({ value: v, label: m.label }))} />
-            <FormSelect label="رئيس القسم" value={selUser} onChange={setSelUser} placeholder="كمختار" options={userOptions} />
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.assignSection.label')} value={selBench} onChange={setSelBench} options={Object.entries(labBench).map(([v, m]) => ({ value: v, label: m.label }))} />
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.assignSection.head')} value={selUser} onChange={setSelUser} placeholder={i18nT('food.foodLab.sampleDetail.dialogs.assignSection.headPlaceholder')} options={userOptions} />
           </>
         )}
         {action === 'assignAnalyst' && (
           <>
-            <FormSelect label="المحلّل" requiredMark value={selUser} onChange={setSelUser} options={userOptions} />
-            <Typography variant="caption" color="text.secondary">{WORKFLOW_ACTIONS.assignAnalyst.hint}</Typography>
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.assignAnalyst.label')} requiredMark value={selUser} onChange={setSelUser} options={userOptions} />
+            <Typography variant="caption" color="text.secondary">{i18nT(WORKFLOW_ACTIONS.assignAnalyst.hintKey)}</Typography>
           </>
         )}
       </FormDialog>
 
-      {/* تحديد الفحوصات */}
-      <FormDialog open={paramsOpen} onClose={() => setParamsOpen(false)} onSubmit={submitParams} title="تحديد الفحوصات المطلوبة" maxWidth="sm">
+      {/* {i18nT('food.foodLab.sampleDetail.sections.setParams')} */}
+      <FormDialog open={paramsOpen} onClose={() => setParamsOpen(false)} onSubmit={submitParams} title={i18nT('food.foodLab.sampleDetail.dialogs.setParams.title')} maxWidth="sm">
         <Stack spacing={1}>
           {parameters.map((p) => (
             <Box
@@ -1374,129 +1384,129 @@ export const SampleDetailDialog = ({
         </Stack>
       </FormDialog>
 
-      {/* نقل يدوي */}
-      <FormDialog open={transferOpen} onClose={() => setTransferOpen(false)} onSubmit={submitTransfer} title="تسجيل نقل يدوي" subtitle="تتبع مسؤولية العينة بين الأقسام" maxWidth="sm">
-        <FormTextField label="من (القسم)" requiredMark value={tfFrom} onChange={(e) => setTfFrom(e.target.value)} />
-        <FormTextField label="إلى (القسم)" requiredMark value={tfTo} onChange={(e) => setTfTo(e.target.value)} />
-        <FormTextField label="حالة العينة" value={tfCond} onChange={(e) => setTfCond(e.target.value)} />
-        <FormTextField label="رقم الختم" value={tfSeal} onChange={(e) => setTfSeal(e.target.value)} />
-        <FormTextField label="ملاحظات" multiline minRows={2} value={tfRemarks} onChange={(e) => setTfRemarks(e.target.value)} />
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.transfer.manual')} */}
+      <FormDialog open={transferOpen} onClose={() => setTransferOpen(false)} onSubmit={submitTransfer} title={i18nT('food.foodLab.sampleDetail.dialogs.transfer.manualTitle')} subtitle={i18nT('food.foodLab.sampleDetail.dialogs.transfer.subtitle')} maxWidth="sm">
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.transfer.from')} requiredMark value={tfFrom} onChange={(e) => setTfFrom(e.target.value)} />
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.transfer.to')} requiredMark value={tfTo} onChange={(e) => setTfTo(e.target.value)} />
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.transfer.condition')} value={tfCond} onChange={(e) => setTfCond(e.target.value)} />
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.transfer.seal')} value={tfSeal} onChange={(e) => setTfSeal(e.target.value)} />
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.transfer.notes')} multiline minRows={2} value={tfRemarks} onChange={(e) => setTfRemarks(e.target.value)} />
       </FormDialog>
 
-      {/* إدخال نتيجة */}
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.enterResult')} */}
       <Dialog open={Boolean(resultTest)} onClose={() => setResultTest(null)} maxWidth="sm" fullWidth>
-        <DialogTitle>إدخال نتيجة الفحص</DialogTitle>
+        <DialogTitle>{i18nT('food.foodLab.sampleDetail.dialogs.enterResultTitle')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
           {resultTest && (
             <>
               <Typography variant="body2" sx={{ fontWeight: 700 }}>{resultTest.parameter.name_ar} {resultTest.parameter.unit ? `(${resultTest.parameter.unit})` : ''}</Typography>
-              <FormTextField label="قيمة النتيجة" value={resultValue} onChange={(e) => setResultValue(e.target.value)} placeholder={resultTest.unit || 'قيمة رقمية'} />
-              <FormTextField label="الطريقة المستخدمة" value={resultMethod} onChange={(e) => setResultMethod(e.target.value)} placeholder={resultTest.parameter.method || 'الطريقة المعتمدة'} />
-              <FormTextField label="الجهاز المستخدم" value={resultDevice} onChange={(e) => setResultDevice(e.target.value)} placeholder="جهاز التحليل" />
-              <FormTextField label="رقم دفعة المادة (الكاشف)" value={resultReagent} onChange={(e) => setResultReagent(e.target.value)} placeholder="رقم الدفعة" />
-              <FormSelect label="القرار" value={resultDecision} onChange={setResultDecision} options={Object.entries(labDecision).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
-              <Typography variant="caption" color="text.secondary">«إرسال للمراجعة» يمرر النتيجة لمراجعة رئيس القسم ثم اعتماد مدير المختبر.</Typography>
+              <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.value')} value={resultValue} onChange={(e) => setResultValue(e.target.value)} placeholder={resultTest.unit || i18nT('food.foodLab.sampleDetail.dialogs.enterResult.numericValue')} />
+              <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.method')} value={resultMethod} onChange={(e) => setResultMethod(e.target.value)} placeholder={resultTest.parameter.method || i18nT('food.foodLab.sampleDetail.dialogs.enterResult.defaultMethod')} />
+              <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.device')} value={resultDevice} onChange={(e) => setResultDevice(e.target.value)} placeholder={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.device')} />
+              <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.reagent')} value={resultReagent} onChange={(e) => setResultReagent(e.target.value)} placeholder={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.reagentBatch')} />
+              <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.decision')} value={resultDecision} onChange={setResultDecision} options={Object.entries(labDecision).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
+              <Typography variant="caption" color="text.secondary">{i18nT('food.foodLab.sampleDetail.dialogs.enterResult.hint')}</Typography>
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <AppButton variant="ghost" onClick={() => setResultTest(null)} disabled={loading}>إلغاء</AppButton>
-          <AppButton variant="secondary" onClick={submitResultDraft} disabled={loading}>حفظ مسودة</AppButton>
-          <AppButton onClick={submitResult} disabled={loading}>إرسال للمراجعة</AppButton>
+          <AppButton variant="ghost" onClick={() => setResultTest(null)} disabled={loading}>{i18nT('food.foodLab.sampleDetail.common.cancel')}</AppButton>
+          <AppButton variant="secondary" onClick={submitResultDraft} disabled={loading}>{i18nT('food.foodLab.sampleDetail.tests.saveDraft')}</AppButton>
+          <AppButton onClick={submitResult} disabled={loading}>{i18nT('food.foodLab.sampleDetail.tests.submit')}</AppButton>
         </DialogActions>
       </Dialog>
 
-      {/* مراجعة رئيس القسم */}
-      <FormDialog open={Boolean(reviewTest)} onClose={() => setReviewTest(null)} onSubmit={submitReview} title="مراجعة رئيس القسم" subtitle="مراجعة النتيجة قبل اعتماد مدير المختبر" maxWidth="xs" submitLabel="إحالة للاعتماد">
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.review.title')} */}
+      <FormDialog open={Boolean(reviewTest)} onClose={() => setReviewTest(null)} onSubmit={submitReview} title={i18nT('food.foodLab.sampleDetail.dialogs.review.title')} subtitle={i18nT('food.foodLab.sampleDetail.dialogs.review.subtitle')} maxWidth="xs" submitLabel={i18nT('food.foodLab.sampleDetail.dialogs.review.submit')}>
         {reviewTest && (
           <>
             <Typography variant="body2" sx={{ fontWeight: 700 }}>{reviewTest.parameter.name_ar}</Typography>
-            <FormTextField label="قيمة النتيجة" value={reviewTest.result_value != null ? String(reviewTest.result_value) : '—'} disabled />
-            <FormSelect label="القرار" value={reviewTest.decision} onChange={(v) => setReviewTest((t) => (t ? { ...t, decision: v } : t))} options={Object.entries(labDecision).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
-            <FormTextField label="ملاحظات المراجعة" multiline minRows={2} value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.value')} value={reviewTest.result_value != null ? String(reviewTest.result_value) : '—'} disabled />
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.enterResult.decision')} value={reviewTest.decision} onChange={(v) => setReviewTest((t) => (t ? { ...t, decision: v } : t))} options={Object.entries(labDecision).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.review.notes')} multiline minRows={2} value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </>
         )}
       </FormDialog>
 
-      {/* طلب تصحيح */}
-      <FormDialog open={Boolean(reviseTest)} onClose={() => setReviseTest(null)} onSubmit={submitRevise} title="طلب تصحيح نتيجة معتمدة" subtitle="يُحفظ الإصدار الحالي أرشيفياً وتُفتح نسخة جديدة" maxWidth="xs" submitLabel="فتح طلب التصحيح">
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.revise.title')} */}
+      <FormDialog open={Boolean(reviseTest)} onClose={() => setReviseTest(null)} onSubmit={submitRevise} title={i18nT('food.foodLab.sampleDetail.dialogs.revise.title')} subtitle={i18nT('food.foodLab.sampleDetail.dialogs.revise.subtitle')} maxWidth="xs" submitLabel={i18nT('food.foodLab.sampleDetail.dialogs.revise.submit')}>
         {reviseTest && (
           <>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>{reviseTest.parameter.name_ar} — الإصدار v{reviseTest.version}</Typography>
-            <FormTextField label="سبب التصحيح" requiredMark multiline minRows={2} value={reviseReason} onChange={(e) => setReviseReason(e.target.value)} />
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>{reviseTest.parameter.name_ar} — {i18nT('food.foodLab.sampleDetail.tests.revision', { version: reviseTest.version })}</Typography>
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.revise.reason')} requiredMark multiline minRows={2} value={reviseReason} onChange={(e) => setReviseReason(e.target.value)} />
           </>
         )}
       </FormDialog>
 
-      {/* إعادة النتيجة للمحلل */}
-      <FormDialog open={Boolean(returnTest)} onClose={() => setReturnTest(null)} onSubmit={submitReturn} title="إعادة النتيجة للتحليل" subtitle="تُعاد النتيجة للمحلل لتصحيحها قبل إعادة إرسالها" maxWidth="xs" submitLabel="إعادة النتيجة">
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.return.title')} */}
+      <FormDialog open={Boolean(returnTest)} onClose={() => setReturnTest(null)} onSubmit={submitReturn} title={i18nT('food.foodLab.sampleDetail.dialogs.return.title')} subtitle={i18nT('food.foodLab.sampleDetail.dialogs.return.subtitle')} maxWidth="xs" submitLabel={i18nT('food.foodLab.sampleDetail.dialogs.return.submit')}>
         {returnTest && (
           <>
             <Typography variant="body2" sx={{ fontWeight: 700 }}>{returnTest.parameter.name_ar}</Typography>
-            <FormTextField label="سبب الإعادة" requiredMark multiline minRows={2} value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="مثال: خطأ في قراءة الجهاز / عدم مطابقة طريقة الاختبار" />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.return.reason')} requiredMark multiline minRows={2} value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder={i18nT('food.foodLab.sampleDetail.dialogs.return.placeholder')} />
           </>
         )}
       </FormDialog>
 
-      {/* مراجعة الجودة QC */}
-      <FormDialog open={Boolean(qcTest)} onClose={() => setQcTest(null)} onSubmit={submitQc} title="مراجعة الجودة — QC" subtitle="اعتماد مطابقة النتيجة للمواصفة قبل اعتمادها النهائي" maxWidth="xs" submitLabel="تسجيل المراجعة">
+      {/* {i18nT('food.foodLab.sampleDetail.dialogs.qc.title')} */}
+      <FormDialog open={Boolean(qcTest)} onClose={() => setQcTest(null)} onSubmit={submitQc} title={i18nT('food.foodLab.sampleDetail.dialogs.qc.title')} subtitle={i18nT('food.foodLab.sampleDetail.dialogs.qc.subtitle')} maxWidth="xs" submitLabel={i18nT('food.foodLab.sampleDetail.dialogs.qc.submit')}>
         {qcTest && (
           <>
             <Typography variant="body2" sx={{ fontWeight: 700 }}>{qcTest.parameter.name_ar}</Typography>
-            <FormSelect label="نتيجة مراجعة الجودة" value={qcStatus} onChange={setQcStatus} options={Object.entries(labQc).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
-            <FormTextField label="ملاحظات QC" multiline minRows={2} value={qcNotes} onChange={(e) => setQcNotes(e.target.value)} />
+            <FormSelect label={i18nT('food.foodLab.sampleDetail.dialogs.qc.result')} value={qcStatus} onChange={setQcStatus} options={Object.entries(labQc).filter(([k]) => k !== 'PENDING').map(([v, m]) => ({ value: v, label: m.label }))} />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.dialogs.qc.notes')} multiline minRows={2} value={qcNotes} onChange={(e) => setQcNotes(e.target.value)} />
           </>
         )}
       </FormDialog>
 
-      {/* قرار الاستلام */}
-      <FormDialog open={receptionOpen} onClose={() => setReceptionOpen(false)} onSubmit={submitReception} title={receptionDecision === 'accept' ? 'قبول العينة' : receptionDecision === 'conditional' ? 'قبول مشروط' : 'رفض العينة'} subtitle="قرار قسم استلام العينات المختبرية" maxWidth="xs" submitLabel="تأكيد القرار">
-        <FormTextField label="ملاحظات القرار" multiline minRows={2} value={receptionNote} onChange={(e) => setReceptionNote(e.target.value)} />
+      {/* {i18nT('food.foodLab.sampleDetail.reception.title')} */}
+      <FormDialog open={receptionOpen} onClose={() => setReceptionOpen(false)} onSubmit={submitReception} title={receptionDecision === 'accept' ? i18nT('food.foodLab.sampleDetail.reception.accept') : receptionDecision === 'conditional' ? i18nT('food.foodLab.sampleDetail.reception.conditional') : i18nT('food.foodLab.sampleDetail.reception.reject')} subtitle={i18nT('food.foodLab.sampleDetail.reception.subtitle')} maxWidth="xs" submitLabel={i18nT('food.foodLab.sampleDetail.reception.submit')}>
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.reception.notes')} multiline minRows={2} value={receptionNote} onChange={(e) => setReceptionNote(e.target.value)} />
       </FormDialog>
 
-      {/* فاتورة الرسوم */}
-      <FormDialog open={invoiceOpen} onClose={() => setInvoiceOpen(false)} onSubmit={submitInvoice} title="فاتورة رسوم التحليل" maxWidth="sm" submitLabel={invoiceAction === 'generate' ? 'إصدار الفاتورة' : invoiceAction === 'pay' ? 'تأكيد السداد' : 'تأكيد الإعفاء'}>
+      {/* {i18nT('food.foodLab.sampleDetail.invoice.title')} */}
+      <FormDialog open={invoiceOpen} onClose={() => setInvoiceOpen(false)} onSubmit={submitInvoice} title={i18nT('food.foodLab.sampleDetail.invoice.title')} maxWidth="sm" submitLabel={invoiceAction === 'generate' ? i18nT('food.foodLab.sampleDetail.invoice.generateBtn') : invoiceAction === 'pay' ? i18nT('food.foodLab.sampleDetail.invoice.payBtn') : i18nT('food.foodLab.sampleDetail.invoice.exemptBtn')}>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <AppButton size="small" variant={invoiceAction === 'generate' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('generate'); setInvoiceNote(''); }}>إصدار فاتورة</AppButton>
+          <AppButton size="small" variant={invoiceAction === 'generate' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('generate'); setInvoiceNote(''); }}>{i18nT('food.foodLab.sampleDetail.invoice.generateBtn')}</AppButton>
           {sample.lab_invoice && LAB_INVOICE_PENDING.has(sample.lab_invoice.status) && (
             <>
-              <AppButton size="small" variant={invoiceAction === 'pay' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('pay'); setInvoiceNote(''); }}>سداد</AppButton>
-              <AppButton size="small" variant={invoiceAction === 'exempt' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('exempt'); setInvoiceNote(''); }}>إعفاء</AppButton>
+              <AppButton size="small" variant={invoiceAction === 'pay' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('pay'); setInvoiceNote(''); }}>{i18nT('food.foodLab.sampleDetail.invoice.payBtn')}</AppButton>
+              <AppButton size="small" variant={invoiceAction === 'exempt' ? 'primary' : 'secondary'} onClick={() => { setInvoiceAction('exempt'); setInvoiceNote(''); }}>{i18nT('food.foodLab.sampleDetail.invoice.exemptBtn')}</AppButton>
             </>
           )}
         </Stack>
         {invoiceAction === 'generate' && (
           <>
-            <Typography variant="body2" color="text.secondary">تُصدر الفاتورة من أسعار معاملات التحليل المحددة على العينة وتُعفى تلقائياً إذا كانت الرسوم صفراً.</Typography>
+            <Typography variant="body2" color="text.secondary">{i18nT('food.foodLab.sampleDetail.invoice.hint')}</Typography>
             {sample.lab_invoice && !LAB_INVOICE_PENDING.has(sample.lab_invoice.status) && (
-              <Typography variant="body2" color="warning.main">توجد فاتورة سابقة ({sample.lab_invoice.invoice_number}) — سيتم إصدار فاتورة جديدة.</Typography>
+              <Typography variant="body2" color="warning.main">{i18nT('food.foodLab.sampleDetail.invoice.previousInvoice', { number: sample.lab_invoice.invoice_number })}</Typography>
             )}
           </>
         )}
         {invoiceAction === 'pay' && (
           <>
             <InvoiceSummary invoice={sample.lab_invoice} />
-            <FormTextField label="مرجع السداد" value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="رقم إيصال / مرجع الدفع" />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.invoice.reference')} value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder={i18nT('food.foodLab.sampleDetail.invoice.referencePlaceholder')} />
           </>
         )}
         {invoiceAction === 'exempt' && (
           <>
             <InvoiceSummary invoice={sample.lab_invoice} />
-            <FormTextField label="سبب الإعفاء" value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="إعفاء حكومي معتمد" />
+            <FormTextField label={i18nT('food.foodLab.sampleDetail.invoice.exemptReason')} value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder={i18nT('food.foodLab.sampleDetail.invoice.exemptPlaceholder')} />
           </>
         )}
       </FormDialog>
 
-      {/* إرسال */}
-      <FormDialog open={dispatchOpen} onClose={() => setDispatchOpen(false)} onSubmit={submitDispatch} title="إرسال النتائج للجهة الطالبة" maxWidth="sm">
-        <FormTextField label="الجهة الطالبة" requiredMark value={dispatchTo} onChange={(e) => setDispatchTo(e.target.value)} />
-        <FormTextField label="ملاحظات الإرسال" multiline minRows={2} value={dispatchNotes} onChange={(e) => setDispatchNotes(e.target.value)} />
+      {/* {i18nT('food.foodLab.sampleDetail.dispatch.title')} */}
+      <FormDialog open={dispatchOpen} onClose={() => setDispatchOpen(false)} onSubmit={submitDispatch} title={i18nT('food.foodLab.sampleDetail.dispatch.title')} maxWidth="sm">
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dispatch.to')} requiredMark value={dispatchTo} onChange={(e) => setDispatchTo(e.target.value)} />
+        <FormTextField label={i18nT('food.foodLab.sampleDetail.dispatch.notes')} multiline minRows={2} value={dispatchNotes} onChange={(e) => setDispatchNotes(e.target.value)} />
       </FormDialog>
 
-      {/* التقييم الميكروبيولوجي الآلي */}
+      {/* {i18nT('food.foodLab.sampleDetail.tests.microEval')} */}
       <MicroEvaluationDialog open={Boolean(microEvalTest)} test={microEvalTest} onClose={() => setMicroEvalTest(null)} onChanged={load} />
 
-      {/* طباعة ملصق العينة — Barcode */}
+      {/* {i18nT('food.foodLab.sampleDetail.barcode.title')} */}
       <PrintBarcodeDialog open={Boolean(barcodeSample)} sample={barcodeSample} onClose={() => setBarcodeSample(null)} />
     </Dialog>
   );
@@ -1514,9 +1524,10 @@ const WorkflowBtn = ({ label, icon, onClick, disabled }: { label: string; icon: 
 );
 
 const InvoiceSummary = ({ invoice }: { invoice: SampleInvoice | null }) => {
+  const { t } = useTranslation();
   const [printData, setPrintData] = useState<FinanceReceiptPrint | null>(null);
   if (!invoice) {
-    return <Typography variant="body2" color="text.secondary">لا توجد فاتورة لهذه العينة — أصدرها أولاً.</Typography>;
+    return <Typography variant="body2" color="text.secondary">{t('food.foodLab.invoiceSummary.noInvoice')}</Typography>;
   }
   return (
     <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}>
@@ -1527,7 +1538,7 @@ const InvoiceSummary = ({ invoice }: { invoice: SampleInvoice | null }) => {
         </Box>
         <StatusChip label={labInvoiceStatus[invoice.status]?.label ?? invoice.status} tone={labInvoiceStatus[invoice.status]?.tone} />
         {invoice.receipt_number && (
-          <Tooltip title="طباعة الإيصال">
+          <Tooltip title={t('food.foodLab.invoiceSummary.printReceipt')}>
             <IconButton size="small" onClick={() => setPrintData(sampleInvoiceToPrintData(invoice))}>
               <PrintIcon fontSize="small" />
             </IconButton>
@@ -1540,9 +1551,9 @@ const InvoiceSummary = ({ invoice }: { invoice: SampleInvoice | null }) => {
         </Typography>
       ))}
       <Typography variant="body2" sx={{ fontWeight: 700, mt: 1 }}>
-        الإجمالي: {invoice.total_amount} {invoice.currency}
-        {invoice.receipt_number ? ` • الإيصال: ${invoice.receipt_number}` : ''}
-        {invoice.exemption_reason ? ` • الإعفاء: ${invoice.exemption_reason}` : ''}
+        {t('food.foodLab.invoiceSummary.total')}: {invoice.total_amount} {invoice.currency}
+        {invoice.receipt_number ? ` • ${t('food.foodLab.invoiceSummary.receipt')}: ${invoice.receipt_number}` : ''}
+        {invoice.exemption_reason ? ` • ${t('food.foodLab.invoiceSummary.exemption')}: ${invoice.exemption_reason}` : ''}
       </Typography>
       <PrintReceiptDialog
         open={!!printData}
@@ -1554,6 +1565,7 @@ const InvoiceSummary = ({ invoice }: { invoice: SampleInvoice | null }) => {
 };
 
 const FlowStepper = ({ status }: { status: string }) => {
+  const { t } = useTranslation();
   const idx = FLOW_ORDER.indexOf(status);
   const rejected = status === 'REJECTED';
   return (
@@ -1573,12 +1585,14 @@ const FlowStepper = ({ status }: { status: string }) => {
           </Stack>
         );
       })}
-      {rejected && <Chip size="small" color="error" label="مرفوضة" icon={<CircleIcon sx={{ fontSize: 12 }} />} />}
+      {rejected && <Chip size="small" color="error" label={t('food.foodLab.flowStepper.rejected')} icon={<CircleIcon sx={{ fontSize: 12 }} />} />}
     </Stack>
   );
 };
 
-const CustodyEvent = ({ event, isFirst, onAck }: { event: ChainOfCustody; isFirst: boolean; onAck: () => void }) => (
+const CustodyEvent = ({ event, isFirst, onAck }: { event: ChainOfCustody; isFirst: boolean; onAck: () => void }) => {
+  const { t } = useTranslation();
+  return (
   <Box sx={{ p: 1.25, border: '1px solid', borderColor: isFirst ? 'primary.main' : 'divider', borderRadius: 1.5 }}>
     <Stack direction="row" alignItems="center" spacing={1}>
       <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: isFirst ? 'primary.main' : 'text.disabled' }}>
@@ -1589,24 +1603,25 @@ const CustodyEvent = ({ event, isFirst, onAck }: { event: ChainOfCustody; isFirs
           {event.from_department} <span style={{ color: 'gray' }}>←</span> {event.to_department}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          النقل: {event.transferred_by_name ?? '—'} • {formatDateTime(event.transferred_at)}
-          {event.condition ? ` • الحالة: ${event.condition}` : ''}
-          {event.seal_number ? ` • الختم: ${event.seal_number}` : ''}
+          {t('food.foodLab.custodyEvent.labels.transfer')}: {event.transferred_by_name ?? '—'} • {formatDateTime(event.transferred_at)}
+          {event.condition ? ` • ${t('food.foodLab.custodyEvent.labels.condition')}: ${event.condition}` : ''}
+          {event.seal_number ? ` • ${t('food.foodLab.custodyEvent.labels.seal')}: ${event.seal_number}` : ''}
         </Typography>
         {event.received_by_name && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-            الاستلام: {event.received_by_name} • {formatDateTime(event.received_at)}
+            {t('food.foodLab.custodyEvent.labels.received')}: {event.received_by_name} • {formatDateTime(event.received_at)}
           </Typography>
         )}
-        {event.remarks && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>ملاحظات: {event.remarks}</Typography>}
+        {event.remarks && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('food.foodLab.custodyEvent.labels.notes')}: {event.remarks}</Typography>}
       </Box>
       {event.is_received ? (
-        <StatusChip label="استُلم" tone="success" />
+        <StatusChip label={t('food.foodLab.custodyEvent.labels.receivedStatus')} tone="success" />
       ) : (
-        <AppButton size="small" variant="ghost" onClick={onAck}>تأكيد الاستلام</AppButton>
+        <AppButton size="small" variant="ghost" onClick={onAck}>{t('food.foodLab.custodyEvent.actions.confirmReceipt')}</AppButton>
       )}
     </Stack>
   </Box>
-);
+  );
+};
 
 export default FoodLabPage;

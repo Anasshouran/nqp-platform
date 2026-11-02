@@ -7594,6 +7594,477 @@
       },
       "workflow_rules": "workflow_rules",
       "workflow_steps": "workflow_steps"
+    },
+    "foodLab": {
+      "classificationLabels": {
+        "analysis": "For Analysis",
+        "reference": "Reference"
+      },
+      "sections": {
+        "dashboard": "Dashboard",
+        "reception": "Reception & Registration",
+        "custody": "Chain of Custody",
+        "sources": "Sample Sources",
+        "references": "Reference Samples",
+        "certificates": "Certificates"
+      },
+      "custody": {
+        "columns": {
+          "number": "Number",
+          "product": "Product",
+          "classification": "Classification",
+          "source": "Source",
+          "bench": "Bench",
+          "priority": "Priority",
+          "status": "Status",
+          "collection": "Collection",
+          "invoice": "Invoice"
+        },
+        "actions": {
+          "openChain": "Chain of Custody",
+          "delete": "Delete"
+        },
+        "tableTitle": "Sample Lifecycle and Chain of Custody"
+      },
+      "sampleDetail": {
+        "loading": "Loading sample...",
+        "errors": {
+          "loadFailed": "Failed to load sample data",
+          "actionFailed": "Failed to execute operation"
+        },
+        "actions": {
+          "submitForApproval": "Submit for Approval",
+          "approve": "Approve Result",
+          "accept": "Accept Sample",
+          "acceptConditional": "Accept Conditionally",
+          "reject": "Reject Sample",
+          "redistribute": "Redistribute",
+          "setParameters": "Set Tests",
+          "manualTransfer": "Manual Transfer",
+          "printBarcode": "Print Barcode",
+          "issueCertificate": "Issue Certificate",
+          "approveTest": "Approve"
+        },
+        "dialogs": {
+          "coordinate": {
+            "label": "Coordinator",
+            "selectCoordinator": "Select coordinator",
+            "success": "Sample coordinated"
+          },
+          "assignSection": {
+            "label": "Laboratory Bench",
+            "head": "Section Head",
+            "headPlaceholder": "Optional",
+            "success": "Assigned to section"
+          },
+          "assignAnalyst": {
+            "label": "Analyst",
+            "selectAnalyst": "Select coordinator",
+            "success": "Assigned to analyst"
+          },
+          "transfer": {
+            "selectDepartments": "Select transfer departments",
+            "manualSuccess": "Manual transfer recorded",
+            "manual": "Manual Transfer",
+            "manualTitle": "Record Manual Transfer",
+            "subtitle": "Track sample responsibility between departments",
+            "from": "From (Department)",
+            "to": "To (Department)",
+            "condition": "Sample Condition",
+            "seal": "Seal Number",
+            "notes": "Notes"
+          },
+          "setParams": {
+            "title": "Set Required Tests"
+          },
+          "enterResult": {
+            "value": "Result Value",
+            "numericValue": "Numeric value",
+            "device": "Analysis device",
+            "reagentBatch": "Reagent batch",
+            "decision": "Decision",
+            "hint": "Submitting for review passes the result to section head review then lab manager approval.",
+            "defaultMethod": "Default method",
+            "method": "Method used",
+            "reagent": "Reagent batch number"
+          },
+          "enterResultTitle": "Enter Result",
+          "review": {
+            "title": "Section Head Review",
+            "subtitle": "Review result before lab manager approval",
+            "notes": "Review Notes",
+            "submit": "Refer for Approval"
+          },
+          "revise": {
+            "title": "Request Revision of Approved Result",
+            "subtitle": "Current version archived, new version opened",
+            "reason": "Correction Reason",
+            "submit": "Open Correction Request"
+          },
+          "return": {
+            "title": "Return Result for Correction",
+            "subtitle": "Result returned to analyst for correction before resubmission",
+            "placeholder": "Example: device reading error / test method mismatch",
+            "reason": "Return Reason",
+            "submit": "Return Result"
+          },
+          "qc": {
+            "title": "QC Review",
+            "subtitle": "Approve result conformance to specification before final approval",
+            "notes": "QC Notes",
+            "result": "QC Review Result",
+            "submit": "Register Review"
+          },
+          "reception": {},
+          "classify": {
+            "label": "Classification",
+            "save": "Save Classification"
+          }
+        },
+        "reception": {
+          "acceptSuccess": "Sample accepted",
+          "conditionalSuccess": "Sample conditionally accepted",
+          "rejectSuccess": "Sample rejected",
+          "subtitle": "Laboratory reception decision",
+          "submit": "Confirm Decision",
+          "accept": "Accept Sample",
+          "conditional": "Conditional Acceptance",
+          "notes": "Decision Notes",
+          "reject": "Reject Sample",
+          "title": "Reception Decision"
+        },
+        "invoice": {
+          "generateSuccess": "Invoice generated",
+          "paySuccess": "Fees collected",
+          "exemptSuccess": "Fees exempted",
+          "title": "Analysis Fee Invoice",
+          "hint": "Invoice issued from analysis transaction prices set on the sample; auto-exempt if fees are zero.",
+          "previousInvoice": "A previous invoice exists ({number}) — a new invoice will be issued.",
+          "reference": "Payment Reference",
+          "exemptReason": "Exemption Reason",
+          "referencePlaceholder": "Receipt number / payment reference",
+          "exemptPlaceholder": "Approved government exemption",
+          "generateBtn": "Generate Invoice",
+          "payBtn": "Pay",
+          "exemptBtn": "Exempt"
+        },
+        "tests": {
+          "saveDraftSuccess": "Result saved as draft",
+          "submitSuccess": "Result submitted for review",
+          "sectionReviewSuccess": "Section head reviewed",
+          "approveSuccess": "Result approved",
+          "openCorrectionSuccess": "Correction request opened",
+          "returnSuccess": "Result returned for correction",
+          "qcPassed": "QC approved",
+          "qcFailed": "QC violation recorded",
+          "noTests": "No tests assigned. Use \"Set Tests\" to assign.",
+          "specVersion": "Per specification v{version}",
+          "limit": "Limit: {value}",
+          "corrections": "Corrections: {count}",
+          "revision": "Revision v{version}",
+          "tat": "TAT {hours} h",
+          "startTest": "Test started",
+          "start": "Start Test",
+          "enterResult": "Result",
+          "microEval": "Automated microbiological evaluation",
+          "sectionReview": "Section Head Review",
+          "returnForCorrection": "Return for Correction",
+          "qcReview": "QC Review",
+          "requestCorrection": "Request Correction",
+          "analyst": "Analyst: {name}",
+          "due": "Due: {date}",
+          "referenceLimit": "Reference limit: {value}",
+          "saveDraft": "Save Draft",
+          "submit": "Submit for Review"
+        },
+        "dispatch": {
+          "success": "Results sent",
+          "title": "Send Results to Requesting Department",
+          "notes": "Dispatch Notes",
+          "to": "Requesting Department"
+        },
+        "parameters": {
+          "success": "Required tests updated"
+        },
+        "priority": {
+          "success": "Priority updated",
+          "error": "Failed to update priority",
+          "label": "Analysis Priority",
+          "save": "Save Priority"
+        },
+        "classification": {
+          "success": "Classification updated",
+          "error": "Failed to update classification"
+        },
+        "meta": {
+          "source": "Source",
+          "priority": "Priority",
+          "requestingDept": "Requesting Department",
+          "bench": "Bench",
+          "received": "Received",
+          "coordinator": "Coordinator",
+          "sectionHead": "Section Head",
+          "analyst": "Analyst",
+          "approved": "Approval",
+          "receptionDecision": "Reception Decision",
+          "classification": "Classification",
+          "collection": "Collection",
+          "invoice": "Invoice"
+        },
+        "custody": {
+          "ackSuccess": "Receipt confirmed",
+          "noEvents": "No transfers recorded."
+        },
+        "common": {
+          "cancel": "Cancel",
+          "close": "Close"
+        },
+        "sections": {
+          "path": "Sample Path",
+          "coordinatorPanel": "Sample Control (Coordinator)",
+          "actions": "Actions",
+          "tests": "Required Tests & Results",
+          "custody": "Chain of Custody",
+          "coordinate": "Coordination/Assignment",
+          "generalInfo": "General Information",
+          "setParams": "Set Tests"
+        },
+        "certificate": {
+          "success": "Certificate issued",
+          "error": "Failed to issue certificate"
+        },
+        "barcode": {
+          "title": "Print Sample Label — Barcode"
+        }
+      },
+      "workflowActions": {
+        "coordinate": {
+          "label": "Coordinate Sample",
+          "hint": "Assign laboratory sample coordinator"
+        },
+        "assignSection": {
+          "label": "Assign to Section",
+          "hint": "Assign laboratory bench and section head"
+        },
+        "assignAnalyst": {
+          "label": "Assign to Analyst",
+          "hint": "Assign responsible analyst"
+        },
+        "submitForApproval": {
+          "label": "Submit for Approval",
+          "hint": "Submit results to lab manager"
+        },
+        "approve": {
+          "label": "Approve Result",
+          "hint": "Final approval"
+        },
+        "invoice": {
+          "label": "Fee Invoice",
+          "hint": "Issue analysis fee invoice and pay or exempt"
+        },
+        "dispatch": {
+          "label": "Dispatch Results",
+          "hint": "Send result to requesting department"
+        }
+      },
+      "main": {
+        "errors": {
+          "writeSampleType": "Enter sample type/name",
+          "selectSource": "Select sample source",
+          "receiveFailed": "Failed to receive sample",
+          "deleteFailed": "Failed to delete sample"
+        },
+        "success": {
+          "sampleReceived": "Sample {number} received",
+          "sampleDeleted": "Sample deleted"
+        },
+        "hero": {
+          "title": "Laboratory Information System — FCLIS",
+          "subtitle": "Complete sample custody cycle: Reception → Coordination → Sections → Analysis → Approval → Collection → Dispatch",
+          "avatarFallback": "M",
+          "action": "Receive New Sample",
+          "live": "Live"
+        },
+        "nav": {
+          "label": "Dashboard Sections"
+        },
+        "tabs": {
+          "dashboard": "Dashboard",
+          "reception": "Reception & Registration",
+          "custody": "Chain of Custody",
+          "sources": "Sample Sources",
+          "references": "Reference Samples",
+          "certificates": "Certificates"
+        },
+        "reception": {
+          "title": "Receive New Sample",
+          "subtitle": "Register sample upon arrival to laboratory and start custody chain",
+          "source": "Sample Source",
+          "bench": "Laboratory Bench (can be assigned later)",
+          "benchPlaceholder": "None",
+          "productType": "Product / Sample Type",
+          "productPlaceholder": "Example: crushed sugar",
+          "requestingPlaceholder": "General Food Control Administration..."
+        },
+        "delete": {
+          "title": "Confirm Sample Deletion",
+          "message": "Are you sure you want to delete sample «{number}»? Its custody chain will also be deleted.",
+          "confirm": "Delete"
+        }
+      },
+      "dashboard": {
+        "kpi": {
+          "totalSamples": "Total Samples",
+          "received": "Received",
+          "coordinated": "Coordinated",
+          "underTesting": "Under Testing",
+          "readyForApproval": "Ready for Approval",
+          "approvedDispatched": "Approved/Dispatched",
+          "rejected": "Rejected",
+          "receptionPending": "Pending Reception Decision",
+          "receptionCond": "Conditional Acceptance",
+          "unpaid": "Unpaid Fees",
+          "overdue": "Overdue Tests",
+          "slaCompliance": "SLA Compliance",
+          "referenceSamples": "Reference Samples",
+          "custodyEvents": "Custody Events",
+          "certificates": "Certificates"
+        },
+        "panels": {
+          "bySource": "Samples by Source",
+          "byBench": "Samples by Bench",
+          "noData": "No data"
+        }
+      },
+      "reception": {
+        "columns": {
+          "number": "Number",
+          "product": "Product",
+          "source": "Source",
+          "receivedBy": "Receiving Officer",
+          "receivedAt": "Reception Time",
+          "decision": "Reception Decision",
+          "status": "Status",
+          "priority": "Priority"
+        },
+        "actions": {
+          "open": "Open",
+          "receive": "Receive / Register Sample"
+        },
+        "tableTitle": "Latest Received Samples"
+      },
+      "sources": {
+        "notifications": {
+          "deleted": "Deleted",
+          "deleteFailed": "Failed to delete",
+          "writeName": "Enter source name",
+          "updated": "Source updated",
+          "added": "Source added",
+          "saveFailed": "Failed to save"
+        },
+        "buttons": {
+          "new": "New Source",
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "dialogs": {
+          "source": {
+            "title": "New Source",
+            "titleEdit": "Edit Source",
+            "nameAr": "Name in Arabic",
+            "code": "Code",
+            "order": "Order"
+          },
+          "delete": {
+            "title": "Delete Sample Source",
+            "message": "Do you want to delete source «{name}»? This action cannot be undone.",
+            "confirm": "Delete"
+          }
+        }
+      },
+      "references": {
+        "notifications": {
+          "deleted": "Deleted",
+          "deleteFailed": "Failed to delete",
+          "writeName": "Enter material name",
+          "added": "Reference sample registered",
+          "addFailed": "Failed to register reference sample",
+          "returned": "Returned",
+          "discarded": "Discarded",
+          "executeFailed": "Failed to execute"
+        },
+        "statuses": {
+          "stored": "Stored",
+          "retrieved": "Retrieved",
+          "discarded": "Discarded"
+        },
+        "buttons": {
+          "new": "Register Reference Sample",
+          "return": "Return",
+          "discard": "Discard",
+          "delete": "Delete"
+        },
+        "labels": {
+          "location": "Location",
+          "seal": "Seal",
+          "received": "Received"
+        },
+        "dialogs": {
+          "reference": {
+            "title": "Register Reference Sample",
+            "subtitle": "Does not enter the normal analysis cycle — stored for future reference",
+            "source": "Source",
+            "name": "Material / Sample Name",
+            "origin": "Origin / Batch",
+            "storage": "Storage Location",
+            "seal": "Seal Number",
+            "coding": "Coding"
+          },
+          "delete": {
+            "title": "Delete Reference Sample",
+            "message": "Do you want to delete reference sample «{name}» ({ref})? This action cannot be undone.",
+            "confirm": "Delete"
+          }
+        }
+      },
+      "certificates": {
+        "columns": {
+          "number": "Certificate Number",
+          "sample": "Sample Number",
+          "decision": "Decision",
+          "status": "Status",
+          "signer": "Signer",
+          "issuedAt": "Issue Date"
+        },
+        "status": {
+          "issued": "Issued",
+          "draft": "Draft"
+        },
+        "tableTitle": "Analysis Certificates"
+      },
+      "flowStepper": {
+        "rejected": "Rejected"
+      },
+      "custodyEvent": {
+        "labels": {
+          "transfer": "Transfer",
+          "condition": "Condition",
+          "seal": "Seal",
+          "received": "Received",
+          "notes": "Notes",
+          "receivedStatus": "Received"
+        },
+        "actions": {
+          "confirmReceipt": "Confirm Receipt"
+        }
+      },
+      "invoiceSummary": {
+        "noInvoice": "No invoice for this sample — issue one first.",
+        "printReceipt": "Print Receipt",
+        "total": "Total",
+        "receipt": "Receipt",
+        "exemption": "Exemption"
+      }
     }
   }
 }
