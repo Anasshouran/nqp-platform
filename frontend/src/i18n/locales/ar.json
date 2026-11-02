@@ -7594,6 +7594,477 @@
       },
       "workflow_rules": "نص: workflow_rules",
       "workflow_steps": "نص: workflow_steps"
+    },
+    "foodLab": {
+      "classificationLabels": {
+        "analysis": "للتحليل",
+        "reference": "مرجعية"
+      },
+      "sections": {
+        "dashboard": "لوحة التحكم",
+        "reception": "الاستلام والتسجيل",
+        "custody": "سلسلة الحيازة",
+        "sources": "مصادر العينات",
+        "references": "العينات المرجعية",
+        "certificates": "الشهادات"
+      },
+      "custody": {
+        "columns": {
+          "number": "الرقم",
+          "product": "المنتج",
+          "classification": "التصنيف",
+          "source": "المصدر",
+          "bench": "القسم",
+          "priority": "الأولوية",
+          "status": "الحالة",
+          "collection": "التحصيل",
+          "invoice": "الفاتورة"
+        },
+        "actions": {
+          "openChain": "سلسلة الحيازة",
+          "delete": "حذف"
+        },
+        "tableTitle": "دورة العينات وسلسلة الحيازة"
+      },
+      "sampleDetail": {
+        "loading": "جارٍ تحميل العينة...",
+        "errors": {
+          "loadFailed": "تعذر تحميل بيانات العينة",
+          "actionFailed": "تعذر تنفيذ العملية"
+        },
+        "actions": {
+          "submitForApproval": "رفع للعتماد",
+          "approve": "اعتماد النتيجة",
+          "accept": "قبول العينة",
+          "acceptConditional": "قبول مشروط",
+          "reject": "رفض العينة",
+          "redistribute": "إعادة توزيع",
+          "setParameters": "تحديد الفحوصات",
+          "manualTransfer": "نقل يدوي",
+          "printBarcode": "طباعة Barcode",
+          "issueCertificate": "إصدار شهادة",
+          "approveTest": "اعتماد"
+        },
+        "dialogs": {
+          "coordinate": {
+            "label": "المنسّق",
+            "selectCoordinator": "حدد المنسّق",
+            "success": "تم التنسيق"
+          },
+          "assignSection": {
+            "label": "قسم المختبر",
+            "head": "رئيس القسم",
+            "headPlaceholder": "كمختار",
+            "success": "تم الإسناد للقسم"
+          },
+          "assignAnalyst": {
+            "label": "المحلّل",
+            "selectAnalyst": "حدد المنسّق",
+            "success": "تم الإسناد للمحلل"
+          },
+          "transfer": {
+            "selectDepartments": "حدد قسمي النقل",
+            "manualSuccess": "تم تسجيل النقل اليدوي",
+            "manual": "نقل يدوي",
+            "manualTitle": "تسجيل نقل يدوي",
+            "subtitle": "تتبع مسؤولية العينة بين الأقسام",
+            "from": "من (القسم)",
+            "to": "إلى (القسم)",
+            "condition": "حالة العينة",
+            "seal": "رقم الختم",
+            "notes": "ملاحظات"
+          },
+          "setParams": {
+            "title": "تحديد الفحوصات المطلوبة"
+          },
+          "enterResult": {
+            "value": "قيمة النتيجة",
+            "numericValue": "قيمة رقمية",
+            "device": "جهاز التحليل",
+            "reagentBatch": "رقم الدفعة",
+            "decision": "القرار",
+            "hint": "«إرسال للمراجعة» يمرر النتيجة لمراجعة رئيس القسم ثم اعتماد مدير المختبر.",
+            "defaultMethod": "الطريقة المعتمدة",
+            "method": "الطريقة المستخدمة",
+            "reagent": "رقم دفعة المادة (الكاشف)"
+          },
+          "enterResultTitle": "إدخال نتيجة",
+          "review": {
+            "title": "مراجعة رئيس القسم",
+            "subtitle": "مراجعة النتيجة قبل اعتماد مدير المختبر",
+            "notes": "ملاحظات المراجعة",
+            "submit": "إحالة للاعتماد"
+          },
+          "revise": {
+            "title": "طلب تصحيح نتيجة معتمدة",
+            "subtitle": "يُحفظ الإصدار الحالي أرشيفياً وتُفتح نسخة جديدة",
+            "reason": "سبب التصحيح",
+            "submit": "فتح طلب التصحيح"
+          },
+          "return": {
+            "title": "إعادة النتيجة للتحليل",
+            "subtitle": "تُعاد النتيجة للمحلل لتصحيحها قبل إعادة إرسالها",
+            "placeholder": "مثال: خطأ في قراءة الجهاز / عدم مطابقة طريقة الاختبار",
+            "reason": "سبب الإعادة",
+            "submit": "إعادة النتيجة"
+          },
+          "qc": {
+            "title": "مراجعة الجودة — QC",
+            "subtitle": "اعتماد مطابقة النتيجة للمواصفة قبل اعتمادها النهائي",
+            "notes": "ملاحظات QC",
+            "result": "نتيجة مراجعة الجودة",
+            "submit": "تسجيل المراجعة"
+          },
+          "reception": {},
+          "classify": {
+            "label": "التصنيف",
+            "save": "حفظ التصنيف"
+          }
+        },
+        "reception": {
+          "acceptSuccess": "تم قبول العينة",
+          "conditionalSuccess": "تم القبول المشروط",
+          "rejectSuccess": "تم رفض العينة",
+          "subtitle": "قرار قسم استلام العينات المختبرية",
+          "submit": "تأكيد Decision",
+          "accept": "قبول العينة",
+          "conditional": "قبول مشروط",
+          "notes": "ملاحظات القرار",
+          "reject": "رفض العينة",
+          "title": "قرار الاستلام"
+        },
+        "invoice": {
+          "generateSuccess": "تم إصدار فاتورة الرسوم",
+          "paySuccess": "تم تحصيل الرسوم",
+          "exemptSuccess": "تم إعفاء الرسوم",
+          "title": "فاتورة رسوم التحليل",
+          "hint": "تُصدر الفاتورة من أسعار معاملات التحليل المحددة على العينة وتُعفى تلقائياً إذا كانت الرسوم صفراً.",
+          "previousInvoice": "توجد فاتورة سابقة ({number}) — سيتم إصدار فاتورة جديدة.",
+          "reference": "مرجع السداد",
+          "exemptReason": "سبب الإعفاء",
+          "referencePlaceholder": "رقم إيصال / مرجع الدفع",
+          "exemptPlaceholder": "إعفاء حكومي معتمد",
+          "generateBtn": "إصدار فاتورة",
+          "payBtn": "سداد",
+          "exemptBtn": "إعفاء"
+        },
+        "tests": {
+          "saveDraftSuccess": "حُفظت النتيجة كمسودة",
+          "submitSuccess": "أُرسلت النتيجة للمراجعة",
+          "sectionReviewSuccess": "تمت مراجعة رئيس القسم",
+          "approveSuccess": "تم اعتماد النتيجة",
+          "openCorrectionSuccess": "تم فتح طلب تصحيح النتيجة",
+          "returnSuccess": "أُعيدت النتيجة للمحلل للتصحيح",
+          "qcPassed": "تم اعتماد الجودة (QC)",
+          "qcFailed": "سُجِّلت مخالفة جودة (QC)",
+          "noTests": "لا توجد فحوصات — حدّدها من زر \"تحديد الفحوصات\".",
+          "specVersion": "وفق مواصفة v{version}",
+          "limit": "الحد: {value}",
+          "corrections": "تصحيحات: {count}",
+          "revision": "الإصدار v{version}",
+          "tat": "TAT {hours} س",
+          "startTest": "تم بدء الفحص",
+          "start": "بدء الفحص",
+          "enterResult": "نتيجة",
+          "microEval": "تقييم ميكروبيولوجي آلي وفق المواصفة",
+          "sectionReview": "مراجعة رئيس القسم",
+          "returnForCorrection": "إعادة النتيجة للمحلل للتصحيح",
+          "qcReview": "مراجعة الجودة QC",
+          "requestCorrection": "طلب تصحيح النتيجة",
+          "analyst": "المحلل: {name}",
+          "due": "استحقاق: {date}",
+          "referenceLimit": "المعدل المرجعي: {value}",
+          "saveDraft": "حفظ مسودة",
+          "submit": "إرسال للمراجعة"
+        },
+        "dispatch": {
+          "success": "تم إرسال النتائج",
+          "title": "إرسال النتائج للجهة الطالبة",
+          "notes": "ملاحظات الإرسال",
+          "to": "الجهة الطالبة"
+        },
+        "parameters": {
+          "success": "تم تحديث الفحوصات المطلوبة"
+        },
+        "priority": {
+          "success": "تم تحديث أولوية التحليل",
+          "error": "تعذر تحديث الأولوية",
+          "label": "أولوية التحليل",
+          "save": "حفظ الأولوية"
+        },
+        "classification": {
+          "success": "تم تحديث تصنيف العينة",
+          "error": "تعذر تحديث التصنيف"
+        },
+        "meta": {
+          "source": "المصدر",
+          "priority": "الأولوية",
+          "requestingDept": "الجهة الطالبة",
+          "bench": "القسم",
+          "received": "استلام",
+          "coordinator": "المنسّق",
+          "sectionHead": "رئيس القسم",
+          "analyst": "المحلّل",
+          "approved": "الاعتماد",
+          "receptionDecision": "قرار الاستلام",
+          "classification": "التصنيف",
+          "collection": "التحصيل",
+          "invoice": "الفاتورة"
+        },
+        "custody": {
+          "ackSuccess": "تم تأكيد الاستلام",
+          "noEvents": "لا توجد انتقالات مسجلة."
+        },
+        "common": {
+          "cancel": "إلغاء",
+          "close": "إغلاق"
+        },
+        "sections": {
+          "path": "مسار العينة",
+          "coordinatorPanel": "ضبط العينة (منسّق العينات)",
+          "actions": "أزرار العمل",
+          "tests": "الفحوصات المطلوبة والنتائج",
+          "custody": "سلسلة حيازة العينة",
+          "coordinate": "تنسيق/إسناد",
+          "generalInfo": "معلومات عامة",
+          "setParams": "تحديد الفحوصات"
+        },
+        "certificate": {
+          "success": "تم إصدار الشهادة",
+          "error": "تعذر إصدار الشهادة"
+        },
+        "barcode": {
+          "title": "طباعة ملصق العينة — Barcode"
+        }
+      },
+      "workflowActions": {
+        "coordinate": {
+          "label": "تنسيق العينة",
+          "hint": "تحديد منسّق عينات المختبر"
+        },
+        "assignSection": {
+          "label": "إسناد للقسم",
+          "hint": "تحديد قسم المختبر ورئيس القسم"
+        },
+        "assignAnalyst": {
+          "label": "إسناد للمحلل",
+          "hint": "تحديد المحلّل المسؤول"
+        },
+        "submitForApproval": {
+          "label": "رفع للاعتماد",
+          "hint": "رفع النتائج لمدير المختبر"
+        },
+        "approve": {
+          "label": "اعتماد النتيجة",
+          "hint": "الاعتماد النهائي"
+        },
+        "invoice": {
+          "label": "فاتورة الرسوم",
+          "hint": "إصدار فاتورة رسوم التحليل وسدادها أو إعفاؤها"
+        },
+        "dispatch": {
+          "label": "إرسال النتائج",
+          "hint": "إرسال النتيجة للجهة الطالبة"
+        }
+      },
+      "main": {
+        "errors": {
+          "writeSampleType": "اكتب نوع/اسم العينة",
+          "selectSource": "حدد مصدر العينة",
+          "receiveFailed": "تعذر استلام العينة",
+          "deleteFailed": "تعذر حذف العينة"
+        },
+        "success": {
+          "sampleReceived": "تم استلام العينة {number}",
+          "sampleDeleted": "تم حذف العينة"
+        },
+        "hero": {
+          "title": "نظام معلومات المختبر — FCLIS",
+          "subtitle": "دورة حيازة العينة الكاملة: الاستلام ← التنسيق ← الأقسام ← التحليل ← الاعتماد ← التحصيل ← الإرسال",
+          "avatarFallback": "م",
+          "action": "استلام عينة جديدة",
+          "live": "مباشر"
+        },
+        "nav": {
+          "label": "أقسام اللوحة"
+        },
+        "tabs": {
+          "dashboard": "لوحة التحكم",
+          "reception": "الاستلام والتسجيل",
+          "custody": "سلسلة الحيازة",
+          "sources": "مصادر العينات",
+          "references": "العينات المرجعية",
+          "certificates": "الشهادات"
+        },
+        "reception": {
+          "title": "استلام عينة جديدة",
+          "subtitle": "تسجيل العينة عند الوصول للمختبر وبدء سلسلة الحيازة",
+          "source": "مصدر العينة",
+          "bench": "قسم المختبر (يمكن إسناده لاحقاً)",
+          "benchPlaceholder": "بدون",
+          "productType": "المنتج / نوع العينة",
+          "productPlaceholder": "مثال: سكر مجروش",
+          "requestingPlaceholder": "الإدارة العامة لرقابة الأغذية..."
+        },
+        "delete": {
+          "title": "تأكيد حذف العينة",
+          "message": "هل أنت متأكد من حذف العينة «{number}»؟ سيتم حذف سلسلة الحيازة المرتبطة بها أيضاً.",
+          "confirm": "حذف"
+        }
+      },
+      "dashboard": {
+        "kpi": {
+          "totalSamples": "إجمالي العينات",
+          "received": "قيد الاستلام",
+          "coordinated": "تم التنسيق",
+          "underTesting": "قيد التحليل",
+          "readyForApproval": "جاهزة للاعتماد",
+          "approvedDispatched": "معتمدة/مُرسلة",
+          "rejected": "مرفوضة",
+          "receptionPending": "بانتظار قرار الاستلام",
+          "receptionCond": "قبول مشروط",
+          "unpaid": "غير مسددة الرسوم",
+          "overdue": "فحوصات متأخرة",
+          "slaCompliance": "التزام بـ SLA",
+          "referenceSamples": "عينات مرجعية",
+          "custodyEvents": "أحداث حيازة",
+          "certificates": "شهادات"
+        },
+        "panels": {
+          "bySource": "العينات حسب المصدر",
+          "byBench": "العينات حسب القسم",
+          "noData": "لا توجد بيانات"
+        }
+      },
+      "reception": {
+        "columns": {
+          "number": "الرقم",
+          "product": "المنتج",
+          "source": "المصدر",
+          "receivedBy": "موظف الاستلام",
+          "receivedAt": "وقت الاستلام",
+          "decision": "قرار الاستلام",
+          "status": "الحالة",
+          "priority": "الأولوية"
+        },
+        "actions": {
+          "open": "فتح",
+          "receive": "استلام / تسجيل عينة"
+        },
+        "tableTitle": "أحدث العينات المستلمة"
+      },
+      "sources": {
+        "notifications": {
+          "deleted": "تم الحذف",
+          "deleteFailed": "تعذر الحذف",
+          "writeName": "اكتب اسم المصدر",
+          "updated": "تم تحديث المصدر",
+          "added": "تمت إضافة المصدر",
+          "saveFailed": "تعذر حفظ المصدر"
+        },
+        "buttons": {
+          "new": "مصدر جديد",
+          "edit": "تعديل",
+          "delete": "حذف"
+        },
+        "dialogs": {
+          "source": {
+            "title": "مصدر جديد",
+            "titleEdit": "تعديل مصدر",
+            "nameAr": "الاسم بالعربية",
+            "code": "الكود",
+            "order": "الترتيب"
+          },
+          "delete": {
+            "title": "حذف مصدر العينة",
+            "message": "هل تريد حذف المصدر «{name}»؟ لا يمكن التراجع عن هذا الإجراء.",
+            "confirm": "حذف"
+          }
+        }
+      },
+      "references": {
+        "notifications": {
+          "deleted": "تم الحذف",
+          "deleteFailed": "تعذر الحذف",
+          "writeName": "اكتب اسم المادة",
+          "added": "تم تسجيل العينة المرجعية",
+          "addFailed": "تعذر تسجيل العينة المرجعية",
+          "returned": "تم الرجوع",
+          "discarded": "تم الإعدام",
+          "executeFailed": "تعذر التنفيذ"
+        },
+        "statuses": {
+          "stored": "مخزنة",
+          "retrieved": "تم الرجوع إليها",
+          "discarded": "أُعدمت"
+        },
+        "buttons": {
+          "new": "تسجيل عينة مرجعية",
+          "return": "رجوع",
+          "discard": "إعدام",
+          "delete": "حذف"
+        },
+        "labels": {
+          "location": "الموقع",
+          "seal": "الختم",
+          "received": "استلام"
+        },
+        "dialogs": {
+          "reference": {
+            "title": "تسجيل عينة مرجعية",
+            "subtitle": "لا تدخل دورة التحليل العادية — تحفظ للرجوع إليها",
+            "source": "المصدر",
+            "name": "اسم المادة / العينة",
+            "origin": "المنشأ / الدفعة",
+            "storage": "موقع التخزين",
+            "seal": "رقم الختم",
+            "coding": "الترميز"
+          },
+          "delete": {
+            "title": "حذف عينة مرجعية",
+            "message": "هل تريد حذف العينة المرجعية «{name}» ({ref})؟ لا يمكن التراجع عن هذا الإجراء.",
+            "confirm": "حذف"
+          }
+        }
+      },
+      "certificates": {
+        "columns": {
+          "number": "رقم الشهادة",
+          "sample": "رقم العينة",
+          "decision": "القرار",
+          "status": "الحالة",
+          "signer": "الموقّع",
+          "issuedAt": "تاريخ الإصدار"
+        },
+        "status": {
+          "issued": "صادر",
+          "draft": "مسودة"
+        },
+        "tableTitle": "شهادات التحليل"
+      },
+      "flowStepper": {
+        "rejected": "مرفوضة"
+      },
+      "custodyEvent": {
+        "labels": {
+          "transfer": "النقل",
+          "condition": "الحالة",
+          "seal": "الختم",
+          "received": "الاستلام",
+          "notes": "ملاحظات",
+          "receivedStatus": "استُلم"
+        },
+        "actions": {
+          "confirmReceipt": "تأكيد الاستلام"
+        }
+      },
+      "invoiceSummary": {
+        "noInvoice": "لا توجد فاتورة لهذه العينة — أصدرها أولاً.",
+        "printReceipt": "طباعة الإيصال",
+        "total": "الإجمالي",
+        "receipt": "الإيصال",
+        "exemption": "الإعفاء"
+      }
     }
   }
 }
