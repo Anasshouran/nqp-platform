@@ -8040,6 +8040,492 @@
         "receipt": "الإيصال",
         "exemption": "الإعفاء"
       }
+    },
+    "dbAdmin": {
+      "dashboardTab": {
+        "empty": {
+          "title": "لا توجد بيانات",
+          "desc": "تعذر تحميل لوحة معلومات قواعد البيانات"
+        },
+        "metrics": {
+          "memory": "الذاكرة",
+          "cpuBreakdown": "نسبة الكسر",
+          "connections": "الاتصالات"
+        },
+        "kpi": {
+          "databases": "قواعد البيانات",
+          "connected": "قواعد متصلة",
+          "backups": "النسخ الاحتياطية",
+          "alerts": "تنبيهات حرجة",
+          "users": "مستخدمي قواعد البيانات",
+          "roles": "الأدوار",
+          "replication": "عقد نسخ نشطة",
+          "maintenance": "مهام صيانة مجدولة"
+        },
+        "performanceTitle": "مؤشرات الأداء الحالية",
+        "refresh": "تحديث"
+      },
+      "schemasTab": {
+        "col": {
+          "name": "اسم المخطط",
+          "dbName": "القاعدة",
+          "objectCount": "الكائنات",
+          "sizeMb": "الحجم (م.ب)",
+          "lastAnalyzed": "آخر تحليل"
+        },
+        "screenTitle": "إدارة المخططات",
+        "subtitle": "{count} مخطط",
+        "searchPlaceholder": "بحث باسم المخطط...",
+        "empty": {
+          "title": "لا توجد مخططات",
+          "desc": "المخططات والجداول والوظائف تظهر هنا"
+        }
+      },
+      "securityTab": {
+        "overview": "سياسات الأمن",
+        "col": {
+          "policy": "السياسة",
+          "ssl": "تشفير SSL",
+          "encryption": "تشفير البيانات",
+          "rls": "RLS",
+          "passwordPolicy": "سياسة كلمات المرور",
+          "ipWhitelist": "قائمة IP"
+        },
+        "opt": {
+          "sslEnabledActive": "مفعّل",
+          "sslEnabledInactive": "معطّل",
+          "encryptionActive": "مفعّل",
+          "encryptionInactive": "معطّل",
+          "rlsOn": "مفعّل",
+          "rlsOff": "معطّل"
+        },
+        "screenTitle": "إدارة الأمن",
+        "subtitle": "{count} سياسة",
+        "emptyTitle": "لا توجد سياسات أمن",
+        "emptyDesc": "سياسات الأمن والتشفير والوصول تظهر هنا"
+      },
+      "performanceTab": {
+        "col": {
+          "recordedAt": "الوقت",
+          "dbName": "القاعدة",
+          "cpuUsage": "CPU %",
+          "memoryUsage": "الذاكرة",
+          "connections": "الاتصالات",
+          "cacheHitRatio": "نسبة الكسر",
+          "transactionRate": "المعاملات/ث",
+          "deadlocks": "أقفال ميتة"
+        },
+        "screenTitle": "مراقبة الأداء",
+        "subtitle": "{count} مقياس",
+        "emptyTitle": "لا توجد مقاييس أداء",
+        "emptyDesc": "مقاييس الأداء المسجلة تظهر هنا"
+      },
+      "storageTab": {
+        "col": {
+          "tableName": "الجدول",
+          "schema": "المخطط",
+          "dbName": "القاعدة",
+          "tableSizeMb": "حجم الجدول (م.ب)",
+          "indexSizeMb": "الفهارس (م.ب)",
+          "rowsCount": "الصفوف",
+          "bloatEstimate": "التضخم (م.ب)"
+        },
+        "screenTitle": "إدارة التخزين",
+        "subtitle": "{count} جدول",
+        "emptyTitle": "لا توجد بيانات تخزين",
+        "emptyDesc": "حجم الجداول والفهارس والمساحة المتبقية تظهر هنا"
+      },
+      "replicationTab": {
+        "col": {
+          "name": "العقدة",
+          "dbName": "القاعدة",
+          "nodeType": "النوع",
+          "syncMode": "الوضع",
+          "status": "الحالة",
+          "lag": "التأخر (ثانية)",
+          "host": "المضيف"
+        },
+        "screenTitle": "عقد النسخ المتماثلة",
+        "subtitle": "{count} عقدة",
+        "searchPlaceholder": "بحث بالاسم أو المضيف...",
+        "emptyTitle": "لا توجد عقد نسخ",
+        "emptyDesc": "عقد النسخ المتماثلة والأساسية تظهر هنا",
+        "filter": {
+          "nodeType": "النوع",
+          "status": "الحالة"
+        }
+      },
+      "databasesTab": {
+        "export": {
+          "headers": [
+            "الاسم",
+            "النوع",
+            "الإصدار",
+            "المضيف",
+            "الحالة",
+            "الحجم (م.ب)",
+            "المخططات",
+            "النسخ"
+          ],
+          "filename": "db-databases-{date}.csv",
+          "message": "تم تصدير قواعد البيانات"
+        },
+        "col": {
+          "name": "اسم القاعدة",
+          "type": "النوع",
+          "version": "الإصدار",
+          "status": "الحالة",
+          "sizeMb": "الحجم (م.ب)",
+          "schemas": "المخططات",
+          "backups": "النسخ"
+        },
+        "screenTitle": "قواعد البيانات",
+        "subtitle": "{count} قاعدة",
+        "searchPlaceholder": "بحث بالاسم أو المضيف...",
+        "filter": {
+          "status": "الحالة",
+          "type": "النوع"
+        },
+        "emptyTitle": "لا توجد قواعد بيانات",
+        "emptyDesc": "قواعد البيانات المسجلة في النظام تظهر هنا"
+      },
+      "maintenanceTab": {
+        "toast": {
+          "success": "تم تنفيذ المهمة بنجاح",
+          "error": "تعذر تنفيذ المهمة"
+        },
+        "col": {
+          "name": "المهمة",
+          "type": "النوع",
+          "frequency": "التكرار",
+          "dbName": "القاعدة",
+          "nextRun": "التشغيل القادم",
+          "status": "الحالة"
+        },
+        "screenTitle": "مجدول الصيانة",
+        "subtitle": "{count} مهمة",
+        "searchPlaceholder": "بحث باسم المهمة...",
+        "filter": {
+          "type": "النوع",
+          "status": "الحالة"
+        },
+        "action": {
+          "run": "تشغيل الآن"
+        },
+        "emptyTitle": "لا توجد مهام صيانة",
+        "emptyDesc": "مهام VACUUM وANALYZE وREINDEX المجدولة تظهر هنا"
+      },
+      "alertsTab": {
+        "toast": {
+          "ack": "تم الإقرار بالتنبيه",
+          "ackError": "تعذر إقرار التنبيه",
+          "resolve": "تم حل التنبيه",
+          "resolveError": "تعذر حل التنبيه"
+        },
+        "col": {
+          "title": "التنبيه",
+          "type": "النوع",
+          "severity": "الخطورة",
+          "dbName": "القاعدة",
+          "status": "الحالة",
+          "time": "الوقت"
+        },
+        "screenTitle": "مركز التنبيهات",
+        "subtitle": "{count} تنبيه",
+        "filter": {
+          "type": "النوع",
+          "severity": "الخطورة",
+          "status": "الحالة"
+        },
+        "action": {
+          "ack": "إقرار",
+          "ackAria": "إشعار بالاستلام",
+          "resolve": "حل",
+          "resolveAria": "تحديث"
+        },
+        "emptyTitle": "لا توجد تنبيهات",
+        "emptyDesc": "تنبيهات التخزين والنسخ والأداء والأمن تظهر هنا"
+      },
+      "auditTab": {
+        "tabs": {
+          "audit": "سجلات التدقيق",
+          "activity": "سجلات النشاط"
+        },
+        "audit": {
+          "col": {
+            "action": "الإجراء",
+            "user": "المستخدم",
+            "resource": "المورد",
+            "result": "النتيجة",
+            "time": "الوقت"
+          },
+          "result": {
+            "success": "ناجح",
+            "fail": "فشل"
+          },
+          "screenTitle": "سجلات التدقيق",
+          "subtitle": "{count} سجل",
+          "emptyTitle": "لا توجد سجلات تدقيق",
+          "emptyDesc": "عمليات إنشاء وحذف القواعد وتعديل الصلاحيات تظهر هنا"
+        },
+        "activity": {
+          "col": {
+            "description": "الوصف",
+            "type": "النوع",
+            "user": "المستخدم",
+            "time": "الوقت"
+          },
+          "screenTitle": "سجلات النشاط",
+          "subtitle": "{count} سجل",
+          "emptyTitle": "لا توجد سجلات نشاط",
+          "emptyDesc": "نشاطات الدخول والنسخ وتعديل الصلاحيات تظهر هنا"
+        }
+      },
+      "reportingTab": {
+        "plans": {
+          "col": {
+            "name": "الخطة",
+            "status": "الحالة",
+            "rto": "RTO (ساعة)",
+            "rpo": "RPO (ساعة)",
+            "backupSite": "موقع النسخ",
+            "testedAt": "آخر اختبار"
+          },
+          "screenTitle": "خطط التعافي من الكوارث",
+          "subtitle": "{count} خطة",
+          "emptyTitle": "لا توجد خطط تعافي",
+          "emptyDesc": "خطط التعافي من الكوارث وإجراءات الطوارئ تظهر هنا"
+        },
+        "settings": {
+          "col": {
+            "key": "المفتاح",
+            "label": "التسمية",
+            "value": "القيمة",
+            "group": "المجموعة",
+            "encrypted": "مشفر"
+          },
+          "value": {
+            "encrypted": "••••••",
+            "yes": "نعم",
+            "no": "لا"
+          },
+          "screenTitle": "إعدادات النظام",
+          "subtitle": "{count} إعداد",
+          "emptyTitle": "لا توجد إعدادات",
+          "emptyDesc": "إعدادات النسخ والأمن والصيانة تظهر هنا"
+        }
+      },
+      "queriesTab": {
+        "tabs": {
+          "stats": "إحصائيات الاستعلامات",
+          "slow": "الاستعلامات البطيئة"
+        },
+        "stats": {
+          "col": {
+            "query": "الاستعلام",
+            "calls": "الاستدعاءات",
+            "totalTime": "الزمن الكلي (مللي)",
+            "meanTime": "المتوسط (مللي)",
+            "rows": "الصفوف",
+            "slow": "بطيء",
+            "indexed": "مفهرس"
+          },
+          "value": {
+            "yes": "نعم",
+            "no": "لا"
+          },
+          "screenTitle": "تحليل أداء الاستعلامات",
+          "subtitle": "{count} استعلام",
+          "emptyTitle": "لا توجد استعلامات",
+          "emptyDesc": "إحصائيات الاستعلامات المنفذة تظهر هنا"
+        },
+        "slow": {
+          "col": {
+            "query": "الاستعلام",
+            "dbName": "القاعدة",
+            "meanTime": "المتوسط (مللي)",
+            "calls": "الاستدعاءات",
+            "rows": "الصفوف",
+            "indexed": "مفهرس"
+          },
+          "value": {
+            "yes": "نعم",
+            "no": "غير مفهرس"
+          },
+          "screenTitle": "الاستعلامات البطيئة",
+          "subtitle": "أعلى الاستعلامات استهلاكاً للوقت",
+          "emptyTitle": "لا توجد استعلامات بطيئة",
+          "emptyDesc": "الاستعلامات التي تتجاوز حد الأداء تظهر هنا"
+        }
+      },
+      "backupsTab": {
+        "tabs": {
+          "backup": "النسخ الاحتياطية",
+          "restore": "سجل الاستعادة"
+        },
+        "backup": {
+          "col": {
+            "dbName": "القاعدة",
+            "type": "النوع",
+            "status": "الحالة",
+            "storage": "التخزين",
+            "sizeMb": "الحجم (م.ب)",
+            "startedAt": "بدأت"
+          },
+          "screenTitle": "النسخ الاحتياطية",
+          "subtitle": "{count} نسخة",
+          "emptyTitle": "لا توجد نسخ احتياطية",
+          "emptyDesc": "النسخ الكاملة والتزايدية تظهر هنا"
+        },
+        "restore": {
+          "col": {
+            "dbName": "القاعدة",
+            "target": "الهدف",
+            "type": "نوع النسخة",
+            "status": "الحالة",
+            "startedAt": "بدأت",
+            "restoredBy": "نفذها"
+          },
+          "screenTitle": "سجل الاستعادة",
+          "subtitle": "{count} عملية",
+          "emptyTitle": "لا توجد عمليات استعادة",
+          "emptyDesc": "سجلات عمليات الاستعادة تظهر هنا"
+        }
+      },
+      "usersRolesTab": {
+        "tabs": {
+          "users": "مستخدمي قواعد البيانات",
+          "roles": "الأدوار",
+          "perms": "الصلاحيات"
+        },
+        "users": {
+          "col": {
+            "username": "اسم المستخدم",
+            "fullName": "الاسم الكامل",
+            "role": "الدور",
+            "type": "النوع",
+            "connLimit": "حد الاتصالات",
+            "lastLogin": "آخر دخول"
+          },
+          "type": {
+            "superuser": "سوبر",
+            "normal": "عادي"
+          },
+          "screenTitle": "مستخدمي قواعد البيانات",
+          "subtitle": "{count} مستخدم",
+          "searchPlaceholder": "بحث باسم المستخدم...",
+          "emptyTitle": "لا يوجد مستخدمون",
+          "emptyDesc": "مستخدمي PostgreSQL المسجلين يظهرون هنا"
+        },
+        "roles": {
+          "col": {
+            "code": "الكود",
+            "name": "الاسم",
+            "super": "سوبر",
+            "login": "دخول",
+            "users": "المستخدمون",
+            "perms": "الصلاحيات"
+          },
+          "value": {
+            "yes": "نعم",
+            "no": "لا"
+          },
+          "screenTitle": "أدوار قواعد البيانات",
+          "subtitle": "{count} دور",
+          "searchPlaceholder": "بحث بالكود أو الاسم...",
+          "emptyTitle": "لا توجد أدوار",
+          "emptyDesc": "أدوار PostgreSQL تظهر هنا"
+        },
+        "perms": {
+          "col": {
+            "role": "الدور",
+            "db": "القاعدة",
+            "table": "الجدول",
+            "action": "العملية",
+            "status": "الحالة"
+          },
+          "status": {
+            "granted": "ممنوحة",
+            "denied": "محظورة"
+          },
+          "screenTitle": "صلاحيات قواعد البيانات",
+          "subtitle": "{count} صلاحية",
+          "emptyTitle": "لا توجد صلاحيات",
+          "emptyDesc": "صلاحيات الأدوار على الجداول والمخططات تظهر هنا"
+        }
+      },
+      "parent": {
+        "tabs": {
+          "overview": "لوحة المعلومات",
+          "databases": "قواعد البيانات",
+          "schemas": "المخططات",
+          "users_roles": "المستخدمون والأدوار",
+          "security": "الأمن",
+          "backups": "النسخ والاستعادة",
+          "replication": "النسخ المتماثل",
+          "performance": "الأداء",
+          "queries": "الاستعلامات",
+          "storage": "التخزين",
+          "maintenance": "الصيانة",
+          "alerts": "التنبيهات",
+          "audit": "التدقيق",
+          "reporting": "التقارير والإعدادات"
+        },
+        "sections": {
+          "overview": "لوحة المعلومات",
+          "databases": "قواعد البيانات",
+          "schemas": "المخططات",
+          "users_roles": "المستخدمون والأدوار",
+          "security": "الأمن",
+          "backups": "النسخ والاستعادة",
+          "replication": "النسخ المتماثل",
+          "performance": "الأداء",
+          "queries": "الاستعلامات",
+          "storage": "التخزين",
+          "maintenance": "الصيانة",
+          "alerts": "التنبيهات",
+          "audit": "التدقيق",
+          "reporting": "التقارير والإعدادات"
+        },
+        "hero": {
+          "eyebrow": "البنية التحتية",
+          "title": "نظام إدارة قواعد البيانات",
+          "subtitle": "إدارة ومراقبة قواعد بيانات المنصة: النسخ الاحتياطي، الأداء، الأمن، النسخ المتماثل، والتعافي من الكوارث",
+          "live": "مباشر"
+        },
+        "pageHeader": {
+          "eyebrow": "البنية التحتية",
+          "title": "نظام إدارة قواعد البيانات",
+          "subtitle": "إدارة ومراقبة قواعد بيانات المنصة: النسخ الاحتياطي، الأداء، الأمن، النسخ المتماثل، والتعافي من الكوارث"
+        },
+        "rail": {
+          "label": "أقسام اللوحة"
+        }
+      }
     }
-  }
+  },
+  "dbAdmin": {
+    "performanceTab": {
+      "col": {
+        "recordedAt": "الوقت"
+      }
+    }
+  },
+  "performanceTab": {
+    "col": {
+      "dbName": "القاعدة"
+    }
+  },
+  "col": {
+    "cpuUsage": "CPU %"
+  },
+  "memoryUsage": "ذاكرة",
+  "connections": "اتصالات",
+  "cacheHitRatio": "نسبة الكسر",
+  "transactionRate": "المعاملات/ث",
+  "deadlocks": "أقفال ميتة",
+  "screenTitle": "مراقبة الأداء",
+  "subtitle": "{count} مقياس",
+  "emptyTitle": "لا توجد مقاييس أداء",
+  "emptyDesc": "مقاييس الأداء المسجلة تظهر هنا"
 }

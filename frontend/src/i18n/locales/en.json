@@ -8040,6 +8040,492 @@
         "receipt": "Receipt",
         "exemption": "Exemption"
       }
+    },
+    "dbAdmin": {
+      "dashboardTab": {
+        "empty": {
+          "title": "No data",
+          "desc": "Failed to load database info dashboard"
+        },
+        "metrics": {
+          "memory": "Memory",
+          "cpuBreakdown": "Cache hit ratio",
+          "connections": "Connections"
+        },
+        "kpi": {
+          "databases": "Databases",
+          "connected": "Connected",
+          "backups": "Backups",
+          "alerts": "Critical alerts",
+          "users": "Database users",
+          "roles": "Roles",
+          "replication": "Active replication nodes",
+          "maintenance": "Scheduled maintenance"
+        },
+        "performanceTitle": "Performance indicators",
+        "refresh": "Refresh"
+      },
+      "schemasTab": {
+        "col": {
+          "name": "Schema name",
+          "dbName": "Database",
+          "objectCount": "Objects",
+          "sizeMb": "Size (MB)",
+          "lastAnalyzed": "Last analyzed"
+        },
+        "screenTitle": "Manage schemas",
+        "subtitle": "{count} schemas",
+        "searchPlaceholder": "Search by schema name...",
+        "empty": {
+          "title": "No schemas",
+          "desc": "Schemas, tables, and functions show here"
+        }
+      },
+      "securityTab": {
+        "overview": "Security policies",
+        "col": {
+          "policy": "Policy",
+          "ssl": "SSL encryption",
+          "encryption": "Data encryption",
+          "rls": "RLS",
+          "passwordPolicy": "Password policy",
+          "ipWhitelist": "IP whitelist"
+        },
+        "opt": {
+          "sslEnabledActive": "Enabled",
+          "sslEnabledInactive": "Disabled",
+          "encryptionActive": "Enabled",
+          "encryptionInactive": "Disabled",
+          "rlsOn": "Enabled",
+          "rlsOff": "Disabled"
+        },
+        "screenTitle": "Security management",
+        "subtitle": "{count} policies",
+        "emptyTitle": "No security policies",
+        "emptyDesc": "Security, encryption, and access policies appear here"
+      },
+      "performanceTab": {
+        "col": {
+          "recordedAt": "Recorded at",
+          "dbName": "Database",
+          "cpuUsage": "CPU %",
+          "memoryUsage": "Memory",
+          "connections": "Connections",
+          "cacheHitRatio": "Cache hit ratio",
+          "transactionRate": "Transactions/sec",
+          "deadlocks": "Deadlocks"
+        },
+        "screenTitle": "Performance monitoring",
+        "subtitle": "{count} metrics",
+        "emptyTitle": "No performance metrics",
+        "emptyDesc": "Collected performance metrics appear here"
+      },
+      "storageTab": {
+        "col": {
+          "tableName": "Table",
+          "schema": "Schema",
+          "dbName": "Database",
+          "tableSizeMb": "Table size (MB)",
+          "indexSizeMb": "Index size (MB)",
+          "rowsCount": "Rows",
+          "bloatEstimate": "Bloat estimate (MB)"
+        },
+        "screenTitle": "Storage management",
+        "subtitle": "{count} tables",
+        "emptyTitle": "No storage data",
+        "emptyDesc": "Table sizes, index sizes, and remaining space appear here"
+      },
+      "replicationTab": {
+        "col": {
+          "name": "Node",
+          "dbName": "Database",
+          "nodeType": "Type",
+          "syncMode": "Mode",
+          "status": "Status",
+          "lag": "Lag (sec)",
+          "host": "Host"
+        },
+        "screenTitle": "Replication nodes",
+        "subtitle": "{count} nodes",
+        "searchPlaceholder": "Search by name or host...",
+        "emptyTitle": "No replication nodes",
+        "emptyDesc": "Primary and replica nodes appear here",
+        "filter": {
+          "nodeType": "Type",
+          "status": "Status"
+        }
+      },
+      "databasesTab": {
+        "export": {
+          "headers": [
+            "Name",
+            "Type",
+            "Version",
+            "Host",
+            "Status",
+            "Size (MB)",
+            "Schemas",
+            "Backups"
+          ],
+          "filename": "db-databases-{date}.csv",
+          "message": "Databases exported"
+        },
+        "col": {
+          "name": "Database name",
+          "type": "Type",
+          "version": "Version",
+          "status": "Status",
+          "sizeMb": "Size (MB)",
+          "schemas": "Schemas",
+          "backups": "Backups"
+        },
+        "screenTitle": "Databases",
+        "subtitle": "{count} databases",
+        "searchPlaceholder": "Search by name or host...",
+        "filter": {
+          "status": "Status",
+          "type": "Type"
+        },
+        "emptyTitle": "No databases",
+        "emptyDesc": "Registered databases appear here"
+      },
+      "maintenanceTab": {
+        "toast": {
+          "success": "Task executed successfully",
+          "error": "Failed to execute task"
+        },
+        "col": {
+          "name": "Task",
+          "type": "Type",
+          "frequency": "Frequency",
+          "dbName": "Database",
+          "nextRun": "Next run",
+          "status": "Status"
+        },
+        "screenTitle": "Maintenance schedule",
+        "subtitle": "{count} tasks",
+        "searchPlaceholder": "Search by task name...",
+        "filter": {
+          "type": "Type",
+          "status": "Status"
+        },
+        "action": {
+          "run": "Run now"
+        },
+        "emptyTitle": "No maintenance tasks",
+        "emptyDesc": "Scheduled VACUUM, ANALYZE and REINDEX tasks appear here"
+      },
+      "alertsTab": {
+        "toast": {
+          "ack": "Alert acknowledged",
+          "ackError": "Failed to acknowledge alert",
+          "resolve": "Alert resolved",
+          "resolveError": "Failed to resolve alert"
+        },
+        "col": {
+          "title": "Alert",
+          "type": "Type",
+          "severity": "Severity",
+          "dbName": "Database",
+          "status": "Status",
+          "time": "Time"
+        },
+        "screenTitle": "Alerts center",
+        "subtitle": "{count} alerts",
+        "filter": {
+          "type": "Type",
+          "severity": "Severity",
+          "status": "Status"
+        },
+        "action": {
+          "ack": "Acknowledge",
+          "ackAria": "Acknowledge",
+          "resolve": "Resolve",
+          "resolveAria": "Update"
+        },
+        "emptyTitle": "No alerts",
+        "emptyDesc": "Storage, backup, performance and security alerts appear here"
+      },
+      "auditTab": {
+        "tabs": {
+          "audit": "Audit logs",
+          "activity": "Activity logs"
+        },
+        "audit": {
+          "col": {
+            "action": "Action",
+            "user": "User",
+            "resource": "Resource",
+            "result": "Result",
+            "time": "Time"
+          },
+          "result": {
+            "success": "Success",
+            "fail": "Failed"
+          },
+          "screenTitle": "Audit logs",
+          "subtitle": "{count} logs",
+          "emptyTitle": "No audit logs",
+          "emptyDesc": "Create/delete database operations and permission changes appear here"
+        },
+        "activity": {
+          "col": {
+            "description": "Description",
+            "type": "Type",
+            "user": "User",
+            "time": "Time"
+          },
+          "screenTitle": "Activity logs",
+          "subtitle": "{count} logs",
+          "emptyTitle": "No activity logs",
+          "emptyDesc": "Login, backup and permission change activities appear here"
+        }
+      },
+      "reportingTab": {
+        "plans": {
+          "col": {
+            "name": "Plan",
+            "status": "Status",
+            "rto": "RTO (h)",
+            "rpo": "RPO (h)",
+            "backupSite": "Backup site",
+            "testedAt": "Last test"
+          },
+          "screenTitle": "Disaster recovery plans",
+          "subtitle": "{count} plans",
+          "emptyTitle": "No recovery plans",
+          "emptyDesc": "Disaster recovery plans and emergency procedures appear here"
+        },
+        "settings": {
+          "col": {
+            "key": "Key",
+            "label": "Label",
+            "value": "Value",
+            "group": "Group",
+            "encrypted": "Encrypted"
+          },
+          "value": {
+            "encrypted": "••••••",
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "System settings",
+          "subtitle": "{count} settings",
+          "emptyTitle": "No settings",
+          "emptyDesc": "Backup, security and maintenance settings appear here"
+        }
+      },
+      "queriesTab": {
+        "tabs": {
+          "stats": "Query statistics",
+          "slow": "Slow queries"
+        },
+        "stats": {
+          "col": {
+            "query": "Query",
+            "calls": "Calls",
+            "totalTime": "Total time (ms)",
+            "meanTime": "Mean (ms)",
+            "rows": "Rows",
+            "slow": "Slow",
+            "indexed": "Indexed"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "Query performance analysis",
+          "subtitle": "{count} queries",
+          "emptyTitle": "No queries",
+          "emptyDesc": "Executed query statistics appear here"
+        },
+        "slow": {
+          "col": {
+            "query": "Query",
+            "dbName": "Database",
+            "meanTime": "Mean (ms)",
+            "calls": "Calls",
+            "rows": "Rows",
+            "indexed": "Indexed"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "Not indexed"
+          },
+          "screenTitle": "Slow queries",
+          "subtitle": "Top time-consuming queries",
+          "emptyTitle": "No slow queries",
+          "emptyDesc": "Queries exceeding performance threshold appear here"
+        }
+      },
+      "backupsTab": {
+        "tabs": {
+          "backup": "Backups",
+          "restore": "Restore history"
+        },
+        "backup": {
+          "col": {
+            "dbName": "Database",
+            "type": "Type",
+            "status": "Status",
+            "storage": "Storage",
+            "sizeMb": "Size (MB)",
+            "startedAt": "Started"
+          },
+          "screenTitle": "Backups",
+          "subtitle": "{count} backups",
+          "emptyTitle": "No backups",
+          "emptyDesc": "Full and incremental backups appear here"
+        },
+        "restore": {
+          "col": {
+            "dbName": "Database",
+            "target": "Target",
+            "type": "Backup type",
+            "status": "Status",
+            "startedAt": "Started",
+            "restoredBy": "Restored by"
+          },
+          "screenTitle": "Restore history",
+          "subtitle": "{count} restores",
+          "emptyTitle": "No restore operations",
+          "emptyDesc": "Restore operation logs appear here"
+        }
+      },
+      "usersRolesTab": {
+        "tabs": {
+          "users": "Database users",
+          "roles": "Roles",
+          "perms": "Permissions"
+        },
+        "users": {
+          "col": {
+            "username": "Username",
+            "fullName": "Full name",
+            "role": "Role",
+            "type": "Type",
+            "connLimit": "Connection limit",
+            "lastLogin": "Last login"
+          },
+          "type": {
+            "superuser": "Superuser",
+            "normal": "Normal"
+          },
+          "screenTitle": "Database users",
+          "subtitle": "{count} users",
+          "searchPlaceholder": "Search by username...",
+          "emptyTitle": "No users",
+          "emptyDesc": "Registered PostgreSQL users appear here"
+        },
+        "roles": {
+          "col": {
+            "code": "Code",
+            "name": "Name",
+            "super": "Super",
+            "login": "Login",
+            "users": "Users",
+            "perms": "Permissions"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "Database roles",
+          "subtitle": "{count} roles",
+          "searchPlaceholder": "Search by code or name...",
+          "emptyTitle": "No roles",
+          "emptyDesc": "PostgreSQL roles appear here"
+        },
+        "perms": {
+          "col": {
+            "role": "Role",
+            "db": "Database",
+            "table": "Table",
+            "action": "Action",
+            "status": "Status"
+          },
+          "status": {
+            "granted": "Granted",
+            "denied": "Denied"
+          },
+          "screenTitle": "Database permissions",
+          "subtitle": "{count} permissions",
+          "emptyTitle": "No permissions",
+          "emptyDesc": "Role permissions on tables and schemas appear here"
+        }
+      },
+      "parent": {
+        "tabs": {
+          "overview": "Dashboard",
+          "databases": "Databases",
+          "schemas": "Schemas",
+          "users_roles": "Users & Roles",
+          "security": "Security",
+          "backups": "Backups & Restore",
+          "replication": "Replication",
+          "performance": "Performance",
+          "queries": "Queries",
+          "storage": "Storage",
+          "maintenance": "Maintenance",
+          "alerts": "Alerts",
+          "audit": "Audit",
+          "reporting": "Reporting & Settings"
+        },
+        "sections": {
+          "overview": "Dashboard",
+          "databases": "Databases",
+          "schemas": "Schemas",
+          "users_roles": "Users & Roles",
+          "security": "Security",
+          "backups": "Backups & Restore",
+          "replication": "Replication",
+          "performance": "Performance",
+          "queries": "Queries",
+          "storage": "Storage",
+          "maintenance": "Maintenance",
+          "alerts": "Alerts",
+          "audit": "Audit",
+          "reporting": "Reporting & Settings"
+        },
+        "hero": {
+          "eyebrow": "Infrastructure",
+          "title": "Database administration",
+          "subtitle": "Manage and monitor platform databases: backup, performance, security, replication, and disaster recovery",
+          "live": "Live"
+        },
+        "pageHeader": {
+          "eyebrow": "Infrastructure",
+          "title": "Database administration",
+          "subtitle": "Manage and monitor platform databases: backup, performance, security, replication, and disaster recovery"
+        },
+        "rail": {
+          "label": "Dashboard sections"
+        }
+      }
     }
-  }
+  },
+  "dbAdmin": {
+    "performanceTab": {
+      "col": {
+        "recordedAt": "Recorded at"
+      }
+    }
+  },
+  "performanceTab": {
+    "col": {
+      "dbName": "Database"
+    }
+  },
+  "col": {
+    "cpuUsage": "CPU %"
+  },
+  "memoryUsage": "Memory",
+  "connections": "Connections",
+  "cacheHitRatio": "Cache hit ratio",
+  "transactionRate": "Transactions/sec",
+  "deadlocks": "Deadlocks",
+  "screenTitle": "Performance monitoring",
+  "subtitle": "{count} metrics",
+  "emptyTitle": "No performance metrics",
+  "emptyDesc": "Collected performance metrics appear here"
 }
