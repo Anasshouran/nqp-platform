@@ -8364,5 +8364,256 @@
   "screenTitle": "Performance monitoring",
   "subtitle": "{count} metrics",
   "emptyTitle": "No performance metrics",
-  "emptyDesc": "Collected performance metrics appear here"
+  "emptyDesc": "Collected performance metrics appear here",
+  "airportdirector": {
+    "reports": {
+      "screenings_by_flight_title": "Screenings by flight",
+      "no_screenings_today": "No screenings recorded today.",
+      "tab_daily": "📅 Daily",
+      "tab_weekly": "📆 Weekly",
+      "tab_monthly": "📊 Monthly",
+      "daily_report": "Daily Report",
+      "weekly_report": "Weekly Report",
+      "monthly_report": "Monthly Report",
+      "flights": "Flights",
+      "travelers": "Travelers",
+      "screened": "Screened",
+      "referrals": "Referrals",
+      "suspected": "Suspected",
+      "title": "Reports Center",
+      "subtitle": "Flight, screening, lab and revenue reports",
+      "generating_pdf": "Generating PDF...",
+      "generating_excel": "Generating Excel..."
+    },
+    "permissions": {
+      "empty_title": "No permissions available to display for this role.",
+      "empty_description": "Permission services returned no matching airport permissions.",
+      "available": "Available",
+      "excluded": "Excluded",
+      "auto_update": "Automatically updated based on your role permissions."
+    },
+    "resources": {
+      "airport_health": "Airport Health",
+      "airport_staff": "Airport Health Staff",
+      "screening": "Screenings"
+    },
+    "actions": {
+      "view": "View",
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "export": "Export"
+    },
+    "sections": {
+      "overview": "Overview",
+      "alerts": "Alerts",
+      "operations": "Operations",
+      "flights": "Flights",
+      "screening": "Screenings",
+      "inspections": "Inspections",
+      "crew": "Crew",
+      "terminals": "Terminals",
+      "decision": "Decision Support",
+      "reports": "Reports",
+      "staff": "Staff",
+      "permissions": "Permissions"
+    },
+    "recommendations": {
+      "suspected_cases": {
+        "topic": "Suspected Cases",
+        "finding": "{{count}} suspected cases today",
+        "cause": "High initial screening indicators",
+        "recommendation": "Escalate thermal screening and activate contact tracing"
+      },
+      "non_compliant_inspections": {
+        "topic": "Aircraft Inspections",
+        "finding": "{{count}} inspections non-compliant",
+        "cause": "Non-compliant items in latest inspections",
+        "recommendation": "Corrective actions and re-inspection of affected aircraft"
+      },
+      "pending_screenings": {
+        "topic": "Screening Pressure",
+        "finding": "{{count}} pending screenings vs {{screened}} completed",
+        "cause": "Accumulated pending screenings",
+        "recommendation": "Reinforce resources at screening points"
+      }
+    },
+    "hero": {
+      "eyebrow": "Executive Command — Airport Health",
+      "title": "Welcome, {{name}} 👋",
+      "title_fallback": "Airport Quarantine Director",
+      "subtitle": "A comprehensive executive view of airport health: flights, passenger screening, air cargo, laboratory, and revenue",
+      "avatar_fallback": "A"
+    },
+    "period": {
+      "day": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    },
+    "live": "Live",
+    "rail": {
+      "label": "Dashboard Sections"
+    },
+    "kpis": {
+      "flights_today": "Flights Today",
+      "passengers_today": "Passengers Today",
+      "arrivals_today": "Arrival Screenings Today",
+      "departures_today": "Departure Screenings Today",
+      "screened_today": "Screened Today",
+      "pending_screenings": "Pending Screenings",
+      "suspected_cases": "Suspected Cases",
+      "clinic_referrals": "Clinic Referrals",
+      "completed_today": "Completed Today",
+      "inspections_today": "Aircraft Inspections Today",
+      "crew_records_today": "Crew Records Today",
+      "vaccinations": "Vaccinations"
+    },
+    "alerts": {
+      "title": "🚨 Alert Center",
+      "subtitle": "Events requiring immediate attention — flight, crew, cargo",
+      "empty_title": "No alerts",
+      "empty_description": "No alerts are currently recorded."
+    },
+    "operations": {
+      "title": "Operations Indicators",
+      "subtitle": "Arrivals / departures / screening — actual daily indicators"
+    },
+    "flightsBoard": {
+      "title": "✈️ Flights Board",
+      "subtitle": "Arrivals and departures under health screening — live status",
+      "empty_title": "No upcoming flights",
+      "empty_description": "No upcoming flights are currently registered."
+    },
+    "passengerScreening": {
+      "title": "Passenger Screening",
+      "subtitle": "Recent passenger screenings — temperature, risk level, and status",
+      "empty_title": "No screenings",
+      "empty_description": "Passenger screenings will appear here when recorded."
+    },
+    "aircraftInspections": {
+      "title": "✈️ Aircraft Inspections",
+      "subtitle": "Recent aircraft inspections — compliance, certificate, and date",
+      "empty_title": "No inspections",
+      "empty_description": "Aircraft inspections will appear here when recorded."
+    },
+    "crewHealth": {
+      "title": "👨‍✈️ Crew Health",
+      "subtitle": "Recent health screening records for flight crews",
+      "empty_title": "No crew records",
+      "empty_description": "Crew health records will appear here when recorded."
+    },
+    "terminalPerformance": {
+      "title": "Airport Site Performance",
+      "subtitle": "Terminals — number of screening points per terminal",
+      "empty_title": "No terminals",
+      "empty_description": "Airport terminals and screening points will appear here when added."
+    },
+    "decisionSupport": {
+      "title": "💡 Decision Support",
+      "subtitle": "The system recommends — the director decides",
+      "empty_title": "No current recommendations",
+      "empty_description": "Any alert will appear here when indicators rise and escalation is needed.",
+      "probable_cause": "Probable cause: {{cause}}"
+    },
+    "permissionsMatrix": {
+      "title": "Permissions Matrix",
+      "subtitle": "Available for your role / Operationally excluded"
+    },
+    "activityLog": {
+      "title": "📋 Activity Log",
+      "subtitle": "Latest administrative actions",
+      "refresh": "Refresh",
+      "empty_title": "No activity recorded",
+      "empty_description": "Administrative actions will appear here when they occur."
+    },
+    "footer": "Federal Ministry of Health — National Quarantine Platform · Airport Quarantine Management",
+    "risk": {
+      "green": "Green",
+      "yellow": "Yellow",
+      "red": "Red"
+    },
+    "clearance": {
+      "pending": "Pending",
+      "cleared": "Cleared",
+      "quarantined": "Quarantined",
+      "referred": "Referred"
+    },
+    "inspectionStatus": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "conditional": "Conditional"
+    },
+    "crewFitness": {
+      "fit": "Fit",
+      "unfit": "Unfit",
+      "under_observation": "Under Observation"
+    },
+    "columns": {
+      "flight": "Flight",
+      "origin": "Origin",
+      "arrival_time": "Arrival Time",
+      "status": "Status",
+      "traveler": "Traveler",
+      "risk_level": "Risk Level",
+      "screening_time": "Screening Time",
+      "aircraft_registration": "Aircraft Registration",
+      "overall_status": "Overall Status",
+      "certificate": "Certificate",
+      "certificate_issued": "Issued",
+      "certificate_not_issued": "Not Issued",
+      "inspection_date": "Inspection Date",
+      "crew": "Crew",
+      "health_status": "Health Status",
+      "temperature": "Temperature",
+      "next_clearance": "Next Clearance",
+      "terminal": "Terminal",
+      "code": "Code",
+      "screening_points": "Screening Points"
+    },
+    "staff_form": {
+      "full_name": "Full Name",
+      "role": "Role",
+      "email": "Email",
+      "phone": "Phone",
+      "shift": "Shift",
+      "shift_placeholder": "Morning / Evening / Night",
+      "airport": "Airport",
+      "airport_placeholder": "Select airport",
+      "active": "Active"
+    },
+    "staff_notifications": {
+      "added": "Staff member added",
+      "add_error": "Unable to add staff member",
+      "updated": "Staff member updated",
+      "update_error": "Unable to update staff member",
+      "deleted": "Staff member deleted",
+      "delete_error": "Unable to delete staff member"
+    },
+    "staff": {
+      "title": "Airport Staff",
+      "col_name": "Name",
+      "col_role": "Role",
+      "col_email": "Email",
+      "col_phone": "Phone",
+      "col_shift": "Shift",
+      "col_active": "Active",
+      "status_active": "Active",
+      "status_inactive": "Inactive",
+      "edit": "Edit",
+      "delete": "Delete",
+      "subtitle": "Inspectors, lab technicians, data entry clerks — registered staff",
+      "add_staff": "Add Staff",
+      "actions": "Actions",
+      "empty_title": "No staff registered",
+      "empty_description": "Airport staff records will appear here when registered.",
+      "add_dialog_title": "Add Staff",
+      "add_dialog_subtitle": "Register a new staff member at the port airport",
+      "add_submit": "Add",
+      "edit_dialog_title": "Edit Staff Member",
+      "save": "Save",
+      "delete_dialog_title": "Delete Staff Member",
+      "delete_confirm": "Confirm deletion of staff member {{name}}?",
+      "delete_confirm_label": "Delete"
+    }
+  }
 }

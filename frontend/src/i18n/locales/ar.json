@@ -8364,5 +8364,256 @@
   "screenTitle": "مراقبة الأداء",
   "subtitle": "{count} مقياس",
   "emptyTitle": "لا توجد مقاييس أداء",
-  "emptyDesc": "مقاييس الأداء المسجلة تظهر هنا"
+  "emptyDesc": "مقاييس الأداء المسجلة تظهر هنا",
+  "airportdirector": {
+    "reports": {
+      "screenings_by_flight_title": "توزيع الفحوص حسب الرحلة",
+      "no_screenings_today": "لا توجد فحوص مسجّلة اليوم.",
+      "tab_daily": "📅 يومي",
+      "tab_weekly": "📆 أسبوعي",
+      "tab_monthly": "📊 شهري",
+      "daily_report": "التقرير اليومي",
+      "weekly_report": "التقرير الأسبوعي",
+      "monthly_report": "التقرير الشهري",
+      "flights": "الرحلات",
+      "travelers": "المسافرون",
+      "screened": "فُحصوا",
+      "referrals": "الإحالات",
+      "suspected": "مشتبه بها",
+      "title": "مركز التقارير",
+      "subtitle": "تقارير الرحلات والفحص والمعمل والإيرادات",
+      "generating_pdf": "جارٍ تجهيز PDF",
+      "generating_excel": "جارٍ تجهيز Excel"
+    },
+    "permissions": {
+      "empty_title": "لا توجد صلاحيات قابلة للعرض لهذا الدور.",
+      "empty_description": "لم تُرجع خدمات الصلاحيات أي صلاحيات مطار مطابقة.",
+      "available": "المتاح",
+      "excluded": "المستبعد",
+      "auto_update": "يُحدَّث تلقائيًا حسب صلاحيات دورك."
+    },
+    "resources": {
+      "airport_health": "صحة المطارات",
+      "airport_staff": "كادر صحة المطارات",
+      "screening": "الفحوصات"
+    },
+    "actions": {
+      "view": "عرض",
+      "add": "إضافة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "export": "تصدير"
+    },
+    "sections": {
+      "overview": "نظرة عامة",
+      "alerts": "التنبيهات",
+      "operations": "العمليات",
+      "flights": "الرحلات",
+      "screening": "الفحوصات",
+      "inspections": "التفتيش",
+      "crew": "الطاقم",
+      "terminals": "المواقع",
+      "decision": "دعم القرار",
+      "reports": "التقارير",
+      "staff": "الموظفون",
+      "permissions": "الصلاحيات"
+    },
+    "recommendations": {
+      "suspected_cases": {
+        "topic": "حالات مشتبهة",
+        "finding": "{{count}} حالة مشتبهة اليوم",
+        "cause": "ارتفاع مؤشرات الفحص الأولي",
+        "recommendation": "تصعيد الفحص الحراري وتفعيل تتبع المخالطين"
+      },
+      "non_compliant_inspections": {
+        "topic": "تفتيش الطائرات",
+        "finding": "{{count}} تفتيش بحالة غير مطابقة",
+        "cause": "بنود غير مطابقة في آخر التفتيشات",
+        "recommendation": "إجراءات تصحيحية وإعادة تفتيش الطائرات المعنية"
+      },
+      "pending_screenings": {
+        "topic": "ضغط الفحص",
+        "finding": "{{count}} فحص معلّق مقابل {{screened}} منجز",
+        "cause": "تراكم الفحوصات المعلّقة",
+        "recommendation": "تعزيز الموارد في نقاط الفحص"
+      }
+    },
+    "hero": {
+      "eyebrow": "لوحة القيادة التنفيذية — صحة المطارات",
+      "title": "مرحباً، {{name}} 👋",
+      "title_fallback": "مديرة الحجر الصحي بالمطار",
+      "subtitle": "نظرة تنفيذية شاملة على صحة المطارات: الرحلات، فحص المسافرين، الشحن الجوي، المختبر، والإيرادات",
+      "avatar_fallback": "م"
+    },
+    "period": {
+      "day": "اليوم",
+      "week": "هذا الأسبوع",
+      "month": "هذا الشهر"
+    },
+    "live": "مباشر",
+    "rail": {
+      "label": "أقسام اللوحة"
+    },
+    "kpis": {
+      "flights_today": "رحلات اليوم",
+      "passengers_today": "مسافرون اليوم",
+      "arrivals_today": "فحوصات وصول اليوم",
+      "departures_today": "فحوصات مغادرة اليوم",
+      "screened_today": "فُحصوا اليوم",
+      "pending_screenings": "فحوصات معلّقة",
+      "suspected_cases": "حالات مشتبهة",
+      "clinic_referrals": "إحالات العيادة",
+      "completed_today": "اكتملت اليوم",
+      "inspections_today": "تفتيش طائرات اليوم",
+      "crew_records_today": "سجلات طاقم اليوم",
+      "vaccinations": "تطعيمات"
+    },
+    "alerts": {
+      "title": "🚨 مركز التنبيهات",
+      "subtitle": "أحداث تستدعي النظر الفوري — الرحلة، الطاقم، الشحن",
+      "empty_title": "لا توجد تنبيهات",
+      "empty_description": "لا توجد تنبيهات مسجّلة حالياً."
+    },
+    "operations": {
+      "title": "مؤشرات العمليات",
+      "subtitle": "وصول / مغادرة / فحص — مؤشرات اليوم الفعلية"
+    },
+    "flightsBoard": {
+      "title": "✈️ لوحة الرحلات",
+      "subtitle": "الواصلة والمغادرة قيد الفحص الصحي — الحالة الفورية",
+      "empty_title": "لا رحلات قادمة",
+      "empty_description": "لا توجد رحلات مسجّلة قادمة حالياً."
+    },
+    "passengerScreening": {
+      "title": "فحص المسافرين",
+      "subtitle": "آخر فحوص المسافرين — الحرارة ومستوى الخطر والحالة",
+      "empty_title": "لا توجد فحوص",
+      "empty_description": "ستظهر فحوصات المسافرين هنا عند تسجيلها."
+    },
+    "aircraftInspections": {
+      "title": "✈️ تفتيش الطائرات",
+      "subtitle": "آخر تفتيشات الطائرات — المطابقة والشهادة والتاريخ",
+      "empty_title": "لا توجد تفتيشات",
+      "empty_description": "ستظهر تفتيشات الطائرات هنا عند تسجيلها."
+    },
+    "crewHealth": {
+      "title": "👨‍✈️ صحة الطاقم",
+      "subtitle": "آخر سجلات الفحص الصحي لأطقم الرحلات",
+      "empty_title": "لا توجد سجلات طاقم",
+      "empty_description": "ستظهر سجلات صحة الطاقم هنا عند تسجيلها."
+    },
+    "terminalPerformance": {
+      "title": "أداء مواقع المطار",
+      "subtitle": "الصالات — عدد نقاط الفحص لكل صالة",
+      "empty_title": "لا توجد صالات",
+      "empty_description": "ستظهر صالات المطار ونقاط الفحص هنا عند إضافتها."
+    },
+    "decisionSupport": {
+      "title": "💡 دعم اتخاذ القرار",
+      "subtitle": "النظام يوصي — والمديرة تقرر",
+      "empty_title": "لا توجد توصيات حالية",
+      "empty_description": "سيظهر هنا أي تنبيه عند ارتفاع مؤشرات تستدعي التصعيد.",
+      "probable_cause": "السبب المحتمل: {{cause}}"
+    },
+    "permissionsMatrix": {
+      "title": "مصفوفة الصلاحيات",
+      "subtitle": "متاح لدورك / مستبعد تشغيليًا"
+    },
+    "activityLog": {
+      "title": "📋 سجل الأنشطة",
+      "subtitle": "آخر الإجراءات الإدارية",
+      "refresh": "تحديث",
+      "empty_title": "لا يوجد نشاط مسجّل",
+      "empty_description": "سيظهر هنا سجل الإجراءات الإدارية عند حدوثها."
+    },
+    "footer": "وزارة الصحة الاتحادية — منصة الحجر الصحي القومي · إدارة الحجر الصحي بالمطار",
+    "risk": {
+      "green": "أخضر",
+      "yellow": "أصفر",
+      "red": "أحمر"
+    },
+    "clearance": {
+      "pending": "قيد الانتظار",
+      "cleared": "مؤهل",
+      "quarantined": "محجور",
+      "referred": "مُحال"
+    },
+    "inspectionStatus": {
+      "passed": "نجح",
+      "failed": "فشل",
+      "conditional": "مشروط"
+    },
+    "crewFitness": {
+      "fit": "لائق",
+      "unfit": "غير لائق",
+      "under_observation": "قيد المراقبة"
+    },
+    "columns": {
+      "flight": "الرحلة",
+      "origin": "المنشأ",
+      "arrival_time": "موعد الوصول",
+      "status": "الحالة",
+      "traveler": "المسافر",
+      "risk_level": "مستوى الخطر",
+      "screening_time": "وقت الفحص",
+      "aircraft_registration": "تسجيل الطائرة",
+      "overall_status": "الحالة العامة",
+      "certificate": "الشهادة",
+      "certificate_issued": "صدرت",
+      "certificate_not_issued": "لم تصدر",
+      "inspection_date": "تاريخ التفتيش",
+      "crew": "الطاقم",
+      "health_status": "الحالة الصحية",
+      "temperature": "درجة الحرارة",
+      "next_clearance": "التصريح القادم",
+      "terminal": "الصالة",
+      "code": "الرمز",
+      "screening_points": "نقاط الفحص"
+    },
+    "staff_form": {
+      "full_name": "الاسم الكامل",
+      "role": "الدور",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "shift": "الوردية",
+      "shift_placeholder": "صباحية / مسائية / ليلية",
+      "airport": "المطار",
+      "airport_placeholder": "اختر المطار",
+      "active": "نشط"
+    },
+    "staff_notifications": {
+      "added": "تمت إضافة الموظف",
+      "add_error": "تعذر إضافة الموظف",
+      "updated": "تم تحديث بيانات الموظف",
+      "update_error": "تعذر تحديث بيانات الموظف",
+      "deleted": "تم حذف الموظف",
+      "delete_error": "تعذر حذف الموظف"
+    },
+    "staff": {
+      "title": "موظفو المطار",
+      "col_name": "الاسم",
+      "col_role": "الدور",
+      "col_email": "البريد",
+      "col_phone": "الهاتف",
+      "col_shift": "الوردية",
+      "col_active": "نشط",
+      "status_active": "نشط",
+      "status_inactive": "غير نشط",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "subtitle": "مفتشون، فنيو مختبر، كتّاب إدخال — الموظفون المسجّلون",
+      "add_staff": "إضافة موظف",
+      "actions": "إجراءات",
+      "empty_title": "لا يوجد موظفون مسجلون",
+      "empty_description": "ستظهر بيانات موظفي المطار هنا عند تسجيلهم.",
+      "add_dialog_title": "إضافة موظف",
+      "add_dialog_subtitle": "سجّل موظفاً جديداً في مطار المنفذ",
+      "add_submit": "إضافة",
+      "edit_dialog_title": "تعديل بيانات الموظف",
+      "save": "حفظ",
+      "delete_dialog_title": "حذف الموظف",
+      "delete_confirm": "تأكيد حذف الموظف {{name}}؟",
+      "delete_confirm_label": "حذف"
+    }
+  }
 }
