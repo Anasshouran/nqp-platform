@@ -8615,5 +8615,280 @@
       "delete_confirm": "Confirm deletion of staff member {{name}}?",
       "delete_confirm_label": "Delete"
     }
+  },
+  "reagents": {
+    "tabs": {
+      "dashboard": "Dashboard",
+      "catalog": "Material Catalog",
+      "lots": "Lots & Inventory",
+      "solutions": "Solutions",
+      "issues": "Issues & Consumption",
+      "disposal": "Disposal"
+    },
+    "sections": {
+      "dashboard": "Dashboard",
+      "catalog": "Material Catalog",
+      "lots": "Lots & Inventory",
+      "solutions": "Solutions",
+      "issues": "Issues & Consumption",
+      "disposal": "Disposal"
+    },
+    "materials": {
+      "reagent": "Reagent",
+      "solution": "Solution",
+      "reference_standard": "Reference Standard",
+      "culture_media": "Culture Media",
+      "chemical": "Chemical",
+      "consumable": "Consumable",
+      "crm": "Certified Reference Material (CRM)"
+    },
+    "grades": {
+      "analytical": "Analytical Grade",
+      "hplc": "HPLC",
+      "reagent_grade": "Reagent Grade",
+      "technical": "Technical Grade",
+      "pharmaceutical": "Pharmaceutical Grade",
+      "microbiological": "Microbiological Grade",
+      "other": "Other"
+    },
+    "hazards": {
+      "none": "Non-hazardous",
+      "toxic": "Toxic",
+      "corrosive": "Corrosive",
+      "flammable": "Flammable",
+      "oxidizer": "Oxidizer",
+      "irritant": "Irritant",
+      "other": "Other"
+    },
+    "benches": {
+      "chemistry": "Chemistry",
+      "microbiology": "Microbiology",
+      "physical": "Physical",
+      "toxicology": "Toxicology",
+      "molecular": "Molecular"
+    },
+    "errors": {
+      "saveFailed": "Could not save, please try again"
+    },
+    "columns": {
+      "material": "Material",
+      "type": "Type",
+      "bench": "Department",
+      "stock": "Stock",
+      "lots": "Lots",
+      "hazard": "Hazard",
+      "minStock": "Minimum",
+      "lotNumber": "Lot Number",
+      "batch": "Batch",
+      "qty": "Quantity",
+      "expiry": "Expiry",
+      "storage": "Storage",
+      "status": "Status",
+      "solution": "Solution",
+      "concentration": "Concentration",
+      "prepDate": "Preparation Date",
+      "preparedBy": "Prepared By",
+      "sample": "Sample",
+      "test": "Test",
+      "issuedBy": "Issued By",
+      "when": "Time",
+      "reason": "Reason",
+      "requestedBy": "Requested By"
+    },
+    "actions": {
+      "edit": "Edit",
+      "approve": "Approve",
+      "reject": "Reject",
+      "executeDisposal": "Execute Disposal"
+    },
+    "status": {
+      "lowStock": "Low"
+    },
+    "messages": {
+      "solutionApproved": "Solution approved",
+      "solutionRejected": "Solution rejected",
+      "verifyFailed": "Could not verify the solution",
+      "disposalStatusUpdated": "Disposal request status updated",
+      "disposalUpdateFailed": "Could not update the disposal request",
+      "materialUpdated": "Material updated",
+      "materialRegistered": "Material registered",
+      "lotRegistered": "Lot registered",
+      "solutionRegistered": "Solution registered — pending verification",
+      "issueRecorded": "Material issued and deducted from stock",
+      "disposalRequestCreated": "Disposal request created — pending approval"
+    },
+    "dashboard": {
+      "totalMaterials": "Total Materials",
+      "totalStock": "Total Stock",
+      "expired": "Expired",
+      "expiring30": "Expiring in 30 Days",
+      "lowStock": "Below Minimum",
+      "solutionsPending": "Solutions Pending Verification",
+      "solutionsApproved": "Approved Solutions",
+      "disposalsPending": "Pending Disposal Requests",
+      "alerts": "Alerts",
+      "expiredAlert": "{{count}} expired reagents — use prohibited",
+      "expiring30Alert": "{{count}} reagent(s) expiring within 30 days",
+      "expiring90Alert": "{{count}} reagent(s) expiring within 90 days",
+      "lowStockMaterialsAlert": "{{count}} material(s) below minimum stock",
+      "solutionsPendingAlert": "Solutions pending verification: {{count}}",
+      "noCriticalAlerts": "No critical alerts",
+      "materialTypes": "Material Types",
+      "recentMovements": "Recent Movements",
+      "lotLabel": "Lot {{lot}}",
+      "noMovements": "No issue movements yet"
+    },
+    "catalog": {
+      "subtitle": "Classified material catalog — reagent / solution / standards / media / chemicals / consumables / certified",
+      "registerMaterial": "➕ Register Material",
+      "title": "Material Catalog"
+    },
+    "lots": {
+      "subtitle": "Material lots — each lot with its expiry, quantity, and status. Expired is blocked.",
+      "registerLot": "➕ Register Lot",
+      "title": "Lots & Inventory"
+    },
+    "filters": {
+      "type": "Type",
+      "status": "Status"
+    },
+    "lotStatus": {
+      "valid": "Valid",
+      "expiringSoon": "Expiring Soon",
+      "expired": "Expired",
+      "blocked": "Blocked",
+      "disposed": "Disposed"
+    },
+    "solutionsPage": {
+      "subtitle": "Solutions — preparation → pending verification → approval / rejection (per lab policy).",
+      "prepare": "🧴 Prepare Solution",
+      "title": "Solutions"
+    },
+    "solutionStatus": {
+      "prepared": "Prepared",
+      "pendingVerification": "Pending Verification",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "issuesPage": {
+      "subtitle": "Reagent issuance to analysts — automatically deducted from stock and linked to sample and test for traceability.",
+      "issueMaterial": "📤 Issue Material",
+      "title": "Issues & Consumption"
+    },
+    "disposalPage": {
+      "subtitle": "Material disposal — no direct deletion: request → approval → disposal, with a full record kept.",
+      "requestDisposal": "🗑 Request Disposal",
+      "title": "Disposal Requests"
+    },
+    "page": {
+      "eyebrow": "Reagents & Materials Management",
+      "title": "Reagents & Solutions Management",
+      "subtitle": "Reagents & Solutions Management — direct linkage to sample, test, analyst, method, and instrument",
+      "avatarLabel": "R",
+      "refresh": "🔄 Refresh",
+      "live": "Live",
+      "sectionsLabel": "Material Sections"
+    },
+    "materialDialog": {
+      "editTitle": "Edit Material",
+      "addTitle": "Register New Material",
+      "subtitle": "Material catalog — basic material information",
+      "fields": {
+        "nameAr": "Material Name (Arabic) *",
+        "nameEn": "Name (English)",
+        "type": "Type",
+        "bench": "Department",
+        "manufacturer": "Manufacturer",
+        "grade": "Grade",
+        "unit": "Unit of Measure",
+        "minStock": "Minimum Stock",
+        "reorderLevel": "Reorder Level",
+        "maxStock": "Maximum Stock",
+        "hazardClass": "Hazard Class",
+        "notes": "Notes"
+      }
+    },
+    "lotDialog": {
+      "title": "Register New Lot",
+      "subtitle": "Each package/shipment — its expiry, quantity, and status",
+      "fields": {
+        "material": "Material *",
+        "materialPlaceholder": "Select material",
+        "lotNumber": "Lot Number *",
+        "batchNumber": "Batch Number",
+        "manufacturingDate": "Manufacturing Date",
+        "expiryDate": "Expiry Date",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "storage": "Storage Location",
+        "storagePlaceholder": "Select location",
+        "supplier": "Supplier",
+        "certificateRef": "Certificate of Analysis Reference",
+        "receivedDate": "Received Date",
+        "notes": "Notes"
+      }
+    },
+    "solutionDialog": {
+      "title": "Prepare Solution",
+      "subtitle": "Solution → Pending Verification → Approve/Reject",
+      "fields": {
+        "name": "Solution Name *",
+        "baseMaterial": "Base Material",
+        "selectMaterial": "Select material",
+        "concentration": "Concentration",
+        "solvent": "Solvent",
+        "finalVolume": "Final Volume",
+        "volumeUnit": "Volume Unit",
+        "sourceLot": "Source Material (Lot)",
+        "selectLot": "Select lot",
+        "batchNumber": "Batch Number",
+        "storageLocation": "Storage Location",
+        "preparationDate": "Preparation Date *",
+        "expiryDate": "Expiry Date",
+        "notes": "Notes"
+      }
+    },
+    "issueDialog": {
+      "title": "Issue Material to Analyst",
+      "subtitle": "Deducted from stock and linked to sample/test for traceability",
+      "fields": {
+        "material": "Material *",
+        "selectMaterial": "Select material",
+        "lot": "Lot",
+        "selectValidLot": "Select a valid lot",
+        "quantityUsed": "Quantity Used *",
+        "unit": "Unit",
+        "purpose": "Purpose",
+        "issueType": "Issue Type",
+        "notes": "Notes"
+      },
+      "issueTypes": {
+        "issue": "Issue",
+        "consumption": "Consumption",
+        "return": "Return"
+      }
+    },
+    "disposalDialog": {
+      "title": "Material Disposal Request",
+      "subtitle": "Request → Approval → Disposal — with record kept",
+      "fields": {
+        "material": "Material *",
+        "selectMaterial": "Select material",
+        "lot": "Lot",
+        "selectLot": "Select lot",
+        "quantity": "Quantity *",
+        "unit": "Unit",
+        "reason": "Reason",
+        "selectReason": "Select reason",
+        "detail": "Details"
+      },
+      "reasons": {
+        "expired": "Expired",
+        "damaged": "Damaged",
+        "partiallyUsed": "Partially Used",
+        "contaminated": "Contaminated"
+      }
+    }
   }
 }
