@@ -8890,5 +8890,199 @@
         "contaminated": "Contaminated"
       }
     }
+  },
+  "labDirector": {
+    "nav": {
+      "home": "Executive Center — Comprehensive overview of lab performance and critical decisions",
+      "approval": "Results Approval — Final laboratory decision",
+      "approvalQueue": "Approval Queue — Results awaiting the lab director's final decision",
+      "approvalApproved": "Approved Results — Final decisions issued",
+      "approvalRejected": "Rejected Results — Non-compliant samples",
+      "samplesAll": "All Samples — Complete inventory",
+      "samplesToday": "Today's Samples — Newly received",
+      "samplesOverdue": "Overdue Samples — Exceeded time limits",
+      "departmentsMicrobiology": "Microbiology Department — Performance and workload",
+      "departmentsChemistry": "Chemistry Department — Performance and workload",
+      "departmentsPhysical": "Physical Department — Performance and workload",
+      "slaOverview": "SLA Indicators — Compliance with time limits",
+      "slaAtRisk": "Overdue and At-Risk Analyses",
+      "equipmentCalibration": "Equipment Calibration — Readiness and schedules",
+      "equipmentStatus": "Operational Equipment Status",
+      "reagents": "Reagents — Validity and stock",
+      "ncOpen": "Non-Conformity — Open cases",
+      "ncCapa": "CAPA — Corrective and preventive actions",
+      "reports": "Executive Reports — Certificates and results",
+      "notifications": "Alerts and Notifications"
+    },
+    "ncStatus": {
+      "open": "Open",
+      "underInvestigation": "Under Investigation",
+      "awaitingCapa": "Awaiting CAPA",
+      "closed": "Closed"
+    },
+    "sampleStatus": {
+      "registered": "Registered",
+      "processing": "Processing",
+      "completed": "Completed"
+    },
+    "sections": {
+      "overview": "Overview",
+      "approval": "Approval",
+      "sla": "Performance Indicators",
+      "departments": "Departments",
+      "alerts": "Alerts",
+      "quality": "System Quality"
+    },
+    "messages": {
+      "approveSuccess": "Result approved successfully",
+      "approveError": "Failed to approve result"
+    },
+    "columns": {
+      "sampleNumber": "Sample No.",
+      "source": "Source",
+      "type": "Type",
+      "bench": "Department",
+      "status": "Status",
+      "approval": "Approval",
+      "receivedAt": "Received At",
+      "uploadedAt": "Uploaded At",
+      "action": "Action",
+      "equipment": "Equipment",
+      "lastCalibrated": "Last Calibrated",
+      "nextCalibration": "Next Calibration",
+      "reagent": "Reagent",
+      "lotNumber": "Lot No.",
+      "expiryDate": "Expiry Date",
+      "quantity": "Quantity",
+      "number": "No.",
+      "title": "Title",
+      "severity": "Severity",
+      "user": "User",
+      "actionType": "Action",
+      "objectType": "Object",
+      "description": "Description",
+      "time": "Time",
+      "sample": "Sample",
+      "issuedAt": "Issued At"
+    },
+    "actions": {
+      "approve": "Approve",
+      "viewAll": "View All"
+    },
+    "reagentStatus": {
+      "available": "Available",
+      "low": "Low",
+      "expired": "Expired"
+    },
+    "dept": {
+      "totalSamples": "Total Samples",
+      "completed": "Completed",
+      "underTesting": "Under Testing",
+      "awaitingApproval": "Awaiting Approval",
+      "performance": "Department Performance",
+      "tests": "Tests",
+      "sectionTitle": "Department Performance",
+      "microbiology": "Microbiology",
+      "chemistry": "Chemistry",
+      "physical": "Physical"
+    },
+    "kpi": {
+      "totalSamples": "Total Samples",
+      "samplesToday": "Today's Samples",
+      "underTesting": "Under Testing",
+      "awaitingApproval": "Awaiting Approval",
+      "overdue": "Overdue",
+      "approved": "Approved",
+      "openNc": "Open Non-Conformities",
+      "overdueCalibration": "Overdue Calibration",
+      "rejected": "Rejected",
+      "overdueSamples": "Overdue Samples",
+      "avgCompletionTime": "Average Completion Time",
+      "avgCompletionTimeValue": "{{hours}} h"
+    },
+    "approvalQueue": {
+      "title": "Results Approval Queue",
+      "empty": "No results awaiting approval"
+    },
+    "sla": {
+      "title": "SLA Indicators",
+      "compliance": "SLA Compliance",
+      "decisionCompliance": "Decision Compliance Rate",
+      "overdueTests": "Overdue tests: {{count}}",
+      "atRiskTests": "At-risk tests: {{count}}",
+      "avgTatHours": "Average turnaround time: {{hours}} hours",
+      "avgTatNone": "Average turnaround time: —",
+      "indicators": "Performance Indicators",
+      "avgTatHoursUnit": "{{hours}} h"
+    },
+    "alerts": {
+      "title": "Executive Alerts",
+      "overdueTests": "{{count}} test(s) exceeded the time limit",
+      "overdueCalibration": "{{count}} device(s) with overdue calibration",
+      "expiredReagents": "{{count}} expired reagent(s)",
+      "openNc": "{{count}} open non-conformity case(s)",
+      "sectionTitle": "Alerts",
+      "overdueTestsUrgent": "{{count}} test(s) exceeded the time limit — urgent action required",
+      "upcomingCalibration": "{{count}} device(s) calibration due within 30 days",
+      "expiredReagentsWarning": "{{count}} expired reagent(s) — do not use in new tests",
+      "lowReagents": "{{count}} reagent(s) at low level",
+      "capaInProgress": "{{count}} CAPA in progress",
+      "noneCritical": "No critical alerts at the moment"
+    },
+    "quality": {
+      "noneCriticalAlerts": "No critical alerts at the moment",
+      "title": "System Quality",
+      "ncClosure": "Non-Conformity Closure",
+      "auditEventsToday": "Audit Events Today",
+      "totalAudit": "Total Audits",
+      "lowReagents": "Low Reagents",
+      "openCapa": "Open CAPA"
+    },
+    "nc": {
+      "open": "Open Non-Conformity",
+      "closed": "Closed",
+      "openCapa": "Open CAPA",
+      "title": "Non-Conformity"
+    },
+    "certificates": {
+      "title": "Certificates",
+      "sectionTitle": "Analysis Certificates"
+    },
+    "decisions": {
+      "approved": "Approved Samples",
+      "rejected": "Rejected"
+    },
+    "audit": {
+      "title": "Audit Log"
+    },
+    "equipment": {
+      "total": "Total Equipment",
+      "overdueCalibration": "Overdue Calibration",
+      "upcomingCalibration": "Upcoming Calibration",
+      "title": "Equipment & Calibration"
+    },
+    "reagents": {
+      "total": "Total Reagents",
+      "expired": "Expired",
+      "low": "Low",
+      "title": "Reagents"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Laboratory director settings."
+    },
+    "help": {
+      "title": "Help",
+      "description": "Guide for using the laboratory director interface."
+    },
+    "pageHeader": {
+      "eyebrow": "Food Laboratory",
+      "title": "Laboratory Director Dashboard",
+      "subtitle": "Laboratory management and results approval",
+      "refresh": "🔄 Refresh",
+      "live": "Live",
+      "sectionsLabel": "Dashboard Sections",
+      "avatarLabel": "L"
+    }
   }
 }
