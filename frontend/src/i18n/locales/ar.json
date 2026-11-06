@@ -9084,5 +9084,194 @@
       "sectionsLabel": "أقسام اللوحة",
       "avatarLabel": "ل"
     }
+  },
+  "surveillance": {
+    "sections": {
+      "dashboard": "لوحة الترصد",
+      "cases": "الحالات",
+      "alerts": "الإنذارات",
+      "diseases": "الأمراض",
+      "contacts": "المخالطون",
+      "investigations": "التحقيقات",
+      "reports": "البلاغات"
+    },
+    "messages": {
+      "loadError": "تعذر تحميل بيانات الترصد",
+      "engineRun": "تم تشغيل المحرك — أُنشئ {{count}} إنذاراً",
+      "engineRunError": "فشل تشغيل محرك الإنذار",
+      "updateFromInterface": "تحديث من الواجهة",
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateError": "فشل تحديث الحالة",
+      "ackError": "فشل الإقرار",
+      "respondError": "فشل بدء الاستجابة",
+      "closeError": "فشل إغلاق الإنذار",
+      "nameRequired": "الاسم مطلوب",
+      "caseRegistered": "تم تسجيل الحالة",
+      "caseRegisterError": "فشل تسجيل الحالة",
+      "caseIndexAndNameRequired": "الحالة المؤشرة والاسم مطلوبان",
+      "contactRegistered": "تم تسجيل المخالط",
+      "contactRegisterError": "فشل تسجيل المخالط",
+      "titleRequired": "العنوان مطلوب",
+      "investigationOpened": "تم فتح التحقيق",
+      "investigationOpenError": "فشل فتح التحقيق",
+      "periodRequired": "الفترة مطلوبة",
+      "facilityOrEntryPointRequired": "حدد وحدة صحية أو نقطة دخول",
+      "weeklyReportSubmitted": "تم تقديم البلاغ الأسبوعي",
+      "weeklyReportSubmitError": "فشل تقديم البلاغ"
+    },
+    "kpi": {
+      "totalCases": "إجمالي الحالات",
+      "casesToday": "حالات اليوم",
+      "confirmed": "مؤكدة",
+      "deaths": "وفيات",
+      "activeAlerts": "إنذارات نشطة",
+      "openEvents": "أحداث مفتوحة"
+    },
+    "tabs": {
+      "dashboard": "لوحة الترصد",
+      "cases": "الحالات",
+      "earlyWarnings": "الإنذارات المبكرة",
+      "diseases": "الأمراض",
+      "contacts": "المخالطون",
+      "weeklyReports": "البلاغات الأسبوعية"
+    },
+    "sectionCards": {
+      "responseLevel": "مستوى الاستجابة",
+      "byActiveAlerts": "حسب عدد الإنذارات النشطة",
+      "topDiseases": "أكثر الأمراض تسجيلاً",
+      "topPorts": "أكثر المنافذ تسجيلاً",
+      "currentCases": "حالات الترصد الحالية"
+    },
+    "empty": {
+      "noData": "لا توجد بيانات"
+    },
+    "actions": {
+      "newCase": "حالة جديدة",
+      "runEngine": "تشغيل محرك الإنذار"
+    },
+    "columns": {
+      "caseNumber": "الرقم",
+      "disease": "المرض",
+      "type": "النوع",
+      "status": "الحالة",
+      "source": "المصدر",
+      "port": "المنفذ",
+      "person": "الشخص",
+      "registeredAt": "تاريخ التسجيل",
+      "actions": "إجراءات",
+      "alertNumber": "الرقم",
+      "title": "العنوان",
+      "level": "المستوى",
+      "cases": "حالات",
+      "name": "الاسم",
+      "notificationTimeline": "زمن الإبلاغ",
+      "mode": "النمط",
+      "threshold": "العتبة",
+      "window": "النافذة",
+      "indexCase": "الحالة المؤشرة",
+      "contactType": "نوع الاتصال",
+      "followUpDays": "أيام المتابعة",
+      "case": "الحالة",
+      "startedAt": "تاريخ البدء",
+      "period": "الفترة",
+      "facility": "الوحدة",
+      "timeliness": "الموعد",
+      "submittedAt": "وقت التقديم"
+    },
+    "cases": {
+      "title": "حالات الترصد",
+      "subtitle": "حالات مشتبهة ومحتملة ومؤكدة ومنفية",
+      "emptyTitle": "لا توجد حالات",
+      "emptyDescription": "سجّل حالة جديدة أو أدر محرك الإنذار",
+      "createTitle": "تسجيل حالة جديدة",
+      "createSubtitle": "إدخال يدوي لحالة ترصد"
+    },
+    "alerts": {
+      "recentCount": "{{count}} إنذاراً حديثاً",
+      "earlyWarningTitle": "إنذارات الترصد المبكر",
+      "earlyWarningSubtitle": "تجاوزات العتبات، أحداث فردية، نتائج مختبر إيجابية",
+      "emptyTitle": "لا توجد إنذارات",
+      "emptyDescription": "شغّل المحرك أو اربط مصادر البيانات"
+    },
+    "tooltips": {
+      "confirm": "تحويل إلى مؤكد",
+      "close": "تحويل إلى مغلق",
+      "acknowledge": "إقرار",
+      "startResponse": "بدء الاستجابة"
+    },
+    "statuses": {
+      "enabled": "مفعّل",
+      "disabled": "معطّل",
+      "onTime": "في الموعد",
+      "late": "متأخر"
+    },
+    "diseases": {
+      "title": "الأمراض واجبة الإبلاغ",
+      "subtitle": "تهيئة العتبات، نطاقات الإشعار، وتعريفات الحالات",
+      "emptyTitle": "لا توجد أمراض",
+      "emptyDescription": "أضف أمراضاً للإبلاغ من خلال الإعدادات"
+    },
+    "contacts": {
+      "registerContact": "تسجيل مخالط",
+      "title": "المخالطون",
+      "subtitle": "تتبع يومي لمخالطي الحالات المؤشرة",
+      "emptyTitle": "لا يوجد مخالطون",
+      "emptyDescription": "سجّل مخالطين بعد تأكيد حالة وبائية",
+      "createTitle": "تسجيل مخالط",
+      "createSubtitle": "تتبع المخالطين للحالات المؤكدة",
+      "indexCase": "الحالة المؤشرة"
+    },
+    "investigations": {
+      "openInvestigation": "فتح تحقيق",
+      "title": "التحقيقات الوبائية",
+      "subtitle": "تحقيقات ميدانية مرتبطة بحالات أو أحداث",
+      "emptyTitle": "لا توجد تحقيقات",
+      "emptyDescription": "ابدأ تحقيقاً وبائياً جديداً",
+      "openTitle": "فتح تحقيق وبائي",
+      "openSubtitle": "تحقيق مرتبط بحالة أو حدث"
+    },
+    "reports": {
+      "weeklyReport": "بلاغ أسبوعي",
+      "title": "البلاغات الأسبوعية",
+      "subtitle": "منشآت صحية ونقاط دخول",
+      "emptyTitle": "لا توجد بلاغات",
+      "emptyDescription": "سجّل البلاغ الأسبوعي لمنشأتك",
+      "weeklyTitle": "بلاغ أسبوعي",
+      "weeklySubtitle": "منشأة صحية أو نقطة دخول"
+    },
+    "pageHeader": {
+      "title": "الترصد الصحي",
+      "subtitle": "مراقبة الأمراض الوبائية، الإنذار المبكر، التحقيقات، البلاغات الأسبوعية",
+      "avatarLabel": "ا",
+      "live": "مباشر",
+      "sectionsLabel": "أقسام اللوحة"
+    },
+    "forms": {
+      "personName": "اسم الشخص",
+      "age": "العمر",
+      "sex": "الجنس",
+      "male": "ذكر",
+      "female": "أنثى",
+      "unspecified": "غير محدد",
+      "disease": "المرض",
+      "caseType": "نوع الحالة",
+      "severity": "الخطورة",
+      "source": "المصدر",
+      "sector": "القطاع",
+      "locality": "المحلية",
+      "port": "المنفذ",
+      "healthFacility": "الوحدة الصحية",
+      "notes": "ملاحظات",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "contactType": "نوع الاتصال",
+      "relationship": "صلة القرابة",
+      "location": "الموقع",
+      "title": "العنوان",
+      "hypothesis": "الفرضية",
+      "periodStart": "بداية الفترة",
+      "periodEnd": "نهاية الفترة",
+      "entryPoint": "نقطة الدخول"
+    }
   }
 }

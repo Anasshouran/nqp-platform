@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -174,13 +176,13 @@ const blankReport: WeeklySurveillanceReportWrite = {
 };
 
 const SECTIONS = [
-  { id: 'dashboard', label: 'لوحة الترصد', icon: <MonitorHeartIcon fontSize="small" /> },
-  { id: 'cases', label: 'الحالات', icon: <HealingIcon fontSize="small" /> },
-  { id: 'alerts', label: 'الإنذارات', icon: <WarningAmberIcon fontSize="small" /> },
-  { id: 'diseases', label: 'الأمراض', icon: <ScienceIcon fontSize="small" /> },
-  { id: 'contacts', label: 'المخالطون', icon: <GroupsIcon fontSize="small" /> },
-  { id: 'investigations', label: 'التحقيقات', icon: <AssignmentIcon fontSize="small" /> },
-  { id: 'reports', label: 'البلاغات', icon: <AssessmentIcon fontSize="small" /> },
+  { id: 'dashboard', label: 'surveillance.sections.dashboard', icon: <MonitorHeartIcon fontSize="small" /> },
+  { id: 'cases', label: 'surveillance.sections.cases', icon: <HealingIcon fontSize="small" /> },
+  { id: 'alerts', label: 'surveillance.sections.alerts', icon: <WarningAmberIcon fontSize="small" /> },
+  { id: 'diseases', label: 'surveillance.sections.diseases', icon: <ScienceIcon fontSize="small" /> },
+  { id: 'contacts', label: 'surveillance.sections.contacts', icon: <GroupsIcon fontSize="small" /> },
+  { id: 'investigations', label: 'surveillance.sections.investigations', icon: <AssignmentIcon fontSize="small" /> },
+  { id: 'reports', label: 'surveillance.sections.reports', icon: <AssessmentIcon fontSize="small" /> },
 ] as const;
 
 const Kpi = ({ icon, value, label, accent }: { icon: React.ReactNode; value: number; label: string; accent: string }) => (
@@ -188,6 +190,7 @@ const Kpi = ({ icon, value, label, accent }: { icon: React.ReactNode; value: num
 );
 
 const SurveillanceModulePage = () => {
+  const { t } = useTranslation();
   const [tab, setTab] = useState(0);
   const [dashboard, setDashboard] = useState<SurveillanceDashboard | null>(null);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
@@ -237,7 +240,7 @@ const SurveillanceModulePage = () => {
       setInvestigations(inv.data.data.results);
       setWeeklyReports(wr.data.data.results);
     } catch {
-      notifyError('تعذر تحميل بيانات الترصد');
+      notifyError(t('surveillance.messages.loadError'));
     } finally {
       setLoadingDashboard(false);
     }
@@ -253,19 +256,20 @@ const SurveillanceModulePage = () => {
         setHealthFacilities(h.data.data.results);
       })
       .catch(() => undefined);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const kpis = useMemo(() => {
     if (!dashboard) return null;
     return [
-      { icon: <MonitorHeartIcon />, value: dashboard.total_cases, label: 'إجمالي الحالات', accent: 'primary.main' },
-      { icon: <WarningAmberIcon />, value: dashboard.cases_today, label: 'حالات اليوم', accent: 'info.main' },
-      { icon: <ScienceIcon />, value: dashboard.confirmed_cases, label: 'مؤكدة', accent: 'error.main' },
-      { icon: <HealingIcon />, value: dashboard.dead_cases, label: 'وفيات', accent: 'error.main' },
-      { icon: <WarningAmberIcon />, value: dashboard.active_alerts, label: 'إنذارات نشطة', accent: 'warning.main' },
-      { icon: <GroupsIcon />, value: dashboard.open_events, label: 'أحداث مفتوحة', accent: 'warning.main' },
+      { icon: <MonitorHeartIcon />, value: dashboard.total_cases, label: t('surveillance.kpi.totalCases'), accent: 'primary.main' },
+      { icon: <WarningAmberIcon />, value: dashboard.cases_today, label: t('surveillance.kpi.casesToday'), accent: 'info.main' },
+      { icon: <ScienceIcon />, value: dashboard.confirmed_cases, label: t('surveillance.kpi.confirmed'), accent: 'error.main' },
+      { icon: <HealingIcon />, value: dashboard.dead_cases, label: t('surveillance.kpi.deaths'), accent: 'error.main' },
+      { icon: <WarningAmberIcon />, value: dashboard.active_alerts, label: t('surveillance.kpi.activeAlerts'), accent: 'warning.main' },
+      { icon: <GroupsIcon />, value: dashboard.open_events, label: t('surveillance.kpi.openEvents'), accent: 'warning.main' },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   const levelSummary = dashboard
     ? Object.entries(dashboard.level_counts).map(([k, v]) => ({ level: k, count: v }))
@@ -275,10 +279,10 @@ const SurveillanceModulePage = () => {
     setSubmitting(true);
     try {
       const r = await runEwars();
-      notifySuccess(`تم تشغيل المحرك — أُنشئ ${r.data.data.created} إنذاراً`);
+      notifySuccess(t('surveillance.messages.engineRun', { count: r.data.data.created }));
       refresh();
     } catch {
-      notifyError('فشل تشغيل محرك الإنذار');
+      notifyError(t('surveillance.messages.engineRunError'));
     } finally {
       setSubmitting(false);
     }
@@ -286,11 +290,11 @@ const SurveillanceModulePage = () => {
 
   const onTransition = async (c: HealthCase, case_type: string, status: string) => {
     try {
-      await transitionCase(c.id, { case_type, status, note: 'تحديث من الواجهة' });
-      notifySuccess('تم تحديث الحالة');
+      await transitionCase(c.id, { case_type, status, note: t('surveillance.messages.updateFromInterface') });
+      notifySuccess(t('surveillance.messages.statusUpdated'));
       refresh();
     } catch {
-      notifyError('فشل تحديث الحالة');
+      notifyError(t('surveillance.messages.statusUpdateError'));
     }
   };
 
@@ -299,7 +303,7 @@ const SurveillanceModulePage = () => {
       await ackAlert(a.id);
       refresh();
     } catch {
-      notifyError('فشل الإقرار');
+      notifyError(t('surveillance.messages.ackError'));
     }
   };
 
@@ -308,7 +312,7 @@ const SurveillanceModulePage = () => {
       await respondAlert(a.id);
       refresh();
     } catch {
-      notifyError('فشل بدء الاستجابة');
+      notifyError(t('surveillance.messages.respondError'));
     }
   };
 
@@ -317,24 +321,24 @@ const SurveillanceModulePage = () => {
       await closeAlert(a.id);
       refresh();
     } catch {
-      notifyError('فشل إغلاق الإنذار');
+      notifyError(t('surveillance.messages.closeError'));
     }
   };
 
   const onCreateCase = async () => {
     if (!caseForm.person_name) {
-      notifyError('الاسم مطلوب');
+      notifyError(t('surveillance.messages.nameRequired'));
       return;
     }
     setSubmitting(true);
     try {
       await createCase(caseForm);
-      notifySuccess('تم تسجيل الحالة');
+      notifySuccess(t('surveillance.messages.caseRegistered'));
       setOpenCreateCase(false);
       setCaseForm(blankCase);
       refresh();
     } catch {
-      notifyError('فشل تسجيل الحالة');
+      notifyError(t('surveillance.messages.caseRegisterError'));
     } finally {
       setSubmitting(false);
     }
@@ -342,18 +346,18 @@ const SurveillanceModulePage = () => {
 
   const onCreateContact = async () => {
     if (!contactForm.index_case || !contactForm.person_name) {
-      notifyError('الحالة المؤشرة والاسم مطلوبان');
+      notifyError(t('surveillance.messages.caseIndexAndNameRequired'));
       return;
     }
     setSubmitting(true);
     try {
       await createContact(contactForm);
-      notifySuccess('تم تسجيل المخالط');
+      notifySuccess(t('surveillance.messages.contactRegistered'));
       setOpenCreateContact(false);
       setContactForm(blankContact);
       refresh();
     } catch {
-      notifyError('فشل تسجيل المخالط');
+      notifyError(t('surveillance.messages.contactRegisterError'));
     } finally {
       setSubmitting(false);
     }
@@ -361,18 +365,18 @@ const SurveillanceModulePage = () => {
 
   const onCreateInvestigation = async () => {
     if (!investigationForm.title) {
-      notifyError('العنوان مطلوب');
+      notifyError(t('surveillance.messages.titleRequired'));
       return;
     }
     setSubmitting(true);
     try {
       await createInvestigation(investigationForm);
-      notifySuccess('تم فتح التحقيق');
+      notifySuccess(t('surveillance.messages.investigationOpened'));
       setOpenCreateInvestigation(false);
       setInvestigationForm(blankInvestigation);
       refresh();
     } catch {
-      notifyError('فشل فتح التحقيق');
+      notifyError(t('surveillance.messages.investigationOpenError'));
     } finally {
       setSubmitting(false);
     }
@@ -380,22 +384,22 @@ const SurveillanceModulePage = () => {
 
   const onCreateReport = async () => {
     if (!reportForm.period_start || !reportForm.period_end) {
-      notifyError('الفترة مطلوبة');
+      notifyError(t('surveillance.messages.periodRequired'));
       return;
     }
     if (!reportForm.health_facility && !reportForm.port) {
-      notifyError('حدد وحدة صحية أو نقطة دخول');
+      notifyError(t('surveillance.messages.facilityOrEntryPointRequired'));
       return;
     }
     setSubmitting(true);
     try {
       await createWeeklyReport(reportForm);
-      notifySuccess('تم تقديم البلاغ الأسبوعي');
+      notifySuccess(t('surveillance.messages.weeklyReportSubmitted'));
       setOpenCreateReport(false);
       setReportForm(blankReport);
       refresh();
     } catch {
-      notifyError('فشل تقديم البلاغ');
+      notifyError(t('surveillance.messages.weeklyReportSubmitError'));
     } finally {
       setSubmitting(false);
     }
@@ -412,7 +416,7 @@ const SurveillanceModulePage = () => {
 
   const tabs = [
     {
-      label: 'لوحة الترصد',
+      label: t('surveillance.tabs.dashboard'),
       panel: (
         <Box component="section" ref={register('dashboard')} data-section="dashboard" sx={{ scrollMarginTop: '80px' }}>
           <Grid container spacing={1.5} sx={{ mb: 3 }}>
@@ -425,10 +429,10 @@ const SurveillanceModulePage = () => {
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6} lg={4}>
-              <SectionCard title="مستوى الاستجابة" subtitle="حسب عدد الإنذارات النشطة">
+              <SectionCard title={t('surveillance.sectionCards.responseLevel')} subtitle={t('surveillance.sectionCards.byActiveAlerts')}>
                 <Stack spacing={1.25}>
                   {levelSummary.length === 0 ? (
-                    <Typography color="text.secondary">لا توجد بيانات</Typography>
+                    <Typography color="text.secondary">{t('surveillance.empty.noData')}</Typography>
                   ) : (
                     levelSummary.map((l) => {
                       const meta = alertLevel[l.level];
@@ -445,7 +449,7 @@ const SurveillanceModulePage = () => {
               </SectionCard>
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
-              <SectionCard title="أكثر الأمراض تسجيلاً" subtitle="حالات الترصد الحالية">
+              <SectionCard title={t('surveillance.sectionCards.topDiseases')} subtitle={t('surveillance.sectionCards.currentCases')}>
                 <Stack spacing={1.25}>
                   {(dashboard?.cases_by_disease ?? []).slice(0, 6).map((d) => (
                     <Stack key={d.disease__name_ar} direction="row" alignItems="center" spacing={1.5}>
@@ -455,13 +459,13 @@ const SurveillanceModulePage = () => {
                     </Stack>
                   ))}
                   {(dashboard?.cases_by_disease ?? []).length === 0 && (
-                    <Typography color="text.secondary">لا توجد بيانات</Typography>
+                    <Typography color="text.secondary">{t('surveillance.empty.noData')}</Typography>
                   )}
                 </Stack>
               </SectionCard>
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
-              <SectionCard title="أكثر المنافذ تسجيلاً" subtitle="حالات الترصد الحالية">
+              <SectionCard title={t('surveillance.sectionCards.topPorts')} subtitle={t('surveillance.sectionCards.currentCases')}>
                 <Stack spacing={1.25}>
                   {(dashboard?.cases_by_port ?? []).slice(0, 6).map((p) => (
                     <Stack key={p.port__code} direction="row" alignItems="center" spacing={1.5}>
@@ -471,7 +475,7 @@ const SurveillanceModulePage = () => {
                     </Stack>
                   ))}
                   {(dashboard?.cases_by_port ?? []).length === 0 && (
-                    <Typography color="text.secondary">لا توجد بيانات</Typography>
+                    <Typography color="text.secondary">{t('surveillance.empty.noData')}</Typography>
                   )}
                 </Stack>
               </SectionCard>
@@ -481,28 +485,28 @@ const SurveillanceModulePage = () => {
       ),
     },
     {
-      label: 'الحالات',
+      label: t('surveillance.tabs.cases'),
       panel: (
         <Box component="section" ref={register('cases')} data-section="cases" sx={{ scrollMarginTop: '80px' }}>
           <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
             <Button startIcon={<AddIcon />} variant="contained" onClick={() => setOpenCreateCase(true)}>
-              حالة جديدة
+              {t('surveillance.actions.newCase')}
             </Button>
           </Stack>
           <DataTable<HealthCase>
             columns={[
-              { key: 'case_number', label: 'الرقم', render: (c) => <Typography sx={{ fontWeight: 700 }}>{c.case_number}</Typography> },
-              { key: 'disease_name', label: 'المرض', render: (c) => c.disease_name ?? '—' },
-              { key: 'case_type', label: 'النوع', render: (c) => { const m = caseType[c.case_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.case_type; } },
-              { key: 'status', label: 'الحالة', render: (c) => { const m = caseStatus[c.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.status; } },
-              { key: 'source', label: 'المصدر', render: (c) => { const m = caseSource[c.source]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.source; } },
-              { key: 'port_code', label: 'المنفذ', render: (c) => c.port_code ?? '—' },
-              { key: 'person_name', label: 'الشخص', render: (c) => c.person_name || '—', hideOnMobile: true },
-              { key: 'created_at', label: 'تاريخ التسجيل', render: (c) => formatDateTime(c.created_at), hideOnMobile: true },
-              { key: 'actions', label: 'إجراءات', render: (c) => (
+              { key: 'case_number', label: t('surveillance.columns.caseNumber'), render: (c) => <Typography sx={{ fontWeight: 700 }}>{c.case_number}</Typography> },
+              { key: 'disease_name', label: t('surveillance.columns.disease'), render: (c) => c.disease_name ?? '—' },
+              { key: 'case_type', label: t('surveillance.columns.type'), render: (c) => { const m = caseType[c.case_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.case_type; } },
+              { key: 'status', label: t('surveillance.columns.status'), render: (c) => { const m = caseStatus[c.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.status; } },
+              { key: 'source', label: t('surveillance.columns.source'), render: (c) => { const m = caseSource[c.source]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.source; } },
+              { key: 'port_code', label: t('surveillance.columns.port'), render: (c) => c.port_code ?? '—' },
+              { key: 'person_name', label: t('surveillance.columns.person'), render: (c) => c.person_name || '—', hideOnMobile: true },
+              { key: 'created_at', label: t('surveillance.columns.registeredAt'), render: (c) => formatDateTime(c.created_at), hideOnMobile: true },
+              { key: 'actions', label: t('surveillance.columns.actions'), render: (c) => (
                 <Stack direction="row" spacing={0.5}>
-                  <Tooltip title="تحويل إلى مؤكد"><IconButton size="small" onClick={() => onTransition(c, 'CONFIRMED', c.status)}><CheckIcon fontSize="small" /></IconButton></Tooltip>
-                  <Tooltip title="تحويل إلى مغلق"><IconButton size="small" onClick={() => onTransition(c, c.case_type, 'CLOSED')}><CloseIcon fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={t('surveillance.tooltips.confirm')}><IconButton size="small" onClick={() => onTransition(c, 'CONFIRMED', c.status)}><CheckIcon fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={t('surveillance.tooltips.close')}><IconButton size="small" onClick={() => onTransition(c, c.case_type, 'CLOSED')}><CloseIcon fontSize="small" /></IconButton></Tooltip>
                 </Stack>
               ) },
             ]}
@@ -512,40 +516,40 @@ const SurveillanceModulePage = () => {
             page={1}
             rowsPerPage={10}
             onPageChange={() => undefined}
-            title="حالات الترصد"
-            subtitle="حالات مشتبهة ومحتملة ومؤكدة ومنفية"
-            emptyTitle="لا توجد حالات"
-            emptyDescription="سجّل حالة جديدة أو أدر محرك الإنذار"
+            title={t('surveillance.cases.title')}
+            subtitle={t('surveillance.cases.subtitle')}
+            emptyTitle={t('surveillance.cases.emptyTitle')}
+            emptyDescription={t('surveillance.cases.emptyDescription')}
           />
         </Box>
       ),
     },
     {
-      label: 'الإنذارات المبكرة',
+      label: t('surveillance.tabs.earlyWarnings'),
       panel: (
         <Box component="section" ref={register('alerts')} data-section="alerts" sx={{ scrollMarginTop: '80px' }}>
           <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }} alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              {alerts.length} إنذاراً حديثاً
+              {t('surveillance.alerts.recentCount', { count: alerts.length })}
             </Typography>
             <Button startIcon={<PlayArrowIcon />} variant="contained" color="primary" onClick={handleRunEwars} disabled={submitting}>
-              تشغيل محرك الإنذار
+              {t('surveillance.actions.runEngine')}
             </Button>
           </Stack>
           <DataTable<SurveillanceAlert>
             columns={[
-              { key: 'alert_number', label: 'الرقم', render: (a) => <Typography sx={{ fontWeight: 700 }}>{a.alert_number}</Typography> },
-              { key: 'title', label: 'العنوان', render: (a) => <Typography sx={{ maxWidth: 320 }}>{a.title}</Typography>, hideOnMobile: true },
-              { key: 'alert_type', label: 'النوع', render: (a) => { const m = alertType[a.alert_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.alert_type; } },
-              { key: 'level', label: 'المستوى', render: (a) => { const m = alertLevel[a.level]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.level; } },
-              { key: 'status', label: 'الحالة', render: (a) => { const m = alertStatus[a.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.status; } },
-              { key: 'case_count', label: 'حالات', align: 'center' },
-              { key: 'port_code', label: 'المنفذ', render: (a) => a.port_code ?? '—', hideOnMobile: true },
-              { key: 'actions', label: 'إجراءات', render: (a) => (
+              { key: 'alert_number', label: t('surveillance.columns.alertNumber'), render: (a) => <Typography sx={{ fontWeight: 700 }}>{a.alert_number}</Typography> },
+              { key: 'title', label: t('surveillance.columns.title'), render: (a) => <Typography sx={{ maxWidth: 320 }}>{a.title}</Typography>, hideOnMobile: true },
+              { key: 'alert_type', label: t('surveillance.columns.type'), render: (a) => { const m = alertType[a.alert_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.alert_type; } },
+              { key: 'level', label: t('surveillance.columns.level'), render: (a) => { const m = alertLevel[a.level]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.level; } },
+              { key: 'status', label: t('surveillance.columns.status'), render: (a) => { const m = alertStatus[a.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : a.status; } },
+              { key: 'case_count', label: t('surveillance.columns.cases'), align: 'center' },
+              { key: 'port_code', label: t('surveillance.columns.port'), render: (a) => a.port_code ?? '—', hideOnMobile: true },
+              { key: 'actions', label: t('surveillance.columns.actions'), render: (a) => (
                 <Stack direction="row" spacing={0.5}>
-                  <Tooltip title="إقرار"><IconButton size="small" onClick={() => onAckAlert(a)}><CheckIcon fontSize="small" /></IconButton></Tooltip>
-                  <Tooltip title="بدء الاستجابة"><IconButton size="small" onClick={() => onRespondAlert(a)}><DoneAllIcon fontSize="small" /></IconButton></Tooltip>
-                  <Tooltip title="إغلاق"><IconButton size="small" onClick={() => onCloseAlert(a)}><CloseIcon fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={t('surveillance.tooltips.acknowledge')}><IconButton size="small" onClick={() => onAckAlert(a)}><CheckIcon fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={t('surveillance.tooltips.startResponse')}><IconButton size="small" onClick={() => onRespondAlert(a)}><DoneAllIcon fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={t('surveillance.tooltips.close')}><IconButton size="small" onClick={() => onCloseAlert(a)}><CloseIcon fontSize="small" /></IconButton></Tooltip>
                 </Stack>
               ) },
             ]}
@@ -555,27 +559,27 @@ const SurveillanceModulePage = () => {
             page={1}
             rowsPerPage={10}
             onPageChange={() => undefined}
-            title="إنذارات الترصد المبكر"
-            subtitle="تجاوزات العتبات، أحداث فردية، نتائج مختبر إيجابية"
-            emptyTitle="لا توجد إنذارات"
-            emptyDescription="شغّل المحرك أو اربط مصادر البيانات"
+            title={t('surveillance.alerts.earlyWarningTitle')}
+            subtitle={t('surveillance.alerts.earlyWarningSubtitle')}
+            emptyTitle={t('surveillance.alerts.emptyTitle')}
+            emptyDescription={t('surveillance.alerts.emptyDescription')}
           />
         </Box>
       ),
     },
     {
-      label: 'الأمراض',
+      label: t('surveillance.tabs.diseases'),
       panel: (
         <Box component="section" ref={register('diseases')} data-section="diseases" sx={{ scrollMarginTop: '80px' }}>
           <DataTable<ReportableDisease>
           columns={[
             { key: 'icd_11_code', label: 'ICD-11', render: (d) => <Typography sx={{ fontWeight: 700 }}>{d.icd_11_code}</Typography> },
-            { key: 'name_ar', label: 'الاسم', render: (d) => `${d.name_ar} (${d.name_en})` },
-            { key: 'notification_timeline', label: 'زمن الإبلاغ', render: (d) => { const m = notificationTimeline[d.notification_timeline]; return m ? <StatusChip label={m.label} tone={m.tone} /> : d.notification_timeline; } },
-            { key: 'surveillance_mode', label: 'النمط', render: (d) => { const m = surveillanceMode[d.surveillance_mode]; return m ? <StatusChip label={m.label} tone={m.tone} /> : d.surveillance_mode; } },
-            { key: 'ewars_threshold', label: 'العتبة', align: 'center' },
-            { key: 'window_days', label: 'النافذة', align: 'center' },
-            { key: 'is_enabled', label: 'الحالة', render: (d) => d.is_enabled ? <StatusChip label="مفعّل" tone="success" /> : <StatusChip label="معطّل" tone="neutral" /> },
+            { key: 'name_ar', label: t('surveillance.columns.name'), render: (d) => `${d.name_ar} (${d.name_en})` },
+            { key: 'notification_timeline', label: t('surveillance.columns.notificationTimeline'), render: (d) => { const m = notificationTimeline[d.notification_timeline]; return m ? <StatusChip label={m.label} tone={m.tone} /> : d.notification_timeline; } },
+            { key: 'surveillance_mode', label: t('surveillance.columns.mode'), render: (d) => { const m = surveillanceMode[d.surveillance_mode]; return m ? <StatusChip label={m.label} tone={m.tone} /> : d.surveillance_mode; } },
+            { key: 'ewars_threshold', label: t('surveillance.columns.threshold'), align: 'center' },
+            { key: 'window_days', label: t('surveillance.columns.window'), align: 'center' },
+            { key: 'is_enabled', label: t('surveillance.columns.status'), render: (d) => d.is_enabled ? <StatusChip label={t('surveillance.statuses.enabled')} tone="success" /> : <StatusChip label={t('surveillance.statuses.disabled')} tone="neutral" /> },
           ]}
           rows={diseases}
           rowKey={(d) => d.id}
@@ -583,31 +587,31 @@ const SurveillanceModulePage = () => {
           page={1}
           rowsPerPage={10}
           onPageChange={() => undefined}
-          title="الأمراض واجبة الإبلاغ"
-          subtitle="تهيئة العتبات، نطاقات الإشعار، وتعريفات الحالات"
-          emptyTitle="لا توجد أمراض"
-          emptyDescription="أضف أمراضاً للإبلاغ من خلال الإعدادات"
+          title={t('surveillance.diseases.title')}
+          subtitle={t('surveillance.diseases.subtitle')}
+          emptyTitle={t('surveillance.diseases.emptyTitle')}
+          emptyDescription={t('surveillance.diseases.emptyDescription')}
         />
         </Box>
       ),
     },
     {
-      label: 'المخالطون',
+      label: t('surveillance.tabs.contacts'),
       panel: (
         <Box component="section" ref={register('contacts')} data-section="contacts" sx={{ scrollMarginTop: '80px' }}>
           <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
             <Button startIcon={<PersonSearchIcon />} variant="contained" onClick={() => setOpenCreateContact(true)}>
-              تسجيل مخالط
+              {t('surveillance.contacts.registerContact')}
             </Button>
           </Stack>
           <DataTable<ContactRow>
             columns={[
-              { key: 'contact_number', label: 'الرقم', render: (c) => <Typography sx={{ fontWeight: 700 }}>{c.contact_number}</Typography> },
-              { key: 'index_case_number', label: 'الحالة المؤشرة', render: (c) => c.index_case_number },
-              { key: 'person_name', label: 'الاسم', render: (c) => c.person_name },
-              { key: 'contact_type', label: 'نوع الاتصال', render: (c) => { const m = contactType[c.contact_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.contact_type; } },
-              { key: 'status', label: 'الحالة', render: (c) => { const m = contactStatus[c.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.status; } },
-              { key: 'follow_up_days', label: 'أيام المتابعة', align: 'center', hideOnMobile: true },
+              { key: 'contact_number', label: t('surveillance.columns.number'), render: (c) => <Typography sx={{ fontWeight: 700 }}>{c.contact_number}</Typography> },
+              { key: 'index_case_number', label: t('surveillance.columns.indexCase'), render: (c) => c.index_case_number },
+              { key: 'person_name', label: t('surveillance.columns.name'), render: (c) => c.person_name },
+              { key: 'contact_type', label: t('surveillance.columns.contactType'), render: (c) => { const m = contactType[c.contact_type]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.contact_type; } },
+              { key: 'status', label: t('surveillance.columns.status'), render: (c) => { const m = contactStatus[c.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : c.status; } },
+              { key: 'follow_up_days', label: t('surveillance.columns.followUpDays'), align: 'center', hideOnMobile: true },
             ]}
             rows={contacts}
             rowKey={(c) => c.id}
@@ -615,30 +619,30 @@ const SurveillanceModulePage = () => {
             page={1}
             rowsPerPage={10}
             onPageChange={() => undefined}
-            title="المخالطون"
-            subtitle="تتبع يومي لمخالطي الحالات المؤشرة"
-            emptyTitle="لا يوجد مخالطون"
-            emptyDescription="سجّل مخالطين بعد تأكيد حالة وبائية"
+            title={t('surveillance.contacts.title')}
+            subtitle={t('surveillance.contacts.subtitle')}
+            emptyTitle={t('surveillance.contacts.emptyTitle')}
+            emptyDescription={t('surveillance.contacts.emptyDescription')}
           />
         </Box>
       ),
     },
     {
-      label: 'التحقيقات',
+      label: t('surveillance.tabs.investigations'),
       panel: (
         <Box component="section" ref={register('investigations')} data-section="investigations" sx={{ scrollMarginTop: '80px' }}>
           <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
             <Button startIcon={<AssignmentIcon />} variant="contained" onClick={() => setOpenCreateInvestigation(true)}>
-              فتح تحقيق
+              {t('surveillance.investigations.openInvestigation')}
             </Button>
           </Stack>
           <DataTable<InvestigationRow>
             columns={[
-              { key: 'investigation_number', label: 'الرقم', render: (i) => <Typography sx={{ fontWeight: 700 }}>{i.investigation_number}</Typography> },
-              { key: 'title', label: 'العنوان', render: (i) => i.title },
-              { key: 'case_number', label: 'الحالة', render: (i) => i.case_number ?? '—', hideOnMobile: true },
-              { key: 'status', label: 'الحالة', render: (i) => { const m = investigationStatus[i.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : i.status; } },
-              { key: 'started_at', label: 'تاريخ البدء', render: (i) => i.started_at, hideOnMobile: true },
+              { key: 'investigation_number', label: t('surveillance.columns.number'), render: (i) => <Typography sx={{ fontWeight: 700 }}>{i.investigation_number}</Typography> },
+              { key: 'title', label: t('surveillance.columns.title'), render: (i) => i.title },
+              { key: 'case_number', label: t('surveillance.columns.case'), render: (i) => i.case_number ?? '—', hideOnMobile: true },
+              { key: 'status', label: t('surveillance.columns.status'), render: (i) => { const m = investigationStatus[i.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : i.status; } },
+              { key: 'started_at', label: t('surveillance.columns.startedAt'), render: (i) => i.started_at, hideOnMobile: true },
             ]}
             rows={investigations}
             rowKey={(i) => i.id}
@@ -646,30 +650,30 @@ const SurveillanceModulePage = () => {
             page={1}
             rowsPerPage={10}
             onPageChange={() => undefined}
-            title="التحقيقات الوبائية"
-            subtitle="تحقيقات ميدانية مرتبطة بحالات أو أحداث"
-            emptyTitle="لا توجد تحقيقات"
-            emptyDescription="ابدأ تحقيقاً وبائياً جديداً"
+            title={t('surveillance.investigations.title')}
+            subtitle={t('surveillance.investigations.subtitle')}
+            emptyTitle={t('surveillance.investigations.emptyTitle')}
+            emptyDescription={t('surveillance.investigations.emptyDescription')}
           />
         </Box>
       ),
     },
     {
-      label: 'البلاغات الأسبوعية',
+      label: t('surveillance.tabs.weeklyReports'),
       panel: (
         <Box component="section" ref={register('reports')} data-section="reports" sx={{ scrollMarginTop: '80px' }}>
           <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
             <Button startIcon={<AddIcon />} variant="contained" onClick={() => setOpenCreateReport(true)}>
-              بلاغ أسبوعي
+              {t('surveillance.reports.weeklyReport')}
             </Button>
           </Stack>
           <DataTable<WeeklyReportRow>
             columns={[
-              { key: 'report_number', label: 'الرقم', render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.report_number}</Typography> },
-              { key: 'period', label: 'الفترة', render: (r) => `${r.period_start} → ${r.period_end}` },
-              { key: 'facility_name', label: 'الوحدة', render: (r) => r.facility_name ?? r.port_code ?? '—' },
-              { key: 'is_on_time', label: 'الموعد', render: (r) => r.is_on_time ? <StatusChip label="في الموعد" tone="success" /> : <StatusChip label="متأخر" tone="warning" /> },
-              { key: 'submitted_at', label: 'وقت التقديم', render: (r) => formatDateTime(r.submitted_at), hideOnMobile: true },
+              { key: 'report_number', label: t('surveillance.columns.number'), render: (r) => <Typography sx={{ fontWeight: 700 }}>{r.report_number}</Typography> },
+              { key: 'period', label: t('surveillance.columns.period'), render: (r) => `${r.period_start} → ${r.period_end}` },
+              { key: 'facility_name', label: t('surveillance.columns.facility'), render: (r) => r.facility_name ?? r.port_code ?? '—' },
+              { key: 'is_on_time', label: t('surveillance.columns.timeliness'), render: (r) => r.is_on_time ? <StatusChip label={t('surveillance.statuses.onTime')} tone="success" /> : <StatusChip label={t('surveillance.statuses.late')} tone="warning" /> },
+              { key: 'submitted_at', label: t('surveillance.columns.submittedAt'), render: (r) => formatDateTime(r.submitted_at), hideOnMobile: true },
             ]}
             rows={weeklyReports}
             rowKey={(r) => r.id}
@@ -677,10 +681,10 @@ const SurveillanceModulePage = () => {
             page={1}
             rowsPerPage={10}
             onPageChange={() => undefined}
-            title="البلاغات الأسبوعية"
-            subtitle="منشآت صحية ونقاط دخول"
-            emptyTitle="لا توجد بلاغات"
-            emptyDescription="سجّل البلاغ الأسبوعي لمنشأتك"
+            title={t('surveillance.reports.title')}
+            subtitle={t('surveillance.reports.subtitle')}
+            emptyTitle={t('surveillance.reports.emptyTitle')}
+            emptyDescription={t('surveillance.reports.emptyDescription')}
           />
         </Box>
       ),
@@ -691,14 +695,14 @@ const SurveillanceModulePage = () => {
     <Box>
       <DashboardHero
         eyebrow="Public Health Surveillance"
-        title="الترصد الصحي"
-        subtitle="مراقبة الأمراض الوبائية، الإنذار المبكر، التحقيقات، البلاغات الأسبوعية"
-        avatarLabel="ا"
+        title={t('surveillance.pageHeader.title')}
+        subtitle={t('surveillance.pageHeader.subtitle')}
+        avatarLabel={t('surveillance.pageHeader.avatarLabel')}
         action={
           <Stack direction="row" spacing={1.5} alignItems="center">
             <ExportButton
               filename="surveillance-cases"
-              headers={['الرقم', 'المرض', 'النوع', 'الحالة', 'المصدر', 'المنفذ', 'الاسم']}
+              headers={[t('surveillance.columns.number'), t('surveillance.columns.disease'), t('surveillance.columns.type'), t('surveillance.columns.status'), t('surveillance.columns.source'), t('surveillance.columns.port'), t('surveillance.columns.name')]}
               rows={cases.map((c) => [
                 c.case_number,
                 c.disease_name ?? '',
@@ -711,7 +715,7 @@ const SurveillanceModulePage = () => {
               disabled={loadingDashboard}
             />
             <Button startIcon={<PlayArrowIcon />} variant="contained" color="primary" onClick={handleRunEwars} disabled={submitting}>
-              تشغيل محرك الإنذار
+              {t('surveillance.actions.runEngine')}
             </Button>
           </Stack>
         }
@@ -719,7 +723,7 @@ const SurveillanceModulePage = () => {
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('surveillance.pageHeader.live')}
           </Box>,
         ]}
       />
@@ -731,7 +735,7 @@ const SurveillanceModulePage = () => {
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={t('surveillance.pageHeader.sectionsLabel')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -741,8 +745,8 @@ const SurveillanceModulePage = () => {
 
       <FormDialog
         open={openCreateCase}
-        title="تسجيل حالة جديدة"
-        subtitle="إدخال يدوي لحالة ترصد"
+        title={t('surveillance.cases.createTitle')}
+        subtitle={t('surveillance.cases.createSubtitle')}
         onClose={() => setOpenCreateCase(false)}
         onSubmit={onCreateCase}
         loading={submitting}
@@ -750,22 +754,22 @@ const SurveillanceModulePage = () => {
       >
         <Stack spacing={2}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormTextField label="اسم الشخص" required value={caseForm.person_name ?? ''} onChange={updateCaseField('person_name')} />
-            <FormTextField label="العمر" type="number" value={caseForm.person_age ?? ''} onChange={(e) => setCaseForm((p) => ({ ...p, person_age: e.target.value === '' ? null : Number(e.target.value) }))} />
+            <FormTextField label={t('surveillance.forms.personName')} required value={caseForm.person_name ?? ''} onChange={updateCaseField('person_name')} />
+            <FormTextField label={t('surveillance.forms.age')} type="number" value={caseForm.person_age ?? ''} onChange={(e) => setCaseForm((p) => ({ ...p, person_age: e.target.value === '' ? null : Number(e.target.value) }))} />
             <FormSelect
-              label="الجنس"
+              label={t('surveillance.forms.sex')}
               value={caseForm.person_sex ?? 'U'}
               onChange={(v) => setCaseForm((p) => ({ ...p, person_sex: v as 'M' | 'F' | 'U' }))}
               options={[
-                { value: 'M', label: 'ذكر' },
-                { value: 'F', label: 'أنثى' },
-                { value: 'U', label: 'غير محدد' },
+                { value: 'M', label: t('surveillance.forms.male') },
+                { value: 'F', label: t('surveillance.forms.female') },
+                { value: 'U', label: t('surveillance.forms.unspecified') },
               ]}
             />
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormSelect
-              label="المرض"
+              label={t('surveillance.forms.disease')}
               value={caseForm.disease ?? ''}
               onChange={(v) => setCaseForm((p) => ({ ...p, disease: v || null }))}
               options={[
@@ -774,19 +778,19 @@ const SurveillanceModulePage = () => {
               ]}
             />
             <FormSelect
-              label="نوع الحالة"
+              label={t('surveillance.forms.caseType')}
               value={caseForm.case_type ?? 'SUSPECTED'}
               onChange={(v) => setCaseForm((p) => ({ ...p, case_type: v as HealthCase['case_type'] }))}
               options={Object.entries(caseType).map(([k, v]) => ({ value: k, label: v.label }))}
             />
             <FormSelect
-              label="الخطورة"
+              label={t('surveillance.forms.severity')}
               value={caseForm.severity ?? 'MODERATE'}
               onChange={(v) => setCaseForm((p) => ({ ...p, severity: v as HealthCase['severity'] }))}
               options={Object.entries(caseSeverity).map(([k, v]) => ({ value: k, label: v.label }))}
             />
             <FormSelect
-              label="المصدر"
+              label={t('surveillance.forms.source')}
               value={caseForm.source ?? 'MANUAL'}
               onChange={(v) => setCaseForm((p) => ({ ...p, source: v as HealthCase['source'] }))}
               options={Object.entries(caseSource).map(([k, v]) => ({ value: k, label: v.label }))}
@@ -794,91 +798,91 @@ const SurveillanceModulePage = () => {
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormSelect
-              label="القطاع"
+              label={t('surveillance.forms.sector')}
               value={caseForm.sector ?? ''}
               onChange={(v) => setCaseForm((p) => ({ ...p, sector: v || null }))}
               options={[{ value: '', label: '—' }, ...sectors.map((s) => ({ value: s.id, label: s.name_ar }))]}
             />
             <FormSelect
-              label="المحلية"
+              label={t('surveillance.forms.locality')}
               value={caseForm.locality ?? ''}
               onChange={(v) => setCaseForm((p) => ({ ...p, locality: v || null }))}
               options={[{ value: '', label: '—' }, ...localities.map((l) => ({ value: l.id, label: l.name_ar }))]}
             />
             <FormSelect
-              label="المنفذ"
+              label={t('surveillance.forms.port')}
               value={caseForm.port ?? ''}
               onChange={(v) => setCaseForm((p) => ({ ...p, port: v || null }))}
               options={[{ value: '', label: '—' }, ...entryPoints.map((e) => ({ value: e.id, label: e.name_ar }))]}
             />
             <FormSelect
-              label="الوحدة الصحية"
+              label={t('surveillance.forms.healthFacility')}
               value={caseForm.health_facility ?? ''}
               onChange={(v) => setCaseForm((p) => ({ ...p, health_facility: v || null }))}
               options={[{ value: '', label: '—' }, ...healthFacilities.map((h) => ({ value: h.id, label: h.name_ar }))]}
             />
           </Stack>
-          <FormTextField label="ملاحظات" value={caseForm.notes ?? ''} onChange={updateCaseField('notes')} multiline rows={2} />
+          <FormTextField label={t('surveillance.forms.notes')} value={caseForm.notes ?? ''} onChange={updateCaseField('notes')} multiline rows={2} />
         </Stack>
       </FormDialog>
 
       <FormDialog
         open={openCreateContact}
-        title="تسجيل مخالط"
-        subtitle="تتبع المخالطين للحالات المؤكدة"
+        title={t('surveillance.contacts.createTitle')}
+        subtitle={t('surveillance.contacts.createSubtitle')}
         onClose={() => setOpenCreateContact(false)}
         onSubmit={onCreateContact}
         loading={submitting}
       >
         <Stack spacing={2}>
           <FormSelect
-            label="الحالة المؤشرة"
+            label={t('surveillance.contacts.indexCase')}
             required
             value={contactForm.index_case}
             onChange={(v) => setContactForm((p) => ({ ...p, index_case: v }))}
             options={cases.map((c) => ({ value: c.id, label: `${c.case_number} — ${c.person_name}` }))}
           />
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormTextField label="الاسم" required value={contactForm.person_name} onChange={updateContactField('person_name')} />
-            <FormTextField label="الهاتف" value={contactForm.phone ?? ''} onChange={updateContactField('phone')} />
+            <FormTextField label={t('surveillance.forms.name')} required value={contactForm.person_name} onChange={updateContactField('person_name')} />
+            <FormTextField label={t('surveillance.forms.phone')} value={contactForm.phone ?? ''} onChange={updateContactField('phone')} />
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormSelect
-              label="نوع الاتصال"
+              label={t('surveillance.forms.contactType')}
               value={contactForm.contact_type ?? 'FAMILY'}
               onChange={(v) => setContactForm((p) => ({ ...p, contact_type: v as ContactTraceWrite['contact_type'] }))}
               options={Object.entries(contactType).map(([k, v]) => ({ value: k, label: v.label }))}
             />
-            <FormTextField label="صلة القرابة" value={contactForm.relationship ?? ''} onChange={updateContactField('relationship')} />
-            <FormTextField label="الموقع" value={contactForm.location ?? ''} onChange={updateContactField('location')} />
+            <FormTextField label={t('surveillance.forms.relationship')} value={contactForm.relationship ?? ''} onChange={updateContactField('relationship')} />
+            <FormTextField label={t('surveillance.forms.location')} value={contactForm.location ?? ''} onChange={updateContactField('location')} />
           </Stack>
         </Stack>
       </FormDialog>
 
       <FormDialog
         open={openCreateInvestigation}
-        title="فتح تحقيق وبائي"
-        subtitle="تحقيق مرتبط بحالة أو حدث"
+        title={t('surveillance.investigations.openTitle')}
+        subtitle={t('surveillance.investigations.openSubtitle')}
         onClose={() => setOpenCreateInvestigation(false)}
         onSubmit={onCreateInvestigation}
         loading={submitting}
       >
         <Stack spacing={2}>
-          <FormTextField label="العنوان" required value={investigationForm.title} onChange={updateInvestigationField('title')} />
+          <FormTextField label={t('surveillance.forms.title')} required value={investigationForm.title} onChange={updateInvestigationField('title')} />
           <FormSelect
-            label="الحالة"
+            label={t('surveillance.columns.status')}
             value={investigationForm.case ?? ''}
             onChange={(v) => setInvestigationForm((p) => ({ ...p, case: v || null }))}
             options={[{ value: '', label: '—' }, ...cases.map((c) => ({ value: c.id, label: `${c.case_number} — ${c.person_name}` }))]}
           />
-          <FormTextField label="الفرضية" value={investigationForm.hypothesis ?? ''} onChange={updateInvestigationField('hypothesis')} multiline rows={2} />
+          <FormTextField label={t('surveillance.forms.hypothesis')} value={investigationForm.hypothesis ?? ''} onChange={updateInvestigationField('hypothesis')} multiline rows={2} />
         </Stack>
       </FormDialog>
 
       <FormDialog
         open={openCreateReport}
-        title="بلاغ أسبوعي"
-        subtitle="منشأة صحية أو نقطة دخول"
+        title={t('surveillance.reports.weeklyTitle')}
+        subtitle={t('surveillance.reports.weeklySubtitle')}
         onClose={() => setOpenCreateReport(false)}
         onSubmit={onCreateReport}
         loading={submitting}
@@ -886,30 +890,30 @@ const SurveillanceModulePage = () => {
       >
         <Stack spacing={2}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormTextField label="بداية الفترة" type="date" required value={reportForm.period_start} onChange={(e) => setReportForm((p) => ({ ...p, period_start: e.target.value }))} />
-            <FormTextField label="نهاية الفترة" type="date" required value={reportForm.period_end} onChange={(e) => setReportForm((p) => ({ ...p, period_end: e.target.value }))} />
+            <FormTextField label={t('surveillance.forms.periodStart')} type="date" required value={reportForm.period_start} onChange={(e) => setReportForm((p) => ({ ...p, period_start: e.target.value }))} />
+            <FormTextField label={t('surveillance.forms.periodEnd')} type="date" required value={reportForm.period_end} onChange={(e) => setReportForm((p) => ({ ...p, period_end: e.target.value }))} />
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <FormSelect
-              label="الوحدة الصحية"
+              label={t('surveillance.forms.healthFacility')}
               value={reportForm.health_facility ?? ''}
               onChange={(v) => setReportForm((p) => ({ ...p, health_facility: v || null }))}
               options={[{ value: '', label: '—' }, ...healthFacilities.map((h) => ({ value: h.id, label: h.name_ar }))]}
             />
             <FormSelect
-              label="نقطة الدخول"
+              label={t('surveillance.forms.entryPoint')}
               value={reportForm.port ?? ''}
               onChange={(v) => setReportForm((p) => ({ ...p, port: v || null }))}
               options={[{ value: '', label: '—' }, ...entryPoints.map((e) => ({ value: e.id, label: e.name_ar }))]}
             />
             <FormSelect
-              label="القطاع"
+              label={t('surveillance.forms.sector')}
               value={reportForm.sector ?? ''}
               onChange={(v) => setReportForm((p) => ({ ...p, sector: v || null }))}
               options={[{ value: '', label: '—' }, ...sectors.map((s) => ({ value: s.id, label: s.name_ar }))]}
             />
           </Stack>
-          <FormTextField label="ملاحظات" value={reportForm.notes ?? ''} onChange={(e) => setReportForm((p) => ({ ...p, notes: e.target.value }))} multiline rows={2} />
+          <FormTextField label={t('surveillance.forms.notes')} value={reportForm.notes ?? ''} onChange={(e) => setReportForm((p) => ({ ...p, notes: e.target.value }))} multiline rows={2} />
         </Stack>
       </FormDialog>
     </Box>

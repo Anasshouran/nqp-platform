@@ -9084,5 +9084,194 @@
       "sectionsLabel": "Dashboard Sections",
       "avatarLabel": "L"
     }
+  },
+  "surveillance": {
+    "sections": {
+      "dashboard": "Surveillance Dashboard",
+      "cases": "Cases",
+      "alerts": "Alerts",
+      "diseases": "Diseases",
+      "contacts": "Contacts",
+      "investigations": "Investigations",
+      "reports": "Reports"
+    },
+    "messages": {
+      "loadError": "Failed to load surveillance data",
+      "engineRun": "Engine run — {{count}} alert(s) created",
+      "engineRunError": "Failed to run alert engine",
+      "updateFromInterface": "Updated from interface",
+      "statusUpdated": "Status updated",
+      "statusUpdateError": "Failed to update status",
+      "ackError": "Failed to acknowledge",
+      "respondError": "Failed to start response",
+      "closeError": "Failed to close alert",
+      "nameRequired": "Name is required",
+      "caseRegistered": "Case registered",
+      "caseRegisterError": "Failed to register case",
+      "caseIndexAndNameRequired": "Index case and name are required",
+      "contactRegistered": "Contact registered",
+      "contactRegisterError": "Failed to register contact",
+      "titleRequired": "Title is required",
+      "investigationOpened": "Investigation opened",
+      "investigationOpenError": "Failed to open investigation",
+      "periodRequired": "Period is required",
+      "facilityOrEntryPointRequired": "Select a health facility or entry point",
+      "weeklyReportSubmitted": "Weekly report submitted",
+      "weeklyReportSubmitError": "Failed to submit weekly report"
+    },
+    "kpi": {
+      "totalCases": "Total Cases",
+      "casesToday": "Today's Cases",
+      "confirmed": "Confirmed",
+      "deaths": "Deaths",
+      "activeAlerts": "Active Alerts",
+      "openEvents": "Open Events"
+    },
+    "tabs": {
+      "dashboard": "Surveillance Dashboard",
+      "cases": "Cases",
+      "earlyWarnings": "Early Warnings",
+      "diseases": "Diseases",
+      "contacts": "Contacts",
+      "weeklyReports": "Weekly Reports"
+    },
+    "sectionCards": {
+      "responseLevel": "Response Level",
+      "byActiveAlerts": "By number of active alerts",
+      "topDiseases": "Top Reported Diseases",
+      "topPorts": "Top Reporting Ports",
+      "currentCases": "Current Surveillance Cases"
+    },
+    "empty": {
+      "noData": "No data"
+    },
+    "actions": {
+      "newCase": "New Case",
+      "runEngine": "Run Alert Engine"
+    },
+    "columns": {
+      "caseNumber": "Case No.",
+      "disease": "Disease",
+      "type": "Type",
+      "status": "Status",
+      "source": "Source",
+      "port": "Port",
+      "person": "Person",
+      "registeredAt": "Registered At",
+      "actions": "Actions",
+      "alertNumber": "Alert No.",
+      "title": "Title",
+      "level": "Level",
+      "cases": "Cases",
+      "name": "Name",
+      "notificationTimeline": "Notification Timeline",
+      "mode": "Mode",
+      "threshold": "Threshold",
+      "window": "Window",
+      "indexCase": "Index Case",
+      "contactType": "Contact Type",
+      "followUpDays": "Follow-up Days",
+      "case": "Case",
+      "startedAt": "Started At",
+      "period": "Period",
+      "facility": "Facility",
+      "timeliness": "Timeliness",
+      "submittedAt": "Submitted At"
+    },
+    "cases": {
+      "title": "Surveillance Cases",
+      "subtitle": "Suspected, probable, confirmed and ruled-out cases",
+      "emptyTitle": "No cases",
+      "emptyDescription": "Register a new case or run the alert engine",
+      "createTitle": "Register New Case",
+      "createSubtitle": "Manual entry of a surveillance case"
+    },
+    "alerts": {
+      "recentCount": "{{count}} recent alert(s)",
+      "earlyWarningTitle": "Early Warning Alerts",
+      "earlyWarningSubtitle": "Threshold breaches, single events, positive lab results",
+      "emptyTitle": "No alerts",
+      "emptyDescription": "Run the engine or connect data sources"
+    },
+    "tooltips": {
+      "confirm": "Confirm",
+      "close": "Close",
+      "acknowledge": "Acknowledge",
+      "startResponse": "Start Response"
+    },
+    "statuses": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "onTime": "On Time",
+      "late": "Late"
+    },
+    "diseases": {
+      "title": "Notifiable Diseases",
+      "subtitle": "Threshold configuration, notification scopes, and case definitions",
+      "emptyTitle": "No diseases",
+      "emptyDescription": "Add notifiable diseases through settings"
+    },
+    "contacts": {
+      "registerContact": "Register Contact",
+      "title": "Contacts",
+      "subtitle": "Daily tracking of index case contacts",
+      "emptyTitle": "No contacts",
+      "emptyDescription": "Register contacts after confirming a case",
+      "createTitle": "Register Contact",
+      "createSubtitle": "Track contacts of confirmed cases",
+      "indexCase": "Index Case"
+    },
+    "investigations": {
+      "openInvestigation": "Open Investigation",
+      "title": "Field Investigations",
+      "subtitle": "Field investigations linked to cases or events",
+      "emptyTitle": "No investigations",
+      "emptyDescription": "Start a new field investigation",
+      "openTitle": "Open Field Investigation",
+      "openSubtitle": "Investigation linked to a case or event"
+    },
+    "reports": {
+      "weeklyReport": "Weekly Report",
+      "title": "Weekly Reports",
+      "subtitle": "Health facilities and entry points",
+      "emptyTitle": "No reports",
+      "emptyDescription": "Submit the weekly report for your facility",
+      "weeklyTitle": "Weekly Report",
+      "weeklySubtitle": "Health facility or entry point"
+    },
+    "pageHeader": {
+      "title": "Health Surveillance",
+      "subtitle": "Disease surveillance, early warning, investigations, weekly reports",
+      "avatarLabel": "S",
+      "live": "Live",
+      "sectionsLabel": "Dashboard Sections"
+    },
+    "forms": {
+      "personName": "Person Name",
+      "age": "Age",
+      "sex": "Sex",
+      "male": "Male",
+      "female": "Female",
+      "unspecified": "Unspecified",
+      "disease": "Disease",
+      "caseType": "Case Type",
+      "severity": "Severity",
+      "source": "Source",
+      "sector": "Sector",
+      "locality": "Locality",
+      "port": "Port/Entry Point",
+      "healthFacility": "Health Facility",
+      "notes": "Notes",
+      "name": "Name",
+      "phone": "Phone",
+      "contactType": "Contact Type",
+      "relationship": "Relationship",
+      "location": "Location",
+      "title": "Title",
+      "hypothesis": "Hypothesis",
+      "periodStart": "Period Start",
+      "periodEnd": "Period End",
+      "entryPoint": "Entry Point"
+    }
   }
 }
