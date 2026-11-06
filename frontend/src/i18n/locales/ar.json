@@ -8615,5 +8615,280 @@
       "delete_confirm": "تأكيد حذف الموظف {{name}}؟",
       "delete_confirm_label": "حذف"
     }
+  },
+  "reagents": {
+    "tabs": {
+      "dashboard": "لوحة القيادة",
+      "catalog": "كتالوج المواد",
+      "lots": "التشغيلات والمخزون",
+      "solutions": "المحاليل",
+      "issues": "الصرف والاستهلاك",
+      "disposal": "التخلص"
+    },
+    "sections": {
+      "dashboard": "لوحة القيادة",
+      "catalog": "كتالوج المواد",
+      "lots": "التشغيلات والمخزون",
+      "solutions": "المحاليل",
+      "issues": "الصرف والاستهلاك",
+      "disposal": "التخلص"
+    },
+    "materials": {
+      "reagent": "كاشف",
+      "solution": "محلول",
+      "reference_standard": "مادة قياسية مرجعية",
+      "culture_media": "وسط زرعي",
+      "chemical": "مادة كيميائية",
+      "consumable": "مستهلك",
+      "crm": "مادة مرجعية معتمدة"
+    },
+    "grades": {
+      "analytical": "درجة تحليلية",
+      "hplc": "HPLC",
+      "reagent_grade": "درجة كاشف",
+      "technical": "درجة تقنية",
+      "pharmaceutical": "درجة دوائية",
+      "microbiological": "درجة ميكروبيولوجية",
+      "other": "أخرى"
+    },
+    "hazards": {
+      "none": "غير خطرة",
+      "toxic": "سامة",
+      "corrosive": "آكلة",
+      "flammable": "قابلة للاشتعال",
+      "oxidizer": "مؤكسدة",
+      "irritant": "مهيجة",
+      "other": "أخرى"
+    },
+    "benches": {
+      "chemistry": "الكيمياء",
+      "microbiology": "الأحياء الدقيقة",
+      "physical": "الفيزيائية",
+      "toxicology": "السموم",
+      "molecular": "الجزيئي"
+    },
+    "errors": {
+      "saveFailed": "تعذر الحفظ، حاول مرة أخرى"
+    },
+    "columns": {
+      "material": "المادة",
+      "type": "النوع",
+      "bench": "القسم",
+      "stock": "المخزون",
+      "lots": "تشغيلات",
+      "hazard": "الخطورة",
+      "minStock": "الحد الأدنى",
+      "lotNumber": "رقم التشغيلة",
+      "batch": "الدفعة",
+      "qty": "الكمية",
+      "expiry": "الصلاحية",
+      "storage": "التخزين",
+      "status": "الحالة",
+      "solution": "المحلول",
+      "concentration": "التركيز",
+      "prepDate": "تاريخ التحضير",
+      "preparedBy": "المُحضِّر",
+      "sample": "العينة",
+      "test": "الفحص",
+      "issuedBy": "الصارف",
+      "when": "الوقت",
+      "reason": "السبب",
+      "requestedBy": "مقدّم الطلب"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "executeDisposal": "تنفيذ التخلص"
+    },
+    "status": {
+      "lowStock": "منخفض"
+    },
+    "messages": {
+      "solutionApproved": "تم اعتماد المحلول",
+      "solutionRejected": "تم رفض المحلول",
+      "verifyFailed": "تعذر التحقق من المحلول",
+      "disposalStatusUpdated": "تم تحديث حالة طلب التخلص",
+      "disposalUpdateFailed": "تعذر تحديث طلب التخلص",
+      "materialUpdated": "تم تحديث المادة",
+      "materialRegistered": "تم تسجيل المادة",
+      "lotRegistered": "تم تسجيل التشغيلة",
+      "solutionRegistered": "تم تسجيل المحلول — بانتظار التحقق",
+      "issueRecorded": "تم صرف المادة وخصمها من المخزون",
+      "disposalRequestCreated": "تم إنشاء طلب التخلص — بانتظار الاعتماد"
+    },
+    "dashboard": {
+      "totalMaterials": "إجمالي المواد",
+      "totalStock": "إجمالي المخزون",
+      "expired": "منتهية",
+      "expiring30": "تنتهي خلال 30 يوم",
+      "lowStock": "تحت الحد الأدنى",
+      "solutionsPending": "محاليل بانتظار التحقق",
+      "solutionsApproved": "محاليل معتمدة",
+      "disposalsPending": "طلبات تخلص بانتظار",
+      "alerts": "التنبيهات",
+      "expiredAlert": "{{count}} كواشف منتهية الصلاحية — محظور استخدامها",
+      "expiring30Alert": "{{count}} كاشف ستنتهي خلال 30 يوم",
+      "expiring90Alert": "{{count}} كاشف ستنتهي خلال 90 يوم",
+      "lowStockMaterialsAlert": "{{count}} مواد تحت الحد الأدنى",
+      "solutionsPendingAlert": "محاليل بانتظار التحقق: {{count}}",
+      "noCriticalAlerts": "لا توجد تنبيهات حرجة",
+      "materialTypes": "أنواع المواد",
+      "recentMovements": "آخر الحركات",
+      "lotLabel": "تشغيلة {{lot}}",
+      "noMovements": "لا توجد حركات صرف بعد"
+    },
+    "catalog": {
+      "subtitle": "كتالوج المواد المصنفة — كاشف / محلول / قياسية / أوساط / كيميائية / مستهلكات / معتمدة",
+      "registerMaterial": "➕ تسجيل مادة",
+      "title": "كتالوج المواد"
+    },
+    "lots": {
+      "subtitle": "تشغيلات المواد — كل تشغيلة بصلاحيتها وكميتها وحالتها. المنتهي محظور.",
+      "registerLot": "➕ تسجيل تشغيلة",
+      "title": "التشغيلات والمخزون"
+    },
+    "filters": {
+      "type": "النوع",
+      "status": "الحالة"
+    },
+    "lotStatus": {
+      "valid": "صالح",
+      "expiringSoon": "ينتهي قريباً",
+      "expired": "منتهي",
+      "blocked": "محظور",
+      "disposed": "تم التخلص"
+    },
+    "solutionsPage": {
+      "subtitle": "المحاليل — تحضير → بانتظار التحقق → اعتماد / رفض (حسب سياسة المختبر).",
+      "prepare": "🧴 تحضير محلول",
+      "title": "المحاليل"
+    },
+    "solutionStatus": {
+      "prepared": "مُحضَّر",
+      "pendingVerification": "بانتظار التحقق",
+      "approved": "معتمد",
+      "rejected": "مرفوض",
+      "expired": "منتهي"
+    },
+    "issuesPage": {
+      "subtitle": "صرف الكواشف للمحلل — يُخصم تلقائياً من المخزون ويرتبط بالعينة والفحص للتتبع.",
+      "issueMaterial": "📤 صرف مادة",
+      "title": "الصرف والاستهلاك"
+    },
+    "disposalPage": {
+      "subtitle": "التخلص من المواد — لا حذف مباشر: طلب → اعتماد → تخلص، مع حفظ السجل كاملاً.",
+      "requestDisposal": "🗑 طلب تخلص",
+      "title": "طلبات التخلص"
+    },
+    "page": {
+      "eyebrow": "إدارة المواد والكواشف",
+      "title": "إدارة الكواشف والمحاليل",
+      "subtitle": "إدارة الكواشف والمحاليل — ربط مباشر بالعينة والاختبار والمحلل والطريقة والجهاز",
+      "avatarLabel": "ك",
+      "refresh": "🔄 تحديث",
+      "live": "مباشر",
+      "sectionsLabel": "أقسام المواد"
+    },
+    "materialDialog": {
+      "editTitle": "تعديل مادة",
+      "addTitle": "تسجيل مادة جديدة",
+      "subtitle": "كتالوج المواد — البيانات الأساسية للمادة",
+      "fields": {
+        "nameAr": "اسم المادة (عربي) *",
+        "nameEn": "الاسم (إنجليزي)",
+        "type": "النوع",
+        "bench": "القسم",
+        "manufacturer": "الشركة المصنعة",
+        "grade": "الدرجة",
+        "unit": "وحدة القياس",
+        "minStock": "الحد الأدنى",
+        "reorderLevel": "إعادة الطلب",
+        "maxStock": "الحد الأقصى",
+        "hazardClass": "تصنيف الخطورة",
+        "notes": "ملاحظات"
+      }
+    },
+    "lotDialog": {
+      "title": "تسجيل تشغيلة جديدة",
+      "subtitle": "كل عبوة/شحنة — صلاحيتها وكميتها وحالتها",
+      "fields": {
+        "material": "المادة *",
+        "materialPlaceholder": "اختر المادة",
+        "lotNumber": "رقم التشغيلة *",
+        "batchNumber": "رقم الدفعة",
+        "manufacturingDate": "تاريخ التصنيع",
+        "expiryDate": "تاريخ انتهاء الصلاحية",
+        "quantity": "الكمية",
+        "unit": "الوحدة",
+        "storage": "موقع التخزين",
+        "storagePlaceholder": "اختر الموقع",
+        "supplier": "المورد",
+        "certificateRef": "مرجع شهادة التحليل",
+        "receivedDate": "تاريخ الاستلام",
+        "notes": "ملاحظات"
+      }
+    },
+    "solutionDialog": {
+      "title": "تحضير محلول",
+      "subtitle": "محلول → بانتظار التحقق → اعتماد/رفض",
+      "fields": {
+        "name": "اسم المحلول *",
+        "baseMaterial": "المادة الأساسية",
+        "selectMaterial": "اختر المادة",
+        "concentration": "التركيز",
+        "solvent": "المذيب",
+        "finalVolume": "الحجم النهائي",
+        "volumeUnit": "وحدة الحجم",
+        "sourceLot": "المادة المصدرية (تشغيلة)",
+        "selectLot": "اختر التشغيلة",
+        "batchNumber": "رقم الدفعة",
+        "storageLocation": "موقع التخزين",
+        "preparationDate": "تاريخ التحضير *",
+        "expiryDate": "تاريخ انتهاء الصلاحية",
+        "notes": "ملاحظات"
+      }
+    },
+    "issueDialog": {
+      "title": "صرف مادة للمحلل",
+      "subtitle": "يُخصم من المخزون ويرتبط بالعينة/الفحص للتتبع",
+      "fields": {
+        "material": "المادة *",
+        "selectMaterial": "اختر المادة",
+        "lot": "التشغيلة",
+        "selectValidLot": "اختر تشغيلة صالحة",
+        "quantityUsed": "الكمية المستخدمة *",
+        "unit": "الوحدة",
+        "purpose": "الغرض",
+        "issueType": "نوع الصرف",
+        "notes": "ملاحظات"
+      },
+      "issueTypes": {
+        "issue": "صرف",
+        "consumption": "استهلاك",
+        "return": "إرجاع"
+      }
+    },
+    "disposalDialog": {
+      "title": "طلب تخلص من مادة",
+      "subtitle": "طلب → اعتماد → تخلص — مع حفظ السجل",
+      "fields": {
+        "material": "المادة *",
+        "selectMaterial": "اختر المادة",
+        "lot": "التشغيلة",
+        "selectLot": "اختر التشغيلة",
+        "quantity": "الكمية *",
+        "unit": "الوحدة",
+        "reason": "السبب",
+        "selectReason": "اختر السبب",
+        "detail": "التفاصيل"
+      },
+      "reasons": {
+        "expired": "انتهاء الصلاحية",
+        "damaged": "تلف",
+        "partiallyUsed": "مستخدم جزئياً",
+        "contaminated": "تلوث"
+      }
+    }
   }
 }
