@@ -8890,5 +8890,199 @@
         "contaminated": "تلوث"
       }
     }
+  },
+  "labDirector": {
+    "nav": {
+      "home": "المركز التنفيذي — نظرة شاملة على أداء المختبر والقرارات الحاسمة",
+      "approval": "اعتماد النتائج — القرار النهائي للمختبر",
+      "approvalQueue": "طابور الاعتماد — نتائج بانتظار القرار النهائي لمدير المختبر",
+      "approvalApproved": "النتائج المعتمدة — أُصدرت قراراتها النهائية",
+      "approvalRejected": "النتائج المرفوضة — عينات غير مطابقة",
+      "samplesAll": "جميع العينات — الجرد الشامل",
+      "samplesToday": "عينات اليوم — الواردة حديثاً",
+      "samplesOverdue": "العينات المتأخرة — تجاوزت مهلها الزمنية",
+      "departmentsMicrobiology": "قسم الأحياء الدقيقة — الأداء وعبء العمل",
+      "departmentsChemistry": "قسم الكيمياء — الأداء وعبء العمل",
+      "departmentsPhysical": "قسم الفيزيائية — الأداء وعبء العمل",
+      "slaOverview": "مؤشرات SLA — الالتزام بالمهل الزمنية",
+      "slaAtRisk": "التحاليل المتأخرة والمعرضة للتأخير",
+      "equipmentCalibration": "معايرة الأجهزة — الجاهزية والمواعيد",
+      "equipmentStatus": "حالة الأجهزة التشغيلية",
+      "reagents": "الكواشف — الصلاحية والمخزون",
+      "ncOpen": "عدم المطابقة — الحالات المفتوحة",
+      "ncCapa": "CAPA — الإجراءات التصحيحية والوقائية",
+      "reports": "التقارير التنفيذية — الشهادات والنتائج",
+      "notifications": "التنبيهات والإشعارات"
+    },
+    "ncStatus": {
+      "open": "مفتوحة",
+      "underInvestigation": "قيد التحقيق",
+      "awaitingCapa": "بانتظار CAPA",
+      "closed": "مغلقة"
+    },
+    "sampleStatus": {
+      "registered": "مسجلة",
+      "processing": "قيد الفحص",
+      "completed": "مكتملة"
+    },
+    "sections": {
+      "overview": "نظرة عامة",
+      "approval": "الاعتماد",
+      "sla": "مؤشرات الأداء",
+      "departments": "الأقسام",
+      "alerts": "التنبيهات",
+      "quality": "جودة النظام"
+    },
+    "messages": {
+      "approveSuccess": "تم اعتماد النتيجة",
+      "approveError": "تعذر اعتماد النتيجة"
+    },
+    "columns": {
+      "sampleNumber": "رقم العينة",
+      "source": "المصدر",
+      "type": "النوع",
+      "bench": "القسم",
+      "status": "الحالة",
+      "approval": "الاعتماد",
+      "receivedAt": "تاريخ الاستلام",
+      "uploadedAt": "تاريخ الرفع",
+      "action": "الإجراء",
+      "equipment": "الجهاز",
+      "lastCalibrated": "آخر معايرة",
+      "nextCalibration": "المعايرة القادمة",
+      "reagent": "الكاشف",
+      "lotNumber": "التشغيلة",
+      "expiryDate": "الصلاحية",
+      "quantity": "الكمية",
+      "number": "الرقم",
+      "title": "العنوان",
+      "severity": "الخطورة",
+      "user": "المستخدم",
+      "actionType": "الفعل",
+      "objectType": "الكائن",
+      "description": "الوصف",
+      "time": "الوقت",
+      "sample": "العينة",
+      "issuedAt": "الإصدار"
+    },
+    "actions": {
+      "approve": "اعتماد",
+      "viewAll": "عرض الكل"
+    },
+    "reagentStatus": {
+      "available": "متوفر",
+      "low": "منخفض",
+      "expired": "منتهي"
+    },
+    "dept": {
+      "totalSamples": "إجمالي العينات",
+      "completed": "مكتملة",
+      "underTesting": "قيد التحليل",
+      "awaitingApproval": "بانتظار الاعتماد",
+      "performance": "أداء القسم",
+      "tests": "تحاليل",
+      "sectionTitle": "أداء الأقسام",
+      "microbiology": "الأحياء الدقيقة",
+      "chemistry": "الكيمياء",
+      "physical": "الفيزيائية"
+    },
+    "kpi": {
+      "totalSamples": "إجمالي العينات",
+      "samplesToday": "عينات اليوم",
+      "underTesting": "قيد التحليل",
+      "awaitingApproval": "بانتظار الاعتماد",
+      "overdue": "متأخرة",
+      "approved": "معتمدة",
+      "openNc": "عدم مطابقة مفتوح",
+      "overdueCalibration": "معايرة متأخرة",
+      "rejected": "مرفوضة",
+      "overdueSamples": "عينات متأخرة",
+      "avgCompletionTime": "متوسط وقت الإنجاز",
+      "avgCompletionTimeValue": "{{hours}} س"
+    },
+    "approvalQueue": {
+      "title": "طابور اعتماد النتائج",
+      "empty": "لا توجد نتائج بانتظار الاعتماد"
+    },
+    "sla": {
+      "title": "مؤشرات SLA",
+      "compliance": "الالتزام بالمهل (SLA Compliance)",
+      "decisionCompliance": "معدل القرارات المطابقة",
+      "overdueTests": "تحاليل متأخرة: {{count}}",
+      "atRiskTests": "معرضة للتأخير: {{count}}",
+      "avgTatHours": "متوسط زمن الإنجاز: {{hours}} ساعة",
+      "avgTatNone": "متوسط زمن الإنجاز: —",
+      "indicators": "مؤشرات الأداء الزمني",
+      "avgTatHoursUnit": "{{hours}} س"
+    },
+    "alerts": {
+      "title": "تنبيهات تنفيذية",
+      "overdueTests": "{{count}} تحليل تجاوز المهلة الزمنية",
+      "overdueCalibration": "{{count}} جهاز معايرة متأخرة",
+      "expiredReagents": "{{count}} كاشف منتهي الصلاحية",
+      "openNc": "{{count}} حالة عدم مطابقة مفتوحة",
+      "sectionTitle": "التنبيهات",
+      "overdueTestsUrgent": "{{count}} تحليل تجاوز المهلة الزمنية — يتطلب إجراء عاجلاً",
+      "upcomingCalibration": "{{count}} جهاز معايرة قادمة خلال 30 يوماً",
+      "expiredReagentsWarning": "{{count}} كاشف منتهي الصلاحية — لا تستخدم في اختبارات جديدة",
+      "lowReagents": "{{count}} كاشف بمستوى منخفض",
+      "capaInProgress": "{{count}} CAPA قيد التنفيذ",
+      "noneCritical": "لا توجد تنبيهات حرجة حالياً"
+    },
+    "quality": {
+      "noneCriticalAlerts": "لا توجد تنبيهات حرجة حالياً",
+      "title": "جودة النظام",
+      "ncClosure": "إغلاق عدم المطابقة",
+      "auditEventsToday": "أحداث تدقيق اليوم",
+      "totalAudit": "إجمالي التدقيق",
+      "lowReagents": "كواشف منخفضة",
+      "openCapa": "CAPA مفتوح"
+    },
+    "nc": {
+      "open": "عدم مطابقة مفتوح",
+      "closed": "مغلقة",
+      "openCapa": "CAPA مفتوح",
+      "title": "عدم المطابقة"
+    },
+    "certificates": {
+      "title": "الشهادات",
+      "sectionTitle": "شهادات التحليل"
+    },
+    "decisions": {
+      "approved": "عينات معتمدة",
+      "rejected": "مرفوضة"
+    },
+    "audit": {
+      "title": "سجل التدقيق"
+    },
+    "equipment": {
+      "total": "إجمالي الأجهزة",
+      "overdueCalibration": "معايرة متأخرة",
+      "upcomingCalibration": "معايرة قادمة",
+      "title": "الأجهزة والمعايرة"
+    },
+    "reagents": {
+      "total": "إجمالي الكواشف",
+      "expired": "منتهية",
+      "low": "منخفضة",
+      "title": "الكواشف"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "description": "إعدادات مدير المختبر."
+    },
+    "help": {
+      "title": "المساعدة",
+      "description": "دليل استخدام واجهة مدير المختبر."
+    },
+    "pageHeader": {
+      "eyebrow": "مختبر الأغذية",
+      "title": "لوحة مدير المختبر",
+      "subtitle": "إدارة المختبر واعتماد النتائج",
+      "refresh": "🔄 تحديث",
+      "live": "مباشر",
+      "sectionsLabel": "أقسام اللوحة",
+      "avatarLabel": "ل"
+    }
   }
 }
