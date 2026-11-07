@@ -9358,7 +9358,11 @@
       "daysOverdue": "أيام التأخير",
       "reference": "مرجع",
       "issuedAt": "الإصدار",
-      "verificationCode": "رمز التحقق"
+      "verificationCode": "رمز التحقق",
+      "code": "الكود",
+      "name": "الاسم",
+      "year": "السنة",
+      "daysOverdueWithCount": "{{count}} يوم"
     },
     "actions": {
       "printReceipt": "طباعة الإيصال",

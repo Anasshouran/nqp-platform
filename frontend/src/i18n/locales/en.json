@@ -9358,7 +9358,11 @@
       "daysOverdue": "Days Overdue",
       "reference": "Reference",
       "issuedAt": "Issued At",
-      "verificationCode": "Verification Code"
+      "verificationCode": "Verification Code",
+      "code": "Code",
+      "name": "Name",
+      "year": "Year",
+      "daysOverdueWithCount": "{{count}} days"
     },
     "actions": {
       "printReceipt": "Print Receipt",

@@ -1055,7 +1055,7 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
               <TableCell sx={{ fontVariantNumeric: 'tabular-nums', color: 'error.main', fontWeight: 700 }}>{fmtMoney(a.amount)} {a.currency}</TableCell>
               <TableCell>{a.due_date ? new Date(a.due_date).toLocaleDateString('ar-SD') : '—'}</TableCell>
               <TableCell>
-                <Chip size="small" color="error" variant="outlined" label={`${a.late_days} يوم`} />
+                <Chip size="small" color="error" variant="outlined" label={t('finance.columns.daysOverdueWithCount', { count: a.late_days })} />
               </TableCell>
               <TableCell align="center">
                 <Button size="small" onClick={() => onView(a.id)}>{t('finance.actions.details')}</Button>
@@ -1082,14 +1082,14 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الكود</TableCell>
-            <TableCell>الاسم</TableCell>
-            <TableCell>الخدمة</TableCell>
+            <TableCell>{t('finance.columns.code')}</TableCell>
+            <TableCell>{t('finance.columns.name')}</TableCell>
+            <TableCell>{t('finance.columns.service')}</TableCell>
             <TableCell>SDG</TableCell>
             <TableCell>USD</TableCell>
-            <TableCell>السنة</TableCell>
-            <TableCell>المرجع</TableCell>
-            <TableCell>الحالة</TableCell>
+            <TableCell>{t('finance.columns.year')}</TableCell>
+            <TableCell>{t('finance.columns.reference')}</TableCell>
+            <TableCell>{t('finance.columns.status')}</TableCell>
             <TableCell align="center">{t('finance.columns.actions')}</TableCell>
           </TableRow>
         </TableHead>
