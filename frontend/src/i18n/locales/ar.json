@@ -9412,6 +9412,8 @@
       "net": "الصافي",
       "collected": "المحصل",
       "remaining": "المتبقي",
+      "total": "الإجمالي",
+      "discount": "الخصم",
       "paymentAmount": "مبلغ الدفعة (المتبقي: {{remaining}} {{currency}})",
       "paymentMethod": "طريقة الدفع",
       "gatewayRef": "مرجع بوابة الدفع (اختياري)",

@@ -9412,6 +9412,8 @@
       "net": "Net",
       "collected": "Collected",
       "remaining": "Remaining",
+      "total": "Total",
+      "discount": "Discount",
       "paymentAmount": "Payment Amount (Remaining: {{remaining}} {{currency}})",
       "paymentMethod": "Payment Method",
       "gatewayRef": "Gateway Reference (optional)",
