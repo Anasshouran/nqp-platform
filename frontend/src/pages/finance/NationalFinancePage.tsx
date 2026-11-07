@@ -1199,16 +1199,16 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
             )}
             <Divider />
             <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>الصافي</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.dialogs.net')}</Typography>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'primary.main' }}>{fmtMoney(invoice.net_amount)} {invoice.currency}</Typography>
             </Stack>
             <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5 }}>
-              <Typography variant="body2" color="success.main">المحصل</Typography>
+              <Typography variant="body2" color="success.main">{t('finance.dialogs.collected')}</Typography>
               <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>{fmtMoney(invoice.paid_amount)} {invoice.currency}</Typography>
             </Stack>
             {Number(invoice.balance_due) > 0 && (
               <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5 }}>
-                <Typography variant="body2" color="error.main">المتبقي</Typography>
+                <Typography variant="body2" color="error.main">{t('finance.dialogs.remaining')}</Typography>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: 'error.main' }}>{fmtMoney(invoice.balance_due)} {invoice.currency}</Typography>
               </Stack>
             )}
@@ -1216,18 +1216,18 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
           {invoice.payments?.length > 0 && (
             <>
               <Divider />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>عمليات الدفع</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.collections.payments')}</Typography>
               <PaymentsTable payments={invoice.payments} />
             </>
           )}
           {invoice.receipts?.length > 0 && (
             <>
               <Divider />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>الإيصالات</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.dialogs.receipts')}</Typography>
               <ReceiptsTable receipts={invoice.receipts} onPrint={onPrint} />
               <Stack direction="row" spacing={1} justifyContent="flex-end">
                 {invoice.receipts[0] && (
-                  <Button size="small" startIcon={<PrintIcon />} onClick={() => onPrint(invoice.receipts[0])}>طباعة الإيصال</Button>
+                  <Button size="small" startIcon={<PrintIcon />} onClick={() => onPrint(invoice.receipts[0])}>{t('finance.actions.printReceipt')}</Button>
                 )}
               </Stack>
             </>
@@ -1236,9 +1236,9 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
       </DialogContent>
       {(invoice.status === 'PENDING_PAYMENT' || invoice.status === 'OVERDUE' || invoice.status === 'ISSUED' || invoice.status === 'PARTIAL') && (
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={onClose}>إغلاق</Button>
+          <Button onClick={onClose}>{t('finance.actions.close')}</Button>
           <Button variant="contained" color="success" startIcon={<PaidIcon />} onClick={() => onPay(invoice)}>
-            {invoice.status === 'PARTIAL' ? 'دفعة إضافية' : 'تحصيل'}
+            {invoice.status === 'PARTIAL' ? t('finance.payments.extraPayment') : t('finance.payments.collect')}
           </Button>
         </DialogActions>
       )}
