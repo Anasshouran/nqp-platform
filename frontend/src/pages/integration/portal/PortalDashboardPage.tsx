@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
@@ -50,16 +50,19 @@ const PortalDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
-  const RESOURCES = [
-    { key: 'organizations', label: t('integration.portal.nav.organizations'), to: '/app/integration/portal/organizations', icon: <PeopleIcon /> },
-    { key: 'integrations', label: t('integration.portal.nav.integrations'), to: '/app/integration/portal/integrations', icon: <SyncIcon /> },
-    { key: 'apiEndpoints', label: t('integration.portal.nav.apiEndpoints'), to: '/app/integration/portal/api-catalog', icon: <LinkIcon /> },
-    { key: 'dataScopes', label: t('integration.portal.nav.dataScopes'), to: '/app/integration/portal/data-scopes', icon: <ListAltIcon /> },
-    { key: 'credentials', label: t('integration.portal.nav.credentials'), to: '/app/integration/portal/credentials', icon: <VpnKeyIcon /> },
-    { key: 'webhooks', label: t('integration.portal.nav.webhooks'), to: '/app/integration/portal/webhooks', icon: <WebhookIcon /> },
-    { key: 'health', label: t('integration.portal.nav.health'), to: '/app/integration/portal/health', icon: <HealthAndSafetyIcon /> },
-    { key: 'auditLogs', label: t('integration.portal.nav.auditLogs'), to: '/app/integration/portal/audit-logs', icon: <DescriptionIcon /> },
-  ];
+  const RESOURCES = useMemo(
+    () => [
+      { key: 'organizations', label: t('integration.portal.nav.organizations'), to: '/app/integration/portal/organizations', icon: <PeopleIcon /> },
+      { key: 'integrations', label: t('integration.portal.nav.integrations'), to: '/app/integration/portal/integrations', icon: <SyncIcon /> },
+      { key: 'apiEndpoints', label: t('integration.portal.nav.apiEndpoints'), to: '/app/integration/portal/api-catalog', icon: <LinkIcon /> },
+      { key: 'dataScopes', label: t('integration.portal.nav.dataScopes'), to: '/app/integration/portal/data-scopes', icon: <ListAltIcon /> },
+      { key: 'credentials', label: t('integration.portal.nav.credentials'), to: '/app/integration/portal/credentials', icon: <VpnKeyIcon /> },
+      { key: 'webhooks', label: t('integration.portal.nav.webhooks'), to: '/app/integration/portal/webhooks', icon: <WebhookIcon /> },
+      { key: 'health', label: t('integration.portal.nav.health'), to: '/app/integration/portal/health', icon: <HealthAndSafetyIcon /> },
+      { key: 'auditLogs', label: t('integration.portal.nav.auditLogs'), to: '/app/integration/portal/audit-logs', icon: <DescriptionIcon /> },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     let active = true;
@@ -83,7 +86,7 @@ const PortalDashboardPage = () => {
       .finally(() => { if (active) setLoading(false); });
 
     return () => { active = false; };
-  }, []);
+  }, [RESOURCES, t]);
 
   return (
     <Box>
