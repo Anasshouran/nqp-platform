@@ -54,6 +54,24 @@
       }
     }
   },
+  "sector-cms": {
+    "circular": {
+      "status": {
+        "urgent": "Urgent",
+        "important": "Important",
+        "normal": "Normal"
+      },
+      "pageTitle": "Circular Details",
+      "sectorNotAvailable": "Sector Not Available",
+      "backToSectorCirculars": "Back to Sector Circulars",
+      "circularNotAvailable": "Circular Not Available",
+      "circularNotFound": "Circular Not Found.",
+      "referenceLabel": "Reference",
+      "circular": "Circular",
+      "publishedAtLabel": "Published At",
+      "publishedByLabel": "Published By"
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",

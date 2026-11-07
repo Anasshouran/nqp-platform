@@ -54,6 +54,24 @@
       }
     }
   },
+  "sector-cms": {
+    "circular": {
+      "status": {
+        "urgent": "عاجل",
+        "important": "مهم",
+        "normal": "عادي"
+      },
+      "pageTitle": "تفاصيل التعميم",
+      "sectorNotAvailable": "قطاع غير متاح",
+      "backToSectorCirculars": "العودة إلى تعميمات القطاع",
+      "circularNotAvailable": "التعميم غير متاح",
+      "circularNotFound": "لم يتم العثور على هذا التعميم.",
+      "referenceLabel": "مرجع التعميم",
+      "circular": "تعميم",
+      "publishedAtLabel": "تاريخ الإصدار",
+      "publishedByLabel": "صادر عن"
+    }
+  },
   "vaccination": {
     "أخرى": "أخرى",
     "أدخل قيمة تسوية غير صفرية": "أدخل قيمة تسوية غير صفرية",
