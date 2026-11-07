@@ -1,4 +1,21 @@
 {
+  "clerk": {
+    "pipeline": {
+      "status": {
+        "drafts": "مسودات",
+        "submitted": "بانتظار الرسوم",
+        "underReview": "بانتظار المراجعة",
+        "inspection": "قيد الفحص",
+        "rejected": "مرفوضة"
+      },
+      "pageTitle": "مسار الطلبات",
+      "pageSubtitle": "توزيع الطلبات الجارية حسب المرحلة",
+      "emptyState": "لا توجد طلبات جارية حاليًا.",
+      "percent": "٪",
+      "weeklyActivity": "نشاط الأسبوع",
+      "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
+    }
+  },
   "common": {
     "save": "حفظ",
     "cancel": "إلغاء",

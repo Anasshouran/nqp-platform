@@ -1,4 +1,21 @@
 {
+  "clerk": {
+    "pipeline": {
+      "status": {
+        "drafts": "Drafts",
+        "submitted": "Pending Fees",
+        "underReview": "Under Review",
+        "inspection": "Inspection",
+        "rejected": "Rejected"
+      },
+      "pageTitle": "Requests Path",
+      "pageSubtitle": "Distribution of Pending Requests by Stage",
+      "emptyState": "No Pending Requests Currently.",
+      "percent": "%",
+      "weeklyActivity": "Weekly Activity",
+      "recentActivity": "Requests Submitted in the Last 7 Days"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
