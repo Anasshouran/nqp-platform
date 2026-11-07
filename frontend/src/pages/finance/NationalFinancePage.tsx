@@ -1188,12 +1188,12 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
           </TableContainer>
           <Stack sx={{ textAlign: 'left', maxWidth: 260, alignSelf: 'flex-end' }}>
             <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5 }}>
-              <Typography variant="body2" color="text.secondary">الإجمالي</Typography>
+              <Typography variant="body2" color="text.secondary">{t('finance.dialogs.total')}</Typography>
               <Typography variant="body2" sx={{ fontWeight: 700 }}>{fmtMoney(invoice.gross_amount)}</Typography>
             </Stack>
             {Number(invoice.discount_amount) > 0 && (
               <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5 }}>
-                <Typography variant="body2" color="text.secondary">الخصم</Typography>
+                <Typography variant="body2" color="text.secondary">{t('finance.dialogs.discount')}</Typography>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>−{fmtMoney(invoice.discount_amount)}</Typography>
               </Stack>
             )}
