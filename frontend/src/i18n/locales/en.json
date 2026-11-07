@@ -9350,10 +9350,12 @@
       "collect": "Collect",
       "actions": "Actions",
       "order": "Order",
+      "beneficiary": "Beneficiary",
       "service": "Service",
       "paidRemaining": "Paid / Remaining",
       "status": "Status",
       "dueDate": "Due Date",
+      "daysOverdue": "Days Overdue",
       "reference": "Reference",
       "issuedAt": "Issued At",
       "verificationCode": "Verification Code"

@@ -1038,11 +1038,11 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
         <TableHead>
           <TableRow>
             <TableCell>{t('finance.columns.invoice')}</TableCell>
-            <TableCell>الطلبية</TableCell>
-            <TableCell>المستفيد</TableCell>
+            <TableCell>{t('finance.columns.order')}</TableCell>
+            <TableCell>{t('finance.columns.beneficiary')}</TableCell>
             <TableCell>{t('finance.columns.amount')}</TableCell>
-            <TableCell>الاستحقاق</TableCell>
-            <TableCell>أيام التأخير</TableCell>
+            <TableCell>{t('finance.columns.dueDate')}</TableCell>
+            <TableCell>{t('finance.columns.daysOverdue')}</TableCell>
             <TableCell></TableCell>
           </TableRow>
         </TableHead>
