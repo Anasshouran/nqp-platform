@@ -9415,6 +9415,7 @@
       "total": "الإجمالي",
       "discount": "الخصم",
       "receipts": "الإيصالات",
+      "reasonRequired": "السبب (إلزامي)",
       "paymentAmount": "مبلغ الدفعة (المتبقي: {{remaining}} {{currency}})",
       "paymentMethod": "طريقة الدفع",
       "gatewayRef": "مرجع بوابة الدفع (اختياري)",

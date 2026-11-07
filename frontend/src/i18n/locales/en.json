@@ -9415,6 +9415,7 @@
       "total": "Total",
       "discount": "Discount",
       "receipts": "Receipts",
+      "reasonRequired": "Reason (required)",
       "paymentAmount": "Payment Amount (Remaining: {{remaining}} {{currency}})",
       "paymentMethod": "Payment Method",
       "gatewayRef": "Gateway Reference (optional)",

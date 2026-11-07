@@ -1257,15 +1257,16 @@ function ConfirmActionDialog({ open, onClose, onConfirm, title, subtitle, confir
   value: string;
   onChange: (v: string) => void;
 }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
       <DialogContent dividers>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{subtitle}</Typography>
-        <TextField label="السبب (إلزامي)" value={value} onChange={(e) => onChange(e.target.value)} fullWidth multiline minRows={2} required />
+        <TextField label={t('finance.dialogs.reasonRequired')} value={value} onChange={(e) => onChange(e.target.value)} fullWidth multiline minRows={2} required />
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose}>إلغاء</Button>
+        <Button onClick={onClose}>{t('finance.actions.cancel')}</Button>
         <Button variant="contained" color={confirmColor} disabled={!value.trim()} onClick={onConfirm}>{confirmLabel}</Button>
       </DialogActions>
     </Dialog>
