@@ -1108,13 +1108,13 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
                 </Tooltip>
               </TableCell>
               <TableCell>
-                <Chip size="small" color={f.is_active ? 'success' : 'default'} label={f.is_active ? 'نشط' : 'معطّل'} variant={f.is_active ? 'filled' : 'outlined'} />
+                <Chip size="small" color={f.is_active ? 'success' : 'default'} label={f.is_active ? t('finance.status.active') : t('finance.status.inactive')} variant={f.is_active ? 'filled' : 'outlined'} />
               </TableCell>
               <TableCell align="center">
                 <Stack direction="row" spacing={0.5} justifyContent="center">
-                  <Button size="small" onClick={() => onEdit(f)}>تعديل</Button>
+                  <Button size="small" onClick={() => onEdit(f)}>{t('finance.actions.edit')}</Button>
                   {f.is_active && (
-                    <Button size="small" color="error" onClick={() => onDeactivate(f.id)}>تعطيل</Button>
+                    <Button size="small" color="error" onClick={() => onDeactivate(f.id)}>{t('finance.actions.deactivate')}</Button>
                   )}
                 </Stack>
               </TableCell>
@@ -1135,12 +1135,13 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
   onPay: (i: FinanceInvoice) => void;
   onPrint: (r: FinanceReceipt) => void;
 }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <>
       <DialogTitle sx={{ fontWeight: 700 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>الفواتيرة {invoice.invoice_number}</Typography>
-          <IconButton onClick={onClose} size="small" aria-label="إغلاق" sx={{ borderRadius: 2 }}><CloseIcon /></IconButton>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('finance.dialogs.invoiceTitle', { number: invoice.invoice_number })}</Typography>
+          <IconButton onClick={onClose} size="small" aria-label={t('finance.actions.close')} sx={{ borderRadius: 2 }}><CloseIcon /></IconButton>
         </Stack>
       </DialogTitle>
       <DialogContent dividers>
