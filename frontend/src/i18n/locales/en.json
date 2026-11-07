@@ -9273,5 +9273,166 @@
       "periodEnd": "Period End",
       "entryPoint": "Entry Point"
     }
+  },
+  "finance": {
+    "messages": {
+      "errorOccurred": "An error occurred",
+      "amountMustBePositive": "Amount must be greater than zero.",
+      "amountExceedsRemaining": "Entered amount exceeds remaining balance.",
+      "collectionSuccess": "Collection completed — Receipt {{receipt}}"
+    },
+    "nav": {
+      "home": "Finance Dashboard",
+      "invoices": "Invoices",
+      "collections": "Collections & Receipts",
+      "review": "Financial Review",
+      "reconcile": "Reconciliation",
+      "fees": "Fee Items",
+      "reports": "Financial Reports",
+      "arrears": "Arrears",
+      "audit": "Audit Log"
+    },
+    "pageHeader": {
+      "home": "National Finance Dashboard",
+      "invoices": "Invoices",
+      "collections": "Collections & Receipts",
+      "review": "Financial Review",
+      "fees": "Fee Items (Master Data)",
+      "reports": "Financial Reports",
+      "arrears": "Arrears",
+      "audit": "Financial Audit Log",
+      "default": "Finance Management"
+    },
+    "sidebar": {
+      "title": "Finance Management",
+      "subtitle": "Financial Regulations",
+      "expand": "Expand Sidebar",
+      "collapse": "Collapse Sidebar",
+      "expandSidebar": "Expand Sidebar",
+      "collapseSidebar": "Collapse Sidebar",
+      "openMenu": "Open Menu",
+      "platformTitle": "Finance Management — Platform Financial Regulations",
+      "loading": "Updating…",
+      "dataUpdated": "Data Updated",
+      "refresh": "Refresh",
+      "refreshData": "Refresh Data",
+      "profile": "Profile",
+      "userMenu": "User Menu",
+      "defaultInitial": "M",
+      "unknownInitial": "?",
+      "defaultName": "Finance Manager",
+      "logout": "Logout"
+    },
+    "kpi": {
+      "totalRevenue": "Total Revenue",
+      "paidInvoices": "{{count}} paid invoice(s)",
+      "collectedToday": "Collected Today",
+      "transactions": "{{count}} transaction(s)",
+      "pendingPayment": "Pending Payment",
+      "unpaidInvoices": "Unpaid issued invoices",
+      "overdue": "Overdue",
+      "overdueAmount": "{{amount}} SDG"
+    },
+    "dashboard": {
+      "title": "Finance Dashboard — Summary",
+      "subtitle": "Collection and revenue indicators per regulations",
+      "invoiceCycle": "Invoice Cycle by Status",
+      "recentReceipts": "Recent Receipts"
+    },
+    "columns": {
+      "receiptNumber": "Receipt No.",
+      "invoice": "Invoice",
+      "amount": "Amount",
+      "method": "Method",
+      "time": "Time",
+      "request": "Request",
+      "net": "Net",
+      "collect": "Collect",
+      "actions": "Actions",
+      "order": "Order",
+      "service": "Service",
+      "paidRemaining": "Paid / Remaining",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "reference": "Reference",
+      "issuedAt": "Issued At",
+      "verificationCode": "Verification Code"
+    },
+    "actions": {
+      "printReceipt": "Print Receipt",
+      "approveSettlement": "Approve Settlement",
+      "details": "Details",
+      "cancel": "Cancel",
+      "confirmCollection": "Confirm Collection",
+      "save": "Save",
+      "refund": "Refund"
+    },
+    "invoices": {
+      "unifiedTitle": "Unified Invoices",
+      "unifiedSubtitle": "All invoices across sectors and services — no deletions"
+    },
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "service": "Service"
+    },
+    "collections": {
+      "title": "Collections & Receipts",
+      "subtitle": "Payment transactions and electronic receipts log",
+      "payments": "Payments",
+      "receipts": "Electronic Receipts"
+    },
+    "review": {
+      "title": "Financial Review",
+      "subtitle": "Separation of duties: reviewer ≠ collector — a reviewer cannot approve an invoice they collected",
+      "emptyTitle": "No invoices pending review",
+      "emptyDescription": "Paid invoices appear here for approval and settlement"
+    },
+    "arrears": {
+      "title": "Arrears",
+      "subtitle": "Total outstanding unpaid: {{amount}} SDG",
+      "remaining": "Remaining: {{amount}}"
+    },
+    "dialogs": {
+      "net": "Net",
+      "collected": "Collected",
+      "remaining": "Remaining",
+      "paymentAmount": "Payment Amount (Remaining: {{remaining}} {{currency}})",
+      "paymentMethod": "Payment Method",
+      "gatewayRef": "Gateway Reference (optional)",
+      "collectionNotes": "Collection Notes",
+      "cancelInvoice": "Cancel Invoice {{number}}",
+      "cancelSubtitle": "Record is not deleted; status changed to cancelled with cancellation logged in audit trail.",
+      "approveCancellation": "Approve Cancellation",
+      "refundInvoice": "Refund Invoice {{number}}",
+      "refundSubtitle": "Record and payment are held; status changed to refunded with refund reference.",
+      "approveRefund": "Approve Refund",
+      "collectInvoice": "Collect Invoice {{number}}"
+    },
+    "fees": {
+      "title": "Fee Items (Master Data)",
+      "subtitle": "Source of truth — no deletions, deactivation via is_active",
+      "addFee": "Add Fee Item",
+      "nameAr": "Name (Arabic)",
+      "serviceType": "Service Type",
+      "code": "Code",
+      "amountSdg": "Amount (SDG)",
+      "amountUsd": "Amount (USD)",
+      "effectiveFrom": "Effective From",
+      "effectiveTo": "Effective To (optional)",
+      "year": "Year",
+      "approvedBy": "Approved By",
+      "legalReference": "Legal Reference / Publication",
+      "unit": "Unit of Measure",
+      "editFee": "Edit Fee Item"
+    },
+    "empty": {
+      "noDataYet": "No data yet"
+    },
+    "payments": {
+      "extraPayment": "Extra Payment",
+      "collect": "Collect",
+      "confirmed": "Confirmed"
+    }
   }
 }

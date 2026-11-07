@@ -9273,5 +9273,166 @@
       "periodEnd": "نهاية الفترة",
       "entryPoint": "نقطة الدخول"
     }
+  },
+  "finance": {
+    "messages": {
+      "errorOccurred": "حدث خطأ",
+      "amountMustBePositive": "المبلغ يجب أن يكون أكبر من صفر.",
+      "amountExceedsRemaining": "المبلغ المدخل يتجاوز المتبقي.",
+      "collectionSuccess": "تم التحصيل — إيصال {{receipt}}"
+    },
+    "nav": {
+      "home": "لوحة الحسابات",
+      "invoices": "الفواتير",
+      "collections": "التحصيل والإيصالات",
+      "review": "المراجعة المالية",
+      "reconcile": "المطابقة المالية",
+      "fees": "بنود الرسوم",
+      "reports": "التقارير المالية",
+      "arrears": "المتأخرات",
+      "audit": "سجل التدقيق"
+    },
+    "pageHeader": {
+      "home": "لوحة الحسابات القومية",
+      "invoices": "الفواتير",
+      "collections": "التحصيل والإيصالات",
+      "review": "المراجعة المالية",
+      "fees": "بنود الرسوم (Master Data)",
+      "reports": "التقارير المالية",
+      "arrears": "المتأخرات",
+      "audit": "سجل التدقيق المالي",
+      "default": "إدارة الحسابات"
+    },
+    "sidebar": {
+      "title": "إدارة الحسابات",
+      "subtitle": "اللائحة المالية",
+      "expand": "توسيع الشريط",
+      "collapse": "طي الشريط",
+      "expandSidebar": "توسيع الشريط الجانبي",
+      "collapseSidebar": "طي الشريط الجانبي",
+      "openMenu": "فتح القائمة",
+      "platformTitle": "إدارة الحسابات — اللائحة المالية للمنصة",
+      "loading": "جارٍ التحديث…",
+      "dataUpdated": "البيانات محدثة",
+      "refresh": "تحديث",
+      "refreshData": "تحديث البيانات",
+      "profile": "الملف الشخصي",
+      "userMenu": "قائمة المستخدم",
+      "defaultInitial": "م",
+      "unknownInitial": "؟",
+      "defaultName": "مدير الحسابات",
+      "logout": "تسجيل الخروج"
+    },
+    "kpi": {
+      "totalRevenue": "إجمالي الإيرادات",
+      "paidInvoices": "{{count}} فاتورة مسددة",
+      "collectedToday": "محصل اليوم",
+      "transactions": "{{count}} عملية",
+      "pendingPayment": "بانتظار الدفع",
+      "unpaidInvoices": "فواتير صادرة غير مسددة",
+      "overdue": "متأخرات",
+      "overdueAmount": "{{amount}} SDG"
+    },
+    "dashboard": {
+      "title": "لوحة الحسابات — ملخص",
+      "subtitle": "مؤشرات التحصيل والإيرادات حسب اللائحة",
+      "invoiceCycle": "دورة الفواتير حسب الحالة",
+      "recentReceipts": "أحدث الإيصالات"
+    },
+    "columns": {
+      "receiptNumber": "رقم الإيصال",
+      "invoice": "الفاتورة",
+      "amount": "المبلغ",
+      "method": "الوسيلة",
+      "time": "التوقيت",
+      "request": "الطلب",
+      "net": "الصافي",
+      "collect": "تحصيل",
+      "actions": "إجراءات",
+      "order": "الطلبية",
+      "service": "الخدمة",
+      "paidRemaining": "المدفوع / المتبقي",
+      "status": "الحالة",
+      "dueDate": "الاستحقاق",
+      "reference": "مرجع",
+      "issuedAt": "الإصدار",
+      "verificationCode": "رمز التحقق"
+    },
+    "actions": {
+      "printReceipt": "طباعة الإيصال",
+      "approveSettlement": "اعتماد التسوية",
+      "details": "تفاصيل",
+      "cancel": "إلغاء",
+      "confirmCollection": "تأكيد التحصيل",
+      "save": "حفظ",
+      "refund": "استرداد"
+    },
+    "invoices": {
+      "unifiedTitle": "الفواتير الموحدة",
+      "unifiedSubtitle": "كل الفواتير عبر القطاعات والخدمات — بلا حذف"
+    },
+    "filters": {
+      "status": "الحالة",
+      "all": "الكل",
+      "service": "الخدمة"
+    },
+    "collections": {
+      "title": "التحصيل والإيصالات",
+      "subtitle": "سجل عمليات الدفع والإيصالات الإلكترونية",
+      "payments": "عمليات الدفع",
+      "receipts": "الإيصالات الإلكترونية"
+    },
+    "review": {
+      "title": "المراجعة المالية",
+      "subtitle": "فصل الاختصاصات: مراجع ≠ محصل — لا يقبل مراجع فاتورة جمعها بنفسه",
+      "emptyTitle": "لا توجد فواتير بانتظار المراجعة",
+      "emptyDescription": "الفواتير المدفوعة تظهر هنا للاعتماد والتسوية"
+    },
+    "arrears": {
+      "title": "المتأخرات",
+      "subtitle": "إجمالي مستحق غير مسدد: {{amount}} SDG",
+      "remaining": "متبقي: {{amount}}"
+    },
+    "dialogs": {
+      "net": "الصافي",
+      "collected": "المحصل",
+      "remaining": "المتبقي",
+      "paymentAmount": "مبلغ الدفعة (المتبقي: {{remaining}} {{currency}})",
+      "paymentMethod": "طريقة الدفع",
+      "gatewayRef": "مرجع بوابة الدفع (اختياري)",
+      "collectionNotes": "ملاحظات التحصيل",
+      "cancelInvoice": "إلغاء الفاتورة {{number}}",
+      "cancelSubtitle": "لا يُحذف السجل؛ تُحوّل الحالة إلى ملغاة مع حفظ إجراء الإلغاء في سجل التدقيق.",
+      "approveCancellation": "اعتماد الإلغاء",
+      "refundInvoice": "استرداد الفاتورة {{number}}",
+      "refundSubtitle": "يُحتجز السجل والدفع، وتُحوّل الحالة إلى مسترَدّة مع مرجع الاسترداد.",
+      "approveRefund": "اعتماد الاسترداد",
+      "collectInvoice": "تحصيل الفاتورة {{number}}"
+    },
+    "fees": {
+      "title": "بنود الرسوم (Master Data)",
+      "subtitle": "مصدر الحقيقة — لا حذف نهائي، التعطيل عبر is_active",
+      "addFee": "إضافة بند رسوم",
+      "nameAr": "الاسم بالعربية",
+      "serviceType": "نوع الخدمة",
+      "code": "الكود",
+      "amountSdg": "القيمة (SDG)",
+      "amountUsd": "القيمة (USD)",
+      "effectiveFrom": "تاريخ السريان",
+      "effectiveTo": "تاريخ الانتهاء (اختياري)",
+      "year": "السنة",
+      "approvedBy": "الجهة المعتمدة",
+      "legalReference": "المرجع القانوني / المنشور",
+      "unit": "وحدة القياس",
+      "editFee": "تعديل بند الرسوم"
+    },
+    "empty": {
+      "noDataYet": "لا توجد بيانات بعد"
+    },
+    "payments": {
+      "extraPayment": "دفعة إضافية",
+      "collect": "تحصيل",
+      "confirmed": "مؤكد"
+    }
   }
 }
