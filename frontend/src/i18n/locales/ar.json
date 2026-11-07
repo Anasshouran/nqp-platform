@@ -9368,10 +9368,17 @@
       "printReceipt": "طباعة الإيصال",
       "approveSettlement": "اعتماد التسوية",
       "details": "تفاصيل",
+      "edit": "تعديل",
+      "deactivate": "تعطيل",
+      "close": "إغلاق",
       "cancel": "إلغاء",
       "confirmCollection": "تأكيد التحصيل",
       "save": "حفظ",
       "refund": "استرداد"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "معطّل"
     },
     "invoices": {
       "unifiedTitle": "الفواتير الموحدة",
@@ -9413,7 +9420,8 @@
       "refundInvoice": "استرداد الفاتورة {{number}}",
       "refundSubtitle": "يُحتجز السجل والدفع، وتُحوّل الحالة إلى مسترَدّة مع مرجع الاسترداد.",
       "approveRefund": "اعتماد الاسترداد",
-      "collectInvoice": "تحصيل الفاتورة {{number}}"
+      "collectInvoice": "تحصيل الفاتورة {{number}}",
+      "invoiceTitle": "الفاتورة {{number}}"
     },
     "fees": {
       "title": "بنود الرسوم (Master Data)",

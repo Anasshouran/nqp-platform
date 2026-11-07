@@ -9368,10 +9368,17 @@
       "printReceipt": "Print Receipt",
       "approveSettlement": "Approve Settlement",
       "details": "Details",
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "close": "Close",
       "cancel": "Cancel",
       "confirmCollection": "Confirm Collection",
       "save": "Save",
       "refund": "Refund"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
     },
     "invoices": {
       "unifiedTitle": "Unified Invoices",
@@ -9413,7 +9420,8 @@
       "refundInvoice": "Refund Invoice {{number}}",
       "refundSubtitle": "Record and payment are held; status changed to refunded with refund reference.",
       "approveRefund": "Approve Refund",
-      "collectInvoice": "Collect Invoice {{number}}"
+      "collectInvoice": "Collect Invoice {{number}}",
+      "invoiceTitle": "Invoice {{number}}"
     },
     "fees": {
       "title": "Fee Items (Master Data)",
