@@ -9331,7 +9331,7 @@
       "pendingPayment": "بانتظار الدفع",
       "unpaidInvoices": "فواتير صادرة غير مسددة",
       "overdue": "متأخرات",
-      "overdueAmount": "{{amount}} SDG"
+      "overdueAmount": "{{amount}} ج.س"
     },
     "dashboard": {
       "title": "لوحة الحسابات — ملخص",
@@ -9350,10 +9350,12 @@
       "collect": "تحصيل",
       "actions": "إجراءات",
       "order": "الطلبية",
+      "beneficiary": "المستفيد",
       "service": "الخدمة",
       "paidRemaining": "المدفوع / المتبقي",
       "status": "الحالة",
       "dueDate": "الاستحقاق",
+      "daysOverdue": "أيام التأخير",
       "reference": "مرجع",
       "issuedAt": "الإصدار",
       "verificationCode": "رمز التحقق"
