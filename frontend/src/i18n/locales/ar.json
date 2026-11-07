@@ -13,6 +13,30 @@
       "doctor": "الطبيب"
     }
   },
+  "integration": {
+    "portal": {
+      "nav": {
+        "organizations": "المنظمات",
+        "integrations": "التكاملات",
+        "apiEndpoints": "كتالوج API",
+        "dataScopes": "نطاقات البيانات",
+        "credentials": "بيانات الاعتماد",
+        "webhooks": "الويب هوك",
+        "health": "سجلات الصحة",
+        "auditLogs": "سجلات المراجعة"
+      },
+      "messages": {
+        "errorLoad": "تعذّر تحميل ملخص البوابة"
+      },
+      "pageHeader": {
+        "title": "بوابة تكامل المنظمات",
+        "subtitle": "المنظمات الشريكة، التكاملات، كتالوج API، النطاقات، والاعتمادات"
+      },
+      "empty": {
+        "quickAccess": "الوصول السريع"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "أخرى",
     "أدخل قيمة تسوية غير صفرية": "أدخل قيمة تسوية غير صفرية",

@@ -13,6 +13,30 @@
       "doctor": "Doctor"
     }
   },
+  "integration": {
+    "portal": {
+      "nav": {
+        "organizations": "Organizations",
+        "integrations": "Integrations",
+        "apiEndpoints": "API Catalog",
+        "dataScopes": "Data Scopes",
+        "credentials": "Credentials",
+        "webhooks": "Webhooks",
+        "health": "Health Records",
+        "auditLogs": "Audit Logs"
+      },
+      "messages": {
+        "errorLoad": "Failed to load portal summary"
+      },
+      "pageHeader": {
+        "title": "Organizations Integration Portal",
+        "subtitle": "Partner organizations, integrations, API catalog, scopes, and credentials"
+      },
+      "empty": {
+        "quickAccess": "Quick Access"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",
