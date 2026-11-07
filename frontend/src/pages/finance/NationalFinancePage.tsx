@@ -1149,27 +1149,27 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
             {statusChipLocal(invoice.status)}
             <Chip size="small" variant="outlined" label={serviceLabel(invoice.service_type)} />
-            <Chip size="small" variant="outlined" label={`الطلبية: ${invoice.request_ref || '—'}`} />
+            <Chip size="small" variant="outlined" label={t('finance.dialogs.orderRef', { ref: invoice.request_ref || '—' })} />
             {invoice.receipt_number && (
               <Chip size="small" color="success" variant="outlined" icon={<ReceiptIcon />} label={invoice.receipt_number} />
             )}
           </Stack>
           <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-            <Typography variant="body2" color="text.secondary">العميل: <b>{invoice.applicant_name || '—'}</b></Typography>
-            <Typography variant="body2" color="text.secondary">الإصدار: <b>{new Date(invoice.issued_at).toLocaleString('ar-SD')}</b></Typography>
+            <Typography variant="body2" color="text.secondary">{t('finance.dialogs.client')}: <b>{invoice.applicant_name || '—'}</b></Typography>
+            <Typography variant="body2" color="text.secondary">{t('finance.columns.issuedAt')}: <b>{new Date(invoice.issued_at).toLocaleString('ar-SD')}</b></Typography>
             {invoice.due_date && (
-              <Typography variant="body2" color="text.secondary">الاستحقاق: <b>{new Date(invoice.due_date).toLocaleDateString('ar-SD')}</b></Typography>
+              <Typography variant="body2" color="text.secondary">{t('finance.columns.dueDate')}: <b>{new Date(invoice.due_date).toLocaleDateString('ar-SD')}</b></Typography>
             )}
           </Stack>
           <Divider />
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>البنود</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.dialogs.lineItems')}</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>البند</TableCell>
-                  <TableCell>الكمية</TableCell>
-                  <TableCell align="center">المبلغ</TableCell>
+                  <TableCell>{t('finance.columns.item')}</TableCell>
+                  <TableCell>{t('finance.columns.quantity')}</TableCell>
+                  <TableCell align="center">{t('finance.columns.amount')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
