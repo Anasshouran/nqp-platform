@@ -9362,7 +9362,9 @@
       "code": "الكود",
       "name": "الاسم",
       "year": "السنة",
-      "daysOverdueWithCount": "{{count}} يوم"
+      "daysOverdueWithCount": "{{count}} يوم",
+      "item": "البند",
+      "quantity": "الكمية"
     },
     "actions": {
       "printReceipt": "طباعة الإيصال",
@@ -9421,7 +9423,10 @@
       "refundSubtitle": "يُحتجز السجل والدفع، وتُحوّل الحالة إلى مسترَدّة مع مرجع الاسترداد.",
       "approveRefund": "اعتماد الاسترداد",
       "collectInvoice": "تحصيل الفاتورة {{number}}",
-      "invoiceTitle": "الفاتورة {{number}}"
+      "invoiceTitle": "الفاتورة {{number}}",
+      "orderRef": "الطلبية: {{ref}}",
+      "client": "العميل",
+      "lineItems": "البنود"
     },
     "fees": {
       "title": "بنود الرسوم (Master Data)",
