@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -32,17 +33,6 @@ type CountFetcher = (params: Record<string, unknown>) => Promise<{
   data: { data?: { count?: number } };
 }>;
 
-const RESOURCES = [
-  { key: 'organizations', label: 'المنظمات', to: '/app/integration/portal/organizations', icon: <PeopleIcon /> },
-  { key: 'integrations', label: 'التكاملات', to: '/app/integration/portal/integrations', icon: <SyncIcon /> },
-  { key: 'apiEndpoints', label: 'كتالوج API', to: '/app/integration/portal/api-catalog', icon: <LinkIcon /> },
-  { key: 'dataScopes', label: 'نطاقات البيانات', to: '/app/integration/portal/data-scopes', icon: <ListAltIcon /> },
-  { key: 'credentials', label: 'بيانات الاعتماد', to: '/app/integration/portal/credentials', icon: <VpnKeyIcon /> },
-  { key: 'webhooks', label: 'الويب هوك', to: '/app/integration/portal/webhooks', icon: <WebhookIcon /> },
-  { key: 'health', label: 'سجلات الصحة', to: '/app/integration/portal/health', icon: <HealthAndSafetyIcon /> },
-  { key: 'auditLogs', label: 'سجلات المراجعة', to: '/app/integration/portal/audit-logs', icon: <DescriptionIcon /> },
-];
-
 const FETCHERS: Record<string, CountFetcher> = {
   organizations: getOrganizations,
   integrations: getIntegrations,
@@ -58,6 +48,21 @@ const PortalDashboardPage = () => {
   const navigate = useNavigate();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+
+  const RESOURCES = useMemo(
+    () => [
+      { key: 'organizations', label: t('integration.portal.nav.organizations'), to: '/app/integration/portal/organizations', icon: <PeopleIcon /> },
+      { key: 'integrations', label: t('integration.portal.nav.integrations'), to: '/app/integration/portal/integrations', icon: <SyncIcon /> },
+      { key: 'apiEndpoints', label: t('integration.portal.nav.apiEndpoints'), to: '/app/integration/portal/api-catalog', icon: <LinkIcon /> },
+      { key: 'dataScopes', label: t('integration.portal.nav.dataScopes'), to: '/app/integration/portal/data-scopes', icon: <ListAltIcon /> },
+      { key: 'credentials', label: t('integration.portal.nav.credentials'), to: '/app/integration/portal/credentials', icon: <VpnKeyIcon /> },
+      { key: 'webhooks', label: t('integration.portal.nav.webhooks'), to: '/app/integration/portal/webhooks', icon: <WebhookIcon /> },
+      { key: 'health', label: t('integration.portal.nav.health'), to: '/app/integration/portal/health', icon: <HealthAndSafetyIcon /> },
+      { key: 'auditLogs', label: t('integration.portal.nav.auditLogs'), to: '/app/integration/portal/audit-logs', icon: <DescriptionIcon /> },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     let active = true;
@@ -77,17 +82,17 @@ const PortalDashboardPage = () => {
     };
 
     load()
-      .catch(() => notifyError('تعذّر تحميل ملخص البوابة'))
+      .catch(() => notifyError(t('integration.portal.messages.errorLoad')))
       .finally(() => { if (active) setLoading(false); });
 
     return () => { active = false; };
-  }, []);
+  }, [RESOURCES, t]);
 
   return (
     <Box>
       <PageHeader
-        title="بوابة تكامل المنظمات"
-        subtitle="المنظمات الشريكة، التكاملات، كتالوج API، النطاقات، والاعتمادات"
+        title={t('integration.portal.pageHeader.title')}
+        subtitle={t('integration.portal.pageHeader.subtitle')}
       />
 
       {loading && <LinearProgress sx={{ mb: 3 }} />}
@@ -118,7 +123,7 @@ const PortalDashboardPage = () => {
       <Card>
         <CardContent>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
-            الوصول السريع
+            {t('integration.portal.empty.quickAccess')}
           </Typography>
           <Stack spacing={0.5}>
             {RESOURCES.map(({ label, to, icon }) => (

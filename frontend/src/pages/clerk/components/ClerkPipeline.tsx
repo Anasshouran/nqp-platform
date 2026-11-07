@@ -1,6 +1,7 @@
 // Queue pipeline summary cards and the weekly activity chart.
 // Extracted from ClerkDashboardPage without behavioural change.
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -9,23 +10,24 @@ import CardContent from '@mui/material/CardContent';
 import type { FoodShipment } from '../../../types/food';
 import type { QueueCounts } from '../constants';
 
-const PIPELINE_STAGES: Array<{ key: keyof QueueCounts; label: string; color: string }> = [
-  { key: 'drafts', label: 'مسودات', color: 'primary.main' },
-  { key: 'submitted', label: 'بانتظار الرسوم', color: '#8c6d1f' },
-  { key: 'underReview', label: 'بانتظار المراجعة', color: '#a86400' },
-  { key: 'inspection', label: 'قيد الفحص', color: '#12a585' },
-  { key: 'rejected', label: 'مرفوضة', color: 'error.main' },
-];
-
 export const PipelineCard = ({ counts }: { counts: QueueCounts }) => {
+  const { t } = useTranslation();
+
+  const PIPELINE_STAGES: Array<{ key: keyof QueueCounts; label: string; color: string }> = [
+    { key: 'drafts', label: t('clerk.pipeline.status.drafts'), color: 'primary.main' },
+    { key: 'submitted', label: t('clerk.pipeline.status.submitted'), color: '#8c6d1f' },
+    { key: 'underReview', label: t('clerk.pipeline.status.underReview'), color: '#a86400' },
+    { key: 'inspection', label: t('clerk.pipeline.status.inspection'), color: '#12a585' },
+    { key: 'rejected', label: t('clerk.pipeline.status.rejected'), color: 'error.main' },
+  ];
   const total = PIPELINE_STAGES.reduce((s, st) => s + (counts[st.key] ?? 0), 0);
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, height: '100%' }}>
       <CardContent sx={{ p: 2.5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>مسار الطلبات</Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>توزيع الطلبات الجارية حسب المرحلة</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{t('clerk.pipeline.pageTitle')}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>{t('clerk.pipeline.pageSubtitle')}</Typography>
         {total === 0 ? (
-          <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>لا توجد طلبات جارية حاليًا.</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>{t('clerk.pipeline.emptyState')}</Typography>
         ) : (
           <>
             <Stack direction="row" sx={{ height: 14, borderRadius: 3, overflow: 'hidden', mb: 1.75 }}>
@@ -44,7 +46,7 @@ export const PipelineCard = ({ counts }: { counts: QueueCounts }) => {
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{st.label}</Typography>
                     </Stack>
                     <Typography variant="body2" sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {v} <Typography component="span" variant="caption" color="text.secondary">({total ? Math.round((v / total) * 100) : 0}٪)</Typography>
+                      {v} <Typography component="span" variant="caption" color="text.secondary">({total ? Math.round((v / total) * 100) : 0}{t('clerk.pipeline.percent')})</Typography>
                     </Typography>
                   </Stack>
                 );
@@ -60,6 +62,7 @@ export const PipelineCard = ({ counts }: { counts: QueueCounts }) => {
 export const WEEK_LABEL = new Intl.DateTimeFormat('ar-EG', { weekday: 'short' });
 
 export const WeeklyActivityCard = ({ shipments }: { shipments: FoodShipment[] }) => {
+  const { t } = useTranslation();
   const week = useMemo(() => {
     const days: Array<{ label: string; count: number }> = [];
     const now = new Date();
@@ -75,8 +78,8 @@ export const WeeklyActivityCard = ({ shipments }: { shipments: FoodShipment[] })
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, height: '100%' }}>
       <CardContent sx={{ p: 2.5, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>نشاط الأسبوع</Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>الطلبات المُرسلة خلال آخر 7 أيام</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{t('clerk.pipeline.weeklyActivity')}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>{t('clerk.pipeline.recentActivity')}</Typography>
         <Stack direction="row" alignItems="flex-end" spacing={1.25} useFlexGap sx={{ flex: 1, minHeight: 120, mt: 'auto' }}>
           {week.map((d) => (
             <Stack key={d.label + d.count} sx={{ flex: 1, height: '100%', justifyContent: 'flex-end', alignItems: 'center', minWidth: 0 }} spacing={0.5}>
@@ -98,5 +101,3 @@ export const WeeklyActivityCard = ({ shipments }: { shipments: FoodShipment[] })
     </Card>
   );
 };
-
-export { PIPELINE_STAGES };

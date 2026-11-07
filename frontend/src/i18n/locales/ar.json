@@ -1,4 +1,21 @@
 {
+  "clerk": {
+    "pipeline": {
+      "status": {
+        "drafts": "مسودات",
+        "submitted": "بانتظار الرسوم",
+        "underReview": "بانتظار المراجعة",
+        "inspection": "قيد الفحص",
+        "rejected": "مرفوضة"
+      },
+      "pageTitle": "مسار الطلبات",
+      "pageSubtitle": "توزيع الطلبات الجارية حسب المرحلة",
+      "emptyState": "لا توجد طلبات جارية حاليًا.",
+      "percent": "٪",
+      "weeklyActivity": "نشاط الأسبوع",
+      "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
+    }
+  },
   "common": {
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -11,6 +28,48 @@
     "english": "English",
     "fallback": {
       "doctor": "الطبيب"
+    }
+  },
+  "integration": {
+    "portal": {
+      "nav": {
+        "organizations": "المنظمات",
+        "integrations": "التكاملات",
+        "apiEndpoints": "كتالوج API",
+        "dataScopes": "نطاقات البيانات",
+        "credentials": "بيانات الاعتماد",
+        "webhooks": "الويب هوك",
+        "health": "سجلات الصحة",
+        "auditLogs": "سجلات المراجعة"
+      },
+      "messages": {
+        "errorLoad": "تعذّر تحميل ملخص البوابة"
+      },
+      "pageHeader": {
+        "title": "بوابة تكامل المنظمات",
+        "subtitle": "المنظمات الشريكة، التكاملات، كتالوج API، النطاقات، والاعتمادات"
+      },
+      "empty": {
+        "quickAccess": "الوصول السريع"
+      }
+    }
+  },
+  "sector-cms": {
+    "circular": {
+      "status": {
+        "urgent": "عاجل",
+        "important": "مهم",
+        "normal": "عادي"
+      },
+      "pageTitle": "تفاصيل التعميم",
+      "sectorNotAvailable": "قطاع غير متاح",
+      "backToSectorCirculars": "العودة إلى تعميمات القطاع",
+      "circularNotAvailable": "التعميم غير متاح",
+      "circularNotFound": "لم يتم العثور على هذا التعميم.",
+      "referenceLabel": "مرجع التعميم",
+      "circular": "تعميم",
+      "publishedAtLabel": "تاريخ الإصدار",
+      "publishedByLabel": "صادر عن"
     }
   },
   "vaccination": {

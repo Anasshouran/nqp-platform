@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { SectorPageShell, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
+import { useTranslation } from 'react-i18next';
 import { EmptyState, ListSkeleton, PageHeader } from '../../components/common';
 import { CategoryChip } from '../../components/common/CategoryChip';
 import { CIRCULAR_CATEGORY_LABELS, CIRCULAR_CATEGORY_STYLES } from '../../components/common/categoryMaps';
@@ -21,12 +22,6 @@ const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
   NORMAL: 'info',
 };
 
-const priorityLabels: Record<string, string> = {
-  URGENT: 'عاجل',
-  IMPORTANT: 'مهم',
-  NORMAL: 'عادي',
-};
-
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
@@ -35,8 +30,15 @@ const SectorCmsCircularDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [circular, setCircular] = useState<Circular | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
-  usePageTitle('تفاصيل التعميم');
+  const priorityLabels: Record<string, string> = {
+    URGENT: t('sector-cms.circular.status.urgent'),
+    IMPORTANT: t('sector-cms.circular.status.important'),
+    NORMAL: t('sector-cms.circular.status.normal'),
+  };
+
+  usePageTitle(t('sector-cms.circular.pageTitle'));
 
   useEffect(() => {
     if (!id || !sector) return;
@@ -58,7 +60,7 @@ const SectorCmsCircularDetail = () => {
   if (!sector) {
     return (
       <SectorPageShell>
-        <ErrorNotice title="قطاع غير متاح" />
+        <ErrorNotice title={t('sector-cms.circular.sectorNotAvailable')} />
       </SectorPageShell>
     );
   }
@@ -66,7 +68,7 @@ const SectorCmsCircularDetail = () => {
   return (
     <SectorPageShell>
       <Button component={Link} to={`/sector/${slug}/circulars`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-        العودة إلى تعميمات القطاع
+        {t('sector-cms.circular.backToSectorCirculars')}
       </Button>
 
       {loading ? (
@@ -74,15 +76,15 @@ const SectorCmsCircularDetail = () => {
       ) : !circular ? (
         <EmptyState
           icon={<DescriptionIcon />}
-          title="التعميم غير متاح"
-          description="لم يتم العثور على هذا التعميم."
+          title={t('sector-cms.circular.circularNotAvailable')}
+          description={t('sector-cms.circular.circularNotFound')}
         />
       ) : (
         <>
           <PageHeader
             title={circular.title}
-            subtitle={`مرجع التعميم: ${circular.reference_number}`}
-            eyebrow="تعميم"
+            subtitle={`${t('sector-cms.circular.referenceLabel')}: ${circular.reference_number}`}
+            eyebrow={t('sector-cms.circular.circular')}
             action={
               <Stack direction="row" spacing={1}>
                 <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
@@ -109,11 +111,11 @@ const SectorCmsCircularDetail = () => {
               <DescriptionIcon sx={{ color: 'primary.main' }} />
               <Stack>
                 <Typography variant="body2" color="text.secondary">
-                  تاريخ الإصدار: {formatDate(circular.published_at)}
+                  {t('sector-cms.circular.publishedAtLabel')}: {formatDate(circular.published_at)}
                 </Typography>
                 {circular.author && (
                   <Typography variant="body2" color="text.secondary">
-                    صادر عن: {circular.author}
+                    {t('sector-cms.circular.publishedByLabel')}: {circular.author}
                   </Typography>
                 )}
               </Stack>
