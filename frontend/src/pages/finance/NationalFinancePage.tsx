@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -118,6 +119,7 @@ interface Filters {
 const emptyFilters: Filters = { status: '', sector: '', service_type: '' };
 
 export default function NationalFinancePage(): React.JSX.Element {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
@@ -157,9 +159,9 @@ export default function NationalFinancePage(): React.JSX.Element {
 
   const notifyError = useCallback((e: AxiosError<{ message?: string }>) => {
     const msg = (e.response?.data as { message?: string } | undefined)?.message;
-    setErrorMsg(msg || e.message || 'حدث خطأ');
+    setErrorMsg(msg || e.message || t('finance.messages.errorOccurred'));
     window.setTimeout(() => setErrorMsg(''), 6000);
-  }, []);
+  }, [t]);
 
   const loadSummary = useCallback(async () => {
     const res = await getFinanceSummary();
@@ -232,11 +234,11 @@ export default function NationalFinancePage(): React.JSX.Element {
     const balance = Number(payTarget.balance_due);
     const amountNum = payForm.amount === '' ? balance : Number(payForm.amount);
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      notifyError({ response: { data: { message: 'المبلغ يجب أن يكون أكبر من صفر.' } } } as AxiosError<{ message?: string }>);
+      notifyError({ response: { data: { message: t('finance.messages.amountMustBePositive') } } } as AxiosError<{ message?: string }>);
       return;
     }
     if (amountNum > balance) {
-      notifyError({ response: { data: { message: 'المبلغ المدخل يتجاوز المتبقي.' } } } as AxiosError<{ message?: string }>);
+      notifyError({ response: { data: { message: t('finance.messages.amountExceedsRemaining') } } } as AxiosError<{ message?: string }>);
       return;
     }
     try {
@@ -250,7 +252,7 @@ export default function NationalFinancePage(): React.JSX.Element {
       if (r) {
         setPrintTarget({ receipt: r, invoice: res.data.data, payment: res.data.data.payments?.[0] });
       } else if (res.data.data.receipt_number) {
-        notifySuccess(`تم التحصيل — إيصال ${res.data.data.receipt_number}`);
+        notifySuccess(t('finance.messages.collectionSuccess', { receipt: res.data.data.receipt_number }));
       }
     } catch (e) {
       notifyError(e as AxiosError<{ message?: string }>);
@@ -330,15 +332,15 @@ export default function NationalFinancePage(): React.JSX.Element {
 
   const navItems = (collapsed: boolean) => {
     const items = [
-      { key: 'home', label: 'لوحة الحسابات', icon: <HomeIcon /> },
-      { key: 'invoices', label: 'الفواتير', icon: <ReceiptLongIcon /> },
-      { key: 'collections', label: 'التحصيل والإيصالات', icon: <PaidIcon /> },
-      { key: 'review', label: 'المراجعة المالية', icon: <FactCheckIcon /> },
-      { key: 'reconcile', label: 'المطابقة المالية', icon: <SyncAltIcon /> },
-      { key: 'fees', label: 'بنود الرسوم', icon: <RequestQuoteIcon /> },
-      { key: 'reports', label: 'التقارير المالية', icon: <AssessmentIcon /> },
-      { key: 'arrears', label: 'المتأخرات', icon: <WarningAmberIcon /> },
-      { key: 'audit', label: 'سجل التدقيق', icon: <SecurityIcon /> },
+      { key: 'home', label: t('finance.nav.home'), icon: <HomeIcon /> },
+      { key: 'invoices', label: t('finance.nav.invoices'), icon: <ReceiptLongIcon /> },
+      { key: 'collections', label: t('finance.nav.collections'), icon: <PaidIcon /> },
+      { key: 'review', label: t('finance.nav.review'), icon: <FactCheckIcon /> },
+      { key: 'reconcile', label: t('finance.nav.reconcile'), icon: <SyncAltIcon /> },
+      { key: 'fees', label: t('finance.nav.fees'), icon: <RequestQuoteIcon /> },
+      { key: 'reports', label: t('finance.nav.reports'), icon: <AssessmentIcon /> },
+      { key: 'arrears', label: t('finance.nav.arrears'), icon: <WarningAmberIcon /> },
+      { key: 'audit', label: t('finance.nav.audit'), icon: <SecurityIcon /> },
     ];
     return (
       <Stack spacing={0.5} sx={{ p: 1 }}>
@@ -384,16 +386,16 @@ export default function NationalFinancePage(): React.JSX.Element {
   const headerTitle = useMemo(
     () =>
       ({
-        home: 'لوحة الحسابات القومية',
-        invoices: 'الفواتير',
-        collections: 'التحصيل والإيصالات',
-        review: 'المراجعة المالية',
-        fees: 'بنود الرسوم (Master Data)',
-        reports: 'التقارير المالية',
-        arrears: 'المتأخرات',
-        audit: 'سجل التدقيق المالي',
-      })[activeView] ?? 'إدارة الحسابات',
-    [activeView],
+        home: t('finance.pageHeader.home'),
+        invoices: t('finance.pageHeader.invoices'),
+        collections: t('finance.pageHeader.collections'),
+        review: t('finance.pageHeader.review'),
+        fees: t('finance.pageHeader.fees'),
+        reports: t('finance.pageHeader.reports'),
+        arrears: t('finance.pageHeader.arrears'),
+        audit: t('finance.pageHeader.audit'),
+      })[activeView] ?? t('finance.pageHeader.default'),
+    [activeView, t],
   );
 
   return (
@@ -423,8 +425,8 @@ export default function NationalFinancePage(): React.JSX.Element {
             </Box>
             {!navCollapsed && (
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>إدارة الحسابات</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'nowrap' }}>اللائحة المالية</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{t('finance.sidebar.title')}</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'nowrap' }}>{t('finance.sidebar.subtitle')}</Typography>
               </Box>
             )}
           </Stack>
@@ -434,8 +436,8 @@ export default function NationalFinancePage(): React.JSX.Element {
           </Stack>
 
           <Stack direction="row" justifyContent="center" sx={{ p: 1, borderTop: '1px solid', borderTopColor: 'divider', flexShrink: 0 }}>
-            <Tooltip title={navCollapsed ? 'توسيع الشريط' : 'طي الشريط'}>
-              <IconButton onClick={() => setNavCollapsed((v) => !v)} size="small" aria-label={navCollapsed ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'} sx={{ borderRadius: 2 }}>
+            <Tooltip title={navCollapsed ? t('finance.sidebar.expand') : t('finance.sidebar.collapse')}>
+              <IconButton onClick={() => setNavCollapsed((v) => !v)} size="small" aria-label={navCollapsed ? t('finance.sidebar.expandSidebar') : t('finance.sidebar.collapseSidebar')} sx={{ borderRadius: 2 }}>
                 <MenuOpenIcon sx={{ transform: navCollapsed ? 'rotate(0deg)' : 'rotate(180deg)' }} />
               </IconButton>
             </Tooltip>
@@ -453,41 +455,41 @@ export default function NationalFinancePage(): React.JSX.Element {
         <Paper elevation={0} component="header" sx={{ position: 'sticky', top: 0, zIndex: 1100, borderRadius: 0, borderBottom: '1px solid', borderBottomColor: 'divider', bgcolor: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(6px)' }}>
           <Stack direction="row" alignItems="center" spacing={1.25} useFlexGap flexWrap="wrap" sx={{ px: { xs: 1.5, md: 2 }, py: 1, minHeight: 64 }}>
             {!isDesktop && (
-              <IconButton size="small" onClick={() => setMobileNavOpen(true)} aria-label="فتح القائمة" sx={{ borderRadius: 2 }}>
+              <IconButton size="small" onClick={() => setMobileNavOpen(true)} aria-label={t('finance.sidebar.openMenu')} sx={{ borderRadius: 2 }}>
                 <MenuIcon />
               </IconButton>
             )}
             <Box sx={{ minWidth: 0, flex: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 22 } }} noWrap>{headerTitle}</Typography>
-              <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>إدارة الحسابات — اللائحة المالية للمنصة</Typography>
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>{t('finance.sidebar.platformTitle')}</Typography>
             </Box>
-            <Chip size="small" color={loading ? 'default' : 'success'} icon={loading ? <WarningAmberIcon /> : <CheckCircleIcon />} label={loading ? 'جارٍ التحديث…' : 'البيانات محدثة'} variant="outlined" />
-            <Tooltip title="تحديث">
-              <IconButton onClick={refresh} aria-label="تحديث البيانات" sx={{ borderRadius: 2 }}>
+            <Chip size="small" color={loading ? 'default' : 'success'} icon={loading ? <WarningAmberIcon /> : <CheckCircleIcon />} label={loading ? t('finance.sidebar.loading') : t('finance.sidebar.dataUpdated')} variant="outlined" />
+            <Tooltip title={t('finance.sidebar.refresh')}>
+              <IconButton onClick={refresh} aria-label={t('finance.sidebar.refreshData')} sx={{ borderRadius: 2 }}>
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="الملف الشخصي">
-              <IconButton aria-label="قائمة المستخدم" onClick={(e) => setUserMenuAnchor(e.currentTarget)} sx={{ p: 0.5, borderRadius: 2 }}>
+            <Tooltip title={t('finance.sidebar.profile')}>
+              <IconButton aria-label={t('finance.sidebar.userMenu')} onClick={(e) => setUserMenuAnchor(e.currentTarget)} sx={{ p: 0.5, borderRadius: 2 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: 15, fontWeight: 700 }}>
-                  {(user?.full_name || 'م').charAt(0)}
+                  {(user?.full_name || t('finance.sidebar.defaultInitial')).charAt(0)}
                 </Avatar>
               </IconButton>
             </Tooltip>
             <Menu anchorEl={userMenuAnchor} open={Boolean(userMenuAnchor)} onClose={() => setUserMenuAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} slotProps={{ paper: { sx: { mt: 1.5, borderRadius: 3, minWidth: 220 } } }}>
               <Box sx={{ px: 2, py: 1.25, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', fontWeight: 700 }}>{(user?.full_name || user?.email || '؟').charAt(0)}</Avatar>
+                <Avatar sx={{ bgcolor: 'primary.main', fontWeight: 700 }}>{(user?.full_name || user?.email || t('finance.sidebar.unknownInitial')).charAt(0)}</Avatar>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{user?.full_name || 'مدير الحسابات'}</Typography>
+                  <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>{user?.full_name || t('finance.sidebar.defaultName')}</Typography>
                   <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>{user?.email || 'Accounts Management'}</Typography>
                 </Box>
               </Box>
               <Divider />
               <MenuItem onClick={() => { setUserMenuAnchor(null); navigate('/app/account'); }} sx={{ fontWeight: 700 }}>
-                <AccountCircleIcon fontSize="small" sx={{ mr: 1.25, color: 'text.secondary' }} /> الملف الشخصي
+                <AccountCircleIcon fontSize="small" sx={{ mr: 1.25, color: 'text.secondary' }} /> {t('finance.sidebar.profile')}
               </MenuItem>
               <MenuItem onClick={handleLogout} sx={{ color: 'error.main', fontWeight: 700 }}>
-                <LogoutIcon fontSize="small" sx={{ mr: 1.25 }} /> تسجيل الخروج
+                <LogoutIcon fontSize="small" sx={{ mr: 1.25 }} /> {t('finance.sidebar.logout')}
               </MenuItem>
             </Menu>
           </Stack>
@@ -511,25 +513,25 @@ export default function NationalFinancePage(): React.JSX.Element {
             <>
               <Grid container spacing={1.5} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard label="إجمالي الإيرادات" value={`${fmtMoney(summary?.revenue.total)}`} trend={{ label: `${fmtMoney(summary?.revenue.count)} فاتورة مسددة` }} icon={<TrendMoneyIcon />} accent="primary.main" onClick={() => setActiveView('reports')} />
+                  <KpiCard label={t('finance.kpi.totalRevenue')} value={`${fmtMoney(summary?.revenue.total)}`} trend={{ label: t('finance.kpi.paidInvoices', { count: fmtMoney(summary?.revenue.count) }) }} icon={<TrendMoneyIcon />} accent="primary.main" onClick={() => setActiveView('reports')} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard label="محصل اليوم" value={fmtMoney(summary?.today.collected)} trend={{ label: `${fmtMoney(summary?.today.count)} عملية` }} icon={<PaidIcon />} accent="success.main" onClick={() => setActiveView('collections')} />
+                  <KpiCard label={t('finance.kpi.collectedToday')} value={fmtMoney(summary?.today.collected)} trend={{ label: t('finance.kpi.transactions', { count: fmtMoney(summary?.today.count) }) }} icon={<PaidIcon />} accent="success.main" onClick={() => setActiveView('collections')} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard label="بانتظار الدفع" value={fmtMoney(summary?.pending_count)} trend={{ label: 'فواتير صادرة غير مسددة' }} icon={<ReceiptLongIcon />} accent="warning.main" onClick={() => setActiveView('invoices')} />
+                  <KpiCard label={t('finance.kpi.pendingPayment')} value={fmtMoney(summary?.pending_count)} trend={{ label: t('finance.kpi.unpaidInvoices') }} icon={<ReceiptLongIcon />} accent="warning.main" onClick={() => setActiveView('invoices')} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard label="متأخرات" value={fmtMoney(summary?.overdue.count)} trend={{ label: `${fmtMoney(summary?.overdue.amount)} SDG` }} icon={<WarningAmberIcon />} accent="error.main" onClick={() => setActiveView('arrears')} />
+                  <KpiCard label={t('finance.kpi.overdue')} value={fmtMoney(summary?.overdue.count)} trend={{ label: t('finance.kpi.overdueAmount', { amount: fmtMoney(summary?.overdue.amount) }) }} icon={<WarningAmberIcon />} accent="error.main" onClick={() => setActiveView('arrears')} />
                 </Grid>
               </Grid>
 
-              <SectionTitle title="لوحة الحسابات — ملخص" subtitle="مؤشرات التحصيل والإيرادات حسب اللائحة" />
+              <SectionTitle title={t('finance.dashboard.title')} subtitle={t('finance.dashboard.subtitle')} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} md={5}>
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>دورة الفواتير حسب الحالة</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.dashboard.invoiceCycle')}</Typography>
                       {summary?.funnel && Object.keys(summary.funnel).length > 0 ? (
                         <Stack spacing={1} divider={<Divider />}>
                           {Object.entries(summary.funnel).map(([k, v]) => (
@@ -541,7 +543,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             </Stack>
                           ))}
                         </Stack>
-                      ) : processNull()
+                      ) : ProcessNull()
                       }
                     </CardContent>
                   </Card>
@@ -549,16 +551,16 @@ export default function NationalFinancePage(): React.JSX.Element {
                 <Grid item xs={12} md={7}>
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>أحدث الإيصالات</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.dashboard.recentReceipts')}</Typography>
                       <TableContainer>
                         <Table size="small">
                           <TableHead>
                             <TableRow>
-                              <TableCell>رقم الإيصال</TableCell>
-                              <TableCell>الفاتورة</TableCell>
-                              <TableCell>المبلغ</TableCell>
-                              <TableCell>الوسيلة</TableCell>
-                              <TableCell>التوقيت</TableCell>
+                              <TableCell>{t('finance.columns.receiptNumber')}</TableCell>
+                              <TableCell>{t('finance.columns.invoice')}</TableCell>
+                              <TableCell>{t('finance.columns.amount')}</TableCell>
+                              <TableCell>{t('finance.columns.method')}</TableCell>
+                              <TableCell>{t('finance.columns.time')}</TableCell>
                               <TableCell align="center"></TableCell>
                             </TableRow>
                           </TableHead>
@@ -574,7 +576,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                                   <TableCell>{pmt ? methodLabel(pmt.method) : '—'}</TableCell>
                                   <TableCell>{new Date(r.issued_at).toLocaleString('ar-SD')}</TableCell>
                                   <TableCell align="center">
-                                    <IconButton size="small" aria-label="طباعة الإيصال" onClick={() => setPrintTarget({ receipt: r })}>
+                                    <IconButton size="small" aria-label={t('finance.actions.printReceipt')} onClick={() => setPrintTarget({ receipt: r })}>
                                       <PrintIcon fontSize="small" />
                                     </IconButton>
                                   </TableCell>
@@ -583,7 +585,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             })}
                             {receipts.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6}>{processNull()}</TableCell>
+                                <TableCell colSpan={6}>{ProcessNull()}</TableCell>
                               </TableRow>
                             )}
                           </TableBody>
@@ -598,18 +600,18 @@ export default function NationalFinancePage(): React.JSX.Element {
 
           {activeView === 'invoices' && (
             <>
-              <SectionTitle title="الفواتير الموحدة" subtitle="كل الفواتير عبر القطاعات والخدمات — بلا حذف" />
+              <SectionTitle title={t('finance.invoices.unifiedTitle')} subtitle={t('finance.invoices.unifiedSubtitle')} />
               <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 2.5 }}>
                 <TextField
-                  select label="الحالة" size="small" value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))} sx={{ minWidth: 170 }}>
-                  <MenuItem value="">الكل</MenuItem>
+                  select label={t('finance.filters.status')} size="small" value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))} sx={{ minWidth: 170 }}>
+                  <MenuItem value="">{t('finance.filters.all')}</MenuItem>
                   {Object.entries(INVOICE_STATUS_LABELS).map(([k, v]) => (
                     <MenuItem key={k} value={k}>{v}</MenuItem>
                   ))}
                 </TextField>
                 <TextField
-                  select label="الخدمة" size="small" value={filters.service_type} onChange={(e) => setFilters((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 170 }}>
-                  <MenuItem value="">الكل</MenuItem>
+                  select label={t('finance.filters.service')} size="small" value={filters.service_type} onChange={(e) => setFilters((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 170 }}>
+                  <MenuItem value="">{t('finance.filters.all')}</MenuItem>
                   {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
                     <MenuItem key={k} value={k}>{v}</MenuItem>
                   ))}
@@ -621,12 +623,12 @@ export default function NationalFinancePage(): React.JSX.Element {
 
           {activeView === 'collections' && (
             <>
-              <SectionTitle title="التحصيل والإيصالات" subtitle="سجل عمليات الدفع والإيصالات الإلكترونية" />
+              <SectionTitle title={t('finance.collections.title')} subtitle={t('finance.collections.subtitle')} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} md={6}>
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>عمليات الدفع</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.collections.payments')}</Typography>
                       <PaymentsTable payments={payments} />
                     </CardContent>
                   </Card>
@@ -634,7 +636,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                 <Grid item xs={12} md={6}>
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>الإيصالات الإلكترونية</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.collections.receipts')}</Typography>
                       <ReceiptsTable receipts={receipts} onPrint={(r) => setPrintTarget({ receipt: r })} />
                     </CardContent>
                   </Card>
@@ -645,19 +647,19 @@ export default function NationalFinancePage(): React.JSX.Element {
 
           {activeView === 'review' && (
             <>
-              <SectionTitle title="المراجعة المالية" subtitle="فصل الاختصاصات: مراجع ≠ محصل — لا يقبل مراجع فاتورة جمعها بنفسه" />
+              <SectionTitle title={t('finance.review.title')} subtitle={t('finance.review.subtitle')} />
               {paidQueue.length === 0 ? (
-                <EmptyState icon={<FactCheckIcon />} title="لا توجد فواتير بانتظار المراجعة" description="الفواتير المدفوعة تظهر هنا للاعتماد والتسوية" />
+                <EmptyState icon={<FactCheckIcon />} title={t('finance.review.emptyTitle')} description={t('finance.review.emptyDescription')} />
               ) : (
                 <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>الفاتورة</TableCell>
-                        <TableCell>الطلب</TableCell>
-                        <TableCell>الصافي</TableCell>
-                        <TableCell>تحصيل</TableCell>
-                        <TableCell align="center">إجراءات</TableCell>
+                        <TableCell>{t('finance.columns.invoice')}</TableCell>
+                        <TableCell>{t('finance.columns.request')}</TableCell>
+                        <TableCell>{t('finance.columns.net')}</TableCell>
+                        <TableCell>{t('finance.columns.collect')}</TableCell>
+                        <TableCell align="center">{t('finance.columns.actions')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -672,10 +674,10 @@ export default function NationalFinancePage(): React.JSX.Element {
                           <TableCell align="center">
                             <Stack direction="row" spacing={1} justifyContent="center">
                               <Button size="small" variant="contained" color="success" onClick={() => handleReview(inv.id)}>
-                                اعتماد التسوية
+                                {t('finance.actions.approveSettlement')}
                               </Button>
                               <Button size="small" variant="outlined" onClick={() => setInvoiceDetail(inv)}>
-                                تفاصيل
+                                {t('finance.actions.details')}
                               </Button>
                             </Stack>
                           </TableCell>
@@ -692,7 +694,7 @@ export default function NationalFinancePage(): React.JSX.Element {
 
           {activeView === 'arrears' && (
             <>
-              <SectionTitle title="المتأخرات" subtitle={`إجمالي مستحق غير مسدد: ${fmtMoney(arrearsTotal)} SDG`} />
+              <SectionTitle title={t('finance.arrears.title')} subtitle={t('finance.arrears.subtitle', { amount: fmtMoney(arrearsTotal) })} />
               <ArrearsTable items={arrears} onView={(id) => {
                 const inv = invoices.find((i) => i.id === id);
                 if (inv) setInvoiceDetail(inv);
@@ -702,10 +704,10 @@ export default function NationalFinancePage(): React.JSX.Element {
 
           {activeView === 'fees' && (
             <>
-              <SectionTitle title="بنود الرسوم (Master Data)" subtitle="مصدر الحقيقة — لا حذف نهائي، التعطيل عبر is_active" />
+              <SectionTitle title={t('finance.fees.title')} subtitle={t('finance.fees.subtitle')} />
               <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
                 <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleFeeDialogOpen('create')}>
-                  إضافة بند رسوم
+                  {t('finance.fees.addFee')}
                 </Button>
               </Stack>
               <FeesTable
@@ -729,25 +731,25 @@ export default function NationalFinancePage(): React.JSX.Element {
 
       {/* حوار الدفع */}
       <Dialog open={Boolean(payTarget)} onClose={() => setPayTarget(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>تحصيل الفاتورة {payTarget?.invoice_number}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('finance.dialogs.collectInvoice', { number: payTarget?.invoice_number })}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <Stack direction="row" spacing={2}>
               <Box>
-                <Typography variant="caption" color="text.secondary">الصافي</Typography>
+                <Typography variant="caption" color="text.secondary">{t('finance.dialogs.net')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 700 }}>{fmtMoney(payTarget?.net_amount)} {payTarget?.currency}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">المحصل</Typography>
+                <Typography variant="caption" color="text.secondary">{t('finance.dialogs.collected')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 700, color: 'success.main' }}>{fmtMoney(payTarget?.paid_amount)} {payTarget?.currency}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">المتبقي</Typography>
+                <Typography variant="caption" color="text.secondary">{t('finance.dialogs.remaining')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 700, color: 'error.main' }}>{fmtMoney(payTarget?.balance_due)} {payTarget?.currency}</Typography>
               </Box>
             </Stack>
             <TextField
-              label={`مبلغ الدفعة (المتبقي: ${fmtMoney(payTarget?.balance_due)} ${payTarget?.currency})`}
+              label={t('finance.dialogs.paymentAmount', { remaining: fmtMoney(payTarget?.balance_due), currency: payTarget?.currency })}
               type="number"
               value={payForm.amount === '' ? (payTarget?.balance_due ?? '') : payForm.amount}
               onChange={(e) => setPayForm((p) => ({ ...p, amount: e.target.value }))}
@@ -755,18 +757,18 @@ export default function NationalFinancePage(): React.JSX.Element {
               inputProps={{ min: 0, max: Number(payTarget?.balance_due || 0), step: 0.01 }}
             />
             <TextField
-              select label="طريقة الدفع" value={payForm.method} onChange={(e) => setPayForm((p) => ({ ...p, method: e.target.value }))}>
+              select label={t('finance.dialogs.paymentMethod')} value={payForm.method} onChange={(e) => setPayForm((p) => ({ ...p, method: e.target.value }))}>
               {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
                 <MenuItem key={k} value={k}>{v}</MenuItem>
               ))}
             </TextField>
-            <TextField label="مرجع بوابة الدفع (اختياري)" value={payForm.gateway_ref} onChange={(e) => setPayForm((p) => ({ ...p, gateway_ref: e.target.value }))} fullWidth />
-            <TextField label="ملاحظات التحصيل" value={payForm.notes} onChange={(e) => setPayForm((p) => ({ ...p, notes: e.target.value }))} fullWidth multiline minRows={2} />
+            <TextField label={t('finance.dialogs.gatewayRef')} value={payForm.gateway_ref} onChange={(e) => setPayForm((p) => ({ ...p, gateway_ref: e.target.value }))} fullWidth />
+            <TextField label={t('finance.dialogs.collectionNotes')} value={payForm.notes} onChange={(e) => setPayForm((p) => ({ ...p, notes: e.target.value }))} fullWidth multiline minRows={2} />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setPayTarget(null)}>إلغاء</Button>
-          <Button variant="contained" color="success" startIcon={<PaidIcon />} onClick={handlePay}>تأكيد التحصيل</Button>
+          <Button onClick={() => setPayTarget(null)}>{t('finance.actions.cancel')}</Button>
+          <Button variant="contained" color="success" startIcon={<PaidIcon />} onClick={handlePay}>{t('finance.actions.confirmCollection')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -775,10 +777,10 @@ export default function NationalFinancePage(): React.JSX.Element {
         open={Boolean(cancelTarget)}
         onClose={() => { setCancelTarget(null); setReason(''); }}
         onConfirm={handleCancel}
-        title={`إلغاء الفاتورة ${cancelTarget?.invoice_number ?? ''}`}
-        subtitle="لا يُحذف السجل؛ تُحوّل الحالة إلى ملغاة مع حفظ إجراء الإلغاء في سجل التدقيق."
+        title={t('finance.dialogs.cancelInvoice', { number: cancelTarget?.invoice_number ?? '' })}
+        subtitle={t('finance.dialogs.cancelSubtitle')}
         confirmColor="error"
-        confirmLabel="اعتماد الإلغاء"
+        confirmLabel={t('finance.dialogs.approveCancellation')}
         value={reason}
         onChange={setReason}
       />
@@ -788,45 +790,45 @@ export default function NationalFinancePage(): React.JSX.Element {
         open={Boolean(refundTarget)}
         onClose={() => { setRefundTarget(null); setReason(''); }}
         onConfirm={handleRefund}
-        title={`استرداد الفاتورة ${refundTarget?.invoice_number ?? ''}`}
-        subtitle="يُحتجز السجل والدفع، وتُحوّل الحالة إلى مسترَدّة مع مرجع الاسترداد."
+        title={t('finance.dialogs.refundInvoice', { number: refundTarget?.invoice_number ?? '' })}
+        subtitle={t('finance.dialogs.refundSubtitle')}
         confirmColor="secondary"
-        confirmLabel="اعتماد الاسترداد"
+        confirmLabel={t('finance.dialogs.approveRefund')}
         value={reason}
         onChange={setReason}
       />
 
       {/* حوار بنود الرسوم */}
       <Dialog open={Boolean(feeDialog)} onClose={() => setFeeDialog(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>{feeDialog?.mode === 'edit' ? 'تعديل بند الرسوم' : 'إضافة بند رسوم'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{feeDialog?.mode === 'edit' ? t('finance.fees.editFee') : t('finance.fees.addFee')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
-            <TextField label="الاسم بالعربية" value={feeForm.name_ar ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, name_ar: e.target.value }))} fullWidth required />
+            <TextField label={t('finance.fees.nameAr')} value={feeForm.name_ar ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, name_ar: e.target.value }))} fullWidth required />
             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-              <TextField select label="نوع الخدمة" value={feeForm.service_type ?? 'FOOD_CONTROL'} onChange={(e) => setFeeForm((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 180 }}>
+              <TextField select label={t('finance.fees.serviceType')} value={feeForm.service_type ?? 'FOOD_CONTROL'} onChange={(e) => setFeeForm((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 180 }}>
                 {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
                   <MenuItem key={k} value={k}>{v}</MenuItem>
                 ))}
               </TextField>
-              <TextField label="الكود" value={feeForm.code ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, code: e.target.value }))} sx={{ minWidth: 140 }} />
+              <TextField label={t('finance.fees.code')} value={feeForm.code ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, code: e.target.value }))} sx={{ minWidth: 140 }} />
             </Stack>
             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-              <TextField label="القيمة (SDG)" type="number" value={feeForm.amount_sdg ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, amount_sdg: e.target.value }))} sx={{ minWidth: 160 }} />
-              <TextField label="القيمة (USD)" type="number" value={feeForm.amount_usd ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, amount_usd: e.target.value }))} sx={{ minWidth: 160 }} />
+              <TextField label={t('finance.fees.amountSdg')} type="number" value={feeForm.amount_sdg ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, amount_sdg: e.target.value }))} sx={{ minWidth: 160 }} />
+              <TextField label={t('finance.fees.amountUsd')} type="number" value={feeForm.amount_usd ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, amount_usd: e.target.value }))} sx={{ minWidth: 160 }} />
             </Stack>
             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-              <TextField label="تاريخ السريان" type="date" value={feeForm.effective_from ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, effective_from: e.target.value }))} sx={{ minWidth: 160 }} />
-              <TextField label="تاريخ الانتهاء (اختياري)" type="date" value={feeForm.effective_to ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, effective_to: e.target.value || null }))} sx={{ minWidth: 170 }} />
-              <TextField label="السنة" type="number" value={feeForm.year ?? new Date().getFullYear()} onChange={(e) => setFeeForm((f) => ({ ...f, year: Number(e.target.value) }))} sx={{ minWidth: 100 }} />
+              <TextField label={t('finance.fees.effectiveFrom')} type="date" value={feeForm.effective_from ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, effective_from: e.target.value }))} sx={{ minWidth: 160 }} />
+              <TextField label={t('finance.fees.effectiveTo')} type="date" value={feeForm.effective_to ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, effective_to: e.target.value || null }))} sx={{ minWidth: 170 }} />
+              <TextField label={t('finance.fees.year')} type="number" value={feeForm.year ?? new Date().getFullYear()} onChange={(e) => setFeeForm((f) => ({ ...f, year: Number(e.target.value) }))} sx={{ minWidth: 100 }} />
             </Stack>
-            <TextField label="الجهة المعتمدة" value={feeForm.approved_by ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, approved_by: e.target.value }))} fullWidth />
-            <TextField label="المرجع القانوني / المنشور" value={feeForm.legal_reference ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, legal_reference: e.target.value }))} fullWidth />
-            <TextField label="وحدة القياس" value={feeForm.unit ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, unit: e.target.value }))} fullWidth />
+            <TextField label={t('finance.fees.approvedBy')} value={feeForm.approved_by ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, approved_by: e.target.value }))} fullWidth />
+            <TextField label={t('finance.fees.legalReference')} value={feeForm.legal_reference ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, legal_reference: e.target.value }))} fullWidth />
+            <TextField label={t('finance.fees.unit')} value={feeForm.unit ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, unit: e.target.value }))} fullWidth />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setFeeDialog(null)}>إلغاء</Button>
-          <Button variant="contained" startIcon={<CheckCircleIcon />} onClick={handleFeeSave}>حفظ</Button>
+          <Button onClick={() => setFeeDialog(null)}>{t('finance.actions.cancel')}</Button>
+          <Button variant="contained" startIcon={<CheckCircleIcon />} onClick={handleFeeSave}>{t('finance.actions.save')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -844,10 +846,11 @@ export default function NationalFinancePage(): React.JSX.Element {
 
 const TrendMoneyIcon = PaidIcon;
 
-function processNull(): React.JSX.Element {
+function ProcessNull(): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-      لا توجد بيانات بعد
+      {t('finance.empty.noDataYet')}
     </Typography>
   );
 }
@@ -861,19 +864,20 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
   onCancel: (i: FinanceInvoice) => void;
   onRefund: (i: FinanceInvoice) => void;
 }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الفاتورة</TableCell>
-            <TableCell>الطلبية</TableCell>
-            <TableCell>الخدمة</TableCell>
-            <TableCell>الصافي</TableCell>
-            <TableCell>المدفوع / المتبقي</TableCell>
-            <TableCell>الحالة</TableCell>
-            <TableCell>الاستحقاق</TableCell>
-            <TableCell align="center">إجراءات</TableCell>
+            <TableCell>{t('finance.columns.invoice')}</TableCell>
+            <TableCell>{t('finance.columns.order')}</TableCell>
+            <TableCell>{t('finance.columns.service')}</TableCell>
+            <TableCell>{t('finance.columns.net')}</TableCell>
+            <TableCell>{t('finance.columns.paidRemaining')}</TableCell>
+            <TableCell>{t('finance.columns.status')}</TableCell>
+            <TableCell>{t('finance.columns.dueDate')}</TableCell>
+            <TableCell align="center">{t('finance.columns.actions')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -887,7 +891,7 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{fmtMoney(inv.paid_amount)}</Typography>
                   {Number(inv.balance_due) > 0 && (
-                    <Typography variant="caption" color="error.main">متبقي: {fmtMoney(inv.balance_due)}</Typography>
+                    <Typography variant="caption" color="error.main">{t('finance.arrears.remaining', { amount: fmtMoney(inv.balance_due) })}</Typography>
                   )}
                 </Box>
               </TableCell>
@@ -895,17 +899,17 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
               <TableCell>{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ar-SD') : '—'}</TableCell>
               <TableCell align="center">
                 <Stack direction="row" spacing={0.5} justifyContent="center" useFlexGap flexWrap="wrap">
-                  <Button size="small" onClick={() => onView(inv)}>تفاصيل</Button>
+                  <Button size="small" onClick={() => onView(inv)}>{t('finance.actions.details')}</Button>
                   {(inv.status === 'PENDING_PAYMENT' || inv.status === 'OVERDUE' || inv.status === 'ISSUED' || inv.status === 'PARTIAL') && (
                     <Button size="small" variant="contained" color="success" startIcon={<PaidIcon />} onClick={() => onPay(inv)}>
-                      {inv.status === 'PARTIAL' ? 'دفعة إضافية' : 'تحصيل'}
+                      {inv.status === 'PARTIAL' ? t('finance.payments.extraPayment') : t('finance.payments.collect')}
                     </Button>
                   )}
                   {(inv.status === 'PAID' || inv.status === 'PARTIAL') && (
-                    <Button size="small" variant="outlined" color="error" onClick={() => onRefund(inv)}>استرداد</Button>
+                    <Button size="small" variant="outlined" color="error" onClick={() => onRefund(inv)}>{t('finance.actions.refund')}</Button>
                   )}
                   {inv.status !== 'PAID' && inv.status !== 'RECONCILED' && inv.status !== 'CANCELLED' && inv.status !== 'REFUNDED' && inv.status !== 'PARTIAL' && (
-                    <Button size="small" color="error" onClick={() => onCancel(inv)}>إلغاء</Button>
+                    <Button size="small" color="error" onClick={() => onCancel(inv)}>{t('finance.actions.cancel')}</Button>
                   )}
                 </Stack>
               </TableCell>
@@ -913,7 +917,7 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
           ))}
           {invoices.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8}>{processNull()}</TableCell>
+              <TableCell colSpan={8}>{ProcessNull()}</TableCell>
             </TableRow>
           )}
         </TableBody>
@@ -934,17 +938,18 @@ function statusChipLocal(status: string): React.JSX.Element {
 }
 
 function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الفاتورة</TableCell>
-            <TableCell>الوسيلة</TableCell>
-            <TableCell>المبلغ</TableCell>
-            <TableCell>الحالة</TableCell>
-            <TableCell>مرجع</TableCell>
-            <TableCell>التوقيت</TableCell>
+            <TableCell>{t('finance.columns.invoice')}</TableCell>
+            <TableCell>{t('finance.columns.method')}</TableCell>
+            <TableCell>{t('finance.columns.amount')}</TableCell>
+            <TableCell>{t('finance.columns.status')}</TableCell>
+            <TableCell>{t('finance.columns.reference')}</TableCell>
+            <TableCell>{t('finance.columns.time')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -954,7 +959,7 @@ function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.
               <TableCell>{methodLabel(p.method)}</TableCell>
               <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(p.amount)} {p.currency}</TableCell>
               <TableCell>
-                <Chip size="small" color={p.gateway_status === 'CONFIRMED' ? 'success' : 'warning'} label={p.gateway_status === 'CONFIRMED' ? 'مؤكد' : p.gateway_status} variant="outlined" />
+                <Chip size="small" color={p.gateway_status === 'CONFIRMED' ? 'success' : 'warning'} label={p.gateway_status === 'CONFIRMED' ? t('finance.payments.confirmed') : p.gateway_status} variant="outlined" />
               </TableCell>
               <TableCell>
                 {p.gateway_ref ? (
@@ -969,7 +974,7 @@ function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.
             </TableRow>
           ))}
           {payments.length === 0 && (
-            <TableRow><TableCell colSpan={6}>{processNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={6}>{ProcessNull()}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -978,15 +983,16 @@ function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.
 }
 
 function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPrint?: (r: FinanceReceipt) => void }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>رقم الإيصال</TableCell>
-            <TableCell>المبلغ</TableCell>
-            <TableCell>الإصدار</TableCell>
-            <TableCell>رمز التحقق</TableCell>
+            <TableCell>{t('finance.columns.receiptNumber')}</TableCell>
+            <TableCell>{t('finance.columns.amount')}</TableCell>
+            <TableCell>{t('finance.columns.issuedAt')}</TableCell>
+            <TableCell>{t('finance.columns.verificationCode')}</TableCell>
             {onPrint && <TableCell align="center"></TableCell>}
           </TableRow>
         </TableHead>
@@ -1008,7 +1014,7 @@ function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPr
               </TableCell>
               {onPrint && (
                 <TableCell align="center">
-                  <IconButton size="small" aria-label="طباعة الإيصال" onClick={() => onPrint(r)}>
+                  <IconButton size="small" aria-label={t('finance.actions.printReceipt')} onClick={() => onPrint(r)}>
                     <PrintIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -1016,7 +1022,7 @@ function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPr
             </TableRow>
           ))}
           {receipts.length === 0 && (
-            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{processNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{ProcessNull()}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1025,15 +1031,16 @@ function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPr
 }
 
 function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id: string) => void }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الفاتورة</TableCell>
+            <TableCell>{t('finance.columns.invoice')}</TableCell>
             <TableCell>الطلبية</TableCell>
             <TableCell>المستفيد</TableCell>
-            <TableCell>المبلغ</TableCell>
+            <TableCell>{t('finance.columns.amount')}</TableCell>
             <TableCell>الاستحقاق</TableCell>
             <TableCell>أيام التأخير</TableCell>
             <TableCell></TableCell>
@@ -1051,12 +1058,12 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
                 <Chip size="small" color="error" variant="outlined" label={`${a.late_days} يوم`} />
               </TableCell>
               <TableCell align="center">
-                <Button size="small" onClick={() => onView(a.id)}>تفاصيل</Button>
+                <Button size="small" onClick={() => onView(a.id)}>{t('finance.actions.details')}</Button>
               </TableCell>
             </TableRow>
           ))}
           {items.length === 0 && (
-            <TableRow><TableCell colSpan={7}>{processNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={7}>{ProcessNull()}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1069,6 +1076,7 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
   onEdit: (fee: FinanceFee) => void;
   onDeactivate: (id: string) => void;
 }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
       <Table size="small">
@@ -1082,7 +1090,7 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
             <TableCell>السنة</TableCell>
             <TableCell>المرجع</TableCell>
             <TableCell>الحالة</TableCell>
-            <TableCell align="center">إجراءات</TableCell>
+            <TableCell align="center">{t('finance.columns.actions')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -1113,7 +1121,7 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
             </TableRow>
           ))}
           {fees.length === 0 && (
-            <TableRow><TableCell colSpan={9}>{processNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={9}>{ProcessNull()}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1172,7 +1180,7 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
                   </TableRow>
                 ))}
                 {!invoice.items?.length && (
-                  <TableRow><TableCell colSpan={3}>{processNull()}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={3}>{ProcessNull()}</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
