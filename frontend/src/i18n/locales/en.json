@@ -90,6 +90,25 @@
       }
     }
   },
+  "redsea": {
+    "settings": {
+      "contactInfoTitle": "Official Contact Information",
+      "contactInfoSubtitle": "This information is displayed on the public Contact Us page",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings",
+      "fields": {
+        "officialPhone": "Official Phone Number",
+        "officialEmail": "Official Email Address",
+        "address": "Address",
+        "website": "Website"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Settings"
+      },
+      "note": "Note: Until officially approved, this data is shown on the Contact Us page instead of placeholder text."
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",
