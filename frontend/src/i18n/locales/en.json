@@ -123,6 +123,17 @@
       }
     }
   },
+  "sector": {
+    "portal": {
+      "news": {
+        "title": "Sector News",
+        "subtitle": "Latest news and updates from {{sectorName}}",
+        "emptyTitle": "No news currently",
+        "defaultSectorName": "Sector",
+        "defaultCategory": "General"
+      }
+    }
+  },
   "redsea": {
     "settings": {
       "contactInfoTitle": "Official Contact Information",

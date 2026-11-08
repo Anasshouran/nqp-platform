@@ -123,6 +123,17 @@
       }
     }
   },
+  "sector": {
+    "portal": {
+      "news": {
+        "title": "أخبار القطاع",
+        "subtitle": "آخر الأخبار والتحديثات من {{sectorName}}",
+        "emptyTitle": "لا توجد أخبار حالياً",
+        "defaultSectorName": "القطاع",
+        "defaultCategory": "عام"
+      }
+    }
+  },
   "redsea": {
     "settings": {
       "contactInfoTitle": "معلومات الاتصال الرسمية",
