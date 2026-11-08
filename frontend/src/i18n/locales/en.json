@@ -76,6 +76,13 @@
       "subtitle": "Answers to the most frequently asked questions about sector services and the platform.",
       "emptyTitle": "No frequently asked questions",
       "emptyDescription": "No frequently asked questions are currently published."
+    },
+    "news": {
+      "pageTitle": "News",
+      "subtitle": "Latest news and updates from the media center of the National Quarantine Platform.",
+      "emptyTitle": "No news",
+      "emptyDescription": "No news is currently published.",
+      "details": "News details"
     }
   },
   "sector-content": {
