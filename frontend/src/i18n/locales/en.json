@@ -83,6 +83,14 @@
       "emptyTitle": "No news",
       "emptyDescription": "No news is currently published.",
       "details": "News details"
+    },
+    "newsDetail": {
+      "pageTitle": "News Details",
+      "sectorNotAvailable": "Sector not available",
+      "backToNews": "Back to sector news",
+      "notFoundTitle": "News not available",
+      "notFoundDescription": "This news item was not found, or the news is not yet published.",
+      "otherNews": "Other news"
     }
   },
   "sector-content": {
