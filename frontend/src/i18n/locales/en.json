@@ -70,6 +70,12 @@
       "circular": "Circular",
       "publishedAtLabel": "Published At",
       "publishedByLabel": "Published By"
+    },
+    "faq": {
+      "pageTitle": "Frequently Asked Questions",
+      "subtitle": "Answers to the most frequently asked questions about sector services and the platform.",
+      "emptyTitle": "No frequently asked questions",
+      "emptyDescription": "No frequently asked questions are currently published."
     }
   },
   "sector-content": {

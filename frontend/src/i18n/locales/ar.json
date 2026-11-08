@@ -70,6 +70,12 @@
       "circular": "تعميم",
       "publishedAtLabel": "تاريخ الإصدار",
       "publishedByLabel": "صادر عن"
+    },
+    "faq": {
+      "pageTitle": "الأسئلة الشائعة",
+      "subtitle": "إجابات لأكثر الأسئلة تكراراً حول خدمات القطاع والمنصة.",
+      "emptyTitle": "لا توجد أسئلة شائعة",
+      "emptyDescription": "لا توجد أسئلة شائعة منشورة حالياً."
     }
   },
   "sector-content": {
