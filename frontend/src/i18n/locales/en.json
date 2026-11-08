@@ -8562,6 +8562,62 @@
   "subtitle": "{count} metrics",
   "emptyTitle": "No performance metrics",
   "emptyDesc": "Collected performance metrics appear here",
+  "airporthealth": {
+    "screens": {
+      "clinical": {
+        "suspected": {
+          "title": "Suspected Cases",
+          "subtitle": "Track cases referred for detailed examination and isolation decisions",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Suspected case data is loaded from the command center when available."
+        },
+        "isolation": {
+          "title": "Isolation Management",
+          "subtitle": "Airport health emergency isolation unit — capacity, cases, and medical supervision",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Isolation case data is loaded from the isolation system when available."
+        },
+        "lab": {
+          "title": "Airport Health Laboratory",
+          "subtitle": "Manage test orders, samples, and RT-PCR and rapid antigen results",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Lab order data is loaded from the laboratory system when available."
+        },
+        "contactTracing": {
+          "title": "Contact Tracing",
+          "subtitle": "Index case and flight contacts — tracking nearby seats",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Contact tracing data is loaded from the surveillance system when available."
+        },
+        "emergency": {
+          "title": "Emergency Operations Room",
+          "subtitle": "Managing health emergency response at the airport",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Operations room data is loaded from the emergency management system when available."
+        }
+      },
+      "inspection": {
+        "aircraftInspection": {
+          "title": "Aircraft Inspection",
+          "subtitle": "Environmental hygiene inspection of arriving aircraft — inspector and examiner",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Aircraft inspection data is loaded from the inspection system when available."
+        },
+        "analytics": {
+          "title": "Analytics and Statistics",
+          "subtitle": "Performance indicators for screening, laboratory, and aircraft inspection",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Analytics data is loaded from the reporting platform when available."
+        },
+        "certificates": {
+          "title": "Health Certificates and Clearances",
+          "subtitle": "Issuance of health certificates and aircraft clearances under international health regulations",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Certificate data is loaded from the issuance system when available."
+        }
+      }
+    }
+  },
   "airportdirector": {
     "reports": {
       "screenings_by_flight_title": "Screenings by flight",
