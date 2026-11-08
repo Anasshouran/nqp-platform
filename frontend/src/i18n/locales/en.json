@@ -72,6 +72,24 @@
       "publishedByLabel": "Published By"
     }
   },
+  "sector-content": {
+    "sectorContentPage": {
+      "eyebrow": "Content Management System",
+      "title": "Content Management",
+      "subtitle": "Manage sector news, circulars, pages, FAQs, documents, sliders, media, and contact settings.",
+      "items": {
+        "news": "News",
+        "circulars": "Circulars",
+        "announcements": "Announcements",
+        "pages": "Static Pages",
+        "faq": "FAQs",
+        "documents": "Documents",
+        "sliders": "Promo Sliders",
+        "media": "Media Library",
+        "settings": "Settings"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",
