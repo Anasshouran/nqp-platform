@@ -52,6 +52,24 @@
       "empty": {
         "quickAccess": "Quick Access"
       }
+    },
+    "who": {
+      "syncLogs": {
+        "title": "Sync Logs",
+        "subtitle": "WHO connectivity operations log: ICD-11 sync, connectivity checks, and IHR events submission",
+        "table": {
+          "title": "Sync Logs",
+          "subtitle": "{{count}} operations",
+          "searchPlaceholder": "Search in logs...",
+          "emptyTitle": "No sync logs",
+          "emptyDescription": "WHO connectivity operations appear here",
+          "columns": {
+            "operation": "Operation",
+            "status": "Status",
+            "time": "Time"
+          }
+        }
+      }
     }
   },
   "sector-cms": {
