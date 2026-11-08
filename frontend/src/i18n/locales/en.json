@@ -83,6 +83,26 @@
       "emptyTitle": "No news",
       "emptyDescription": "No news is currently published.",
       "details": "News details"
+    },
+    "newsDetail": {
+      "pageTitle": "News Details",
+      "sectorNotAvailable": "Sector not available",
+      "backToNews": "Back to sector news",
+      "notFoundTitle": "News not available",
+      "notFoundDescription": "This news item was not found, or the news is not yet published.",
+      "otherNews": "Other news"
+    },
+    "circulars": {
+      "pageTitle": "Circulars",
+      "subtitle": "Circulars and administrative decisions issued by the Federal Quarantine Administration.",
+      "emptyTitle": "No circulars currently published",
+      "emptyDescription": "Official circulars will be published here as soon as they are issued.",
+      "readCircular": "Read circular",
+      "priority": {
+        "urgent": "Urgent",
+        "important": "Important",
+        "normal": "Normal"
+      }
     }
   },
   "sector-content": {
