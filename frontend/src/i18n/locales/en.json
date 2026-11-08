@@ -52,6 +52,12 @@
       "empty": {
         "quickAccess": "Quick Access"
       }
+    },
+    "who": {
+      "syncLogs": {
+        "title": "Sync Logs",
+        "subtitle": "WHO connectivity operations log: ICD-11 sync, connectivity checks, and IHR events submission"
+      }
     }
   },
   "sector-cms": {
