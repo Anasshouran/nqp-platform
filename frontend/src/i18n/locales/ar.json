@@ -91,6 +91,18 @@
       "notFoundTitle": "الخبر غير متاح",
       "notFoundDescription": "لم يتم العثور على هذا الخبر، أو أن الخبر غير منشور بعد.",
       "otherNews": "أخبار أخرى"
+    },
+    "circulars": {
+      "pageTitle": "التعميمات",
+      "subtitle": "التعميمات والقرارات الإدارية الصادرة عن الإدارة الاتحادية للحجر الصحي.",
+      "emptyTitle": "لا توجد تعميمات منشورة حالياً",
+      "emptyDescription": "سيتم نشر التعميمات الرسمية هنا فور صدورها.",
+      "readCircular": "قراءة التعميم",
+      "priority": {
+        "urgent": "عاجل",
+        "important": "مهم",
+        "normal": "عادي"
+      }
     }
   },
   "sector-content": {
