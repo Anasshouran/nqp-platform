@@ -109,6 +109,30 @@
       "note": "Note: Until officially approved, this data is shown on the Contact Us page instead of placeholder text."
     }
   },
+  "vectorcontrol": {
+    "alerts": {
+      "autoAlertsTitle": "Automatic Alerts",
+      "autoAlertsSubtitle": "High-risk hotspots, positive results, low stock, and delayed operations",
+      "title": "Alerts",
+      "alertCount": "{{count}} alerts",
+      "searchPlaceholder": "Search by title...",
+      "emptyTitle": "No alerts",
+      "emptyDescription": "Automatic alerts will appear here",
+      "columns": {
+        "severity": "Severity",
+        "type": "Type",
+        "title": "Title",
+        "date": "Date"
+      },
+      "actions": {
+        "markAllRead": "Mark all as read",
+        "markRead": "Done"
+      },
+      "messages": {
+        "actionFailed": "Operation failed"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",
