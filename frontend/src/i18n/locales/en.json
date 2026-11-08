@@ -72,6 +72,67 @@
       "publishedByLabel": "Published By"
     }
   },
+  "sector-content": {
+    "sectorContentPage": {
+      "eyebrow": "Content Management System",
+      "title": "Content Management",
+      "subtitle": "Manage sector news, circulars, pages, FAQs, documents, sliders, media, and contact settings.",
+      "items": {
+        "news": "News",
+        "circulars": "Circulars",
+        "announcements": "Announcements",
+        "pages": "Static Pages",
+        "faq": "FAQs",
+        "documents": "Documents",
+        "sliders": "Promo Sliders",
+        "media": "Media Library",
+        "settings": "Settings"
+      }
+    }
+  },
+  "redsea": {
+    "settings": {
+      "contactInfoTitle": "Official Contact Information",
+      "contactInfoSubtitle": "This information is displayed on the public Contact Us page",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings",
+      "fields": {
+        "officialPhone": "Official Phone Number",
+        "officialEmail": "Official Email Address",
+        "address": "Address",
+        "website": "Website"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Settings"
+      },
+      "note": "Note: Until officially approved, this data is shown on the Contact Us page instead of placeholder text."
+    }
+  },
+  "vectorcontrol": {
+    "alerts": {
+      "autoAlertsTitle": "Automatic Alerts",
+      "autoAlertsSubtitle": "High-risk hotspots, positive results, low stock, and delayed operations",
+      "title": "Alerts",
+      "alertCount": "{{count}} alerts",
+      "searchPlaceholder": "Search by title...",
+      "emptyTitle": "No alerts",
+      "emptyDescription": "Automatic alerts will appear here",
+      "columns": {
+        "severity": "Severity",
+        "type": "Type",
+        "title": "Title",
+        "date": "Date"
+      },
+      "actions": {
+        "markAllRead": "Mark all as read",
+        "markRead": "Done"
+      },
+      "messages": {
+        "actionFailed": "Operation failed"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "Other",
     "أدخل قيمة تسوية غير صفرية": "Enter a non-zero adjustment value",

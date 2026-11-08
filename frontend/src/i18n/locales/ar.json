@@ -72,6 +72,67 @@
       "publishedByLabel": "صادر عن"
     }
   },
+  "sector-content": {
+    "sectorContentPage": {
+      "eyebrow": "نظام إدارة المحتوى",
+      "title": "إدارة المحتوى",
+      "subtitle": "أدر أخبار القطاع، التعاميم، الصفحات، الأسئلة الشائعة، الوثائق، الشرائح، الوسائط وإعدادات الاتصال.",
+      "items": {
+        "news": "الأخبار",
+        "circulars": "التعاميم",
+        "announcements": "الإعلانات",
+        "pages": "الصفحات الثابتة",
+        "faq": "الأسئلة الشائعة",
+        "documents": "الوثائق",
+        "sliders": "الشرائح الدعائية",
+        "media": "مكتبة الوسائط",
+        "settings": "الإعدادات"
+      }
+    }
+  },
+  "redsea": {
+    "settings": {
+      "contactInfoTitle": "معلومات الاتصال الرسمية",
+      "contactInfoSubtitle": "تظهر هذه البيانات في صفحة اتصل بنا بالموقع العام",
+      "saveSuccess": "تم حفظ الإعدادات بنجاح",
+      "saveError": "فشل حفظ الإعدادات",
+      "fields": {
+        "officialPhone": "رقم الهاتف الرسمي",
+        "officialEmail": "البريد الإلكتروني الرسمي",
+        "address": "العنوان",
+        "website": "الموقع الإلكتروني"
+      },
+      "actions": {
+        "saving": "جارٍ الحفظ...",
+        "save": "حفظ الإعدادات"
+      },
+      "note": "ملاحظة: حتى تُعتمد البيانات رسميًا تُعرض في صفحة اتصل بنا بدلًا من النصوص المؤقتة."
+    }
+  },
+  "vectorcontrol": {
+    "alerts": {
+      "autoAlertsTitle": "التنبيهات التلقائية",
+      "autoAlertsSubtitle": "بؤر عالية الخطورة، نتائج موجبة، نقص مخزون، وتأخر عمليات",
+      "title": "التنبيهات",
+      "alertCount": "{{count}} تنبيه",
+      "searchPlaceholder": "بحث بالعنوان...",
+      "emptyTitle": "لا توجد تنبيهات",
+      "emptyDescription": "التنبيهات التلقائية تظهر هنا",
+      "columns": {
+        "severity": "الخطورة",
+        "type": "النوع",
+        "title": "العنوان",
+        "date": "التاريخ"
+      },
+      "actions": {
+        "markAllRead": "تحديد الكل كمقروء",
+        "markRead": "تم"
+      },
+      "messages": {
+        "actionFailed": "فشلت العملية"
+      }
+    }
+  },
   "vaccination": {
     "أخرى": "أخرى",
     "أدخل قيمة تسوية غير صفرية": "أدخل قيمة تسوية غير صفرية",
