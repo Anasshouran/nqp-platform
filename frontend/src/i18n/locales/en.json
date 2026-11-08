@@ -8562,6 +8562,42 @@
   "subtitle": "{count} metrics",
   "emptyTitle": "No performance metrics",
   "emptyDesc": "Collected performance metrics appear here",
+  "airporthealth": {
+    "screens": {
+      "clinical": {
+        "suspected": {
+          "title": "Suspected Cases",
+          "subtitle": "Track cases referred for detailed examination and isolation decisions",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Suspected case data is loaded from the command center when available."
+        },
+        "isolation": {
+          "title": "Isolation Management",
+          "subtitle": "Airport health emergency isolation unit — capacity, cases, and medical supervision",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Isolation case data is loaded from the isolation system when available."
+        },
+        "lab": {
+          "title": "Airport Health Laboratory",
+          "subtitle": "Manage test orders, samples, and RT-PCR and rapid antigen results",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Lab order data is loaded from the laboratory system when available."
+        },
+        "contactTracing": {
+          "title": "Contact Tracing",
+          "subtitle": "Index case and flight contacts — tracking nearby seats",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Contact tracing data is loaded from the surveillance system when available."
+        },
+        "emergency": {
+          "title": "Emergency Operations Room",
+          "subtitle": "Managing health emergency response at the airport",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Operations room data is loaded from the emergency management system when available."
+        }
+      }
+    }
+  },
   "airportdirector": {
     "reports": {
       "screenings_by_flight_title": "Screenings by flight",
