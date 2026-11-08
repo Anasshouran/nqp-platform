@@ -123,6 +123,42 @@
       }
     }
   },
+  "sector": {
+    "portal": {
+      "news": {
+        "title": "أخبار القطاع",
+        "subtitle": "آخر الأخبار والتحديثات من {{sectorName}}",
+        "emptyTitle": "لا توجد أخبار حالياً",
+        "defaultSectorName": "القطاع",
+        "defaultCategory": "عام"
+      },
+      "ports": {
+        "title": "نقاط الدخول",
+        "subtitle": "جميع نقاط الدخول التابعة لـ{{sectorName}}",
+        "defaultSectorName": "القطاع",
+        "searchPlaceholder": "ابحث عن منفذ بالاسم أو الرمز...",
+        "emptyTitle": "لا توجد نقاط دخول",
+        "emptyDescription": "سيتم إضافة نقاط الدخول قريباً.",
+        "noMatchTitle": "لا توجد منافذ مطابقة",
+        "noMatchDescription": "جرّب كلمة بحث أخرى.",
+        "portType": {
+          "airport": "منفذ جوي",
+          "seaport": "منفذ بحري",
+          "landPort": "منفذ بري"
+        },
+        "group": {
+          "airports": "المطارات",
+          "seaports": "الموانئ البحرية",
+          "landPorts": "المعابر البرية"
+        },
+        "stat": {
+          "airports": "مطارات",
+          "seaports": "موانئ بحرية",
+          "landPorts": "معابر برية"
+        }
+      }
+    }
+  },
   "redsea": {
     "settings": {
       "contactInfoTitle": "معلومات الاتصال الرسمية",

@@ -123,6 +123,42 @@
       }
     }
   },
+  "sector": {
+    "portal": {
+      "news": {
+        "title": "Sector News",
+        "subtitle": "Latest news and updates from {{sectorName}}",
+        "emptyTitle": "No news currently",
+        "defaultSectorName": "Sector",
+        "defaultCategory": "General"
+      },
+      "ports": {
+        "title": "Entry Points",
+        "subtitle": "All entry points belonging to {{sectorName}}",
+        "defaultSectorName": "Sector",
+        "searchPlaceholder": "Search for an entry point by name or code...",
+        "emptyTitle": "No entry points",
+        "emptyDescription": "Entry points will be added soon.",
+        "noMatchTitle": "No matching entry points",
+        "noMatchDescription": "Try another search term.",
+        "portType": {
+          "airport": "Airport entry point",
+          "seaport": "Seaport entry point",
+          "landPort": "Land entry point"
+        },
+        "group": {
+          "airports": "Airports",
+          "seaports": "Seaports",
+          "landPorts": "Land crossings"
+        },
+        "stat": {
+          "airports": "Airports",
+          "seaports": "Seaports",
+          "landPorts": "Land crossings"
+        }
+      }
+    }
+  },
   "redsea": {
     "settings": {
       "contactInfoTitle": "Official Contact Information",
