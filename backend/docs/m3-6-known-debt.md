@@ -32,6 +32,16 @@
 
 ---
 
+## D-M3-6-4: __str__ يستخدم `except Exception` واسعاً
+
+**الوضع:** إصلاح M3-6 لـ `ServiceAvailability.__str__` يستخدم `except Exception:` بدل `except ObjectDoesNotExist:`.
+
+**الأثر:** يلتقط أي خطأ (بما فيها bugs مستقبلية) بصمت.
+
+**الحل المقترح (M4):** تضييق إلى `except (ObjectDoesNotExist, AttributeError):` أو مشابه. لا أثر سلوكي حالياً.
+
+---
+
 ## خلاصة
 
 **M3-6 لم يكشف أي ديون جديدة خطيرة.** النظام متسق عبر 13 نموذجاً و 6 محاور تكامل. أُصلحت 3 مشكلات اختبارية (envelope توقعات، CASCADE __str__) — لا مشاكل إنتاجية.
