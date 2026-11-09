@@ -317,6 +317,42 @@
             "description": "لم يُسجّل موظفون ضمن القطاع بعد."
           }
         },
+        "airportHealth": {
+          "eyebrow": "الأنظمة التشغيلية",
+          "title": "صحة المطارات — قطاع البحر الأحمر",
+          "subtitle": "صالات ونقاط فحص ومسافرين في مطارات القطاع.",
+          "noFlight": "بلا رحلة",
+          "kpi": {
+            "airports": { "label": "المطارات" },
+            "terminals": { "label": "الصالات" },
+            "points": { "label": "نقاط الفحص" },
+            "screenings": { "label": "فحوصات المسافرين" }
+          },
+          "screeningsSection": {
+            "title": "فحوصات المسافرين الأخيرة",
+            "subtitle": "آخر فحوصات مطارات القطاع"
+          },
+          "screeningsEmpty": {
+            "title": "لا توجد فحوصات",
+            "description": "لم تُسجّل فحوصات مطارات ضمن القطاع بعد."
+          },
+          "pointsSection": {
+            "title": "نقاط الفحص",
+            "subtitle": "نقاط فحص الصحة داخل المطارات"
+          },
+          "pointsEmpty": {
+            "title": "لا توجد نقاط فحص",
+            "description": "لم تُسجّل نقاط فحص ضمن القطاع بعد."
+          },
+          "inspectionsSection": {
+            "title": "تفتيش الطائرات",
+            "subtitle": "أحدث التفتيشات"
+          },
+          "inspectionsEmpty": {
+            "title": "لا توجد تفتيشات طائرات",
+            "description": "لم تُسجّل تفتيشات ضمن القطاع بعد."
+          }
+        },
         "vectorControl": {
           "eyebrow": "الأنظمة التشغيلية",
           "title": "مكافحة النواقل — قطاع البحر الأحمر",
