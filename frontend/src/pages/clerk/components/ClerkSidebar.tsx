@@ -5,20 +5,22 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Badge from '@mui/material/Badge';
 import Chip from '@mui/material/Chip';
+import { useTranslation } from 'react-i18next';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import InfoIcon from '@mui/icons-material/Info';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 export const NotificationDot = ({ tone }: { tone: 'error' | 'warning' | 'success' | 'info' }) => {
+  const { t } = useTranslation();
   const meta = {
-    error: { color: 'error.main', label: 'خطأ', Icon: ErrorOutlineIcon },
-    warning: { color: 'warning.main', label: 'تنبيه', Icon: WarningAmberIcon },
-    success: { color: 'success.main', label: 'نجاح', Icon: CheckCircleIcon },
-    info: { color: 'info.main', label: 'معلومة', Icon: InfoIcon },
+    error: { color: 'error.main', labelKey: 'clerk.components.sidebar.notification.error', Icon: ErrorOutlineIcon },
+    warning: { color: 'warning.main', labelKey: 'clerk.components.sidebar.notification.warning', Icon: WarningAmberIcon },
+    success: { color: 'success.main', labelKey: 'clerk.components.sidebar.notification.success', Icon: CheckCircleIcon },
+    info: { color: 'info.main', labelKey: 'clerk.components.sidebar.notification.info', Icon: InfoIcon },
   }[tone];
   return (
-    <Tooltip title={meta.label}>
+    <Tooltip title={t(meta.labelKey)}>
       <Box
         sx={{
           width: 24,
