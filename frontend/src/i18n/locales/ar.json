@@ -243,6 +243,11 @@
     }
   },
   "redsea": {
+    "portal": {
+      "content": {
+        "sectorName": "قطاع البحر الأحمر"
+      }
+    },
     "settings": {
       "contactInfoTitle": "معلومات الاتصال الرسمية",
       "contactInfoSubtitle": "تظهر هذه البيانات في صفحة اتصل بنا بالموقع العام",

@@ -243,6 +243,11 @@
     }
   },
   "redsea": {
+    "portal": {
+      "content": {
+        "sectorName": "Red Sea Sector"
+      }
+    },
     "settings": {
       "contactInfoTitle": "Official Contact Information",
       "contactInfoSubtitle": "This information is displayed on the public Contact Us page",
