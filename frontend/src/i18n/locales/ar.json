@@ -26,6 +26,28 @@
         "resultMeta": "{{count}} أصناف · {{weight}} كجم · {{date}}",
         "noResults": "لا توجد نتائج مطابقة لـ «{{q}}»"
       },
+      "home": {
+        "title": "جميع الطلبات",
+        "subtitle": "{{count}} طلب",
+        "kpi": {
+          "drafts": {
+            "label": "المسودات",
+            "hint": "طلبات لم تُرسل"
+          },
+          "submitted": {
+            "label": "بانتظار الرسوم",
+            "hint": "مرسلة للمحاسب"
+          },
+          "underReview": {
+            "label": "بانتظار المراجعة",
+            "hint": "سُددت رسومها — لدى مدير القسم"
+          },
+          "inspection": {
+            "label": "قيد الفحص",
+            "hint": "تفتيش ميداني ومعمل"
+          }
+        }
+      },
       "settings": {
         "title": "الإعدادات",
         "languageLabel": "اللغة",
