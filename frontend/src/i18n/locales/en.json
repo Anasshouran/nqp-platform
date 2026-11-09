@@ -278,6 +278,33 @@
             "title": "No staff",
             "description": "No staff have been registered in the sector yet."
           }
+        },
+        "vectorControl": {
+          "eyebrow": "Operational systems",
+          "title": "Vector control — Red Sea sector",
+          "subtitle": "Vector surveys and work orders within sector entry points.",
+          "kpi": {
+            "surveys": { "label": "Surveys this month" },
+            "reports": { "label": "New reports" },
+            "activeOperations": { "label": "Active operations" },
+            "completedOperations": { "label": "Completed operations" }
+          },
+          "surveysSection": {
+            "title": "Recent surveys",
+            "subtitle": "Vector surveys in the sector"
+          },
+          "surveysEmpty": {
+            "title": "No surveys",
+            "description": "No vector surveys have been registered in the sector yet."
+          },
+          "operationsSection": {
+            "title": "Control operations",
+            "subtitle": "Recent control operations"
+          },
+          "operationsEmpty": {
+            "title": "No operations",
+            "description": "No control operations have been registered in the sector yet."
+          }
         }
       }
     },

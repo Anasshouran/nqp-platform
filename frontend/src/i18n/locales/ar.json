@@ -278,6 +278,33 @@
             "title": "لا يوجد موظفون",
             "description": "لم يُسجّل موظفون ضمن القطاع بعد."
           }
+        },
+        "vectorControl": {
+          "eyebrow": "الأنظمة التشغيلية",
+          "title": "مكافحة النواقل — قطاع البحر الأحمر",
+          "subtitle": "مسوحات النواقل وأوامر العمل ضمن منافذ القطاع.",
+          "kpi": {
+            "surveys": { "label": "المسوحات هذا الشهر" },
+            "reports": { "label": "البلاغات الجديدة" },
+            "activeOperations": { "label": "عمليات نشطة" },
+            "completedOperations": { "label": "عمليات منفذة" }
+          },
+          "surveysSection": {
+            "title": "المسوحات الأخيرة",
+            "subtitle": "مسوحات النواقل في القطاع"
+          },
+          "surveysEmpty": {
+            "title": "لا توجد مسوحات",
+            "description": "لم تُسجّل مسوحات نواقل ضمن القطاع بعد."
+          },
+          "operationsSection": {
+            "title": "عمليات المكافحة",
+            "subtitle": "عمليات المكافحة الأخيرة"
+          },
+          "operationsEmpty": {
+            "title": "لا توجد عمليات",
+            "description": "لم تُسجّل عمليات مكافحة ضمن القطاع بعد."
+          }
         }
       }
     },
