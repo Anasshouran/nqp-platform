@@ -11,6 +11,7 @@ import type {
   FacilityOwnership,
   TechnicalSupervisor,
   TechnicalSupervision,
+  DepartmentNodeAssignment,
 } from '../../types/registry';
 
 const BASE = '/api/v1/registry';
@@ -128,3 +129,12 @@ export const createTechnicalSupervision = (
   data: Partial<TechnicalSupervision>,
 ): Promise<TechnicalSupervision> =>
   axios.post(`${BASE}/technical-supervisions/`, data).then((r) => unwrap<TechnicalSupervision>(r));
+
+// --- Department Assignments (M3-4) ---
+export const listDepartmentAssignments = (): Promise<DepartmentNodeAssignment[]> =>
+  axios.get(`${BASE}/department-assignments/`).then((r) => unwrap<DepartmentNodeAssignment[]>(r));
+
+export const createDepartmentAssignment = (
+  data: Partial<DepartmentNodeAssignment>,
+): Promise<DepartmentNodeAssignment> =>
+  axios.post(`${BASE}/department-assignments/`, data).then((r) => unwrap<DepartmentNodeAssignment>(r));

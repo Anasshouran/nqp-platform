@@ -142,3 +142,17 @@ export interface TechnicalSupervision {
   valid_to: string | null;
   note?: string;
 }
+
+export interface DepartmentNodeAssignment {
+  id: string;
+  department: string;
+  department_code: string;
+  department_name: string;
+  node: string;
+  node_code: string;
+  node_kind: 'DEPARTMENT';
+  is_primary: boolean;
+  valid_from: string;
+  valid_to: string | null;
+  note?: string;
+}

@@ -6,6 +6,7 @@ Report serializers للعرض، Write serializers للكتابة، مجمّعة 
 from rest_framework import serializers
 
 from apps.registry.models import (
+    DepartmentNodeAssignment,
     FacilityOwner,
     FacilityOwnership,
     HealthFacilityNodeAssignment,
@@ -391,6 +392,46 @@ class TechnicalSupervisionWriteSerializer(serializers.ModelSerializer):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         instance = TechnicalSupervision(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# DepartmentNodeAssignment
+# ---------------------------------------------------------------------------
+
+class DepartmentNodeAssignmentSerializer(serializers.ModelSerializer):
+    department_code = serializers.CharField(source='department.code', read_only=True)
+    department_name = serializers.CharField(source='department.name_ar', read_only=True)
+    node_code = serializers.CharField(source='node.code', read_only=True)
+    node_kind = serializers.CharField(source='node.kind', read_only=True)
+
+    class Meta:
+        model = DepartmentNodeAssignment
+        fields = [
+            'id', 'department', 'department_code', 'department_name',
+            'node', 'node_code', 'node_kind',
+            'is_primary', 'valid_from', 'valid_to', 'note',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class DepartmentNodeAssignmentWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepartmentNodeAssignment
+        fields = [
+            'department', 'node', 'is_primary', 'valid_from', 'valid_to', 'note',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = DepartmentNodeAssignment(**attrs)
         instance.pk = getattr(self.instance, 'pk', None)
         try:
             instance.clean()

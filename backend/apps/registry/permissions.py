@@ -20,6 +20,9 @@ FACILITY_OWNERSHIP_EDIT = "facility_ownership:edit"
 TECHNICAL_SUPERVISION_VIEW = "technical_supervision:view"
 TECHNICAL_SUPERVISION_ADD = "technical_supervision:add"
 TECHNICAL_SUPERVISION_EDIT = "technical_supervision:edit"
+DEPARTMENT_ASSIGNMENT_VIEW = "department_assignment:view"
+DEPARTMENT_ASSIGNMENT_ADD = "department_assignment:add"
+DEPARTMENT_ASSIGNMENT_EDIT = "department_assignment:edit"
 
 
 class RegistryPermissionMixin:

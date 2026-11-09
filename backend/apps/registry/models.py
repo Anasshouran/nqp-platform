@@ -705,3 +705,83 @@ class TechnicalSupervision(BaseModel):
 
     def __str__(self):
         return f'{self.facility} ← {self.supervisor} ({self.valid_from})'
+
+
+# ---------------------------------------------------------------------------
+# DepartmentNodeAssignment (ربط Department بشجرة Reporting)
+# ---------------------------------------------------------------------------
+
+class DepartmentNodeAssignment(BaseModel):
+    """تعيين إدارة (organization.Department) إلى عقدة ReportingNode.
+    
+    يتبع نفس نمط StateNodeAssignment / LocalityNodeAssignment / 
+    HealthFacilityNodeAssignment من M1.
+    
+    القيود:
+    - valid_to > valid_from
+    - تعيين أساسي واحد نشط لكل إدارة
+    - node.kind يجب أن يكون 'DEPARTMENT' (يُفرَض في clean())
+    """
+
+    department = models.ForeignKey(
+        'organization.Department',
+        on_delete=models.CASCADE,
+        related_name='node_assignments',
+        verbose_name='الإدارة',
+    )
+    node = models.ForeignKey(
+        ReportingNode,
+        on_delete=models.PROTECT,
+        related_name='department_assignments',
+        verbose_name='العقدة',
+    )
+    valid_from = models.DateField(verbose_name='من تاريخ')
+    valid_to = models.DateField(null=True, blank=True, verbose_name='إلى تاريخ')
+    is_primary = models.BooleanField(default=False, verbose_name='أساسي')
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-valid_from']
+        verbose_name = 'تعيين إدارة'
+        verbose_name_plural = 'تعيينات الإدارات'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(valid_to__isnull=True) | models.Q(valid_to__gt=models.F('valid_from')),
+                name='department_node_assignment_valid_range',
+            ),
+            models.UniqueConstraint(
+                fields=['department', 'valid_from'],
+                name='department_node_assignment_unique_start',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['department', 'valid_to'], name='dept_assign_dept_to_idx'),
+            models.Index(fields=['node', 'valid_to'], name='dept_assign_node_to_idx'),
+            models.Index(fields=['department', 'is_primary'], name='dept_assign_dept_prim_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_to and self.valid_to <= self.valid_from:
+            raise ValidationError('valid_to must be after valid_from')
+        # التحقق من node.kind
+        if self.node and self.node.kind != 'DEPARTMENT':
+            raise ValidationError({
+                'node': f'node.kind يجب أن يكون DEPARTMENT، وليس {self.node.kind}',
+            })
+        # تعيين أساسي واحد نشط لكل إدارة
+        if self.is_primary and self.valid_to is None:
+            qs = DepartmentNodeAssignment.objects.filter(
+                department=self.department,
+                is_primary=True,
+                valid_to__isnull=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    'Another primary assignment is active for this department'
+                )
+
+    def __str__(self):
+        return f'{self.department} ← {self.node.code} ({self.valid_from})'

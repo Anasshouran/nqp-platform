@@ -16,6 +16,7 @@ from core.utils.scoping import has_global_scope, resolve_authorized_entry_points
 from django.db.models import Q
 
 from .models import (
+    DepartmentNodeAssignment,
     FacilityOwner,
     FacilityOwnership,
     HealthFacilityNodeAssignment,
@@ -28,6 +29,8 @@ from .models import (
     TechnicalSupervision,
 )
 from .serializers import (
+    DepartmentNodeAssignmentSerializer,
+    DepartmentNodeAssignmentWriteSerializer,
     FacilityOwnerSerializer,
     FacilityOwnerWriteSerializer,
     FacilityOwnershipSerializer,
@@ -168,6 +171,27 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
         if model_name == 'FacilityOwnership':
             # الملكية تتبع facility_id المسموح
             return qs.filter(facility_id__in=facility_ids)
+
+        if model_name == 'DepartmentNodeAssignment':
+            # Department can be under a facility (via facility FK) or at sector level
+            # For MVP: filter by department.facility in allowed facilities, OR
+            # department.sector in allowed sectors (for sector-level departments)
+            from apps.organization.models import Sector as OrgSector
+
+            # sectors من entry_points (عبر organization.Sector)
+            org_sector_ids = list(
+                HealthFacility.objects.filter(
+                    entry_point_id__in=entry_point_ids,
+                    sector__isnull=False,
+                ).values_list('sector_id', flat=True)
+            )
+            return qs.filter(
+                Q(department__facility_id__in=facility_ids)
+                | Q(
+                    department__facility__isnull=True,
+                    department__sector_id__in=org_sector_ids,
+                )
+            )
 
         if model_name == 'FacilityOwner':
             # Owners مرجعية عامة — GLOBAL فقط (كتابة) أو كل المسجلين (قراءة)
@@ -384,3 +408,14 @@ class TechnicalSupervisionViewSet(RegistryScopedViewSet):
     write_serializer_class = TechnicalSupervisionWriteSerializer
     permission_resource = "registry"
     search_fields = ["facility__code", "supervisor__code"]
+
+
+class DepartmentNodeAssignmentViewSet(RegistryScopedViewSet):
+    """تعيين الإدارات إلى عقد الشجرة."""
+    queryset = DepartmentNodeAssignment.objects.select_related(
+        "department", "node"
+    ).all().order_by("-valid_from")
+    serializer_class = DepartmentNodeAssignmentSerializer
+    write_serializer_class = DepartmentNodeAssignmentWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["department__code", "node__code"]

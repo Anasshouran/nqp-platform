@@ -15,6 +15,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .models import (
+    DepartmentNodeAssignment,
     FacilityOwner,
     FacilityOwnership,
     HealthFacilityNodeAssignment,
@@ -178,4 +179,19 @@ def log_supervision_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=TechnicalSupervision)
 def log_supervision_delete(sender, instance, **kwargs):
+    _log("DELETE", instance)
+
+
+# ---------------------------------------------------------------------------
+# DepartmentNodeAssignment (M3-4)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=DepartmentNodeAssignment)
+def log_dept_assign_save(sender, instance, created, **kwargs):
+    action = "ASSIGN" if created else "REASSIGN"
+    _log(action, instance)
+
+
+@receiver(post_delete, sender=DepartmentNodeAssignment)
+def log_dept_assign_delete(sender, instance, **kwargs):
     _log("DELETE", instance)
