@@ -243,6 +243,40 @@
     }
   },
   "redsea": {
+    "portal": {
+      "content": {
+        "sectorName": "قطاع البحر الأحمر"
+      },
+      "modules": {
+        "staff": {
+          "eyebrow": "إدارة القطاع",
+          "title": "الهيكل الإداري والموظفون — قطاع البحر الأحمر",
+          "subtitle": "الإدارات وأدائها وموظفو القطاع ضمن نطاق القطاع.",
+          "kpi": {
+            "staff": { "label": "إجمالي الموظفين" },
+            "departments": { "label": "الإدارات" },
+            "ports": { "label": "نقاط الدخول" }
+          },
+          "departmentsSection": {
+            "title": "أداء الإدارات",
+            "subtitle": "درجات الأداء حسب الإدارة"
+          },
+          "departmentsEmpty": {
+            "title": "لا توجد إدارات",
+            "description": "لم تُسجّل إدارات ضمن القطاع بعد."
+          },
+          "staffCount": "{{count}} موظف",
+          "staffSection": {
+            "title": "الموظفون",
+            "subtitle": "موظفو القطاع حسب الإدارة والمحطة"
+          },
+          "staffEmpty": {
+            "title": "لا يوجد موظفون",
+            "description": "لم يُسجّل موظفون ضمن القطاع بعد."
+          }
+        }
+      }
+    },
     "settings": {
       "contactInfoTitle": "معلومات الاتصال الرسمية",
       "contactInfoSubtitle": "تظهر هذه البيانات في صفحة اتصل بنا بالموقع العام",
