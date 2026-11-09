@@ -1,0 +1,314 @@
+"""ViewSets — طبقة API للسجل التنظيمي (M2).
+
+M2-core: GLOBAL-only للكتابة، و GLOBAL-based للقراءة.
+كل ViewSet يُعلن permission_resource وScoped queryset.
+"""
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
+
+from core.filters import ExactFilterBackend
+from core.permissions import PermissionAction
+from core.utils.response import success_response
+from core.utils.scoping import has_global_scope, resolve_authorized_entry_points, _active_assignments
+from django.db.models import Q
+
+from .models import (
+    HealthFacilityNodeAssignment,
+    LocalityNodeAssignment,
+    RegistryChangeLog,
+    ReportingNode,
+    StateMinistry,
+    StateNodeAssignment,
+)
+from .serializers import (
+    HealthFacilityNodeAssignmentSerializer,
+    HealthFacilityNodeAssignmentWriteSerializer,
+    LocalityNodeAssignmentSerializer,
+    LocalityNodeAssignmentWriteSerializer,
+    RegistryChangeLogSerializer,
+    ReportingNodeSerializer,
+    ReportingNodeWriteSerializer,
+    StateMinistrySerializer,
+    StateMinistryWriteSerializer,
+    StateNodeAssignmentSerializer,
+    StateNodeAssignmentWriteSerializer,
+)
+
+
+class RegistryScopedViewSet(viewsets.ModelViewSet):
+    """ViewSet أساسي للسجل — يفرض scoping fail-safe.
+
+    M2-core: يسمح GLOBAL فقط. كل مستخدم آخر يرى qs.none().
+    M2-bis: scoping متقدم (SECTOR/DEPARTMENT) بعد مراجعة.
+
+    permission_resource يحدد مورد الصلاحية (registry/ministry/...).
+
+    D-M2-2: DELETE ممنوع صراحةً — البيانات التنظيمية لا تُحذف،
+    فقط تُعطَّل عبر is_active=False.
+    """
+
+    permission_resource = None
+    filter_backends = [OrderingFilter, ExactFilterBackend, SearchFilter]
+    # D-M2-2: منع DELETE — لا حذف فعلي للسجلات التنظيمية
+    http_method_names = ["get", "post", "patch", "head", "options"]
+
+    def get_permissions(self):
+        from .permissions import RegistryPermissionMixin
+
+        # إضافة RegistryPermissionMixin ديناميكياً
+        action_map = {
+            "list": "view",
+            "retrieve": "view",
+            "create": "add",
+            "update": "edit",
+            "partial_update": "edit",
+            "destroy": "delete",
+        }
+        self.permission_action = action_map.get(self.action, "view")
+        return [PermissionAction()]
+
+    def initial(self, request, *args, **kwargs):
+        """يضبط current_user في contextvar من request.user (DRF level).
+        
+        M3-1-A: Middleware يعمل للطلبات الحقيقية (session/JWT) لكن
+        force_authenticate في الاختبارات يعمل عند DRF level.
+        هذا يضمن أن signals تلتقط المستخدم في كل الحالات.
+        """
+        from .middleware import _current_user
+
+        token = _current_user.set(request.user if request.user.is_authenticated else None)
+        super().initial(request, *args, **kwargs)
+        # ملاحظة: contextvar يُعيد تعيينه في finally عبر reset — لكن signals
+        # تحدث أثناء processing الـ request، لذا يجب أن يبقى set حتى بعد initial.
+        # نستخدم token.reset() في نهاية dispatch عبر finally في middleware.
+        # هنا لا نعيد تعيينه — الـ middleware يفعل ذلك.
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+
+        # GLOBAL/superuser: كل شيء
+        if user.is_superuser or has_global_scope(user):
+            return qs
+
+        # M3-1-B: SECTOR/DEPARTMENT/POINT scoping عبر entry_points
+        if not _active_assignments(user).exists():
+            return qs.none()  # fail-safe
+
+        entry_point_ids = resolve_authorized_entry_points(user)
+        if entry_point_ids is None:  # GLOBAL (shouldn't happen here, but safe)
+            return qs
+        if not entry_point_ids:
+            return qs.none()  # fail-safe
+
+        # حساب الكيانات المسموحة عبر entry_points
+        from apps.masterdata.models import EntryPoint
+        from apps.masterdata.models import HealthFacility
+
+        facility_ids = list(
+            HealthFacility.objects.filter(
+                entry_point_id__in=entry_point_ids,
+            ).values_list('id', flat=True)
+        )
+        locality_ids = list(
+            HealthFacility.objects.filter(
+                entry_point_id__in=entry_point_ids,
+                locality__isnull=False,
+            ).values_list('locality_id', flat=True)
+        )
+        state_ids = list(
+            EntryPoint.objects.filter(
+                id__in=entry_point_ids,
+                state__isnull=False,
+            ).values_list('state_id', flat=True)
+        )
+
+        model_name = qs.model.__name__
+
+        if model_name == 'ReportingNode':
+            return qs.filter(
+                Q(statenodeassignment__state_id__in=state_ids)
+                | Q(localitynodeassignment__locality_id__in=locality_ids)
+                | Q(healthfacilitynodeassignment__health_facility_id__in=facility_ids)
+            ).distinct()
+
+        if model_name == 'StateNodeAssignment':
+            return qs.filter(state_id__in=state_ids)
+
+        if model_name == 'LocalityNodeAssignment':
+            return qs.filter(locality_id__in=locality_ids)
+
+        if model_name == 'HealthFacilityNodeAssignment':
+            return qs.filter(health_facility_id__in=facility_ids)
+
+        if model_name == 'StateMinistry':
+            return qs.filter(state_id__in=state_ids)
+
+        if model_name == 'RegistryChangeLog':
+            return qs  # TODO: tighten in M3-bis — polymorphic scoping is complex
+
+        return qs.none()
+
+    def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return self.write_serializer_class
+        return self.serializer_class
+
+
+# ---------------------------------------------------------------------------
+# ReportingNode
+# ---------------------------------------------------------------------------
+
+class ReportingNodeViewSet(RegistryScopedViewSet):
+    queryset = ReportingNode.objects.all().order_by("order", "code")
+    serializer_class = ReportingNodeSerializer
+    write_serializer_class = ReportingNodeWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["code", "name_ar", "name_en"]
+    ordering_fields = ["order", "code", "kind", "depth"]
+
+
+# ---------------------------------------------------------------------------
+# Assignment ViewSets
+# ---------------------------------------------------------------------------
+
+class StateNodeAssignmentViewSet(RegistryScopedViewSet):
+    queryset = StateNodeAssignment.objects.select_related(
+        "state", "node"
+    ).all().order_by("-valid_from")
+    serializer_class = StateNodeAssignmentSerializer
+    write_serializer_class = StateNodeAssignmentWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["state__code", "node__code"]
+
+
+class LocalityNodeAssignmentViewSet(RegistryScopedViewSet):
+    queryset = LocalityNodeAssignment.objects.select_related(
+        "locality", "node"
+    ).all().order_by("-valid_from")
+    serializer_class = LocalityNodeAssignmentSerializer
+    write_serializer_class = LocalityNodeAssignmentWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["locality__code", "node__code"]
+
+
+class HealthFacilityNodeAssignmentViewSet(RegistryScopedViewSet):
+    queryset = HealthFacilityNodeAssignment.objects.select_related(
+        "facility", "node"
+    ).all().order_by("-valid_from")
+    serializer_class = HealthFacilityNodeAssignmentSerializer
+    write_serializer_class = HealthFacilityNodeAssignmentWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["facility__code", "node__code"]
+
+
+# ---------------------------------------------------------------------------
+# StateMinistry
+# ---------------------------------------------------------------------------
+
+class StateMinistryViewSet(RegistryScopedViewSet):
+    queryset = StateMinistry.objects.select_related("state").all().order_by(
+        "ministry_name_ar"
+    )
+    serializer_class = StateMinistrySerializer
+    write_serializer_class = StateMinistryWriteSerializer
+    permission_resource = "ministry"
+    search_fields = ["ministry_name_ar", "state__code"]
+
+
+# ---------------------------------------------------------------------------
+# RegistryChangeLog (read-only)
+# ---------------------------------------------------------------------------
+
+class RegistryChangeLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """سجل التغييرات — read-only بالكامل."""
+
+    queryset = RegistryChangeLog.objects.select_related("user").all().order_by(
+        "-created_at"
+    )
+    serializer_class = RegistryChangeLogSerializer
+    permission_resource = "registry"
+    permission_classes = [PermissionAction]
+    filter_backends = [OrderingFilter, ExactFilterBackend, SearchFilter]
+    search_fields = ["entity_type", "entity_label"]
+    ordering_fields = ["created_at", "action"]
+
+    def get_permissions(self):
+        self.permission_action = "view"
+        return [PermissionAction()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser or has_global_scope(user):
+            return qs
+        return qs.none()
+
+
+# ---------------------------------------------------------------------------
+# Dashboard / Tree aggregates
+# ---------------------------------------------------------------------------
+
+class RegistryDashboardViewSet(viewsets.ViewSet):
+    """نقاط مجمعة: ملخص السجل + الشجرة الكاملة."""
+
+    permission_resource = "registry"
+    permission_classes = [PermissionAction]
+
+    def get_permissions(self):
+        self.permission_action = "view"
+        return [PermissionAction()]
+
+    @action(detail=False, methods=["get"])
+    def summary(self, request):
+        """ملخص السجل: عدد العقد + KPI مؤشرات."""
+        from apps.registry.models import ReportingNode
+
+        nodes_count = ReportingNode.objects.count()
+        states_count = ReportingNode.objects.filter(
+            kind=ReportingNode.Kind.STATE
+        ).count()
+        facilities_count = ReportingNode.objects.filter(
+            kind=ReportingNode.Kind.FACILITY
+        ).count()
+        ministries_count = StateMinistry.objects.count()
+
+        data = {
+            "nodes": nodes_count,
+            "states": states_count,
+            "facilities": facilities_count,
+            "ministries": ministries_count,
+        }
+        return Response(success_response(data, message="ملخص السجل التنظيمي"))
+
+    @action(detail=False, methods=["get"])
+    def tree(self, request):
+        """الشجرة الكاملة — بنية متداخلة (بلا pagination — مع cache)."""
+        nodes = ReportingNode.objects.filter(
+            is_active=True
+        ).select_related("parent").order_by("order", "code")
+
+        roots = nodes.filter(parent__isnull=True)
+        result = []
+
+        def build(node):
+            item = {
+                "id": str(node.id),
+                "kind": node.kind,
+                "code": node.code,
+                "name_ar": node.name_ar,
+                "name_en": node.name_en,
+                "depth": node.depth,
+                "children": [],
+            }
+            for child in node.children.filter(is_active=True).order_by("order", "code"):
+                item["children"].append(build(child))
+            return item
+
+        for root in roots:
+            result.append(build(root))
+
+        return Response(success_response(result, message="شجرة السجل التنظيمي"))

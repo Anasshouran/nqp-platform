@@ -83,8 +83,11 @@ class ReportingNode(BaseModel):
         # الجذر الوحيد يجب أن يكون FEDERAL
         if self.parent is None and self.kind != self.Kind.FEDERAL:
             raise ValidationError("Root node must have kind=FEDERAL")
-        # منع جذر ثانٍ: حدّد إن كان هذا سجلاً جديداً (غير موجود في DB بعد)
-        is_new = self.pk is None or not ReportingNode.objects.filter(pk=self.pk).exists()
+        # D-2 fix: use Django's _state.adding instead of DB query.
+        # Note: BaseModel.id has uuid4 default → pk is never None, so
+        # 'pk is None' would always be False. _state.adding is set by
+        # Django at instantiation and cleared after save() succeeds.
+        is_new = self._state.adding
         if self.parent is None and is_new:
             if ReportingNode.objects.filter(parent__isnull=True).exists():
                 raise ValidationError("Only one root node (FEDERAL) is allowed")

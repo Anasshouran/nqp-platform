@@ -1,0 +1,119 @@
+"""Signals — تدقيق تلقائي عبر RegistryChangeLog (M2).
+
+يُسجَّل CREATE/UPDATE/DELETE لكل النماذج الـ6 في السجل التنظيمي.
+يُعالج D-1 (يدوي فقط) بمصادقة تلقائية.
+
+M3-1-A: يُستخدم middleware thread-local لاستخراج المستخدم (D-M2-1).
+
+تحمل الحذر:
+- استخدم RegistryChangeLog.objects.create() مباشرة (ليس .save() على log).
+- bulk_create لا يُطلق signals — وثّق ذلك (D-3).
+- user يُستخرج من contextvars — يرجع None خارج request context (shell/tests).
+"""
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+from .models import (
+    HealthFacilityNodeAssignment,
+    LocalityNodeAssignment,
+    RegistryChangeLog,
+    ReportingNode,
+    StateMinistry,
+    StateNodeAssignment,
+)
+
+
+def _log(action, instance, label=""):
+    """يسجّل حدثاً في ChangeLog — مباشرة بدون signals متتالية."""
+    # D-M2-1 fix: يحاول استخراج المستخدم من middleware thread-local
+    from .middleware import get_current_user
+    user = get_current_user()
+
+    RegistryChangeLog.objects.create(
+        user=user,
+        action=action,
+        entity_type=instance.__class__.__name__,
+        entity_id=instance.id,
+        entity_label=label or str(instance),
+        detail={},
+    )
+
+
+# ---------------------------------------------------------------------------
+# ReportingNode
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=ReportingNode)
+def log_node_save(sender, instance, created, **kwargs):
+    _log("CREATE" if created else "UPDATE", instance)
+
+
+@receiver(post_delete, sender=ReportingNode)
+def log_node_delete(sender, instance, **kwargs):
+    _log("DELETE", instance, label=f"{instance.code} (deleted)")
+
+
+# ---------------------------------------------------------------------------
+# StateNodeAssignment
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=StateNodeAssignment)
+def log_state_assignment_save(sender, instance, created, **kwargs):
+    action = "CREATE" if created else "UPDATE"
+    label = f"{instance.state.code} → {instance.node.code}"
+    _log(action, instance, label=label)
+
+
+@receiver(post_delete, sender=StateNodeAssignment)
+def log_state_assignment_delete(sender, instance, **kwargs):
+    label = f"{instance.state.code} → {instance.node.code} (deleted)"
+    _log("DELETE", instance, label=label)
+
+
+# ---------------------------------------------------------------------------
+# LocalityNodeAssignment
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=LocalityNodeAssignment)
+def log_locality_assignment_save(sender, instance, created, **kwargs):
+    action = "CREATE" if created else "UPDATE"
+    label = f"{instance.locality.code} → {instance.node.code}"
+    _log(action, instance, label=label)
+
+
+@receiver(post_delete, sender=LocalityNodeAssignment)
+def log_locality_assignment_delete(sender, instance, **kwargs):
+    label = f"{instance.locality.code} → {instance.node.code} (deleted)"
+    _log("DELETE", instance, label=label)
+
+
+# ---------------------------------------------------------------------------
+# HealthFacilityNodeAssignment
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=HealthFacilityNodeAssignment)
+def log_facility_assignment_save(sender, instance, created, **kwargs):
+    action = "CREATE" if created else "UPDATE"
+    label = f"{instance.facility.code} → {instance.node.code}"
+    _log(action, instance, label=label)
+
+
+@receiver(post_delete, sender=HealthFacilityNodeAssignment)
+def log_facility_assignment_delete(sender, instance, **kwargs):
+    label = f"{instance.facility.code} → {instance.node.code} (deleted)"
+    _log("DELETE", instance, label=label)
+
+
+# ---------------------------------------------------------------------------
+# StateMinistry
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=StateMinistry)
+def log_ministry_save(sender, instance, created, **kwargs):
+    _log("CREATE" if created else "UPDATE", instance)
+
+
+@receiver(post_delete, sender=StateMinistry)
+def log_ministry_delete(sender, instance, **kwargs):
+    _log("DELETE", instance, label=f"{instance.ministry_name_ar} (deleted)")
