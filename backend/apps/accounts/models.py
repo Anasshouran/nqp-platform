@@ -9,6 +9,7 @@ from core.utils.authorization import resolve_permission_codes
 
 class ScopeType(models.TextChoices):
     GLOBAL = 'GLOBAL', 'عام'
+    STATE = 'STATE', 'ولاية'  # M4-1: regional admin scope
     POINT = 'POINT', 'نقطة حدودية'
     PORT = 'PORT', 'ميناء'
     REGION = 'REGION', 'منطقة'

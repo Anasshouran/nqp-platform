@@ -151,9 +151,9 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
 
         if model_name == 'ReportingNode':
             return qs.filter(
-                Q(statenodeassignment__state_id__in=state_ids)
-                | Q(localitynodeassignment__locality_id__in=locality_ids)
-                | Q(healthfacilitynodeassignment__health_facility_id__in=facility_ids)
+                Q(statenodeassignment_set__state_id__in=state_ids)
+                | Q(localitynodeassignment_set__locality_id__in=locality_ids)
+                | Q(healthfacilitynodeassignment_set__facility_id__in=facility_ids)
             ).distinct()
 
         if model_name == 'StateNodeAssignment':
@@ -172,7 +172,6 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             return qs.filter(facility_id__in=facility_ids)
 
         if model_name == 'ServiceAvailability':
-            from django.db.models import Q
             return qs.filter(
                 Q(facility_id__in=facility_ids)
                 | Q(department__facility_id__in=facility_ids)

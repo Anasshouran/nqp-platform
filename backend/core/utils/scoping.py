@@ -79,6 +79,30 @@ def has_global_scope(user):
     return has_active_global_scope(user)
 
 
+def has_state_scope(user):
+    """True إن كان للمستخدم تفويض STATE نشط واحد على الأقل (M4-1)."""
+    if not user or getattr(user, 'is_anonymous', True):
+        return False
+    return _active_assignments(user).filter(scope_type='STATE').exists()
+
+
+def get_user_state_ids(user):
+    """يعيد set من State UUIDs التي للمستخدم نطاق STATE عليها (M4-1).
+    
+    None = GLOBAL (لا تقييد).
+    set() = لا STATE scope.
+    """
+    if not user or getattr(user, 'is_anonymous', True):
+        return set()
+    if user.is_superuser or has_global_scope(user):
+        return None  # GLOBAL
+    return set(
+        _active_assignments(user)
+        .filter(scope_type='STATE')
+        .values_list('scope_id', flat=True)
+    )
+
+
 def has_role(user, role_code):
     """هل للمستخدم دور معيّن (تعيين نشط ضمن النافذة الزمنية)؟"""
     return has_active_role(user, role_code)
@@ -137,6 +161,23 @@ def _sector_port_ids(sector_ids):
     for sector in Sector.objects.filter(pk__in=sector_ids):
         ids.update(sector_entry_points(sector).values_list('id', flat=True))
     return list(ids)
+
+
+def _state_entry_point_ids(state_ids):
+    """يحول STATE UUIDs إلى EntryPoint IDs (فقط النشطة) (M4-1).
+    
+    M4-1: STATE scope يفتح كل EntryPoints الموجودة في الولاية.
+    ملاحظة: الولايات بدون EntryPoints تُعطي مجموعة فارغة (fail-safe).
+    """
+    if not state_ids:
+        return set()
+    from apps.masterdata.models import EntryPoint
+    return set(
+        EntryPoint.objects.filter(
+            state_id__in=state_ids,
+            is_active=True,
+        ).values_list('id', flat=True)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -244,20 +285,32 @@ def resolve_authorized_entry_points(user):
     sector_ids = set()
     department_ids = set()
     station_ids = set()
+    state_ids = set()          # ← M4-1
     direct_ids = set()
 
     for a in _active_assignments(user):
         if a.scope_type in SECTOR_LIKE_SCOPES:
             sector_ids.add(a.scope_id)
+        elif a.scope_type == 'STATE':              # ← M4-1
+            state_ids.add(a.scope_id)
         elif a.scope_type == 'DEPARTMENT':
             department_ids.add(a.scope_id)
         elif a.scope_type == 'STATION':
             station_ids.add(a.scope_id)
         elif a.scope_type in ENTRY_POINT_SCOPES:
             direct_ids.add(a.scope_id)
+        else:
+            # M4-1: كشف scope_types غير المعروفة — يُتجاهَل fail-safe
+            # لكن يُسجَّل بصوت مسموع لتفادي الأخطاء الصامتة
+            logger.warning(
+                'resolve_authorized_entry_points: unknown scope_type=%r '
+                'user=%r — ignored (deny-safe)',
+                a.scope_type, getattr(user, 'id', None),
+            )
 
     entry_point_ids = set(direct_ids)
     entry_point_ids.update(_assigned_entry_point_ids(user))
+    entry_point_ids.update(_state_entry_point_ids(state_ids))  # ← M4-1
     entry_point_ids.update(_sector_port_ids(sector_ids))
     entry_point_ids.update(_org_entry_point_ids(
         user,
