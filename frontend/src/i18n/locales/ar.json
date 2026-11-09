@@ -19,6 +19,13 @@
       "list": {
         "subtitle": "{{count}} طلب"
       },
+      "search": {
+        "title": "البحث عن طلب",
+        "label": "رقم الطلب، جمركي، بوليصة، مستورد، مصدر، باخرة",
+        "recentLabel": "عمليات البحث الأخيرة:",
+        "resultMeta": "{{count}} أصناف · {{weight}} كجم · {{date}}",
+        "noResults": "لا توجد نتائج مطابقة لـ «{{q}}»"
+      },
       "settings": {
         "title": "الإعدادات",
         "languageLabel": "اللغة",
