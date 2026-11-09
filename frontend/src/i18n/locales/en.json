@@ -246,6 +246,35 @@
     "portal": {
       "content": {
         "sectorName": "Red Sea Sector"
+      },
+      "modules": {
+        "staff": {
+          "eyebrow": "Sector Management",
+          "title": "Administrative Structure and Staff — Red Sea Sector",
+          "subtitle": "Departments, their performance, and sector staff within the sector scope.",
+          "kpi": {
+            "staff": { "label": "Total staff" },
+            "departments": { "label": "Departments" },
+            "ports": { "label": "Entry points" }
+          },
+          "departmentsSection": {
+            "title": "Department performance",
+            "subtitle": "Performance scores by department"
+          },
+          "departmentsEmpty": {
+            "title": "No departments",
+            "description": "No departments have been registered in the sector yet."
+          },
+          "staffCount": "{{count}} staff",
+          "staffSection": {
+            "title": "Staff",
+            "subtitle": "Sector staff by department and station"
+          },
+          "staffEmpty": {
+            "title": "No staff",
+            "description": "No staff have been registered in the sector yet."
+          }
+        }
       }
     },
     "settings": {
