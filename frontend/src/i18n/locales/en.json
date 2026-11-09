@@ -317,6 +317,61 @@
             "description": "No staff have been registered in the sector yet."
           }
         },
+        "itSystems": {
+          "eyebrow": "Information Technology Department",
+          "title": "Systems status",
+          "subtitle": "Readiness of systems and IT services within the Red Sea sector.",
+          "recheck": "Recheck systems",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Technical systems list",
+          "tableSubtitle": "{{count}} systems within sector scope",
+          "searchPlaceholder": "Search by system name or code...",
+          "emptyTitle": "No systems",
+          "emptyDescription": "No technical systems are registered in this sector.",
+          "columns": {
+            "system": "System",
+            "status": "Status",
+            "requests": "Requests",
+            "lastCheck": "Last check",
+            "lastError": "Last error"
+          }
+        },
+        "airportHealth": {
+          "eyebrow": "Operational systems",
+          "title": "Airport health — Red Sea sector",
+          "subtitle": "Terminals, screening points, and travelers at sector airports.",
+          "noFlight": "No flight",
+          "kpi": {
+            "airports": { "label": "Airports" },
+            "terminals": { "label": "Terminals" },
+            "points": { "label": "Screening points" },
+            "screenings": { "label": "Traveler screenings" }
+          },
+          "screeningsSection": {
+            "title": "Recent traveler screenings",
+            "subtitle": "Latest sector airport screenings"
+          },
+          "screeningsEmpty": {
+            "title": "No screenings",
+            "description": "No airport screenings have been registered in the sector yet."
+          },
+          "pointsSection": {
+            "title": "Screening points",
+            "subtitle": "Health screening points inside airports"
+          },
+          "pointsEmpty": {
+            "title": "No screening points",
+            "description": "No screening points have been registered in the sector yet."
+          },
+          "inspectionsSection": {
+            "title": "Aircraft inspections",
+            "subtitle": "Latest inspections"
+          },
+          "inspectionsEmpty": {
+            "title": "No aircraft inspections",
+            "description": "No inspections have been registered in the sector yet."
+          }
+        },
         "vectorControl": {
           "eyebrow": "Operational systems",
           "title": "Vector control — Red Sea sector",
