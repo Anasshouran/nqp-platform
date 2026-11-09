@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { PageHeader } from '../../../components/common';
@@ -9,6 +10,7 @@ import type { IntegrationHealth } from '../../../types/integration';
 import { formatDateTime } from '../../../utils/formatters';
 
 const PortalHealthPage = () => {
+  const { t } = useTranslation();
   const table = useServerTable<IntegrationHealth>({
     fetchData: getIntegrationHealthRecords,
   });
@@ -18,18 +20,18 @@ const PortalHealthPage = () => {
   } = table;
 
   const columns: DataTableColumn<IntegrationHealth>[] = [
-    { key: 'integration_name', label: 'التكامل', sortable: true },
-    { key: 'check_type', label: 'نوع الفحص', sortable: true },
+    { key: 'integration_name', label: t('portal.health.columns.integration'), sortable: true },
+    { key: 'check_type', label: t('portal.health.columns.checkType'), sortable: true },
     {
-      key: 'passed', label: 'النتيجة', sortable: true,
+      key: 'passed', label: t('portal.health.columns.result'), sortable: true,
       render: (row) => (
-        <Chip size="small" color={row.passed ? 'success' : 'error'} label={row.passed ? 'ناجح' : 'فاشل'} />
+        <Chip size="small" color={row.passed ? 'success' : 'error'} label={row.passed ? t('portal.health.columns.passed') : t('portal.health.columns.failed')} />
       ),
     },
-    { key: 'checked_by', label: 'الفاحص' },
-    { key: 'detail', label: 'التفاصيل', hideOnMobile: true },
+    { key: 'checked_by', label: t('portal.health.columns.checkedBy') },
+    { key: 'detail', label: t('portal.health.columns.detail'), hideOnMobile: true },
     {
-      key: 'checked_at', label: 'وقت الفحص', sortable: true,
+      key: 'checked_at', label: t('portal.health.columns.checkedAt'), sortable: true,
       render: (row) => formatDateTime(row.checked_at), hideOnMobile: true,
     },
   ];
@@ -37,8 +39,8 @@ const PortalHealthPage = () => {
   return (
     <Box>
       <PageHeader
-        title="الصحة والمراقبة"
-        subtitle="نتائج فحوصات الاتصال الموثّقة لكل تكامل"
+        title={t('portal.health.title')}
+        subtitle={t('portal.health.subtitle')}
       />
 
       <DataTable
@@ -53,7 +55,7 @@ const PortalHealthPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="ابحث باسم التكامل أو نوع الفحص"
+        searchPlaceholder={t('portal.health.searchPlaceholder')}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={setSorting}
@@ -61,8 +63,8 @@ const PortalHealthPage = () => {
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
         onExport={table.fetchAllRows}
-        emptyTitle="لا توجد سجلات صحة"
-        emptyDescription="تُسجَّل نتائج الفحص هنا عند تشغيل فحص تكامل"
+        emptyTitle={t('portal.health.emptyTitle')}
+        emptyDescription={t('portal.health.emptyDescription')}
       />
     </Box>
   );

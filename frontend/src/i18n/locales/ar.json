@@ -81,6 +81,25 @@
       }
     }
   },
+  "portal": {
+    "health": {
+      "title": "الصحة والمراقبة",
+      "subtitle": "نتائج فحوصات الاتصال الموثّقة لكل تكامل",
+      "searchPlaceholder": "ابحث باسم التكامل أو نوع الفحص",
+      "emptyTitle": "لا توجد سجلات صحة",
+      "emptyDescription": "تُسجَّل نتائج الفحص هنا عند تشغيل فحص تكامل",
+      "columns": {
+        "integration": "التكامل",
+        "checkType": "نوع الفحص",
+        "result": "النتيجة",
+        "passed": "ناجح",
+        "failed": "فاشل",
+        "checkedBy": "الفاحص",
+        "detail": "التفاصيل",
+        "checkedAt": "وقت الفحص"
+      }
+    }
+  },
   "common": {
     "save": "حفظ",
     "cancel": "إلغاء",

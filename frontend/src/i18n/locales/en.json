@@ -81,6 +81,25 @@
       }
     }
   },
+  "portal": {
+    "health": {
+      "title": "Health and monitoring",
+      "subtitle": "Documented connectivity check results for each integration",
+      "searchPlaceholder": "Search by integration name or check type",
+      "emptyTitle": "No health records",
+      "emptyDescription": "Check results are recorded here when an integration check runs",
+      "columns": {
+        "integration": "Integration",
+        "checkType": "Check type",
+        "result": "Result",
+        "passed": "Passed",
+        "failed": "Failed",
+        "checkedBy": "Checked by",
+        "detail": "Details",
+        "checkedAt": "Check time"
+      }
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
