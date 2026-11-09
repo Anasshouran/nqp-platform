@@ -68,3 +68,36 @@ export interface RegistryChangeLog {
   detail: Record<string, unknown>;
   created_at: string;
 }
+
+export type FacilityOwnerKind =
+  | 'FEDERAL_MINISTRY'
+  | 'STATE_MINISTRY'
+  | 'LOCALITY'
+  | 'MILITARY'
+  | 'PRIVATE'
+  | 'NGO'
+  | 'FAITH_BASED'
+  | 'UN_AGENCY'
+  | 'OTHER';
+
+export interface FacilityOwner {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en?: string;
+  kind: FacilityOwnerKind;
+  description?: string;
+  reference_type?: string;
+  reference_id?: string | null;
+  is_active: boolean;
+}
+
+export interface FacilityOwnership {
+  id: string;
+  facility_id: string;
+  owner_id: string;
+  is_primary: boolean;
+  valid_from: string;
+  valid_to: string | null;
+  note?: string;
+}

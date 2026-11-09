@@ -16,6 +16,8 @@ from core.utils.scoping import has_global_scope, resolve_authorized_entry_points
 from django.db.models import Q
 
 from .models import (
+    FacilityOwner,
+    FacilityOwnership,
     HealthFacilityNodeAssignment,
     LocalityNodeAssignment,
     RegistryChangeLog,
@@ -24,6 +26,10 @@ from .models import (
     StateNodeAssignment,
 )
 from .serializers import (
+    FacilityOwnerSerializer,
+    FacilityOwnerWriteSerializer,
+    FacilityOwnershipSerializer,
+    FacilityOwnershipWriteSerializer,
     HealthFacilityNodeAssignmentSerializer,
     HealthFacilityNodeAssignmentWriteSerializer,
     LocalityNodeAssignmentSerializer,
@@ -149,6 +155,15 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
 
         if model_name == 'RegistryChangeLog':
             return qs  # TODO: tighten in M3-bis — polymorphic scoping is complex
+
+        if model_name == 'FacilityOwnership':
+            # الملكية تتبع facility_id المسموح
+            return qs.filter(facility_id__in=facility_ids)
+
+        if model_name == 'FacilityOwner':
+            # Owners مرجعية عامة — GLOBAL فقط (كتابة) أو كل المسجلين (قراءة)
+            # القراءة مفتوحة، الكتابة عبر RegistryScopedViewSet GLOBAL
+            return qs
 
         return qs.none()
 
@@ -312,3 +327,27 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
             result.append(build(root))
 
         return Response(success_response(result, message="شجرة السجل التنظيمي"))
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwner (Institutional Ownership)
+# ---------------------------------------------------------------------------
+
+class FacilityOwnerViewSet(RegistryScopedViewSet):
+    """عرض وإدارة الجهات المالكة (GLOBAL فقط للكتابة)."""
+    queryset = FacilityOwner.objects.all().order_by("kind", "code")
+    serializer_class = FacilityOwnerSerializer
+    write_serializer_class = FacilityOwnerWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["code", "name_ar", "kind"]
+
+
+class FacilityOwnershipViewSet(RegistryScopedViewSet):
+    """عرض وإدارة ملكية المنشآت."""
+    queryset = FacilityOwnership.objects.select_related(
+        "facility", "owner"
+    ).all().order_by("-valid_from")
+    serializer_class = FacilityOwnershipSerializer
+    write_serializer_class = FacilityOwnershipWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["facility__code", "owner__code"]

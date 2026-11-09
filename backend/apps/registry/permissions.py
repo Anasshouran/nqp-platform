@@ -14,6 +14,9 @@ REGISTRY_ADD = "registry:add"
 REGISTRY_EDIT = "registry:edit"
 MINISTRY_VIEW = "ministry:view"
 FACILITY_VIEW = "facility:view"
+FACILITY_OWNERSHIP_VIEW = "facility_ownership:view"
+FACILITY_OWNERSHIP_ADD = "facility_ownership:add"
+FACILITY_OWNERSHIP_EDIT = "facility_ownership:edit"
 
 
 class RegistryPermissionMixin:

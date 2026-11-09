@@ -7,6 +7,8 @@ import type {
   LocalityNodeAssignment,
   HealthFacilityNodeAssignment,
   RegistryChangeLog,
+  FacilityOwner,
+  FacilityOwnership,
 } from '../../types/registry';
 
 const BASE = '/api/v1/registry';
@@ -93,3 +95,16 @@ export const listChangeLog = (params?: {
 // --- Dashboard ---
 export const getRegistrySummary = (): Promise<Record<string, unknown>> =>
   axios.get(`${BASE}/dashboard/summary/`).then((r) => unwrap<Record<string, unknown>>(r));
+
+// --- Facility Ownership (M3-2) ---
+export const listFacilityOwners = (): Promise<FacilityOwner[]> =>
+  axios.get(`${BASE}/owners/`).then((r) => unwrap<FacilityOwner[]>(r));
+
+export const createFacilityOwner = (data: Partial<FacilityOwner>): Promise<FacilityOwner> =>
+  axios.post(`${BASE}/owners/`, data).then((r) => unwrap<FacilityOwner>(r));
+
+export const listFacilityOwnerships = (): Promise<FacilityOwnership[]> =>
+  axios.get(`${BASE}/facility-ownerships/`).then((r) => unwrap<FacilityOwnership[]>(r));
+
+export const createFacilityOwnership = (data: Partial<FacilityOwnership>): Promise<FacilityOwnership> =>
+  axios.post(`${BASE}/facility-ownerships/`, data).then((r) => unwrap<FacilityOwnership>(r));

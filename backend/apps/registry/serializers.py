@@ -6,6 +6,8 @@ Report serializers للعرض، Write serializers للكتابة، مجمّعة 
 from rest_framework import serializers
 
 from apps.registry.models import (
+    FacilityOwner,
+    FacilityOwnership,
     HealthFacilityNodeAssignment,
     LocalityNodeAssignment,
     RegistryChangeLog,
@@ -236,3 +238,78 @@ class RegistryChangeLogSerializer(serializers.ModelSerializer):
         if obj.user_id is None:
             return None
         return getattr(obj.user, 'full_name', None) or obj.user.email
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwner (Institutional Ownership)
+# ---------------------------------------------------------------------------
+
+class FacilityOwnerSerializer(serializers.ModelSerializer):
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+
+    class Meta:
+        model = FacilityOwner
+        fields = [
+            'id', 'code', 'name_ar', 'name_en', 'kind', 'kind_display',
+            'description', 'reference_type', 'reference_id', 'is_active',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class FacilityOwnerWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FacilityOwner
+        fields = [
+            'code', 'name_ar', 'name_en', 'kind', 'description',
+            'reference_type', 'reference_id', 'is_active',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = FacilityOwner(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwnership
+# ---------------------------------------------------------------------------
+
+class FacilityOwnershipSerializer(serializers.ModelSerializer):
+    facility_name = serializers.CharField(source='facility.name_ar', read_only=True)
+    owner_name = serializers.CharField(source='owner.name_ar', read_only=True)
+    owner_kind = serializers.CharField(source='owner.kind', read_only=True)
+
+    class Meta:
+        model = FacilityOwnership
+        fields = [
+            'id', 'facility', 'facility_name', 'owner', 'owner_name',
+            'owner_kind', 'is_primary', 'valid_from', 'valid_to',
+            'note', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class FacilityOwnershipWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FacilityOwnership
+        fields = [
+            'facility', 'owner', 'is_primary', 'valid_from', 'valid_to', 'note',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = FacilityOwnership(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs

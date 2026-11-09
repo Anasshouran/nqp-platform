@@ -368,3 +368,146 @@ class RegistryChangeLog(BaseModel):
 
     def __str__(self):
         return f"{self.action} {self.entity_type} {self.entity_id}"
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwner (Institutional Ownership مرجع)
+# ---------------------------------------------------------------------------
+
+class FacilityOwner(BaseModel):
+    """جهة مالكة — كيان مرجعي (وزارة، NGO، خاص، إلخ).
+    
+    المستوى الثالث من الأبعاد الثلاثة (Institutional Ownership).
+    مستقل عن ReportingNode (الذي يمثل خط التبليغ) وعن TechnicalSupervision.
+    """
+
+    class Kind(models.TextChoices):
+        FEDERAL_MINISTRY = 'FEDERAL_MINISTRY', 'وزارة اتحادية'
+        STATE_MINISTRY = 'STATE_MINISTRY', 'وزارة ولاية'
+        LOCALITY = 'LOCALITY', 'محلية'
+        MILITARY = 'MILITARY', 'عسكري'
+        PRIVATE = 'PRIVATE', 'خاص'
+        NGO = 'NGO', 'منظمة غير حكومية'
+        FAITH_BASED = 'FAITH_BASED', 'مؤسسة دينية'
+        UN_AGENCY = 'UN_AGENCY', 'وكالة أممية'
+        OTHER = 'OTHER', 'أخرى'
+
+    code = models.CharField(max_length=64, unique=True, verbose_name="الكود")
+    name_ar = models.CharField(max_length=200, verbose_name="الاسم بالعربية")
+    name_en = models.CharField(max_length=200, blank=True, verbose_name="الاسم بالإنجليزية")
+    kind = models.CharField(max_length=32, choices=Kind.choices, verbose_name="النوع")
+    description = models.TextField(blank=True, verbose_name="الوصف")
+
+    # مرجع اختياري إلى كيان آخر في النظام (StateMinistry, إلخ)
+    reference_type = models.CharField(
+        max_length=64, blank=True,
+        help_text='اسم النموذج المرجعي، مثل: StateMinistry',
+    )
+    reference_id = models.UUIDField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
+
+    class Meta:
+        ordering = ['kind', 'code']
+        verbose_name = 'جهة مالكة'
+        verbose_name_plural = 'الجهات المالكة'
+        indexes = [
+            models.Index(fields=['kind', 'is_active'], name='facility_owner_kind_idx'),
+            models.Index(fields=['reference_type', 'reference_id'], name='facility_owner_ref_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.name_ar} ({self.get_kind_display()})'
+
+    def clean(self):
+        super().clean()
+        # D-M3-2-1: تحقق مرجعي — reference_id يجب أن يتوافق مع reference_type
+        if self.reference_id and not self.reference_type:
+            raise ValidationError({
+                'reference_type': 'reference_type مطلوب عند وجود reference_id',
+            })
+        if self.reference_type and not self.reference_id:
+            raise ValidationError({
+                'reference_id': 'reference_id مطلوب عند وجود reference_type',
+            })
+        if self.reference_type == 'StateMinistry' and self.reference_id:
+            if not StateMinistry.objects.filter(pk=self.reference_id).exists():
+                raise ValidationError({
+                    'reference_id': f'StateMinistry بـ id={self.reference_id} غير موجود',
+                })
+        # reference_type آخر: مقبول (polymorphic، غير محقَّق)
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwnership (علاقة الملكية التاريخية)
+# ---------------------------------------------------------------------------
+
+class FacilityOwnership(BaseModel):
+    """ملكية منشأة صحية — تاريخية.
+    
+    منشأة قد تكون:
+    - مملوكة فيدرالياً ثم انتقلت لولاية (تاريخ).
+    - مملوكة لعدة جهات (M2M عبر صفوف متعددة).
+    
+    قيود:
+    - valid_to > valid_from
+    - مالك أساسي واحد نشط فقط
+    """
+
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.PROTECT,
+        related_name='ownerships',
+        verbose_name='المنشأة',
+    )
+    owner = models.ForeignKey(
+        FacilityOwner,
+        on_delete=models.PROTECT,
+        related_name='facility_ownerships',
+        verbose_name='المالك',
+    )
+    is_primary = models.BooleanField(default=False, verbose_name='أساسي')
+    valid_from = models.DateField(verbose_name='من تاريخ')
+    valid_to = models.DateField(null=True, blank=True, verbose_name='إلى تاريخ')
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-valid_from']
+        verbose_name = 'ملكية منشأة'
+        verbose_name_plural = 'ملكيات المنشآت'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(valid_to__isnull=True) | models.Q(valid_to__gt=models.F('valid_from')),
+                name='facility_ownership_valid_range',
+            ),
+            # D-M3-2-3: منع تعيينين نشطين لنفس (facility, owner)
+            models.UniqueConstraint(
+                fields=['facility', 'owner'],
+                condition=models.Q(valid_to__isnull=True),
+                name='facility_ownership_unique_active',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['facility', 'valid_to'], name='facility_ow_fac_to_idx'),
+            models.Index(fields=['owner', 'valid_to'], name='facility_ow_own_to_idx'),
+            models.Index(fields=['facility', 'is_primary'], name='facility_ow_fac_prim_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_to and self.valid_to <= self.valid_from:
+            raise ValidationError('valid_to must be after valid_from')
+        # تعيين أساسي واحد نشط لكل منشأة
+        if self.is_primary and self.valid_to is None:
+            qs = FacilityOwnership.objects.filter(
+                facility=self.facility, is_primary=True, valid_to__isnull=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    'Another primary ownership is active for this facility'
+                )
+
+    def __str__(self):
+        return f'{self.facility} ← {self.owner} ({self.valid_from})'

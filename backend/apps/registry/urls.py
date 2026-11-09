@@ -2,6 +2,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    FacilityOwnershipViewSet,
+    FacilityOwnerViewSet,
     HealthFacilityNodeAssignmentViewSet,
     LocalityNodeAssignmentViewSet,
     RegistryChangeLogViewSet,
@@ -19,6 +21,8 @@ router.register("facilities/assignments", HealthFacilityNodeAssignmentViewSet, b
 router.register("ministries", StateMinistryViewSet, basename="registry-ministry")
 router.register("changelog", RegistryChangeLogViewSet, basename="registry-changelog")
 router.register("dashboard", RegistryDashboardViewSet, basename="registry-dashboard")
+router.register("owners", FacilityOwnerViewSet, basename="registry-owners")
+router.register("facility-ownerships", FacilityOwnershipViewSet, basename="registry-facility-ownerships")
 
 urlpatterns = [
     path("", include(router.urls)),

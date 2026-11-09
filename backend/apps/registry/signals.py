@@ -15,6 +15,8 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .models import (
+    FacilityOwner,
+    FacilityOwnership,
     HealthFacilityNodeAssignment,
     LocalityNodeAssignment,
     RegistryChangeLog,
@@ -117,3 +119,32 @@ def log_ministry_save(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=StateMinistry)
 def log_ministry_delete(sender, instance, **kwargs):
     _log("DELETE", instance, label=f"{instance.ministry_name_ar} (deleted)")
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwner (M3-2)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=FacilityOwner)
+def log_owner_save(sender, instance, created, **kwargs):
+    _log("CREATE" if created else "UPDATE", instance)
+
+
+@receiver(post_delete, sender=FacilityOwner)
+def log_owner_delete(sender, instance, **kwargs):
+    _log("DELETE", instance, label=f"{instance.code} (deleted)")
+
+
+# ---------------------------------------------------------------------------
+# FacilityOwnership (M3-2)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=FacilityOwnership)
+def log_ownership_save(sender, instance, created, **kwargs):
+    action = "ASSIGN" if created else "REASSIGN"
+    _log(action, instance)
+
+
+@receiver(post_delete, sender=FacilityOwnership)
+def log_ownership_delete(sender, instance, **kwargs):
+    _log("DELETE", instance)
