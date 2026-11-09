@@ -16,6 +16,16 @@
       "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
     },
     "components": {
+      "dialogs": {
+        "confirmTitle": "تأكيد إرسال الطلب",
+        "confirmDescription": "سيتم إنشاء البيان وإرساله لتحصيل الرسوم مع إشعار قسم الحسابات. بعد الإرسال لن تتمكن من تعديل الطلب. هل أنت متأكد؟",
+        "cancel": "إلغاء",
+        "sending": "جارٍ الإرسال…",
+        "confirmSend": "تأكيد الإرسال",
+        "deleteTitle": "حذف المسودة",
+        "deleteMessage": "هل أنت متأكد من حذف المسودة «{{manifestNumber}}»؟ لا يمكن التراجع عن هذا الإجراء.",
+        "deleteConfirm": "حذف"
+      },
       "sidebar": {
         "notification": {
           "error": "خطأ",

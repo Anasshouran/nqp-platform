@@ -16,6 +16,16 @@
       "recentActivity": "Requests Submitted in the Last 7 Days"
     },
     "components": {
+      "dialogs": {
+        "confirmTitle": "Confirm request submission",
+        "confirmDescription": "The statement will be created and sent for fee collection with a notification to the accounts department. After submission you cannot edit the request. Are you sure?",
+        "cancel": "Cancel",
+        "sending": "Sending…",
+        "confirmSend": "Confirm submission",
+        "deleteTitle": "Delete draft",
+        "deleteMessage": "Are you sure you want to delete the draft «{{manifestNumber}}»? This action cannot be undone.",
+        "deleteConfirm": "Delete"
+      },
       "sidebar": {
         "notification": {
           "error": "Error",
