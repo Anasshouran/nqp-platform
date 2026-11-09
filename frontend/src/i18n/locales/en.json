@@ -18,6 +18,17 @@
     "views": {
       "list": {
         "subtitle": "{{count}} requests"
+      },
+      "settings": {
+        "title": "Settings",
+        "languageLabel": "Language",
+        "languageArabic": "Arabic",
+        "notificationsLabel": "Request notifications",
+        "notificationsEnabled": "Enabled",
+        "notificationsToggleToast": "Notifications toggled",
+        "numberFormatLabel": "Number format",
+        "numberFormatArabic": "Arabic (ar-EG)",
+        "numberFormatToggleToast": "Number format changed"
       }
     }
   },
