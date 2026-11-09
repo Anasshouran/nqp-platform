@@ -15,6 +15,16 @@
       "weeklyActivity": "نشاط الأسبوع",
       "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
     },
+    "components": {
+      "sidebar": {
+        "notification": {
+          "error": "خطأ",
+          "warning": "تنبيه",
+          "success": "نجاح",
+          "info": "معلومة"
+        }
+      }
+    },
     "views": {
       "list": {
         "subtitle": "{{count}} طلب"

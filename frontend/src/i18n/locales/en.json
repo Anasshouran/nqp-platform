@@ -15,6 +15,16 @@
       "weeklyActivity": "Weekly Activity",
       "recentActivity": "Requests Submitted in the Last 7 Days"
     },
+    "components": {
+      "sidebar": {
+        "notification": {
+          "error": "Error",
+          "warning": "Alert",
+          "success": "Success",
+          "info": "Info"
+        }
+      }
+    },
     "views": {
       "list": {
         "subtitle": "{{count}} requests"
