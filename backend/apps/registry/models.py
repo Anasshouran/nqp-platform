@@ -511,3 +511,184 @@ class FacilityOwnership(BaseModel):
 
     def __str__(self):
         return f'{self.facility} ← {self.owner} ({self.valid_from})'
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervisor (Technical Supervision مرجع)
+# ---------------------------------------------------------------------------
+
+class TechnicalSupervisor(BaseModel):
+    """جهة إشراف فني — كيان مرجعي.
+    
+    المستوى الثالث من الأبعاد الثلاثة (Technical Supervision).
+    مستقل عن ReportingNode (خط التبليغ) وعن FacilityOwner (الملكية).
+    
+    أمثلة:
+    - برنامج مكافحة السل (فيدرالي)
+    - مديرية الصحة بالولاية
+    - مجلس التخصصات الطبية
+    - منظمة WHO
+    """
+
+    class Kind(models.TextChoices):
+        FEDERAL_PROGRAM = 'FEDERAL_PROGRAM', 'برنامج فيدرالي'
+        STATE_HEALTH_DEPT = 'STATE_HEALTH_DEPT', 'مديرية صحة ولائية'
+        ACADEMIC = 'ACADEMIC', 'جهة أكاديمية'
+        UN_AGENCY = 'UN_AGENCY', 'وكالة أممية'
+        NGO = 'NGO', 'منظمة غير حكومية'
+        OTHER = 'OTHER', 'أخرى'
+
+    class Domain(models.TextChoices):
+        """المجال الفني للإشراف."""
+        TB = 'TB', 'السل'
+        HIV = 'HIV', 'فيروس نقص المناعة'
+        IMMUNIZATION = 'IMMUNIZATION', 'التطعيم'
+        SURVEILLANCE = 'SURVEILLANCE', 'الترصد'
+        MATERNAL = 'MATERNAL', 'صحة الأم'
+        CHILD = 'CHILD', 'صحة الطفل'
+        NUTRITION = 'NUTRITION', 'التغذية'
+        QUARANTINE = 'QUARANTINE', 'الحجر الصحي'
+        LABORATORY = 'LABORATORY', 'المختبرات'
+        GENERAL = 'GENERAL', 'عام'
+        OTHER = 'OTHER', 'أخرى'
+
+    code = models.CharField(max_length=64, unique=True, verbose_name="الكود")
+    name_ar = models.CharField(max_length=200, verbose_name="الاسم بالعربية")
+    name_en = models.CharField(max_length=200, blank=True, verbose_name="الاسم بالإنجليزية")
+    kind = models.CharField(max_length=32, choices=Kind.choices, verbose_name="النوع")
+    domain = models.CharField(max_length=32, choices=Domain.choices, verbose_name="المجال")
+    description = models.TextField(blank=True, verbose_name="الوصف")
+
+    # مرجع اختياري إلى كيان آخر
+    reference_type = models.CharField(max_length=64, blank=True)
+    reference_id = models.UUIDField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
+
+    class Meta:
+        ordering = ['domain', 'code']
+        verbose_name = 'جهة إشراف فني'
+        verbose_name_plural = 'جهات الإشراف الفني'
+        indexes = [
+            models.Index(fields=['kind', 'is_active'], name='tech_sup_kind_idx'),
+            models.Index(fields=['domain', 'is_active'], name='tech_sup_domain_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.reference_id and not self.reference_type:
+            raise ValidationError({'reference_type': 'مطلوب عند وجود reference_id'})
+        if self.reference_type and not self.reference_id:
+            raise ValidationError({'reference_id': 'مطلوب عند وجود reference_type'})
+
+    def __str__(self):
+        return f'{self.name_ar} ({self.get_domain_display()})'
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervision (علاقة الإشراف التاريخية)
+# ---------------------------------------------------------------------------
+
+class TechnicalSupervision(BaseModel):
+    """إشراف فني على منشأة صحية — تاريخي.
+    
+    M3-3 MVP: target_type = FACILITY فقط.
+    الحقل target_type جاهز للتوسع (SERVICE_POINT, DEPARTMENT) في M4.
+    """
+
+    class TargetType(models.TextChoices):
+        FACILITY = 'FACILITY', 'منشأة صحية'
+        # SERVICE_POINT = 'SERVICE_POINT', 'نقطة خدمة'  (M4)
+        # DEPARTMENT = 'DEPARTMENT', 'إدارة'              (M4)
+
+    class SupervisionLevel(models.TextChoices):
+        PRIMARY = 'PRIMARY', 'أساسي'
+        SUPPORTIVE = 'SUPPORTIVE', 'مساند'
+        OVERSIGHT = 'OVERSIGHT', 'رقابي'
+
+    # --- Target (MVP: facility only) ---
+    target_type = models.CharField(
+        max_length=32, choices=TargetType.choices, default='FACILITY',
+        verbose_name='نوع الهدف',
+    )
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.PROTECT,
+        related_name='technical_supervisions',
+        null=True, blank=True,  # nullable لأن target_type قد يتوسع مستقبلاً
+        verbose_name='المنشأة',
+    )
+    # service_point / department (M4) — لا تُضاف الآن
+
+    # --- Supervisor ---
+    supervisor = models.ForeignKey(
+        TechnicalSupervisor,
+        on_delete=models.PROTECT,
+        related_name='supervisions',
+        verbose_name='المشرف',
+    )
+
+    # --- Relationship metadata ---
+    supervision_level = models.CharField(
+        max_length=16, choices=SupervisionLevel.choices, default='PRIMARY',
+        verbose_name='مستوى الإشراف',
+    )
+    is_primary = models.BooleanField(default=False, verbose_name='أساسي')
+    valid_from = models.DateField(verbose_name='من تاريخ')
+    valid_to = models.DateField(null=True, blank=True, verbose_name='إلى تاريخ')
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-valid_from']
+        verbose_name = 'إشراف فني'
+        verbose_name_plural = 'الإشراف الفني'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(valid_to__isnull=True) | models.Q(valid_to__gt=models.F('valid_from')),
+                name='technical_supervision_valid_range',
+            ),
+            # MVP: target_type=FACILITY يتطلب facility غير null
+            models.CheckConstraint(
+                check=(
+                    models.Q(target_type='FACILITY', facility__isnull=False)
+                    | ~models.Q(target_type='FACILITY')
+                ),
+                name='technical_supervision_facility_required',
+            ),
+            # لا إشرافين أساسيين نشطين لنفس (facility, supervisor)
+            models.UniqueConstraint(
+                fields=['facility', 'supervisor'],
+                condition=models.Q(valid_to__isnull=True),
+                name='technical_supervision_unique_active',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['facility', 'valid_to'], name='tech_sup_fac_to_idx'),
+            models.Index(fields=['supervisor', 'valid_to'], name='tech_sup_sup_to_idx'),
+            models.Index(fields=['facility', 'is_primary'], name='tech_sup_fac_prim_idx'),
+            models.Index(fields=['target_type', 'valid_to'], name='tech_sup_type_to_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_to and self.valid_to <= self.valid_from:
+            raise ValidationError('valid_to must be after valid_from')
+        if self.target_type == 'FACILITY' and not self.facility:
+            raise ValidationError({'facility': 'مطلوب عند target_type=FACILITY'})
+        # تعيين أساسي واحد نشط لكل (facility, supervisor)
+        if self.is_primary and self.valid_to is None and self.facility:
+            qs = TechnicalSupervision.objects.filter(
+                facility=self.facility,
+                supervisor=self.supervisor,
+                is_primary=True,
+                valid_to__isnull=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    'Another primary supervision exists for this facility+supervisor'
+                )
+
+    def __str__(self):
+        return f'{self.facility} ← {self.supervisor} ({self.valid_from})'

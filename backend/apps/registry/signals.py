@@ -23,6 +23,8 @@ from .models import (
     ReportingNode,
     StateMinistry,
     StateNodeAssignment,
+    TechnicalSupervisor,
+    TechnicalSupervision,
 )
 
 
@@ -147,4 +149,33 @@ def log_ownership_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=FacilityOwnership)
 def log_ownership_delete(sender, instance, **kwargs):
+    _log("DELETE", instance)
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervisor (M3-3)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=TechnicalSupervisor)
+def log_supervisor_save(sender, instance, created, **kwargs):
+    _log("CREATE" if created else "UPDATE", instance)
+
+
+@receiver(post_delete, sender=TechnicalSupervisor)
+def log_supervisor_delete(sender, instance, **kwargs):
+    _log("DELETE", instance, label=f"{instance.code} (deleted)")
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervision (M3-3)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=TechnicalSupervision)
+def log_supervision_save(sender, instance, created, **kwargs):
+    action = "ASSIGN" if created else "REASSIGN"
+    _log(action, instance)
+
+
+@receiver(post_delete, sender=TechnicalSupervision)
+def log_supervision_delete(sender, instance, **kwargs):
     _log("DELETE", instance)

@@ -9,6 +9,8 @@ import type {
   RegistryChangeLog,
   FacilityOwner,
   FacilityOwnership,
+  TechnicalSupervisor,
+  TechnicalSupervision,
 } from '../../types/registry';
 
 const BASE = '/api/v1/registry';
@@ -108,3 +110,21 @@ export const listFacilityOwnerships = (): Promise<FacilityOwnership[]> =>
 
 export const createFacilityOwnership = (data: Partial<FacilityOwnership>): Promise<FacilityOwnership> =>
   axios.post(`${BASE}/facility-ownerships/`, data).then((r) => unwrap<FacilityOwnership>(r));
+
+// --- Technical Supervisors ---
+export const listTechnicalSupervisors = (): Promise<TechnicalSupervisor[]> =>
+  axios.get(`${BASE}/technical-supervisors/`).then((r) => unwrap<TechnicalSupervisor[]>(r));
+
+export const createTechnicalSupervisor = (
+  data: Partial<TechnicalSupervisor>,
+): Promise<TechnicalSupervisor> =>
+  axios.post(`${BASE}/technical-supervisors/`, data).then((r) => unwrap<TechnicalSupervisor>(r));
+
+// --- Technical Supervisions ---
+export const listTechnicalSupervisions = (): Promise<TechnicalSupervision[]> =>
+  axios.get(`${BASE}/technical-supervisions/`).then((r) => unwrap<TechnicalSupervision[]>(r));
+
+export const createTechnicalSupervision = (
+  data: Partial<TechnicalSupervision>,
+): Promise<TechnicalSupervision> =>
+  axios.post(`${BASE}/technical-supervisions/`, data).then((r) => unwrap<TechnicalSupervision>(r));

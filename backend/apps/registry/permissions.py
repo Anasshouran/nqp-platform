@@ -17,6 +17,9 @@ FACILITY_VIEW = "facility:view"
 FACILITY_OWNERSHIP_VIEW = "facility_ownership:view"
 FACILITY_OWNERSHIP_ADD = "facility_ownership:add"
 FACILITY_OWNERSHIP_EDIT = "facility_ownership:edit"
+TECHNICAL_SUPERVISION_VIEW = "technical_supervision:view"
+TECHNICAL_SUPERVISION_ADD = "technical_supervision:add"
+TECHNICAL_SUPERVISION_EDIT = "technical_supervision:edit"
 
 
 class RegistryPermissionMixin:

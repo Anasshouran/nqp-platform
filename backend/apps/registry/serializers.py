@@ -14,6 +14,8 @@ from apps.registry.models import (
     ReportingNode,
     StateMinistry,
     StateNodeAssignment,
+    TechnicalSupervisor,
+    TechnicalSupervision,
 )
 
 
@@ -307,6 +309,88 @@ class FacilityOwnershipWriteSerializer(serializers.ModelSerializer):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         instance = FacilityOwnership(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervisor (Technical Supervision مرجع)
+# ---------------------------------------------------------------------------
+
+class TechnicalSupervisorSerializer(serializers.ModelSerializer):
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+    domain_display = serializers.CharField(source='get_domain_display', read_only=True)
+
+    class Meta:
+        model = TechnicalSupervisor
+        fields = [
+            'id', 'code', 'name_ar', 'name_en', 'kind', 'kind_display',
+            'domain', 'domain_display', 'description',
+            'reference_type', 'reference_id', 'is_active',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class TechnicalSupervisorWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnicalSupervisor
+        fields = [
+            'code', 'name_ar', 'name_en', 'kind', 'domain', 'description',
+            'reference_type', 'reference_id', 'is_active',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = TechnicalSupervisor(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervision
+# ---------------------------------------------------------------------------
+
+class TechnicalSupervisionSerializer(serializers.ModelSerializer):
+    facility_name = serializers.CharField(source='facility.name_ar', read_only=True)
+    supervisor_name = serializers.CharField(source='supervisor.name_ar', read_only=True)
+    supervisor_domain = serializers.CharField(source='supervisor.domain', read_only=True)
+    level_display = serializers.CharField(source='get_supervision_level_display', read_only=True)
+
+    class Meta:
+        model = TechnicalSupervision
+        fields = [
+            'id', 'target_type', 'facility', 'facility_name',
+            'supervisor', 'supervisor_name', 'supervisor_domain',
+            'supervision_level', 'level_display', 'is_primary',
+            'valid_from', 'valid_to', 'note',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class TechnicalSupervisionWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnicalSupervision
+        fields = [
+            'target_type', 'facility', 'supervisor',
+            'supervision_level', 'is_primary',
+            'valid_from', 'valid_to', 'note',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = TechnicalSupervision(**attrs)
         instance.pk = getattr(self.instance, 'pk', None)
         try:
             instance.clean()

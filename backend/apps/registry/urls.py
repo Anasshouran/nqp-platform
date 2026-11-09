@@ -11,6 +11,8 @@ from .views import (
     ReportingNodeViewSet,
     StateMinistryViewSet,
     StateNodeAssignmentViewSet,
+    TechnicalSupervisorViewSet,
+    TechnicalSupervisionViewSet,
 )
 
 router = DefaultRouter()
@@ -23,6 +25,8 @@ router.register("changelog", RegistryChangeLogViewSet, basename="registry-change
 router.register("dashboard", RegistryDashboardViewSet, basename="registry-dashboard")
 router.register("owners", FacilityOwnerViewSet, basename="registry-owners")
 router.register("facility-ownerships", FacilityOwnershipViewSet, basename="registry-facility-ownerships")
+router.register("technical-supervisors", TechnicalSupervisorViewSet, basename="registry-technical-supervisors")
+router.register("technical-supervisions", TechnicalSupervisionViewSet, basename="registry-technical-supervisions")
 
 urlpatterns = [
     path("", include(router.urls)),

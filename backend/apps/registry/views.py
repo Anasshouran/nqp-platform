@@ -24,12 +24,18 @@ from .models import (
     ReportingNode,
     StateMinistry,
     StateNodeAssignment,
+    TechnicalSupervisor,
+    TechnicalSupervision,
 )
 from .serializers import (
     FacilityOwnerSerializer,
     FacilityOwnerWriteSerializer,
     FacilityOwnershipSerializer,
     FacilityOwnershipWriteSerializer,
+    TechnicalSupervisorSerializer,
+    TechnicalSupervisorWriteSerializer,
+    TechnicalSupervisionSerializer,
+    TechnicalSupervisionWriteSerializer,
     HealthFacilityNodeAssignmentSerializer,
     HealthFacilityNodeAssignmentWriteSerializer,
     LocalityNodeAssignmentSerializer,
@@ -152,6 +158,9 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
 
         if model_name == 'StateMinistry':
             return qs.filter(state_id__in=state_ids)
+
+        if model_name == 'TechnicalSupervision':
+            return qs.filter(facility_id__in=facility_ids)
 
         if model_name == 'RegistryChangeLog':
             return qs  # TODO: tighten in M3-bis — polymorphic scoping is complex
@@ -351,3 +360,27 @@ class FacilityOwnershipViewSet(RegistryScopedViewSet):
     write_serializer_class = FacilityOwnershipWriteSerializer
     permission_resource = "registry"
     search_fields = ["facility__code", "owner__code"]
+
+
+# ---------------------------------------------------------------------------
+# TechnicalSupervisor (Technical Supervision مرجع)
+# ---------------------------------------------------------------------------
+
+class TechnicalSupervisorViewSet(RegistryScopedViewSet):
+    """إدارة الجهات المشرفة فنياً (GLOBAL للكتابة، كل مستخدم مصادق للقراءة)."""
+    queryset = TechnicalSupervisor.objects.all().order_by("domain", "code")
+    serializer_class = TechnicalSupervisorSerializer
+    write_serializer_class = TechnicalSupervisorWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["code", "name_ar", "domain"]
+
+
+class TechnicalSupervisionViewSet(RegistryScopedViewSet):
+    """إدارة الإشراف الفني على المنشآت."""
+    queryset = TechnicalSupervision.objects.select_related(
+        "facility", "supervisor"
+    ).all().order_by("-valid_from")
+    serializer_class = TechnicalSupervisionSerializer
+    write_serializer_class = TechnicalSupervisionWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["facility__code", "supervisor__code"]

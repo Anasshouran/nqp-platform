@@ -101,3 +101,44 @@ export interface FacilityOwnership {
   valid_to: string | null;
   note?: string;
 }
+
+export type TechnicalSupervisorKind =
+  | 'FEDERAL_PROGRAM'
+  | 'STATE_HEALTH_DEPT'
+  | 'ACADEMIC'
+  | 'UN_AGENCY'
+  | 'NGO'
+  | 'OTHER';
+
+export type TechnicalDomain =
+  | 'TB' | 'HIV' | 'IMMUNIZATION' | 'SURVEILLANCE'
+  | 'MATERNAL' | 'CHILD' | 'NUTRITION' | 'QUARANTINE'
+  | 'LABORATORY' | 'GENERAL' | 'OTHER';
+
+export interface TechnicalSupervisor {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en?: string;
+  kind: TechnicalSupervisorKind;
+  domain: TechnicalDomain;
+  description?: string;
+  is_active: boolean;
+}
+
+export type SupervisionLevel = 'PRIMARY' | 'SUPPORTIVE' | 'OVERSIGHT';
+
+export interface TechnicalSupervision {
+  id: string;
+  target_type: 'FACILITY';
+  facility: string;
+  facility_name: string;
+  supervisor: string;
+  supervisor_name: string;
+  supervisor_domain: TechnicalDomain;
+  supervision_level: SupervisionLevel;
+  is_primary: boolean;
+  valid_from: string;
+  valid_to: string | null;
+  note?: string;
+}
