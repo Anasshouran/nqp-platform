@@ -336,6 +336,26 @@
             "lastError": "آخر خطأ"
           }
         },
+        "itNetworks": {
+          "eyebrow": "قسم تقنية المعلومات",
+          "title": "الشبكات والاتصال",
+          "subtitle": "حالة اتصال كل نقطة دخول وزمن الاستجابة وآخر مزامنة.",
+          "syncStatus": "مزامنة الحالة",
+          "backToDashboard": "لوحة تقنية المعلومات",
+          "tableTitle": "حالة الشبكات",
+          "tableSubtitle": "{{count}} نقطة دخول · {{connected}} متصلة",
+          "searchPlaceholder": "بحث باسم نقطة الدخول...",
+          "emptyTitle": "لا توجد شبكات",
+          "emptyDescription": "لا توجد نقاط دخول مسجلة ضمن هذا القطاع.",
+          "columns": {
+            "entryPoint": "نقطة الدخول",
+            "status": "الحالة",
+            "connected": "متصل",
+            "disconnected": "منقطع",
+            "responseTime": "زمن الاستجابة",
+            "lastSync": "آخر مزامنة"
+          }
+        },
         "airportHealth": {
           "eyebrow": "الأنظمة التشغيلية",
           "title": "صحة المطارات — قطاع البحر الأحمر",
