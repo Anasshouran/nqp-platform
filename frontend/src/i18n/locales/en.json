@@ -14,6 +14,11 @@
       "percent": "%",
       "weeklyActivity": "Weekly Activity",
       "recentActivity": "Requests Submitted in the Last 7 Days"
+    },
+    "views": {
+      "list": {
+        "subtitle": "{{count}} requests"
+      }
     }
   },
   "common": {

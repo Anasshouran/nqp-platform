@@ -14,6 +14,11 @@
       "percent": "٪",
       "weeklyActivity": "نشاط الأسبوع",
       "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
+    },
+    "views": {
+      "list": {
+        "subtitle": "{{count}} طلب"
+      }
     }
   },
   "common": {

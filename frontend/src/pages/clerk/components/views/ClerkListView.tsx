@@ -1,5 +1,6 @@
 // Shared worklist for the import / export / all-requests views.
 // Extracted from ClerkDashboardPage without behavioural change.
+import { useTranslation } from 'react-i18next';
 import type { useClerkActions } from '../../hooks/useClerkActions';
 import type { useClerkNav } from '../../hooks/useClerkNav';
 import type { useClerkRequests } from '../../hooks/useClerkRequests';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export const ClerkListView = ({ actions, nav, reqs }: Props) => {
+  const { t } = useTranslation();
   const { setDeleteTarget, setEditTarget, openRow, submitAction } = actions;
   const { activeView } = nav;
   const { requestFilters, table } = reqs;
@@ -22,7 +24,7 @@ export const ClerkListView = ({ actions, nav, reqs }: Props) => {
                 table={table}
                 filters={requestFilters}
                 title={LIST_VIEW_META[activeView].title}
-                subtitle={`${table.count} طلب`}
+                subtitle={t('clerk.views.list.subtitle', { count: table.count })}
                 onAction={(r) => (isDraftRow(r) ? setEditTarget(r) : openRow(r))}
                 onDelete={(r) => setDeleteTarget(r)}
                 onSend={submitAction}
