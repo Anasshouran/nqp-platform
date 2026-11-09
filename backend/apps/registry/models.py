@@ -580,6 +580,19 @@ class TechnicalSupervisor(BaseModel):
             raise ValidationError({'reference_type': 'مطلوب عند وجود reference_id'})
         if self.reference_type and not self.reference_id:
             raise ValidationError({'reference_id': 'مطلوب عند وجود reference_type'})
+        
+        # D-M3-3-3: التحقق الوجودي (مثل D-M3-2-1 في FacilityOwner)
+        if self.reference_type == 'StateMinistry' and self.reference_id:
+            if not StateMinistry.objects.filter(pk=self.reference_id).exists():
+                raise ValidationError({
+                    'reference_id': f'StateMinistry بـ id={self.reference_id} غير موجود',
+                })
+        if self.reference_type == 'FacilityOwner' and self.reference_id:
+            if not FacilityOwner.objects.filter(pk=self.reference_id).exists():
+                raise ValidationError({
+                    'reference_id': f'FacilityOwner بـ id={self.reference_id} غير موجود',
+                })
+        # reference_type آخر: مقبول (polymorphic، غير محقَّق)
 
     def __str__(self):
         return f'{self.name_ar} ({self.get_domain_display()})'

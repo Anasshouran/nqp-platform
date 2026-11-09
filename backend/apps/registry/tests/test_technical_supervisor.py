@@ -43,6 +43,39 @@ class TestTechnicalSupervisorModel:
                 code=code, name_ar='2', kind='OTHER', domain='GENERAL',
             )
 
+    def test_reference_id_invalid_rejected(self):
+        """reference_id مع reference_type='StateMinistry' غير موجود → رفض."""
+        import uuid
+        from django.core.exceptions import ValidationError
+        sup = TechnicalSupervisor(
+            code=f'REF_{_uid()}', name_ar='مرجع',
+            kind='STATE_HEALTH_DEPT', domain='GENERAL',
+            reference_type='StateMinistry',
+            reference_id=uuid.uuid4(),  # غير موجود
+        )
+        with pytest.raises((ValidationError, Exception)):
+            sup.full_clean()
+
+    def test_reference_id_valid(self):
+        """reference_id صحيح → مقبول."""
+        from apps.masterdata.models import (
+            Sector as MasterdataSector, State,
+        )
+        from apps.registry.models import StateMinistry
+
+        md = MasterdataSector.objects.create(code=f'MD_{_uid()}', name_ar='نقل')
+        state = State.objects.create(code=f'ST_{_uid()}', name_ar='ولاية', sector=md)
+        ministry = StateMinistry.objects.create(
+            state=state, ministry_name_ar='وزارة',
+        )
+        sup = TechnicalSupervisor(
+            code=f'REF_OK_{_uid()}', name_ar='مرجع صحيح',
+            kind='STATE_HEALTH_DEPT', domain='GENERAL',
+            reference_type='StateMinistry',
+            reference_id=ministry.id,
+        )
+        sup.full_clean()  # لا استثناء
+
 
 @pytest.mark.django_db
 class TestTechnicalSupervisorAPI:

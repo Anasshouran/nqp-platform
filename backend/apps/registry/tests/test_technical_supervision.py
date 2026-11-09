@@ -131,3 +131,86 @@ class TestTechnicalSupervisionAPI:
             'is_primary': True,
         })
         assert response.status_code == 201, response.json()
+
+    def test_sector_user_sees_own_sector_supervisions(self):
+        """D-M3-3-2: SECTOR user يرى supervisions منشآت قطاعه فقط."""
+        from apps.accounts.models import Role, RoleAssignment
+        from apps.organization.models import Sector as OrgSector
+        from apps.masterdata.models import (
+            Sector as MasterdataSector, State, EntryPoint,
+        )
+        from apps.organization.models import Locality
+
+        uid = _uid()
+
+        # Sector A (user's sector)
+        md_a = MasterdataSector.objects.create(code=f'MDA_{uid}', name_ar='نقل أ')
+        org_a = OrgSector.objects.create(code=f'ORGA_{uid}', name_ar='قطاع أ')
+        state_a = State.objects.create(code=f'STA_{uid}', name_ar='ولاية أ', sector=md_a)
+        loc_a = Locality.objects.create(code=f'LOCA_{uid}', name_ar='محلية أ', sector=org_a)
+        ep_a = EntryPoint.objects.create(
+            code=f'EPA_{uid}', name_ar='منفذ أ',
+            state=state_a, sector=org_a, locality=loc_a,
+        )
+        facility_a = HealthFacility.objects.create(
+            code=f'FACA_{uid}', name_ar='منشأة أ',
+            sector=org_a, locality=loc_a, entry_point=ep_a,
+        )
+        supervisor_a = _make_supervisor()
+        sv_a = TechnicalSupervision.objects.create(
+            facility=facility_a, supervisor=supervisor_a,
+            valid_from='2026-01-01', is_primary=True, target_type='FACILITY',
+        )
+
+        # Sector B (other)
+        md_b = MasterdataSector.objects.create(code=f'MDB_{uid}', name_ar='نقل ب')
+        org_b = OrgSector.objects.create(code=f'ORGB_{uid}', name_ar='قطاع ب')
+        state_b = State.objects.create(code=f'STB_{uid}', name_ar='ولاية ب', sector=md_b)
+        loc_b = Locality.objects.create(code=f'LOCB_{uid}', name_ar='محلية ب', sector=org_b)
+        ep_b = EntryPoint.objects.create(
+            code=f'EPB_{uid}', name_ar='منفذ ب',
+            state=state_b, sector=org_b, locality=loc_b,
+        )
+        facility_b = HealthFacility.objects.create(
+            code=f'FACB_{uid}', name_ar='منشأة ب',
+            sector=org_b, locality=loc_b, entry_point=ep_b,
+        )
+        supervisor_b = _make_supervisor()
+        sv_b = TechnicalSupervision.objects.create(
+            facility=facility_b, supervisor=supervisor_b,
+            valid_from='2026-01-01', is_primary=True, target_type='FACILITY',
+        )
+
+        # SECTOR user for org_a
+        user = User.objects.create_user(email=f'sector_{uid}@test.com', password='x')
+        user.sector = org_a
+        user.save()
+        role = Role.objects.create(name=f'SECTOR_ROLE_{uid}')
+        RoleAssignment.objects.create(
+            user=user, role=role, scope_type='SECTOR', scope_id=org_a.id,
+        )
+
+        # منح صلاحية القراءة للدور
+        from apps.accounts.models import Permission
+        perm, _ = Permission.objects.get_or_create(
+            code='registry:view', defaults={'name': 'View Registry', 'resource': 'registry', 'action': 'view'}
+        )
+        role.permissions.add(perm)
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/v1/registry/technical-supervisions/')
+        assert response.status_code == 200, response.json()
+
+        body = response.json()
+        inner = body.get('data', {})
+        if isinstance(inner, dict) and 'results' in inner:
+            items = inner['results']
+        elif isinstance(inner, list):
+            items = inner
+        else:
+            items = []
+        ids = {str(item['id']) for item in items}
+
+        assert str(sv_a.id) in ids, "SECTOR user missing own supervision"
+        assert str(sv_b.id) not in ids, "SECTOR user sees other sector's supervision — LEAK!"
