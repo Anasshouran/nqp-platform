@@ -14,6 +14,22 @@
       "percent": "٪",
       "weeklyActivity": "نشاط الأسبوع",
       "recentActivity": "الطلبات المُرسلة خلال آخر 7 أيام"
+    },
+    "views": {
+      "list": {
+        "subtitle": "{{count}} طلب"
+      },
+      "settings": {
+        "title": "الإعدادات",
+        "languageLabel": "اللغة",
+        "languageArabic": "العربية",
+        "notificationsLabel": "إشعارات الطلبات",
+        "notificationsEnabled": "مفعّلة",
+        "notificationsToggleToast": "تم تبديل الإشعارات",
+        "numberFormatLabel": "تنسيق الأرقام",
+        "numberFormatArabic": "عربي (ar-EG)",
+        "numberFormatToggleToast": "تم تبديل التنسيق"
+      }
     }
   },
   "common": {

@@ -14,6 +14,22 @@
       "percent": "%",
       "weeklyActivity": "Weekly Activity",
       "recentActivity": "Requests Submitted in the Last 7 Days"
+    },
+    "views": {
+      "list": {
+        "subtitle": "{{count}} requests"
+      },
+      "settings": {
+        "title": "Settings",
+        "languageLabel": "Language",
+        "languageArabic": "Arabic",
+        "notificationsLabel": "Request notifications",
+        "notificationsEnabled": "Enabled",
+        "notificationsToggleToast": "Notifications toggled",
+        "numberFormatLabel": "Number format",
+        "numberFormatArabic": "Arabic (ar-EG)",
+        "numberFormatToggleToast": "Number format changed"
+      }
     }
   },
   "common": {
