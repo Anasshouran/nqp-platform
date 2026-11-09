@@ -1,5 +1,6 @@
 // Overview: queue counters, pipeline cards, weekly activity and the worklist.
 // Extracted from ClerkDashboardPage without behavioural change.
+import { useTranslation } from 'react-i18next';
 import type { useClerkActions } from '../../hooks/useClerkActions';
 import type { useClerkData } from '../../hooks/useClerkData';
 import type { useClerkRequests } from '../../hooks/useClerkRequests';
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export const ClerkHomeView = ({ actions, data, reqs }: Props) => {
+  const { t } = useTranslation();
   const { setDeleteTarget, submitAction } = actions;
   const { counts, shipments } = data;
   const { goToRequests, requestFilters, table } = reqs;
@@ -27,16 +29,16 @@ export const ClerkHomeView = ({ actions, data, reqs }: Props) => {
                 {/* بطاقات الإحصائيات */}
                 <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
                   <Grid item xs={12} sm={6} lg={3}>
-                    <KpiCard label="المسودات" value={counts.drafts} icon={<DescriptionIcon />} hint="طلبات لم تُرسل" accent="#0c7f6a" onClick={() => goToRequests('drafts')} />
+                    <KpiCard label={t('clerk.views.home.kpi.drafts.label')} value={counts.drafts} icon={<DescriptionIcon />} hint={t('clerk.views.home.kpi.drafts.hint')} accent="#0c7f6a" onClick={() => goToRequests('drafts')} />
                   </Grid>
                   <Grid item xs={12} sm={6} lg={3}>
-                    <KpiCard label="بانتظار الرسوم" value={counts.submitted} icon={<PaidIcon />} hint="مرسلة للمحاسب" accent="#8c6d1f" onClick={() => goToRequests('submitted')} />
+                    <KpiCard label={t('clerk.views.home.kpi.submitted.label')} value={counts.submitted} icon={<PaidIcon />} hint={t('clerk.views.home.kpi.submitted.hint')} accent="#8c6d1f" onClick={() => goToRequests('submitted')} />
                   </Grid>
                   <Grid item xs={12} sm={6} lg={3}>
-                    <KpiCard label="بانتظار المراجعة" value={counts.underReview} icon={<FindInPageIcon />} hint="سُددت رسومها — لدى مدير القسم" accent="#6f5516" onClick={() => goToRequests('under-review')} />
+                    <KpiCard label={t('clerk.views.home.kpi.underReview.label')} value={counts.underReview} icon={<FindInPageIcon />} hint={t('clerk.views.home.kpi.underReview.hint')} accent="#6f5516" onClick={() => goToRequests('under-review')} />
                   </Grid>
                   <Grid item xs={12} sm={6} lg={3}>
-                    <KpiCard label="قيد الفحص" value={counts.inspection} icon={<ScienceIcon />} hint="تفتيش ميداني ومعمل" accent="#12a585" onClick={() => goToRequests('inspection')} />
+                    <KpiCard label={t('clerk.views.home.kpi.inspection.label')} value={counts.inspection} icon={<ScienceIcon />} hint={t('clerk.views.home.kpi.inspection.hint')} accent="#12a585" onClick={() => goToRequests('inspection')} />
                   </Grid>
                 </Grid>
 
@@ -50,8 +52,8 @@ export const ClerkHomeView = ({ actions, data, reqs }: Props) => {
                 <WorklistTable
                   table={table}
                   filters={requestFilters}
-                  title="جميع الطلبات"
-                  subtitle={`${table.count} طلب`}
+                  title={t('clerk.views.home.title')}
+                  subtitle={t('clerk.views.home.subtitle', { count: table.count })}
                   onAction={submitAction}
                   onDelete={(r) => setDeleteTarget(r)}
                   onSend={submitAction}

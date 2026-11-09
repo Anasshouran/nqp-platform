@@ -19,6 +19,35 @@
       "list": {
         "subtitle": "{{count}} requests"
       },
+      "search": {
+        "title": "Search for a request",
+        "label": "Request number, customs, bill of lading, importer, exporter, vessel",
+        "recentLabel": "Recent searches:",
+        "resultMeta": "{{count}} items · {{weight}} kg · {{date}}",
+        "noResults": "No matching results for «{{q}}»"
+      },
+      "home": {
+        "title": "All requests",
+        "subtitle": "{{count}} requests",
+        "kpi": {
+          "drafts": {
+            "label": "Drafts",
+            "hint": "Requests not sent"
+          },
+          "submitted": {
+            "label": "Pending fees",
+            "hint": "Sent to the accountant"
+          },
+          "underReview": {
+            "label": "Under review",
+            "hint": "Fees paid — with the section manager"
+          },
+          "inspection": {
+            "label": "Under inspection",
+            "hint": "Field and laboratory inspection"
+          }
+        }
+      },
       "settings": {
         "title": "Settings",
         "languageLabel": "Language",
