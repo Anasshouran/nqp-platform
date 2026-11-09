@@ -156,3 +156,39 @@ export interface DepartmentNodeAssignment {
   valid_to: string | null;
   note?: string;
 }
+
+export type ServiceCategory =
+  | 'PRIMARY_CARE' | 'EMERGENCY' | 'SURGERY' | 'MATERNAL' | 'CHILD'
+  | 'NUTRITION' | 'TB' | 'HIV' | 'IMMUNIZATION' | 'SURVEILLANCE'
+  | 'QUARANTINE' | 'LABORATORY' | 'IMAGING' | 'PHARMACY'
+  | 'MENTAL_HEALTH' | 'OTHER';
+
+export interface Service {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en?: string;
+  category: ServiceCategory;
+  category_display: string;
+  description?: string;
+  is_active: boolean;
+  availability_count?: number;
+}
+
+export type ServiceTargetType = 'FACILITY' | 'DEPARTMENT';
+
+export interface ServiceAvailability {
+  id: string;
+  service: string;
+  service_code: string;
+  service_name: string;
+  target_type: ServiceTargetType;
+  facility: string | null;
+  facility_name: string | null;
+  department: string | null;
+  department_name: string | null;
+  valid_from: string;
+  valid_to: string | null;
+  is_active: boolean;
+  note?: string;
+}

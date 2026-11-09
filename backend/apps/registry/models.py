@@ -785,3 +785,150 @@ class DepartmentNodeAssignment(BaseModel):
 
     def __str__(self):
         return f'{self.department} ← {self.node.code} ({self.valid_from})'
+
+
+# ---------------------------------------------------------------------------
+# Service (catalog) + ServiceAvailability (M2M via rows)
+# ---------------------------------------------------------------------------
+
+class Service(BaseModel):
+    """خدمة صحية مرجعية (كتالوج وطني).
+    
+    كتالوج مركزي — لا يتبع منشأة أو إدارة.
+    التوفّر (ServiceAvailability) يحدد أين تُقدَّم.
+    
+    ADR-03: لا تُفرض تبعية خدمة لمنشأة واحدة.
+    """
+
+    class Category(models.TextChoices):
+        PRIMARY_CARE = 'PRIMARY_CARE', 'رعاية أولية'
+        EMERGENCY = 'EMERGENCY', 'طوارئ'
+        SURGERY = 'SURGERY', 'جراحة'
+        MATERNAL = 'MATERNAL', 'صحة الأم'
+        CHILD = 'CHILD', 'صحة الطفل'
+        NUTRITION = 'NUTRITION', 'تغذية'
+        TB = 'TB', 'السل'
+        HIV = 'HIV', 'فيروس نقص المناعة'
+        IMMUNIZATION = 'IMMUNIZATION', 'تطعيم'
+        SURVEILLANCE = 'SURVEILLANCE', 'ترصد'
+        QUARANTINE = 'QUARANTINE', 'حجر صحي'
+        LABORATORY = 'LABORATORY', 'مختبر'
+        IMAGING = 'IMAGING', 'أشعة'
+        PHARMACY = 'PHARMACY', 'صيدلة'
+        MENTAL_HEALTH = 'MENTAL_HEALTH', 'صحة نفسية'
+        OTHER = 'OTHER', 'أخرى'
+
+    code = models.CharField(max_length=64, unique=True, verbose_name="الكود")
+    name_ar = models.CharField(max_length=200, verbose_name="الاسم بالعربية")
+    name_en = models.CharField(max_length=200, blank=True, verbose_name="الاسم بالإنجليزية")
+    category = models.CharField(max_length=32, choices=Category.choices, verbose_name="الفئة")
+    description = models.TextField(blank=True, verbose_name="الوصف")
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
+
+    class Meta:
+        ordering = ['category', 'code']
+        verbose_name = 'خدمة'
+        verbose_name_plural = 'الخدمات'
+        indexes = [
+            models.Index(fields=['category', 'is_active'], name='service_category_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.name_ar} ({self.get_category_display()})'
+
+
+class ServiceAvailability(BaseModel):
+    """توفّر خدمة في منشأة أو إدارة — تاريخي.
+    
+    Service ← M2M → Facility/Department (عبر صفوف متعددة).
+    
+    ADR-03: خدمة يمكن أن تُقدَّم في عدة منشآت/إدارات.
+    """
+
+    class TargetType(models.TextChoices):
+        FACILITY = 'FACILITY', 'منشأة صحية'
+        DEPARTMENT = 'DEPARTMENT', 'إدارة'
+
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.PROTECT,
+        related_name='availabilities',
+        verbose_name='الخدمة',
+    )
+
+    target_type = models.CharField(max_length=16, choices=TargetType.choices, verbose_name="نوع الهدف")
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.CASCADE,
+        related_name='service_availabilities',
+        null=True, blank=True,
+        verbose_name='المنشأة',
+    )
+    department = models.ForeignKey(
+        'organization.Department',
+        on_delete=models.CASCADE,
+        related_name='service_availabilities',
+        null=True, blank=True,
+        verbose_name='الإدارة',
+    )
+
+    valid_from = models.DateField(verbose_name='من تاريخ')
+    valid_to = models.DateField(null=True, blank=True, verbose_name='إلى تاريخ')
+    is_active = models.BooleanField(default=True, verbose_name='نشط')
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-valid_from']
+        verbose_name = 'توفر خدمة'
+        verbose_name_plural = 'توفر الخدمات'
+        constraints = [
+            # valid range
+            models.CheckConstraint(
+                check=models.Q(valid_to__isnull=True) | models.Q(valid_to__gt=models.F('valid_from')),
+                name='service_availability_valid_range',
+            ),
+            # exactly one target
+            models.CheckConstraint(
+                check=(
+                    models.Q(target_type='FACILITY', facility__isnull=False, department__isnull=True)
+                    | models.Q(target_type='DEPARTMENT', department__isnull=False, facility__isnull=True)
+                ),
+                name='service_availability_exactly_one_target',
+            ),
+            # no duplicate active (service, facility) or (service, department)
+            models.UniqueConstraint(
+                fields=['service', 'facility'],
+                condition=models.Q(valid_to__isnull=True, facility__isnull=False),
+                name='service_availability_unique_active_facility',
+            ),
+            models.UniqueConstraint(
+                fields=['service', 'department'],
+                condition=models.Q(valid_to__isnull=True, department__isnull=False),
+                name='service_availability_unique_active_department',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['service', 'valid_to'], name='svc_avail_svc_to_idx'),
+            models.Index(fields=['facility', 'valid_to'], name='svc_avail_fac_to_idx'),
+            models.Index(fields=['department', 'valid_to'], name='svc_avail_dept_to_idx'),
+            models.Index(fields=['target_type', 'valid_to'], name='svc_avail_type_to_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_to and self.valid_to <= self.valid_from:
+            raise ValidationError('valid_to must be after valid_from')
+        if self.target_type == 'FACILITY':
+            if not self.facility:
+                raise ValidationError({'facility': 'مطلوب عند target_type=FACILITY'})
+            if self.department:
+                raise ValidationError({'department': 'يجب أن يكون فارغاً عند target_type=FACILITY'})
+        elif self.target_type == 'DEPARTMENT':
+            if not self.department:
+                raise ValidationError({'department': 'مطلوب عند target_type=DEPARTMENT'})
+            if self.facility:
+                raise ValidationError({'facility': 'يجب أن يكون فارغاً عند target_type=DEPARTMENT'})
+
+    def __str__(self):
+        target = self.facility or self.department
+        return f'{self.service.code} @ {target} ({self.valid_from})'

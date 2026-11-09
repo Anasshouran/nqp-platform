@@ -23,6 +23,8 @@ from .models import (
     LocalityNodeAssignment,
     RegistryChangeLog,
     ReportingNode,
+    Service,
+    ServiceAvailability,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -35,6 +37,10 @@ from .serializers import (
     FacilityOwnerWriteSerializer,
     FacilityOwnershipSerializer,
     FacilityOwnershipWriteSerializer,
+    ServiceSerializer,
+    ServiceWriteSerializer,
+    ServiceAvailabilitySerializer,
+    ServiceAvailabilityWriteSerializer,
     TechnicalSupervisorSerializer,
     TechnicalSupervisorWriteSerializer,
     TechnicalSupervisionSerializer,
@@ -164,6 +170,13 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
 
         if model_name == 'TechnicalSupervision':
             return qs.filter(facility_id__in=facility_ids)
+
+        if model_name == 'ServiceAvailability':
+            from django.db.models import Q
+            return qs.filter(
+                Q(facility_id__in=facility_ids)
+                | Q(department__facility_id__in=facility_ids)
+            )
 
         if model_name == 'RegistryChangeLog':
             return qs  # TODO: tighten in M3-bis — polymorphic scoping is complex
@@ -419,3 +432,31 @@ class DepartmentNodeAssignmentViewSet(RegistryScopedViewSet):
     write_serializer_class = DepartmentNodeAssignmentWriteSerializer
     permission_resource = "registry"
     search_fields = ["department__code", "node__code"]
+
+
+class ServiceViewSet(RegistryScopedViewSet):
+    """كتالوج الخدمات (GLOBAL للكتابة، كل مستخدم للقراءة)."""
+    queryset = Service.objects.all().order_by("category", "code")
+    serializer_class = ServiceSerializer
+    write_serializer_class = ServiceWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["code", "name_ar", "category"]
+
+    def get_queryset(self):
+        qs = Service.objects.all()
+        user = self.request.user
+        if self.request.method in ('POST', 'PATCH', 'PUT'):
+            if not (user.is_superuser or has_global_scope(user)):
+                return qs.none()
+        return qs
+
+
+class ServiceAvailabilityViewSet(RegistryScopedViewSet):
+    """توفّر الخدمات."""
+    queryset = ServiceAvailability.objects.select_related(
+        "service", "facility", "department",
+    ).all().order_by("-valid_from")
+    serializer_class = ServiceAvailabilitySerializer
+    write_serializer_class = ServiceAvailabilityWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["service__code", "facility__code", "department__code"]

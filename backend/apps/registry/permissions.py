@@ -23,6 +23,9 @@ TECHNICAL_SUPERVISION_EDIT = "technical_supervision:edit"
 DEPARTMENT_ASSIGNMENT_VIEW = "department_assignment:view"
 DEPARTMENT_ASSIGNMENT_ADD = "department_assignment:add"
 DEPARTMENT_ASSIGNMENT_EDIT = "department_assignment:edit"
+SERVICE_VIEW = "service:view"
+SERVICE_ADD = "service:add"
+SERVICE_EDIT = "service:edit"
 
 
 class RegistryPermissionMixin:

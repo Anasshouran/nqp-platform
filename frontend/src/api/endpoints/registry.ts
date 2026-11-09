@@ -12,6 +12,8 @@ import type {
   TechnicalSupervisor,
   TechnicalSupervision,
   DepartmentNodeAssignment,
+  Service,
+  ServiceAvailability,
 } from '../../types/registry';
 
 const BASE = '/api/v1/registry';
@@ -138,3 +140,30 @@ export const createDepartmentAssignment = (
   data: Partial<DepartmentNodeAssignment>,
 ): Promise<DepartmentNodeAssignment> =>
   axios.post(`${BASE}/department-assignments/`, data).then((r) => unwrap<DepartmentNodeAssignment>(r));
+
+// --- Services (M3-5) ---
+export const listServices = (params?: { category?: string }): Promise<Service[]> =>
+  axios.get(`${BASE}/services/`, { params }).then((r) => unwrap<Service[]>(r));
+
+export const getService = (id: string): Promise<Service> =>
+  axios.get(`${BASE}/services/${id}/`).then((r) => unwrap<Service>(r));
+
+export const createService = (data: Partial<Service>): Promise<Service> =>
+  axios.post(`${BASE}/services/`, data).then((r) => unwrap<Service>(r));
+
+// --- Service Availability ---
+export const listServiceAvailability = (params?: {
+  service?: string;
+  facility?: string;
+  department?: string;
+}): Promise<ServiceAvailability[]> =>
+  axios.get(`${BASE}/service-availability/`, { params }).then((r) =>
+    unwrap<ServiceAvailability[]>(r),
+  );
+
+export const createServiceAvailability = (
+  data: Partial<ServiceAvailability>,
+): Promise<ServiceAvailability> =>
+  axios.post(`${BASE}/service-availability/`, data).then((r) =>
+    unwrap<ServiceAvailability>(r),
+  );

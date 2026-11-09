@@ -13,6 +13,8 @@ from apps.registry.models import (
     LocalityNodeAssignment,
     RegistryChangeLog,
     ReportingNode,
+    Service,
+    ServiceAvailability,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -432,6 +434,72 @@ class DepartmentNodeAssignmentWriteSerializer(serializers.ModelSerializer):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         instance = DepartmentNodeAssignment(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# Service (catalog) + ServiceAvailability
+# ---------------------------------------------------------------------------
+
+class ServiceSerializer(serializers.ModelSerializer):
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    availability_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Service
+        fields = [
+            'id', 'code', 'name_ar', 'name_en',
+            'category', 'category_display', 'description',
+            'is_active', 'availability_count',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_availability_count(self, obj):
+        return obj.availabilities.filter(valid_to__isnull=True).count()
+
+
+class ServiceWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ['code', 'name_ar', 'name_en', 'category', 'description', 'is_active']
+
+
+class ServiceAvailabilitySerializer(serializers.ModelSerializer):
+    service_code = serializers.CharField(source='service.code', read_only=True)
+    service_name = serializers.CharField(source='service.name_ar', read_only=True)
+    facility_name = serializers.CharField(source='facility.name_ar', read_only=True)
+    department_name = serializers.CharField(source='department.name_ar', read_only=True)
+
+    class Meta:
+        model = ServiceAvailability
+        fields = [
+            'id', 'service', 'service_code', 'service_name',
+            'target_type', 'facility', 'facility_name',
+            'department', 'department_name',
+            'valid_from', 'valid_to', 'is_active', 'note',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ServiceAvailabilityWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceAvailability
+        fields = [
+            'service', 'target_type', 'facility', 'department',
+            'valid_from', 'valid_to', 'is_active', 'note',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = ServiceAvailability(**attrs)
         instance.pk = getattr(self.instance, 'pk', None)
         try:
             instance.clean()

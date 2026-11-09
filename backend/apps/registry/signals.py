@@ -22,6 +22,8 @@ from .models import (
     LocalityNodeAssignment,
     RegistryChangeLog,
     ReportingNode,
+    Service,
+    ServiceAvailability,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -194,4 +196,33 @@ def log_dept_assign_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=DepartmentNodeAssignment)
 def log_dept_assign_delete(sender, instance, **kwargs):
+    _log("DELETE", instance)
+
+
+# ---------------------------------------------------------------------------
+# Service (M3-5)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=Service)
+def log_service_save(sender, instance, created, **kwargs):
+    _log("CREATE" if created else "UPDATE", instance)
+
+
+@receiver(post_delete, sender=Service)
+def log_service_delete(sender, instance, **kwargs):
+    _log("DELETE", instance, label=f"{instance.code} (deleted)")
+
+
+# ---------------------------------------------------------------------------
+# ServiceAvailability (M3-5)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=ServiceAvailability)
+def log_availability_save(sender, instance, created, **kwargs):
+    action = "ASSIGN" if created else "REASSIGN"
+    _log(action, instance)
+
+
+@receiver(post_delete, sender=ServiceAvailability)
+def log_availability_delete(sender, instance, **kwargs):
     _log("DELETE", instance)

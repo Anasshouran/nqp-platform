@@ -10,6 +10,8 @@ from .views import (
     RegistryChangeLogViewSet,
     RegistryDashboardViewSet,
     ReportingNodeViewSet,
+    ServiceAvailabilityViewSet,
+    ServiceViewSet,
     StateMinistryViewSet,
     StateNodeAssignmentViewSet,
     TechnicalSupervisorViewSet,
@@ -29,6 +31,8 @@ router.register("facility-ownerships", FacilityOwnershipViewSet, basename="regis
 router.register("technical-supervisors", TechnicalSupervisorViewSet, basename="registry-technical-supervisors")
 router.register("technical-supervisions", TechnicalSupervisionViewSet, basename="registry-technical-supervisions")
 router.register("department-assignments", DepartmentNodeAssignmentViewSet, basename="registry-department-assignments")
+router.register("services", ServiceViewSet, basename="registry-services")
+router.register("service-availability", ServiceAvailabilityViewSet, basename="registry-service-availability")
 
 urlpatterns = [
     path("", include(router.urls)),
