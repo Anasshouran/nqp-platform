@@ -82,6 +82,25 @@
     }
   },
   "portal": {
+    "auditLogs": {
+      "title": "سجلات المراجعة",
+      "subtitle": "تتبّع العمليات الحساسة على البوابة",
+      "searchPlaceholder": "ابحث بالمستخدم أو الإجراء",
+      "emptyTitle": "لا توجد سجلات",
+      "emptyDescription": "ستظهر هنا عمليات البوابة المسجّلة",
+      "columns": {
+        "time": "الوقت",
+        "user": "المستخدم",
+        "action": "الإجراء",
+        "resource": "المورد",
+        "result": "النتيجة"
+      },
+      "result": {
+        "success": "نجح",
+        "failure": "فشل",
+        "blocked": "محظور"
+      }
+    },
     "health": {
       "title": "الصحة والمراقبة",
       "subtitle": "نتائج فحوصات الاتصال الموثّقة لكل تكامل",

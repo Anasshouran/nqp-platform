@@ -82,6 +82,25 @@
     }
   },
   "portal": {
+    "auditLogs": {
+      "title": "Audit logs",
+      "subtitle": "Track sensitive operations on the portal",
+      "searchPlaceholder": "Search by user or action",
+      "emptyTitle": "No logs",
+      "emptyDescription": "Portal operations will appear here",
+      "columns": {
+        "time": "Time",
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "result": "Result"
+      },
+      "result": {
+        "success": "Succeeded",
+        "failure": "Failed",
+        "blocked": "Blocked"
+      }
+    },
     "health": {
       "title": "Health and monitoring",
       "subtitle": "Documented connectivity check results for each integration",
