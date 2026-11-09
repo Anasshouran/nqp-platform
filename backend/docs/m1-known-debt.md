@@ -229,4 +229,10 @@ Top durations (reuse-db):
 | D-7 | --reuse-db + transaction=True risk | 🟡 متوسطة | M2 أو CI |
 | D-8 | docker-compose.override.yml not gitignored | 🟠 عالية | pre-commit |
 | D-9 | transaction=True in FK test — reuse-db risk | 🟡 متوسطة | M2 |
-| D-10 | Test suite بطيء مع --create-db (349s) | 🟢 منخفضة | M2 Day 1 |
+| D-10 | `--create-db` overhead يبطئ test suite | 🟢 منخفضة | M2 |
+
+## D-10 تفاصيل إضافية
+
+**الحالة:** التشخيص مكتمل (Task 1). الأثر الحقيقي هو migration overhead لـ `--create-db` وليس اختبارات بطيئة.
+
+**الدلتا:** 349s (create-db) vs 2.8s (reuse-db).
