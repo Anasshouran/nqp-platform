@@ -930,5 +930,13 @@ class ServiceAvailability(BaseModel):
                 raise ValidationError({'facility': 'يجب أن يكون فارغاً عند target_type=DEPARTMENT'})
 
     def __str__(self):
-        target = self.facility or self.department
-        return f'{self.service.code} @ {target} ({self.valid_from})'
+        # آمن ضد حذف العلاقات (CASCADE) — لا يفشل عند حذف facility/department أولاً
+        try:
+            target = self.facility or self.department
+        except Exception:
+            target = f'id:{self.facility_id or self.department_id}'
+        try:
+            svc_code = self.service.code
+        except Exception:
+            svc_code = f'svc:{self.service_id}'
+        return f'{svc_code} @ {target} ({self.valid_from})'
