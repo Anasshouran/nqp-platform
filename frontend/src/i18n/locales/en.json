@@ -189,6 +189,10 @@
     }
   },
   "sector-content": {
+    "khartoum": {
+      "sectorName": "Khartoum Sector",
+      "subtitle": "Manage sector news, circulars, announcements, pages, FAQs, documents, slides, media, and contact settings."
+    },
     "sectorContentPage": {
       "eyebrow": "Content Management System",
       "title": "Content Management",
