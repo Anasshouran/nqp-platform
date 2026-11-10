@@ -289,6 +289,29 @@
       "content": {
         "sectorName": "Red Sea Sector"
       },
+      "it": {
+        "eyebrow": "Information Technology Department",
+        "title": "Technical Reports",
+        "subtitle": "Comprehensive summary of systems, assets, tickets, and networks status in the sector.",
+        "sectorChip": "Red Sea Sector",
+        "backToDashboard": "IT Dashboard",
+        "kpi": {
+          "totalSystems": "Total systems",
+          "activeAssets": "Active devices",
+          "openTickets": "Open tickets",
+          "connectedPorts": "Connected ports"
+        },
+        "systemsStatusTitle": "Systems status",
+        "warningChip": "Warning: {{count}}",
+        "offlineChip": "Offline: {{count}}",
+        "ticketsTitle": "Tickets by priority",
+        "ticketsSubtitle": "{{total}} tickets · {{critical}} critical open",
+        "ticketCount": "{{count}} tickets",
+        "assetsTitle": "Assets by status",
+        "assetsSubtitle": "Distribution of devices by operational status",
+        "activeLabel": "Active",
+        "maintenanceLabel": "Maintenance / disabled"
+      },
       "modules": {
         "staff": {
           "eyebrow": "Sector Management",
