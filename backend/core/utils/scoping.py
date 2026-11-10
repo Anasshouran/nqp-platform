@@ -16,6 +16,7 @@
 (الحقل القديم ``User.role`` غير معتبر في القرارات).
 """
 from django.core.exceptions import FieldError
+from django.db.models import Q
 
 import logging
 
@@ -555,14 +556,19 @@ class SectorFieldScopedMixin:
             مساراً علائقياً مثل `sample__sector`.
         scope_optional: `True` فقط للجداول المرجعية المشتركة التي لا تملك
             قطاعاً أصلاً. الافتراضي `False` = **فشل آمن**.
+        state_path: المسار العلائقي من النموذج إلى `masterdata.State.id`
+            (مثال: `entry_point__state_id`). الافتراضي `None` = الولاية
+            غير قابلة للاشتقاق → STATE يُحجب (فشل آمن). المُنحى القطاعي
+            (قرار H1′) يبقى كما هو؛ القناة STATE تُضاف بالتوازي فقط.
 
     يعيد الكل للوطني (superuser / GLOBAL scope / NATIONAL_LAB_ADMIN) — وهي
     تغطية عامة *مُتحقَّق منها* لا غياب نطاق.
-    للمستخدم بلا قطاع قابل للحل يُعيد `qs.none()` (فشل آمن) إلا إذا أعلن
-    الـ viewset `scope_optional = True` صراحةً.
+    للمستخدم بلا قطاع (أو ولاية) قابل للحل يُعيد `qs.none()` (فشل آمن) إلا
+    إذا أعلن الـ viewset `scope_optional = True` صراحةً.
     """
 
     sector_field = 'sector'
+    state_path = None
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -585,27 +591,48 @@ class SectorFieldScopedMixin:
             if requested:
                 return qs.none()
             return qs
-        if not sectors:
-            # لا قطاع قابل للحل ≠ تغطية عامة. الافتراضي حجب كامل؛ الاستثناء
+        # M5-B-1: STATE grant (اتحاد مع قناة القطاع — H1′ بالخيار، ليس استبدالاً).
+        # تُفعَّل فقط عندما يضبط الـ viewset `state_path` صراحةً (انظر docstring).
+        state_ids = set()
+        if self.state_path:
+            try:
+                resolved = get_user_state_ids(user)
+                if resolved:
+                    state_ids = set(resolved)
+            except (FieldError, ValueError):
+                logger.exception(
+                    'SectorFieldScopedMixin: failed to resolve STATE for %s '
+                    '(state_path=%s) - DENYING state branch',
+                    user, self.state_path,
+                )
+                state_ids = set()
+        if not sectors and not state_ids:
+            # لا قطاع/ولاية قابل للحل ≠ تغطية عامة. الافتراضي حجب كامل؛ الاستثناء
             # الوحيد تصريح صريح عبر `scope_optional` (انظر SCOPE_OPT_OUT_ATTR).
             if scope_is_optional(self):
                 return qs
             logger.warning(
-                'SectorFieldScopedMixin: user %s has no resolvable sector scope on %s '
-                '(sector_field=%s) - DENYING all rows',
-                user, self.__class__.__name__, self.sector_field,
+                'SectorFieldScopedMixin: user %s has no resolvable sector/state scope on %s '
+                '(sector_field=%s, state_path=%s) - DENYING all rows',
+                user, self.__class__.__name__, self.sector_field, self.state_path,
             )
             return qs.none()
         try:
-            filtered = qs.filter(**{f'{self.sector_field}__in': [s.pk for s in sectors]})
+            scope_q = Q()
+            if sectors:
+                scope_q |= Q(**{f'{self.sector_field}__in': [s.pk for s in sectors]})
+            if state_ids and self.state_path:
+                scope_q |= Q(**{f'{self.state_path}__in': list(state_ids)})
+            filtered = qs.filter(scope_q)
             if requested and requested in allowed_codes:
                 filtered = filtered.filter(**{f'{self.sector_field}__code': requested})
             elif requested:
                 return qs.none()
-            return filtered
+            return filtered.distinct()
         except (FieldError, ValueError):
             logger.exception(
-                'SectorFieldScopedMixin failed to scope queryset for %s (sector_field=%s) - DENYING access',
-                user, self.sector_field,
+                'SectorFieldScopedMixin failed to scope queryset for %s '
+                '(sector_field=%s, state_path=%s) - DENYING access',
+                user, self.sector_field, self.state_path,
             )
             return qs.none()

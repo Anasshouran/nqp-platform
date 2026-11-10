@@ -1,9 +1,8 @@
-"""M5-A-2 — P0 / H5: `SectorFieldScopedMixin` has no STATE branch.
+"""M5-B-1 — H5: `SectorFieldScopedMixin` STATE branch عبر `state_path`.
 
-Target: laboratory viewsets (LabSampleViewSet etc.). They filter with
-`qs.filter(sector__in=sectors)` where `sectors = resolve_user_sectors(user)`
-which only knows user.sector ∪ SECTOR scopes — STATE-only users silently get
-`qs.none()`.
+Target: laboratory viewsets (LabSampleViewSet / SampleTestViewSet). `qs.filter(...)`
+يمزج الآن `sector__in` (قرار H1′) مع `state_path__in` المطلق عندما يضبط الـ viewset
+`state_path` صراحةً. STATE-only user يرى العينات المرتبطة بـ EntryPoint في ولايته.
 """
 import uuid
 
@@ -27,8 +26,8 @@ def _sample(barcode, collector, sector, entry_point):
 @pytest.mark.django_db
 class TestLaboratoryH5:
 
-    @pytest.mark.xfail(reason='H5 — SectorFieldScopedMixin has no STATE branch (laboratory).',
-                       strict=False)
+    # M5-B-1: نُزعت xfail — SectorFieldScopedMixin حصلت على STATE branch
+    # عبر `state_path` (entry_point__state_id) — الولاية مرئية الآن.
     def test_state_user_sees_own_state_samples(self):
         """STATE user should see samples collected in their state."""
         world_a = _build_world('A')

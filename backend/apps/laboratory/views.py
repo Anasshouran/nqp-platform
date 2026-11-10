@@ -198,6 +198,7 @@ class LabTestCatalogViewSet(viewsets.ModelViewSet):
 
 class LabSampleViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
+    state_path = 'entry_point__state_id'  # M5-B-1: STATE branch (union, not replace)
     queryset = LabSample.objects.select_related(
         'collector', 'section', 'sector', 'entry_point', 'lab_request',
         'visit__traveler', 'visit__referral__port',
@@ -728,6 +729,7 @@ def _quality_stats(sector_ids=None):
 
 class SampleTestViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sample__sector'
+    state_path = 'sample__entry_point__state_id'  # M5-B-1: STATE branch via sample chain
     queryset = SampleTest.objects.select_related(
         'sample', 'sample__section', 'disease', 'instrument',
         'assigned_to', 'entered_by', 'reviewed_by', 'approved_by', 'lab_result',
