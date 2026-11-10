@@ -33,6 +33,17 @@
           "success": "نجاح",
           "info": "معلومة"
         }
+      },
+      "worklist": {
+        "searchPlaceholder": "بحث برقم البيان، جمركي، بوليصة، مورد، باخرة…",
+        "emptyTitle": "لا توجد طلبات",
+        "emptyDescription": "لم يتم العثور على طلبات تطابق هذه المعايير",
+        "sendTitle": "إرسال لتحصيل الرسوم",
+        "send": "إرسال",
+        "draftTooltip": "مسودة — قابلة للتعديل والحذف",
+        "viewTooltip": "مشاهدة",
+        "edit": "تعديل",
+        "delete": "حذف"
       }
     },
     "views": {
@@ -117,6 +128,27 @@
         "detail": "التفاصيل",
         "checkedAt": "وقت الفحص"
       }
+    },
+    "integrationDetail": {
+      "loadError": "تعذّر تحميل بيانات التكامل",
+      "title": "تفاصيل التكامل",
+      "notFound": "التكامل غير موجود",
+      "settingsTitle": "الإعدادات",
+      "orgLabel": "المنظمة",
+      "endpointLabel": "نقطة الـAPI",
+      "envLabel": "البيئة",
+      "authLabel": "نوع المصادقة",
+      "urlLabel": "الرابط",
+      "verifiedLabel": "آخر توثيق",
+      "notesLabel": "ملاحظات",
+      "credentialsTitle": "بيانات الاعتماد",
+      "credentialsInfo": "القيم مشفّرة ولا تُعرض. يمكن تدويرها من شاشة «بيانات الاعتماد».",
+      "noCredentials": "لا توجد اعتمادات مسجلة.",
+      "healthTitle": "سجلات الصحة",
+      "noHealth": "لا توجد فحوصات مسجلة بعد.",
+      "passed": "ناجح",
+      "failed": "فاشل",
+      "backToIntegrations": "رجوع للتكاملات"
     }
   },
   "common": {

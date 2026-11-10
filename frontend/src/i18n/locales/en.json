@@ -33,6 +33,17 @@
           "success": "Success",
           "info": "Info"
         }
+      },
+      "worklist": {
+        "searchPlaceholder": "Search by declaration, customs, policy, vessel, consignee…",
+        "emptyTitle": "No requests",
+        "emptyDescription": "No requests matching these criteria",
+        "sendTitle": "Send to collect fees",
+        "send": "Send",
+        "draftTooltip": "Draft — editable and deletable",
+        "viewTooltip": "View",
+        "edit": "Edit",
+        "delete": "Delete"
       }
     },
     "views": {
@@ -117,6 +128,27 @@
         "detail": "Details",
         "checkedAt": "Check time"
       }
+    },
+    "integrationDetail": {
+      "loadError": "Failed to load integration data",
+      "title": "Integration details",
+      "notFound": "Integration not found",
+      "settingsTitle": "Settings",
+      "orgLabel": "Organization",
+      "endpointLabel": "API endpoint",
+      "envLabel": "Environment",
+      "authLabel": "Authentication type",
+      "urlLabel": "URL",
+      "verifiedLabel": "Last verified",
+      "notesLabel": "Notes",
+      "credentialsTitle": "Credentials",
+      "credentialsInfo": "Values are encrypted and not displayed. They can be rotated from the \"Credentials\" screen.",
+      "noCredentials": "No credentials registered.",
+      "healthTitle": "Health records",
+      "noHealth": "No checks recorded yet.",
+      "passed": "Passed",
+      "failed": "Failed",
+      "backToIntegrations": "Back to integrations"
     }
   },
   "common": {

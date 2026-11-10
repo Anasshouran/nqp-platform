@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -30,6 +31,7 @@ const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) 
 
 const PortalIntegrationDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [integration, setIntegration] = useState<Integration | null>(null);
   const [health, setHealth] = useState<IntegrationHealth[]>([]);
@@ -45,7 +47,7 @@ const PortalIntegrationDetailPage = () => {
 
     getIntegration(id)
       .then((res) => { if (active) setIntegration(res.data?.data ?? null); })
-      .catch(() => { if (active) { setError('تعذّر تحميل بيانات التكامل'); notifyError('تعذّر تحميل بيانات التكامل'); } })
+      .catch(() => { if (active) { setError(t('portal.integrationDetail.loadError')); notifyError(t('portal.integrationDetail.loadError')); } })
       .finally(() => { if (active) setLoading(false); });
 
     getIntegrationHealthRecords({ integration: id, page_size: 10 })
@@ -57,7 +59,7 @@ const PortalIntegrationDetailPage = () => {
       .catch(() => undefined);
 
     return () => { active = false; };
-  }, [id]);
+  }, [id, t]);
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
@@ -66,8 +68,8 @@ const PortalIntegrationDetailPage = () => {
   if (error || !integration) {
     return (
       <Box>
-        <PageHeader title="تفاصيل التكامل" />
-        <Alert severity="error">{error ?? 'التكامل غير موجود'}</Alert>
+        <PageHeader title={t('portal.integrationDetail.title')} />
+        <Alert severity="error">{error ?? t('portal.integrationDetail.notFound')}</Alert>
       </Box>
     );
   }
@@ -85,26 +87,26 @@ action={
       <Stack spacing={2.5}>
         <Card>
           <CardContent>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>الإعدادات</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>{t('portal.integrationDetail.settingsTitle')}</Typography>
             <Divider sx={{ mb: 1 }} />
-            <DetailRow label="المنظمة" value={integration.organization_name} />
-            <DetailRow label="نقطة الـAPI" value={integration.endpoint_code} />
-            <DetailRow label="البيئة" value={integration.environment} />
-            <DetailRow label="نوع المصادقة" value={integration.auth_type || '—'} />
-            <DetailRow label="الرابط" value={integration.base_url || '—'} />
-            <DetailRow label="آخر توثيق" value={integration.verified_at ? formatDateTime(integration.verified_at) : '—'} />
-            <DetailRow label="ملاحظات" value={integration.notes || '—'} />
+            <DetailRow label={t('portal.integrationDetail.orgLabel')} value={integration.organization_name} />
+            <DetailRow label={t('portal.integrationDetail.endpointLabel')} value={integration.endpoint_code} />
+            <DetailRow label={t('portal.integrationDetail.envLabel')} value={integration.environment} />
+            <DetailRow label={t('portal.integrationDetail.authLabel')} value={integration.auth_type || '—'} />
+            <DetailRow label={t('portal.integrationDetail.urlLabel')} value={integration.base_url || '—'} />
+            <DetailRow label={t('portal.integrationDetail.verifiedLabel')} value={integration.verified_at ? formatDateTime(integration.verified_at) : '—'} />
+            <DetailRow label={t('portal.integrationDetail.notesLabel')} value={integration.notes || '—'} />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>بيانات الاعتماد</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>{t('portal.integrationDetail.credentialsTitle')}</Typography>
             <Alert severity="info" sx={{ mb: 1.5 }}>
-              القيم مشفّرة ولا تُعرض. يمكن تدويرها من شاشة «بيانات الاعتماد».
+              {t('portal.integrationDetail.credentialsInfo')}
             </Alert>
             {credentials.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">لا توجد اعتمادات مسجلة.</Typography>
+              <Typography variant="body2" color="text.secondary">{t('portal.integrationDetail.noCredentials')}</Typography>
             ) : (
               <Stack spacing={1}>
                 {credentials.map((c) => (
@@ -120,14 +122,14 @@ action={
 
         <Card>
           <CardContent>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>سجلات الصحة</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>{t('portal.integrationDetail.healthTitle')}</Typography>
             {health.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">لا توجد فحوصات مسجلة بعد.</Typography>
+              <Typography variant="body2" color="text.secondary">{t('portal.integrationDetail.noHealth')}</Typography>
             ) : (
               <Stack spacing={1}>
                 {health.map((h) => (
                   <Stack key={h.id} direction="row" spacing={1} alignItems="center">
-                    <Chip size="small" color={h.passed ? 'success' : 'error'} label={h.passed ? 'ناجح' : 'فاشل'} />
+                    <Chip size="small" color={h.passed ? 'success' : 'error'} label={h.passed ? t('portal.integrationDetail.passed') : t('portal.integrationDetail.failed')} />
                     <Typography variant="body2">{h.check_type}</Typography>
                     <Typography variant="caption" color="text.secondary">{formatDateTime(h.checked_at)}</Typography>
                   </Stack>
@@ -138,7 +140,7 @@ action={
         </Card>
 
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/app/integration/portal/integrations')}>
-          رجوع للتكاملات
+          {t('portal.integrationDetail.backToIntegrations')}
         </Button>
       </Stack>
     </Box>
