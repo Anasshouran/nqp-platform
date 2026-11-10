@@ -149,6 +149,27 @@
       "passed": "Passed",
       "failed": "Failed",
       "backToIntegrations": "Back to integrations"
+    },
+    "dataScopes": {
+      "deleteSuccess": "Scope deleted",
+      "deleteError": "Failed to delete scope",
+      "orgColumn": "Organization",
+      "apiPointColumn": "API endpoint",
+      "directionColumn": "Direction",
+      "directionRead": "Read",
+      "directionWrite": "Write",
+      "resourceColumn": "Resource",
+      "grantedByColumn": "Granted by",
+      "grantedAtColumn": "Granted at",
+      "pageTitle": "Data scopes",
+      "pageSubtitle": "What data can be exchanged between organizations (read/write)",
+      "searchPlaceholder": "Search by organization or resource",
+      "emptyTitle": "No scopes",
+      "emptyDescription": "Grant data exchange permission to an organization",
+      "deleteAction": "Delete",
+      "confirmDeleteTitle": "Confirm deletion",
+      "confirmDeleteMessage": "Delete scope \"{{organization}} / {{resource}}\"?",
+      "cancelDeleteLabel": "Cancel"
     }
   },
   "common": {
