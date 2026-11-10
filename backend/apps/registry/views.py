@@ -146,6 +146,14 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
                 state__isnull=False,
             ).values_list('state_id', flat=True)
         )
+        # M4-1-bis: قطاعات organization المشتقة من نقاط الدخول — تُستخدم
+        # في عقد الإدارات وفي DepartmentNodeAssignment (كانت تُحسب مرتين).
+        org_sector_ids = list(
+            HealthFacility.objects.filter(
+                entry_point_id__in=entry_point_ids,
+                sector__isnull=False,
+            ).values_list('sector_id', flat=True)
+        )
 
         model_name = qs.model.__name__
 
@@ -154,6 +162,12 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
                 Q(statenodeassignment_set__state_id__in=state_ids)
                 | Q(localitynodeassignment_set__locality_id__in=locality_ids)
                 | Q(healthfacilitynodeassignment_set__facility_id__in=facility_ids)
+                # M4-1-bis: عقد الإدارات (M3-4) كانت غائبة — SECTOR user لا يراها.
+                | Q(department_assignments__department__facility_id__in=facility_ids)
+                | Q(
+                    department_assignments__department__facility__isnull=True,
+                    department_assignments__department__sector_id__in=org_sector_ids,
+                )
             ).distinct()
 
         if model_name == 'StateNodeAssignment':
@@ -163,7 +177,8 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             return qs.filter(locality_id__in=locality_ids)
 
         if model_name == 'HealthFacilityNodeAssignment':
-            return qs.filter(health_facility_id__in=facility_ids)
+            # M4-1-bis: الحقل هو facility وليس health_facility (كان 500).
+            return qs.filter(facility_id__in=facility_ids)
 
         if model_name == 'StateMinistry':
             return qs.filter(state_id__in=state_ids)
@@ -188,15 +203,6 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             # Department can be under a facility (via facility FK) or at sector level
             # For MVP: filter by department.facility in allowed facilities, OR
             # department.sector in allowed sectors (for sector-level departments)
-            from apps.organization.models import Sector as OrgSector
-
-            # sectors من entry_points (عبر organization.Sector)
-            org_sector_ids = list(
-                HealthFacility.objects.filter(
-                    entry_point_id__in=entry_point_ids,
-                    sector__isnull=False,
-                ).values_list('sector_id', flat=True)
-            )
             return qs.filter(
                 Q(department__facility_id__in=facility_ids)
                 | Q(

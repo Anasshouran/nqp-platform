@@ -25,3 +25,67 @@
 **الوضع:** اختبار STATE + SECTOR مدمج موجود. STATE + DEPARTMENT لم يُختبر. نظرياً union — لكن قد يحوي edge cases.
 
 **الحل المقترح (M4-2):** اختبار إضافي.
+
+## D-M4-1-4: Bug صامت في ReportingNode/HealthFacilityNodeAssignment scoping — M3-1 إلى M4-1
+
+**الوضع:** `RegistryScopedViewSet.get_queryset` استخدم أسماء خاطئة منذ M3-1:
+
+| الحالة | الخطأ | الصواب | الأثر |
+|---|---|---|---|
+| `ReportingNode` | `statenodeassignment` | `statenodeassignment_set` | `FieldError` → 500 |
+| `ReportingNode` | `localitynodeassignment` | `localitynodeassignment_set` | `FieldError` → 500 |
+| `ReportingNode` | `healthfacilitynodeassignment__health_facility_id` | `..._set__facility_id` | `FieldError` → 500 |
+| `HealthFacilityNodeAssignment` | `health_facility_id__in` | `facility_id__in` | `FieldError` → 500 |
+
+بالإضافة إلى `from django.db.models import Q` مكرر داخل فرع `ServiceAvailability`،
+مما سبّب `UnboundLocalError: Q` في فرع `ReportingNode`.
+
+**الأثر:** أي مستخدم SECTOR (أو أي scope غير GLOBAL) يستعلم
+`/api/v1/registry/nodes/` أو `/api/v1/registry/facilities/assignments/`
+كان يحصل على 500 — أي شاشة الهيكل التنظيمي معطّلة كلياً لمن هم ليسوا GLOBAL.
+
+**السبب الجذري:** فجوة منهجية في الاختبار — M3-1 غطّت `ministries` فقط،
+و M3-6 غطّت 4 endpoints (بدون `nodes` ولا `facilities/assignments`).
+لا أحد اختبر "كل endpoint" بـ SECTOR.
+
+**الحل (M4-1 + M4-1-bis):** صُحِّحت الأسماء، حُذف import `Q` المكرر، وأُضيف
+`test_m4_1_bis_endpoints.py` الذي يغطّي **كل** list endpoint مسجّل في الراوتر،
+مع اختبار بنيوي (`test_every_registered_list_endpoint_is_covered`) يفشل تلقائياً
+إذا أُضيف ViewSet جديد بلا اختبار scoping.
+
+**الدرس:** لا عيّنة. كل `RegistryScopedViewSet` يُختبر مع SECTOR + STATE + GLOBAL.
+
+## D-M4-1-5: ReportingNode لم يكن يغطّي عقد الإدارات (M3-4 gap)
+
+**الوضع:** `DepartmentNodeAssignment` أُضيف في M3-4، لكن فرع `ReportingNode`
+في `get_queryset` لم يُوسَّع ليشمله. النتيجة: SECTOR user لا يرى
+`ReportingNode(kind=DEPARTMENT)` الخاصة بإدارات قطاعه (فراغ وظيفي، لا تسريب).
+
+**الحل (M4-1-bis):** أُضيف شرطان إلى `ReportingNode`:
+`department_assignments__department__facility_id__in=facility_ids` أو
+`department_assignments__department__facility__isnull=True` مع
+`department__sector_id__in=org_sector_ids`. كما رُفع حساب `org_sector_ids`
+إلى أعلى `get_queryset` وأُعيد استخدامه (كان يُحسب داخل فرع واحد فقط).
+
+**ملاحظة:** هذا يثبت أن D-M4-1-4 لم يكن حادثة معزولة — بل نمط: كل نموذج جديد
+يُضاف إلى `get_queryset` دون اختبار يترك فراغاً صامتاً.
+
+**متبقٍ (M4-2/M5):** `RegistryChangeLog` لا يزال غير مُقيَّد بالنطاق
+(يرجع كل السجلات لأي حامل `registry:view`) — انظر D-M3-1b. لم يُعالج هنا
+لأنه polymorphic ويحتاج قراراً معمارياً.
+
+## D-M4-1-6: الواجهة لا تعرف ScopeType.STATE بعد
+
+**الوضع:** `frontend/src/types/user.ts` يعرّف
+`ScopeType = 'GLOBAL' | 'POINT' | 'PORT' | 'REGION' | 'SECTOR' | 'DEPARTMENT' | 'STATION'`
+— لا `STATE` (ولا `COMPANY`). الـ backend يقبل `STATE` الآن، لكن نموذج تعيين
+الأدوار في الواجهة لا يعرضه ولا يملك منتقي ولاية (state picker).
+
+**التبرير:** الإضافة إلى النوع وحده بلا منتقي ولاية تُنتج خياراً معطوباً في
+النموذج (المستخدم يختار STATE ولا يستطيع اختيار الولاية). لذلك أُجِّل عمداً.
+
+**الحل المقترح (M4-3):** إضافة `STATE` إلى النوع + منتقي ولاية
+(`/api/v1/masterdata/states/`) داخل `RoleAssignmentFormDialog` و
+`UserAssignmentsDialog`، مع ترجمة عربية للنطاق.
+
+**قبول:** M4-1 backend-only، الواجهة تُغلق في M4-3.
