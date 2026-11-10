@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import { AppButton, StatusChip } from '../../../components/uikit';
 import { labPriority, labSampleStatus } from '../../../utils/status';
@@ -20,6 +21,7 @@ const SampleList = ({
   onStartAnalysis: (sampleId: string) => void;
   onViewDetail: (sampleId: string) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
       {samples.map((sample) => (
@@ -49,9 +51,9 @@ const SampleList = ({
           <Box sx={{ color: 'text.secondary', fontSize: 13 }}>{sample.sla}</Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {onStartAnalysis && (
-              <AppButton size="small" onClick={() => onStartAnalysis(sample.sample_barcode)}>▶️ بدء</AppButton>
+              <AppButton size="small" onClick={() => onStartAnalysis(sample.sample_barcode)}>{t('chemistry.samples.list.startAnalysis')}</AppButton>
             )}
-            <AppButton size="small" variant="secondary" onClick={() => onViewDetail(sample.sample_barcode)}>👁️ تفاصيل</AppButton>
+            <AppButton size="small" variant="secondary" onClick={() => onViewDetail(sample.sample_barcode)}>{t('chemistry.samples.list.viewDetails')}</AppButton>
           </Box>
         </Box>
       ))}

@@ -6258,6 +6258,14 @@
         "close": "إغلاق"
       }
     },
+    "chemistry": {
+      "samples": {
+        "list": {
+          "startAnalysis": "▶️ بدء",
+          "viewDetails": "👁️ تفاصيل"
+        }
+      }
+    },
     "chemistryLab": {
       "sections": {
         "overview": "نظرة عامة",

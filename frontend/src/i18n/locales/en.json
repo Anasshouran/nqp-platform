@@ -6258,6 +6258,14 @@
         "close": "Close"
       }
     },
+    "chemistry": {
+      "samples": {
+        "list": {
+          "startAnalysis": "▶️ Start",
+          "viewDetails": "👁️ Details"
+        }
+      }
+    },
     "chemistryLab": {
       "sections": {
         "overview": "Overview",
