@@ -484,6 +484,11 @@
       "messages": {
         "actionFailed": "فشلت العملية"
       }
+    },
+    "focusMap": {
+      "filterLabel": "الفلترة:",
+      "noMatchingFoci": "لا توجد بؤر مطابقة (أضف إحداثيات GPS للبؤر لتظهر على الخريطة)",
+      "noGpsCoords": "البؤر المسجلة لا تحوي إحداثيات GPS بعد"
     }
   },
   "vaccination": {

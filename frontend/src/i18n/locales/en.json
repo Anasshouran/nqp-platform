@@ -484,6 +484,11 @@
       "messages": {
         "actionFailed": "Operation failed"
       }
+    },
+    "focusMap": {
+      "filterLabel": "Filter:",
+      "noMatchingFoci": "No matching foci (add GPS coordinates to foci to display on the map)",
+      "noGpsCoords": "Registered foci have no GPS coordinates yet"
     }
   },
   "vaccination": {
