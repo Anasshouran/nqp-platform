@@ -16,10 +16,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import { FormTextField, FormSelect } from '../uikit';
 import { createRoleAssignment, updateRoleAssignment } from '../../api/endpoints/roleAssignments';
 import { getRoles, getUsers } from '../../api/endpoints/users';
+import { getMasterStates } from '../../api/endpoints/masterdata';
 import { SCOPE_TYPES } from '../../types/user';
 import { scopeType } from '../../utils/status';
 import { notifySuccess } from '../../utils/toast';
 import type { RoleAssignment, RoleAssignmentInput, Role, User, ScopeType } from '../../types/user';
+import type { MasterState } from '../../types/masterdata';
 
 interface Props {
   open: boolean;
@@ -38,6 +40,8 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [scopeTypeVal, setScopeTypeVal] = useState<ScopeType>('GLOBAL');
   const [scopeId, setScopeId] = useState('');
+  const [states, setStates] = useState<MasterState[]>([]);
+  const [selectedState, setSelectedState] = useState<MasterState | null>(null);
   const [startDate, setStartDate] = useState(todayStr());
   const [endDate, setEndDate] = useState('');
   const [isActive, setIsActive] = useState(true);
@@ -53,6 +57,11 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
         const data = Array.isArray(r.data.data) ? r.data.data : [];
         setRoles(data);
       }),
+      getMasterStates({ page_size: 500 }).then((r) => {
+        const data = r.data?.data;
+        const list = Array.isArray(data) ? data : (data?.results ?? []);
+        setStates(list);
+      }).catch(() => undefined),
     ]).catch(() => undefined);
   }, [open]);
 
@@ -63,6 +72,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setSelectedRole(roles.find((r) => r.code === assignment.role_code || r.id === assignment.role) || null);
       setScopeTypeVal((assignment.scope_type as ScopeType) || 'GLOBAL');
       setScopeId(assignment.scope_id || '');
+      setSelectedState(states.find((s) => s.id === assignment.scope_id) || null);
       setStartDate(assignment.start_date || todayStr());
       setEndDate(assignment.end_date || '');
       setIsActive(assignment.is_active);
@@ -71,6 +81,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setSelectedRole(null);
       setScopeTypeVal('GLOBAL');
       setScopeId('');
+      setSelectedState(null);
       setStartDate(todayStr());
       setEndDate('');
       setIsActive(true);
@@ -82,13 +93,19 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setError('يجب اختيار المستخدم والدور');
       return;
     }
+    if (scopeTypeVal === 'STATE' && !selectedState) {
+      setError('يجب اختيار ولاية للنطاق STATE');
+      return;
+    }
     setSubmitting(true);
     setError(null);
+    const resolvedScopeId =
+      scopeTypeVal === 'STATE' ? (selectedState?.id ?? null) : (scopeId || null);
     const payload: RoleAssignmentInput = {
       user: selectedUser.id,
       role: selectedRole.code,
       scope_type: scopeTypeVal,
-      scope_id: scopeId || null,
+      scope_id: resolvedScopeId,
       start_date: startDate || null,
       end_date: endDate || null,
       is_active: isActive,
@@ -110,7 +127,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
     }
   };
 
-  const disableCreate = submitting || !selectedUser || !selectedRole;
+  const disableCreate = submitting || !selectedUser || !selectedRole || (scopeTypeVal === 'STATE' && !selectedState);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -198,19 +215,45 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
           <FormSelect
             label="النطاق"
             value={scopeTypeVal}
-            onChange={(v) => setScopeTypeVal(v as ScopeType)}
+            onChange={(v) => {
+              const next = v as ScopeType;
+              setScopeTypeVal(next);
+              if (next !== 'STATE') setSelectedState(null);
+            }}
             options={SCOPE_TYPES.map((s) => ({ value: s, label: scopeType[s] || s }))}
             hint="نطاق تطبيق الصلاحيات"
           />
 
-          <FormTextField
-            label="معرف النطاق (scope ID)"
-            value={scopeId}
-            onChange={(e) => setScopeId(e.target.value)}
-            placeholder="UUID محدد — اختياري"
-            hint="اتركه فارغاً إذا كان النطاق عاماً (GLOBAL)"
-            disabled={scopeTypeVal === 'GLOBAL'}
-          />
+          {scopeTypeVal === 'STATE' ? (
+            <Autocomplete
+              options={states}
+              getOptionLabel={(opt) => `${opt.name_ar} (${opt.code})`}
+              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              value={selectedState}
+              onChange={(_, v) => {
+                setSelectedState(v);
+                setScopeId(v?.id || '');
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="الولاية"
+                  placeholder="ابحث عن ولاية..."
+                  fullWidth
+                  required
+                />
+              )}
+            />
+          ) : (
+            <FormTextField
+              label="معرف النطاق (scope ID)"
+              value={scopeId}
+              onChange={(e) => setScopeId(e.target.value)}
+              placeholder="UUID محدد — اختياري"
+              hint="اتركه فارغاً إذا كان النطاق عاماً (GLOBAL)"
+              disabled={scopeTypeVal === 'GLOBAL'}
+            />
+          )}
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             <FormTextField

@@ -52,12 +52,20 @@ export default function RegistryTreePage() {
     return root ? [root] : nodes;
   }, [nodes, selectedRootId]);
 
+  const hasFederalRoot = nodes.some((n) => n.kind === 'FEDERAL');
+
   return (
     <Box sx={{ p: 3 }}>
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <AccountTreeIcon color="primary" fontSize="large" />
         <Typography variant="h5">{t('registry.tree.title')}</Typography>
       </Stack>
+
+      {!hasFederalRoot && nodes.length > 0 && (
+        <Alert severity="info" icon={<AccountTreeIcon />} sx={{ mb: 2 }}>
+          {t('registry.tree.banner.scoped')}
+        </Alert>
+      )}
 
       <Paper sx={{ p: 2, mb: 2 }}>
         <RegistryRootPicker roots={nodes} value={selectedRootId} onChange={setSelectedRootId} />

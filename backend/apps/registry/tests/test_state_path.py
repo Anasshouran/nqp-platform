@@ -467,3 +467,56 @@ class TestDashboardScoping:
         data = response.json().get('data', {})
         # STATE user (no nodes assigned) → 0 nodes
         assert data.get('nodes', -1) == 0, f'STATE user summary not scoped: {data}'
+
+
+@pytest.mark.django_db
+class TestSectorDashboardTree:
+    """M4-4-A-3: SECTOR user → /dashboard/tree/ يرى فقط subtree قطاعه."""
+
+    def test_sector_user_sees_only_own_sector(self):
+        from apps.masterdata.models import Sector as MasterdataSector, State, EntryPoint, HealthFacility
+        from apps.organization.models import Sector as OrgSector, Locality
+        from apps.registry.models import HealthFacilityNodeAssignment
+
+        uid = _uid()
+        # Sector A (user's)
+        md_a = MasterdataSector.objects.create(code=f'MD_A_{uid}', name_ar='نقل A')
+        org_a = OrgSector.objects.create(code=f'ORG_A_{uid}', name_ar='قطاع A')
+        state_a = State.objects.create(code=f'ST_A_{uid}', name_ar='ولاية A', sector=md_a)
+        loc_a = Locality.objects.create(code=f'LOC_A_{uid}', name_ar='محلية A', sector=org_a)
+        ep_a = EntryPoint.objects.create(code=f'EP_A_{uid}', name_ar='منفذ A', state=state_a, sector=org_a, locality=loc_a)
+        fac_a = HealthFacility.objects.create(code=f'FAC_A_{uid}', name_ar='منشأة A', sector=org_a, locality=loc_a, entry_point=ep_a)
+
+        # Sector B (other)
+        md_b = MasterdataSector.objects.create(code=f'MD_B_{uid}', name_ar='نقل B')
+        org_b = OrgSector.objects.create(code=f'ORG_B_{uid}', name_ar='قطاع B')
+        state_b = State.objects.create(code=f'ST_B_{uid}', name_ar='ولاية B', sector=md_b)
+        loc_b = Locality.objects.create(code=f'LOC_B_{uid}', name_ar='محلية B', sector=org_b)
+        ep_b = EntryPoint.objects.create(code=f'EP_B_{uid}', name_ar='منفذ B', state=state_b, sector=org_b, locality=loc_b)
+        fac_b = HealthFacility.objects.create(code=f'FAC_B_{uid}', name_ar='منشأة B', sector=org_b, locality=loc_b, entry_point=ep_b)
+
+        root = _ensure_root()
+        node_a = ReportingNode.objects.create(code=f'FNA_{uid}', name_ar='A', kind='FACILITY', parent=root)
+        node_b = ReportingNode.objects.create(code=f'FNB_{uid}', name_ar='B', kind='FACILITY', parent=root)
+        HealthFacilityNodeAssignment.objects.create(facility=fac_a, node=node_a, valid_from='2026-01-01', is_primary=True)
+        HealthFacilityNodeAssignment.objects.create(facility=fac_b, node=node_b, valid_from='2026-01-01', is_primary=True)
+
+        user = _make_sector_user(org_a)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/v1/registry/dashboard/tree/', HTTP_HOST='localhost')
+        assert response.status_code == 200, response.json()
+
+        def _flatten(nodes):
+            out = []
+            for n in (nodes or []):
+                out.append(n)
+                out.extend(_flatten(n.get('children', [])))
+            return out
+
+        data = response.json().get('data', [])
+        flat = _flatten(data if isinstance(data, list) else [data])
+        codes = {n.get('code') for n in flat}
+
+        assert f'FNA_{uid}' in codes, 'SECTOR user missing own facility node'
+        assert f'FNB_{uid}' not in codes, 'SECTOR user sees other sector node — LEAK!'
