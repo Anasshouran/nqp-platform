@@ -24,6 +24,7 @@ from .models import (
     ReportingNode,
     Service,
     ServiceAvailability,
+    ServiceNodeAssignment,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -225,4 +226,19 @@ def log_availability_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=ServiceAvailability)
 def log_availability_delete(sender, instance, **kwargs):
+    _log("DELETE", instance)
+
+
+# ---------------------------------------------------------------------------
+# ServiceNodeAssignment (M4-2)
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=ServiceNodeAssignment)
+def log_service_node_assign_save(sender, instance, created, **kwargs):
+    action = "ASSIGN" if created else "REASSIGN"
+    _log(action, instance)
+
+
+@receiver(post_delete, sender=ServiceNodeAssignment)
+def log_service_node_assign_delete(sender, instance, **kwargs):
     _log("DELETE", instance)

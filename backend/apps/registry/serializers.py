@@ -15,6 +15,7 @@ from apps.registry.models import (
     ReportingNode,
     Service,
     ServiceAvailability,
+    ServiceNodeAssignment,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -468,6 +469,46 @@ class ServiceWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ['code', 'name_ar', 'name_en', 'category', 'description', 'is_active']
+
+
+# ---------------------------------------------------------------------------
+# ServiceNodeAssignment (M4-2)
+# ---------------------------------------------------------------------------
+
+class ServiceNodeAssignmentSerializer(serializers.ModelSerializer):
+    service_code = serializers.CharField(source='service.code', read_only=True)
+    service_name = serializers.CharField(source='service.name_ar', read_only=True)
+    node_code = serializers.CharField(source='node.code', read_only=True)
+    node_kind = serializers.CharField(source='node.kind', read_only=True)
+
+    class Meta:
+        model = ServiceNodeAssignment
+        fields = [
+            'id', 'service', 'service_code', 'service_name',
+            'node', 'node_code', 'node_kind',
+            'is_primary', 'valid_from', 'valid_to', 'note',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ServiceNodeAssignmentWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceNodeAssignment
+        fields = [
+            'service', 'node', 'is_primary', 'valid_from', 'valid_to', 'note',
+        ]
+
+    def validate(self, attrs):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        instance = ServiceNodeAssignment(**attrs)
+        instance.pk = getattr(self.instance, 'pk', None)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return attrs
 
 
 class ServiceAvailabilitySerializer(serializers.ModelSerializer):

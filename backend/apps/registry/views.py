@@ -12,7 +12,13 @@ from rest_framework.response import Response
 from core.filters import ExactFilterBackend
 from core.permissions import PermissionAction
 from core.utils.response import success_response
-from core.utils.scoping import has_global_scope, resolve_authorized_entry_points, _active_assignments
+from core.utils.scoping import (
+    has_global_scope,
+    has_state_scope,
+    get_user_state_ids,
+    resolve_authorized_entry_points,
+    _active_assignments,
+)
 from django.db.models import Q
 
 from .models import (
@@ -25,6 +31,7 @@ from .models import (
     ReportingNode,
     Service,
     ServiceAvailability,
+    ServiceNodeAssignment,
     StateMinistry,
     StateNodeAssignment,
     TechnicalSupervisor,
@@ -41,6 +48,8 @@ from .serializers import (
     ServiceWriteSerializer,
     ServiceAvailabilitySerializer,
     ServiceAvailabilityWriteSerializer,
+    ServiceNodeAssignmentSerializer,
+    ServiceNodeAssignmentWriteSerializer,
     TechnicalSupervisorSerializer,
     TechnicalSupervisorWriteSerializer,
     TechnicalSupervisionSerializer,
@@ -122,8 +131,15 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
         entry_point_ids = resolve_authorized_entry_points(user)
         if entry_point_ids is None:  # GLOBAL (shouldn't happen here, but safe)
             return qs
-        if not entry_point_ids:
-            return qs.none()  # fail-safe
+
+        # M4-2 (D-M4-1-1/D-M4-1-7): تفعيل helpers. STATE user قد يرى عقد
+        # ولايته عبر الشجرة حتى بدون أي EntryPoint — لذا لا يجوز الخروج
+        # المبكر بـ qs.none() قبل حساب مسار STATE.
+        user_state_ids = get_user_state_ids(user) if has_state_scope(user) else set()
+        user_state_ids = user_state_ids or set()
+
+        if not entry_point_ids and not user_state_ids:
+            return qs.none()  # fail-safe محفوظ لكل scope آخر
 
         # حساب الكيانات المسموحة عبر entry_points
         from apps.masterdata.models import EntryPoint
@@ -146,6 +162,10 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
                 state__isnull=False,
             ).values_list('state_id', flat=True)
         )
+        # M4-2 (D-M4-1-1): ولاية المستخدم نفسها مرئية حتى بلا EntryPoints،
+        # وإلا بقي STATE user أعمى عن StateMinistry/StateNodeAssignment.
+        if user_state_ids:
+            state_ids = list(set(state_ids) | set(user_state_ids))
         # M4-1-bis: قطاعات organization المشتقة من نقاط الدخول — تُستخدم
         # في عقد الإدارات وفي DepartmentNodeAssignment (كانت تُحسب مرتين).
         org_sector_ids = list(
@@ -155,20 +175,72 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             ).values_list('sector_id', flat=True)
         )
 
+        # M4-2: مسار STATE — كل descendants لعقدة الولاية (D-M4-1-1).
+        # path مبني من UUIDs مفصولة بـ '/'، لذا نستخدم تطابقاً صريحاً
+        # (path = X أو path يبدأ بـ 'X/') لتفادي أي تطابق بادئة عرضي.
+        state_path_q = Q(pk__in=[])  # False افتراضياً (Q فارغ لا يُفلتر)
+        if user_state_ids:
+            state_node_ids = StateNodeAssignment.objects.filter(
+                state_id__in=user_state_ids,
+                valid_to__isnull=True,
+            ).values_list('node_id', flat=True)
+            state_node_paths = ReportingNode.objects.filter(
+                id__in=state_node_ids,
+            ).values_list('path', flat=True)
+            for node_path in state_node_paths:
+                if not node_path:
+                    continue
+                state_path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+
         model_name = qs.model.__name__
 
+        # كيان مرئي عبر الشجرة: التعيينات المباشرة + مسار STATE.
+        # M4-2: كل فروع التطابق المباشر تُقيَّد بـ valid_to IS NULL — كان
+        # التعيين المنتهي يمنح رؤية دائمة (تسريب صامت ورثناه من M3-1).
+        node_visibility_q = (
+            Q(
+                statenodeassignment_set__state_id__in=state_ids,
+                statenodeassignment_set__valid_to__isnull=True,
+            )
+            | Q(
+                localitynodeassignment_set__locality_id__in=locality_ids,
+                localitynodeassignment_set__valid_to__isnull=True,
+            )
+            | Q(
+                healthfacilitynodeassignment_set__facility_id__in=facility_ids,
+                healthfacilitynodeassignment_set__valid_to__isnull=True,
+            )
+            # M4-1-bis: عقد الإدارات (M3-4) كانت غائبة — SECTOR user لا يراها.
+            | Q(
+                department_assignments__department__facility_id__in=facility_ids,
+                department_assignments__valid_to__isnull=True,
+            )
+            | Q(
+                department_assignments__department__facility__isnull=True,
+                department_assignments__department__sector_id__in=org_sector_ids,
+                department_assignments__valid_to__isnull=True,
+            )
+            | state_path_q
+        )
+
         if model_name == 'ReportingNode':
-            return qs.filter(
-                Q(statenodeassignment_set__state_id__in=state_ids)
-                | Q(localitynodeassignment_set__locality_id__in=locality_ids)
-                | Q(healthfacilitynodeassignment_set__facility_id__in=facility_ids)
-                # M4-1-bis: عقد الإدارات (M3-4) كانت غائبة — SECTOR user لا يراها.
-                | Q(department_assignments__department__facility_id__in=facility_ids)
-                | Q(
-                    department_assignments__department__facility__isnull=True,
-                    department_assignments__department__sector_id__in=org_sector_ids,
-                )
-            ).distinct()
+            return qs.filter(node_visibility_q).distinct()
+
+        if model_name == 'ServiceNodeAssignment':
+            # M4-2: عقدة الخدمة ورقةٌ تحت عقدة المنشأة/الولاية، لذا التطابق
+            # المباشر وحده لا يكفي. نضيف هنا فقط (وليس في ReportingNode)
+            # رؤية التعيينات الواقعة تحت شجرة العقد المرئية — دون توسيع
+            # قائمة العقد نفسها.
+            visible_nodes = ReportingNode.objects.filter(node_visibility_q)
+            visible_node_ids = visible_nodes.values('id')
+            visible_paths = visible_nodes.values_list('path', flat=True)
+
+            service_q = Q(node_id__in=visible_node_ids)
+            for visible_path in visible_paths:
+                if not visible_path:
+                    continue
+                service_q |= Q(node__path__startswith=f'{visible_path}/')
+            return qs.filter(service_q).distinct()
 
         if model_name == 'StateNodeAssignment':
             return qs.filter(state_id__in=state_ids)
@@ -465,3 +537,14 @@ class ServiceAvailabilityViewSet(RegistryScopedViewSet):
     write_serializer_class = ServiceAvailabilityWriteSerializer
     permission_resource = "registry"
     search_fields = ["service__code", "facility__code", "department__code"]
+
+
+class ServiceNodeAssignmentViewSet(RegistryScopedViewSet):
+    """تعيين الخدمات إلى عقد الشجرة (M4-2)."""
+    queryset = ServiceNodeAssignment.objects.select_related(
+        "service", "node"
+    ).all().order_by("-valid_from")
+    serializer_class = ServiceNodeAssignmentSerializer
+    write_serializer_class = ServiceNodeAssignmentWriteSerializer
+    permission_resource = "registry"
+    search_fields = ["service__code", "node__code"]

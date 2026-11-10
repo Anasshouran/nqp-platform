@@ -837,6 +837,81 @@ class Service(BaseModel):
         return f'{self.name_ar} ({self.get_category_display()})'
 
 
+class ServiceNodeAssignment(BaseModel):
+    """تعيين خدمة (Service) إلى عقدة ReportingNode — تاريخي.
+
+    يتبع نمط DepartmentNodeAssignment (M3-4).
+
+    القيود:
+    - valid_to > valid_from
+    - node.kind يجب أن يكون 'SERVICE' (يُفرَض في clean())
+    - تعيين أساسي واحد نشط لكل خدمة
+    """
+
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        related_name='node_assignments',
+        verbose_name='الخدمة',
+    )
+    node = models.ForeignKey(
+        ReportingNode,
+        on_delete=models.PROTECT,
+        related_name='service_assignments',
+        verbose_name='العقدة',
+    )
+    valid_from = models.DateField(verbose_name='من تاريخ')
+    valid_to = models.DateField(null=True, blank=True, verbose_name='إلى تاريخ')
+    is_primary = models.BooleanField(default=False, verbose_name='أساسي')
+    note = models.TextField(blank=True, verbose_name='ملاحظة')
+
+    class Meta:
+        ordering = ['-valid_from']
+        verbose_name = 'تعيين خدمة لعقدة'
+        verbose_name_plural = 'تعيينات الخدمات للعقد'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(valid_to__isnull=True) | models.Q(valid_to__gt=models.F('valid_from')),
+                name='service_node_assignment_valid_range',
+            ),
+            models.UniqueConstraint(
+                fields=['service', 'valid_from'],
+                name='service_node_assignment_unique_start',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['service', 'valid_to'], name='svc_node_assign_svc_to_idx'),
+            models.Index(fields=['node', 'valid_to'], name='svc_node_assign_node_to_idx'),
+            models.Index(fields=['service', 'is_primary'], name='svc_node_assign_svc_prim_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.valid_to and self.valid_from and self.valid_to <= self.valid_from:
+            raise ValidationError('valid_to must be after valid_from')
+        # التحقق من node.kind (M4-2, Q-M4-2-2 = A)
+        if self.node and self.node.kind != 'SERVICE':
+            raise ValidationError({
+                'node': f'node.kind يجب أن يكون SERVICE، وليس {self.node.kind}',
+            })
+        # تعيين أساسي واحد نشط لكل خدمة
+        if self.is_primary and self.valid_to is None:
+            qs = ServiceNodeAssignment.objects.filter(
+                service=self.service,
+                is_primary=True,
+                valid_to__isnull=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    'Another primary assignment is active for this service'
+                )
+
+    def __str__(self):
+        return f'{self.service.code} → {self.node.code} ({self.valid_from})'
+
+
 class ServiceAvailability(BaseModel):
     """توفّر خدمة في منشأة أو إدارة — تاريخي.
     

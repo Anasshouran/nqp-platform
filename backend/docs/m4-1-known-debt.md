@@ -119,3 +119,13 @@
 **التوصية:** (أ) في M4-2 لأنه يحل D-M4-1-1، لكن **بمراجعة صريحة** لا بالتخمين.
 
 **قبول:** M4-1-bis لا يغيّر سلوك الطبقة الأمنية؛ يوثّق فقط.
+
+
+### ✅ STATUS UPDATE (M4-2)
+
+**مغلقة.** `get_user_state_ids` يُستخدم الآن في `RegistryScopedViewSet.get_queryset` (guarded by `has_state_scope(user)`) لبناء:
+- `state_ids` (StateMinistry / StateNodeAssignment / ReportingNode exact match)
+- مسار STATE (descendants via `ReportingNode.path`)
+- مسار ServiceNodeAssignment (descendants of visible nodes)
+
+`has_state_scope` يُستخدم كبوابة رخيصة قبل `get_user_state_ids`. D-M4-1-7 → CLOSED.

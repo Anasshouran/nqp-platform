@@ -79,6 +79,10 @@ def has_global_scope(user):
     return has_active_global_scope(user)
 
 
+# M4-2: activated — يستخدمهما RegistryScopedViewSet.get_queryset لبناء مسار
+# STATE (state → StateNodeAssignment → ReportingNode.path subtree)، وهو المسار
+# الذي يفتح D-M4-1-1 (ولاية بلا EntryPoints). `has_state_scope` يُستخدم كبوابة
+# رخيصة قبل استدعاء `get_user_state_ids` لتفادي استعلام زائد لغير STATE.
 def has_state_scope(user):
     """True إن كان للمستخدم تفويض STATE نشط واحد على الأقل (M4-1)."""
     if not user or getattr(user, 'is_anonymous', True):
