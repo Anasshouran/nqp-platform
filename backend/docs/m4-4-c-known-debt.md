@@ -17,7 +17,25 @@
 (من `node.facility_id`). الروابط القديمة التي كانت تمرّر `ReportingNode.id`
 لم تعد صالحة (dev فقط).
 
+**بوابة الرؤية (أمان):** الصفحة لا تجلب بيانات المنشأة إلا بعد وجود
+`HealthFacilityNodeAssignment` **مرئي ضمن نطاق المستخدم**
+(`listFacilityAssignments({ facility })` مقيّد بالـ scoping). إن غاب التعيين
+→ `not found` دون أي جلب من master-data. هذا يمنع تسريب منشأة خارج النطاق
+لمستخدم `is_staff=True` لكن غير GLOBAL.
+
 **الأثر:** لا روابط محفوظة بعد (الميزة جديدة). مقبول.
+
+## D-M4-4-C-8: master-data يقيّد `IsAdmin` (is_staff)
+
+**الوضع (Part2):** `HealthFacilityViewSet` يستخدم `IsAdmin` (`is_staff`).
+مستخدم STATE/SECTOR غير الموظف يحصل على 403 عند جلب تفاصيل المنشأة، لذا
+Overview/header يعتمد على `facility_name` من تعيين الشجرة + بيانات العقدة.
+
+**التأثير:** حقول القطاع/المحلية/نقطة الدخول تظهر فقط للموظفين/المشرفين.
+
+**الحل المقترح (Part3/M5):** endpoint سجل مقيّد بالـ scoping يعيد حقول
+المنشأة الأساسية (أو تضمينها في `HealthFacilityNodeAssignmentSerializer`)
+حتى يراها STATE/SECTOR ضمن نطاقهم دون `is_staff`.
 
 ## D-M4-4-C-7: Tree Position يعتمد على جلب كل العقد
 

@@ -8,7 +8,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { getNode, listFacilityAssignments, listNodes } from '../../api/endpoints/registry';
 import { getMasterHealthFacility } from '../../api/endpoints/masterdata';
-import type { ReportingNode } from '../../types/registry';
+import type { HealthFacilityNodeAssignment, ReportingNode } from '../../types/registry';
 import type { MasterHealthFacility } from '../../types/masterdata';
 import { OverviewTab } from '../../components/registry/facility/OverviewTab';
 import { OwnershipTab } from '../../components/registry/facility/OwnershipTab';
@@ -28,6 +28,7 @@ export default function FacilityDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [node, setNode] = useState<ReportingNode | null>(null);
   const [facility, setFacility] = useState<MasterHealthFacility | null>(null);
+  const [facilitySummary, setFacilitySummary] = useState<HealthFacilityNodeAssignment | null>(null);
   const [allNodes, setAllNodes] = useState<ReportingNode[]>([]);
 
   // `:id` is the HealthFacility id (M4-4-C-Part2: navigation passes node.facility_id).
@@ -37,6 +38,7 @@ export default function FacilityDetailPage() {
     setLoading(true);
     setError(null);
     setNotFound(false);
+    setFacilitySummary(null);
 
     (async () => {
       try {
@@ -44,20 +46,26 @@ export default function FacilityDetailPage() {
         const assignments = await listFacilityAssignments({ facility: id });
         if (cancelled) return;
         const match = assignments.find((a) => a.facility === id);
-        const nodeId = match?.node ?? null;
+
+        // Scoped visibility gate: no visible assignment means out-of-scope (or not
+        // in the registry). Do NOT fetch masterdata in that case — master-data
+        // requires is_staff, which would otherwise leak out-of-scope facility info
+        // to a staff-but-non-global STATE/SECTOR user.
+        if (!match) {
+          setNotFound(true);
+          return;
+        }
+        setFacilitySummary(match);
 
         const [facResult, nodeResult, nodesResult] = await Promise.all([
           getMasterHealthFacility(id)
             .then((r) => (r as { data?: { data?: MasterHealthFacility } })?.data?.data ?? null)
             .catch(() => null),
-          nodeId ? getNode(nodeId).catch(() => null) : Promise.resolve(null),
+          getNode(match.node).catch(() => null),
           listNodes().catch(() => [] as ReportingNode[]),
         ]);
         if (cancelled) return;
 
-        if (!facResult && !nodeResult) {
-          setNotFound(true);
-        }
         setFacility(facResult);
         setNode(nodeResult);
         setAllNodes(nodesResult);
@@ -99,7 +107,7 @@ export default function FacilityDetailPage() {
     );
   }
 
-  const facilityName = facility?.name_ar || node?.name_ar || id;
+  const facilityName = facility?.name_ar || facilitySummary?.facility_name || node?.name_ar || id;
 
   return (
     <Box sx={{ p: 3 }}>
