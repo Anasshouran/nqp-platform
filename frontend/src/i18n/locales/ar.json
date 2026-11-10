@@ -6176,6 +6176,14 @@
       }
     }
   },
+  "chemistry": {
+    "samples": {
+      "list": {
+        "startAnalysis": "▶️ بدء",
+        "viewDetails": "👁️ تفاصيل"
+      }
+    }
+  },
   "food": {
     "foodWindow": {
       "pageHeader": {
@@ -6256,14 +6264,6 @@
       },
       "actions": {
         "close": "إغلاق"
-      }
-    },
-    "chemistry": {
-      "samples": {
-        "list": {
-          "startAnalysis": "▶️ بدء",
-          "viewDetails": "👁️ تفاصيل"
-        }
       }
     },
     "chemistryLab": {
