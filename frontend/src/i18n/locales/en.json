@@ -336,6 +336,26 @@
             "lastError": "Last error"
           }
         },
+        "itNetworks": {
+          "eyebrow": "Information Technology Department",
+          "title": "Networks and connectivity",
+          "subtitle": "Connection status of each entry point, response time, and last sync.",
+          "syncStatus": "Sync status",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Networks status",
+          "tableSubtitle": "{{count}} entry points · {{connected}} connected",
+          "searchPlaceholder": "Search by entry point name...",
+          "emptyTitle": "No networks",
+          "emptyDescription": "No entry points are registered in this sector.",
+          "columns": {
+            "entryPoint": "Entry point",
+            "status": "Status",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "responseTime": "Response time",
+            "lastSync": "Last sync"
+          }
+        },
         "airportHealth": {
           "eyebrow": "Operational systems",
           "title": "Airport health — Red Sea sector",
@@ -6153,6 +6173,14 @@
         "punchRequired": "This status requires check-in time",
         "checkOutAfterCheckIn": "Check out must be after check in",
         "futureDate": "Attendance not recorded for future date"
+      }
+    }
+  },
+  "chemistry": {
+    "samples": {
+      "list": {
+        "startAnalysis": "▶️ Start",
+        "viewDetails": "👁️ Details"
       }
     }
   },
