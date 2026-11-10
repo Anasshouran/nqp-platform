@@ -9877,6 +9877,44 @@
       "banner": {
         "scoped": "You are viewing a scoped subset of the registry (state/sector)."
       }
+    },
+    "facility": {
+      "title": "Facility Detail",
+      "error": {
+        "missing_id": "Facility id missing",
+        "load": "Failed to load details",
+        "not_found": "Facility not found or not visible"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "ownership": "Ownership",
+        "supervision": "Supervision",
+        "services": "Services",
+        "departments": "Departments",
+        "tree_position": "Tree Position"
+      },
+      "overview": {
+        "name": "Name",
+        "code": "Code",
+        "sector": "Sector",
+        "locality": "Locality",
+        "entry_point": "Entry Point"
+      },
+      "ownership": {
+        "empty": "No ownership records"
+      },
+      "supervision": {
+        "empty": "No supervision records"
+      },
+      "services": {
+        "empty": "No services registered"
+      },
+      "departments": {
+        "empty": "No departments registered"
+      },
+      "tree_position": {
+        "empty": "Facility not linked to tree"
+      }
     }
   }
 }

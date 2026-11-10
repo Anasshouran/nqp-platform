@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   List, ListItem, ListItemButton, ListItemIcon, ListItemText,
   Collapse, Chip, Stack,
@@ -36,15 +37,23 @@ export function RegistryNodeTree({ nodes, level = 0 }: Props) {
 }
 
 function NodeRow({ node, level }: { node: ReportingNodeTree; level: number }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(level < 1);
   const hasChildren = (node.children?.length ?? 0) > 0;
+  const clickable = node.kind === 'FACILITY';
 
   return (
     <>
       <ListItem disablePadding>
         <ListItemButton
-          onClick={() => hasChildren && setOpen(!open)}
-          sx={{ pl: 2 + level * 2 }}
+          onClick={() => {
+            if (clickable) {
+              navigate(`/app/registry/facility/${node.id}`);
+            } else if (hasChildren) {
+              setOpen(!open);
+            }
+          }}
+          sx={{ pl: 2 + level * 2, cursor: clickable ? 'pointer' : 'default' }}
         >
           <ListItemIcon sx={{ minWidth: 32 }}>
             {hasChildren ? (

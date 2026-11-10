@@ -47,7 +47,10 @@ export interface LocalityNodeAssignment extends Omit<StateNodeAssignment, 'state
 }
 
 export interface HealthFacilityNodeAssignment extends Omit<StateNodeAssignment, 'state_id'> {
-  health_facility_id: string;
+  facility: string;
+  facility_name: string;
+  node: string;
+  node_code: string;
 }
 
 export type RegistryChangeAction =
@@ -94,8 +97,11 @@ export interface FacilityOwner {
 
 export interface FacilityOwnership {
   id: string;
-  facility_id: string;
-  owner_id: string;
+  facility: string;
+  facility_name: string;
+  owner: string;
+  owner_name: string;
+  owner_kind: string;
   is_primary: boolean;
   valid_from: string;
   valid_to: string | null;
