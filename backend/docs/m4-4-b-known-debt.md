@@ -20,8 +20,17 @@
 
 **الحل المقترح (M5):** clickable breadcrumb.
 
-## D-M4-4-B-4: Departments tab not filtered by facility
+## D-M4-4-B-4: Departments tab يعرض كل departments في النطاق (BUG)
 
-**الوضع:** `DepartmentNodeAssignment` serializer لا يحوي facility. Departments tab يعرض كل scoped department assignments.
+**الوضع:** عند فتح facility A، Departments tab يعرض كل departments في نطاق المستخدم (ليس فقط أقسام A).
 
-**الحل المقترح (M4-4-C):** filter by facility via backend filter_backends (D-M4-4-B-1).
+**التأثير:** يُضلّل المستخدم — يظن أن هذه أقسام A.
+
+**السبب:** `DepartmentNodeAssignment` ViewSet لا يدعم `?department__facility=` filter. Frontend لا يستطيع الفلترة لأن `DepartmentNodeAssignment` serializer لا يحوي `department.facility`.
+
+**الإصلاح (M4-4-C):**
+1. Backend: إضافة `filter_backends` + `filterset_fields = {'department__facility': ['exact']}` إلى `DepartmentNodeAssignmentViewSet`.
+2. Frontend: تمرير `?department__facility=<facilityId>`.
+3. اختبار SECTOR/STATE على الفلترة.
+
+**الأولوية:** 🔴 قبل أي إضافات أخرى في M4-4-C.
