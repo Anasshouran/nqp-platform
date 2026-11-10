@@ -97,3 +97,20 @@ gap، P0 ليس.
 **الاختبارات:** `test_hr_h4.py` (xfail مُزالة، مع تعديل التعيين البحثي لـ
 `entry_point=world['entry_point']`) + `test_h4_no_widening.py` (3 اختبارات:
 baseline / cross-leak / union مع منزل-sector + STATE).
+
+---
+
+## Deltas introduced in M5-B (H1′-consistent)
+
+| # | Sub-phase | App | Type | Status |
+|---|---|---|---|---|
+| Delta 1 | M5-B-2 | screening | `user.sector_id` grant merged into `port_ids` | ✅ Approved + tested (test_screening_h3.py, test_h3_no_widening.py) |
+| Delta 2 | M5-B-2 | screening | PORT ∪ SECTOR (was PORT-dominant) | ✅ Approved + tested |
+| Delta 4 | M5-B-3 | hr | `user.sector_id` grant in `resolve_own_org_scope_keys` | ✅ Approved + tested (test_hr_h4.py, test_h4_no_widening.py) |
+
+Delta 3 = implicit (no change to `SectorFieldScopedMixin` — already used `resolve_user_sectors`).
+
+All deltas are H1′-consistent. See `m5-a-audit.md` §9.
+
+**Enforcement (M5-B-T):** `test_h1prime_consistency.py` (4 tests) — fails if any mixin
+is missed in future refactors.

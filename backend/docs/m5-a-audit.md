@@ -175,3 +175,76 @@ H2 (`asserts_geographic_scope` missing STATE) → ✅ **CLOSED** in FIX-1.
 
 Remaining hypotheses (H3, H4, H5) → deferred to M5-B (product/schema decisions).
 H1 REFUTED (fail-closed, permanent guard). FIX-1 regression: 0.
+
+---
+
+## §9 — H1′ Policy: `user.sector_id` is a grant
+
+**Status:** Confirmed and enforced across all sector-scoped mixins (M5-B).
+
+### Evidence (Q-2 grep, M5-A-3)
+
+`user.sector_id` is read in multiple locations as a grant mechanism:
+- `accounts/views.py:313-317` — display
+- `food_quarantine/views.py:858-859` — direct gate
+- `scoping.py:67-68` — `resolve_user_sectors` (base)
+- seed commands — set during user creation
+
+**Conclusion:** `user.sector_id` is NOT metadata. It's a grant mechanism.
+
+### Policy (enforced in M5-B)
+
+Every mixin/helper that scopes by sector MUST treat `user.sector_id` as a grant,
+equivalent to a ('SECTOR', user.sector_id) RoleAssignment.
+
+Enforced in:
+
+| Location | M5-B sub-phase | Mechanism |
+|---|---|---|
+| `resolve_user_sectors` (scoping.py) | M5-A (pre-existing) | base — reads `user.sector_id` |
+| `SectorFieldScopedMixin` | M5-B-1 | uses `resolve_user_sectors` |
+| `screening._entry_point_ids_for` | M5-B-2 (Delta 1) | merges `user.sector_id` into port_ids |
+| `hr.resolve_own_org_scope_keys` | M5-B-3 (Delta 4) | emits ('SECTOR', user.sector_id) |
+
+### Deltas introduced in M5-B (all H1′-consistent)
+
+**Delta 1** (M5-B-2): screening now respects `user.sector_id`.
+- Before: border officer with `user.sector_id=X` saw nothing.
+- After: sees sector-X screenings.
+- Regression test (M5-B-T): `test_h1prime_consistency.py::test_h1prime_screening`
+
+**Delta 2** (M5-B-2): screening merges PORT ∪ SECTOR (was PORT-dominant).
+- Before: user with both PORT + SECTOR scopes saw only PORT.
+- After: sees union.
+- Justification: ignored SECTOR scope was a bug; union matches
+  `SectorFieldScopedMixin` semantics.
+
+**Delta 3** (M5-B-1, implicit): `SectorFieldScopedMixin` already used `resolve_user_sectors`
+(H1′ via base). No change needed.
+
+**Delta 4** (M5-B-3): HR `resolve_own_org_scope_keys` emits ('SECTOR', user.sector_id).
+- Before: home-sector user with no RoleAssignment saw nothing in HR.
+- After: sees HR records in their home sector.
+- Regression test (M5-B-T): `test_h1prime_consistency.py::test_h1prime_hr`
+
+### H1′ REFUTED — clarification
+
+H1′ (in M5-A-2) was initially hypothesized as "widening" — a STATE user with
+`user.sector_id=B` might illegitimately see sector-B data.
+
+**Correction:** This is not widening. It's the intended H1′ policy. A user with
+`user.sector_id=B` AND `STATE scope=A` legitimately sees union(A, B) — because
+`user.sector_id` is a grant, not state-specific.
+
+**Test pinning:** `test_state_widening_h1.py::test_state_plus_sector_union` (M5-B-1)
+verifies union behavior. `test_state_widening_h1.py::test_state_user_with_sector_does_not_widen_to_that_sector`
+(H1 pinning) verifies unrelated sectors never leak.
+
+### Implications for M6 (LOCALITY/FACILITY scopes)
+
+When adding new scopes (LOCALITY, FACILITY), the same H1′ policy applies:
+- Any user with `user.sector_id` set MUST see sector-scoped data regardless of other scopes.
+- New mixins must respect `user.sector_id`.
+- `test_h1prime_consistency.py` will fail if any mixin is missed.
+
+**Enforcement test (M5-B-T):** `test_h1prime_consistency.py` (4 tests)
