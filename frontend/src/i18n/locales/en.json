@@ -1158,10 +1158,10 @@
       },
       "title": "Border Pre-Registration",
       "subtitle": "Please fill in the following information before arriving at the entry point",
-      "eyebrow": "Traveler",
+      "eyebrow": "Traveler Portal",
       "submit": "Submit Request",
       "submitting": "Submitting...",
-      "success": "Request submitted successfully",
+      "success": "Registration Successful",
       "steps": {
         "start": "Start",
         "personal": "Personal Info",
@@ -1269,13 +1269,13 @@
         "transportMode": "Transport Mode",
         "arrivalDate": "Arrival Date",
         "transitCountries": "Transit Countries (Optional)",
-      "phone": "Phone Number",
-      "whatsapp": "WhatsApp (Optional)",
-      "email": "Email (Optional)",
-      "emergencyPhone": "Emergency Phone (Closest Person)",
-      "temperature": "Temperature (°C)",
-      "patientName": "Patient Name",
-      "trip": "Trip"
+        "phone": "Phone Number",
+        "whatsapp": "WhatsApp (Optional)",
+        "email": "Email (Optional)",
+        "emergencyPhone": "Emergency Phone (Closest Person)",
+        "temperature": "Temperature (°C)",
+        "patientName": "Patient Name",
+        "trip": "Trip"
       },
       "risk": {
         "initial": "Initial risk assessment:",
@@ -1308,12 +1308,10 @@
       "summary": "Data Summary",
       "consent": "I confirm the data is correct",
       "save": "Save and Issue Health Pass",
-      "success": "Registration Successful",
       "registrationNumber": "Registration Number",
       "qrAlt": "QR Code",
       "qrInstruction": "Show this code to the health quarantine officer upon arrival to expedite your procedures.",
       "qrIssuance": "Your QR code will be issued after document review and request approval.",
-      "date": "Date",
       "symptomsLabel": "Symptoms:",
       "purposeLabel": "Purpose of Visit",
       "purposeSpecifyLabel": "Specify purpose",
@@ -1321,10 +1319,7 @@
       "trackRequest": "Track request status",
       "dashboard": "Dashboard",
       "uploadLater": "You can upload documents later from the \"Upload Documents\" page in the Traveler Portal.",
-      "back": "Back",
-      "next": "Next",
-      "nextReview": "Next: Review and Confirm",
-      "eyebrow": "Traveler Portal"
+      "nextReview": "Next: Review and Confirm"
     },
     "requestTracking": {
       "status": {
@@ -9866,6 +9861,19 @@
       "extraPayment": "Extra Payment",
       "collect": "Collect",
       "confirmed": "Confirmed"
+    }
+  },
+  "registry": {
+    "tree": {
+      "title": "Organizational Registry — Tree",
+      "picker": {
+        "label": "Root",
+        "all": "All available roots"
+      },
+      "empty": "No nodes to display",
+      "error": {
+        "load": "Failed to load tree. Please try again."
+      }
     }
   }
 }

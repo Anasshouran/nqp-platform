@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 import type {
   ReportingNode,
+  ReportingNodeTree,
   StateMinistry,
   StateNodeAssignment,
   LocalityNodeAssignment,
@@ -35,8 +36,8 @@ const unwrap = <T,>(r: AxiosResponse): T => {
 };
 
 // --- Tree & Nodes ---
-export const getRegistryTree = (): Promise<ReportingNode[]> =>
-  axios.get(`${BASE}/dashboard/tree/`).then((r) => unwrap<ReportingNode[]>(r));
+export const getRegistryTree = (): Promise<ReportingNodeTree[]> =>
+  axios.get(`${BASE}/dashboard/tree/`).then((r) => unwrap<ReportingNodeTree[]>(r));
 
 export const listNodes = (params?: {
   kind?: string;

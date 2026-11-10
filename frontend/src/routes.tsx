@@ -180,6 +180,7 @@ const PortalWebhooksPage = lazy(() => import('./pages/integration/portal/PortalW
 const PortalAuditLogsPage = lazy(() => import('./pages/integration/portal/PortalAuditLogsPage'));
 const DbAdminPage = lazy(() => import('./pages/dbadmin/DbAdminPage'));
 const OrgStructurePage = lazy(() => import('./pages/organization/OrgStructurePage'));
+const RegistryTreePage = lazy(() => import('./pages/registry/RegistryTreePage'));
 const PortHealthPage = lazy(() => import('./pages/porthealth/PortHealthPage'));
 const BordersHealthPage = lazy(() => import('./pages/bordershealth/BordersHealthPage'));
 const VectorControlPage = lazy(() => import('./pages/vectorcontrol/VectorControlPage'));
@@ -386,6 +387,7 @@ const AppRoutes = () => (
         <Route path="/app/quarantine-fees" element={withSuspense(<QuarantineFeesPage />)} />
         <Route path="/app/quarantine-inspector" element={withSuspense(<QuarantineInspectorPage />)} />
         <Route path="/app/organization" element={withSuspense(<OrgStructurePage />)} />
+        <Route path="/app/registry/tree" element={withSuspense(<RegistryTreePage />)} />
         <Route path="/app/clinic" element={withSuspense(<ClinicPage />)} />
         <Route path="/app/clinic/dashboard" element={withSuspense(<ClinicDashboardPage />)} />
         <Route path="/app/clinic/register" element={withSuspense(<ClinicRegisterPage />)} />

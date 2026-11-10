@@ -175,6 +175,16 @@ export interface Service {
   availability_count?: number;
 }
 
+export interface ReportingNodeTree {
+  id: string;
+  kind: ReportingNodeKind;
+  code: string;
+  name_ar: string;
+  name_en?: string;
+  depth: number;
+  children: ReportingNodeTree[];
+}
+
 export type ServiceTargetType = 'FACILITY' | 'DEPARTMENT';
 
 export interface ServiceAvailability {

@@ -31,9 +31,9 @@ export interface Permission {
 
 export type PermissionTree = Record<string, Permission[]>;
 
-export type ScopeType = 'GLOBAL' | 'STATE' | 'POINT' | 'PORT' | 'REGION' | 'SECTOR' | 'DEPARTMENT' | 'STATION' | 'COMPANY';
+export type ScopeType = 'GLOBAL' | 'STATE' | 'POINT' | 'PORT' | 'REGION' | 'SECTOR' | 'DEPARTMENT' | 'STATION';
 
-export const SCOPE_TYPES: ScopeType[] = ['GLOBAL', 'POINT', 'PORT', 'REGION', 'SECTOR', 'DEPARTMENT', 'STATION'];
+export const SCOPE_TYPES: ScopeType[] = ['GLOBAL', 'STATE', 'POINT', 'PORT', 'REGION', 'SECTOR', 'DEPARTMENT', 'STATION'];
 
 export interface RoleAssignment {
   id: string;

@@ -476,12 +476,37 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"])
     def tree(self, request):
-        """الشجرة الكاملة — بنية متداخلة (بلا pagination — مع cache)."""
+        """الشجرة الكاملة — بنية متداخلة (بلا pagination — مع cache).
+
+        M4-3: تطبيق scoping — STATE/SECTOR user يرى فقط subtree الخاصة به.
+        (كان غير مُقيَّد — ثغرة أمنية مُغلقة هنا.)
+        """
+        user = request.user
+
+        # IDs مرئية (None = global → كل شيء)
+        visible_ids = None
+        if not (user.is_superuser or has_global_scope(user)):
+            viewset = RegistryScopedViewSet()
+            viewset.request = request
+            viewset.queryset = ReportingNode.objects.all()
+            viewset.action = 'list'
+            visible_ids = set(viewset.get_queryset().values_list('id', flat=True))
+
         nodes = ReportingNode.objects.filter(
             is_active=True
         ).select_related("parent").order_by("order", "code")
 
-        roots = nodes.filter(parent__isnull=True)
+        if visible_ids is not None:
+            nodes = nodes.filter(id__in=visible_ids)
+
+        # M4-3: STATE/SECTOR user may not see the FEDERAL root, so treat any
+        # visible node whose parent is not visible as a root (preserves tree shape).
+        if visible_ids is not None:
+            visible_set = visible_ids
+            roots = [n for n in nodes if (n.parent_id is None) or (n.parent_id not in visible_set)]
+        else:
+            roots = list(nodes.filter(parent__isnull=True))
+
         result = []
 
         def build(node):
@@ -494,7 +519,10 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
                 "depth": node.depth,
                 "children": [],
             }
-            for child in node.children.filter(is_active=True).order_by("order", "code"):
+            children_qs = node.children.filter(is_active=True).order_by("order", "code")
+            if visible_ids is not None:
+                children_qs = children_qs.filter(id__in=visible_ids)
+            for child in children_qs:
                 item["children"].append(build(child))
             return item
 
