@@ -27,11 +27,18 @@
 
 **الحل المقترح (M4-4):** forms + validation + optimistic updates.
 
-## D-M4-3-5: Dashboard tree endpoint — scoping added (deviation)
+## D-M4-3-5: Dashboard tree endpoint — scoping (✅ CLOSED in M4-3-bis)
 
-**الوضع:** `/dashboard/tree/` كان غير مُقيَّد (ViewSet عادي، لا RegistryScopedViewSet). M4-3 أضاف scoping عبر reuse of RegistryScopedViewSet.get_queryset() logic. deviation from "no backend changes" but necessary for STATE user scoping.
+**الوضع (قبل):** `/dashboard/tree/` كان غير مُقيَّد (ViewSet عادي، لا RegistryScopedViewSet). M4-3 أضاف scoping عبر instantiate viewset (hack).
 
-**الحل (M4-4/M5):** refactor: extract `_visible_reporting_node_ids(user)` helper used by both get_queryset and tree action. Currently duplicated logic.
+**الحل (M4-3-bis):** استخراج `_visible_reporting_node_ids(user)` helper — single source of truth. يستخدمه:
+- `RegistryScopedViewSet.get_queryset` (case ReportingNode)
+- `RegistryDashboardViewSet.tree`
+- `RegistryDashboardViewSet.summary`
+
+**الاختبار:** 3 اختبارات جديدة (STATE tree, SECTOR tree, summary scoped) + 2 في bis parametrize.
+
+**D-M4-3-5 → CLOSED.**
 
 ## D-M4-3-6: STATE user tree — root becomes state node (not FEDERAL)
 

@@ -350,3 +350,120 @@ class TestStatePathFullCoverage:
         ids = {str(i['id']) for i in _payload(response)}
         assert str(a['ownership'].id) in ids
         assert str(b['ownership'].id) not in ids, 'تسريب: ownership ولاية أخرى'
+
+def _make_sector_user(org_sector):
+    from apps.accounts.models import Permission, Role, RoleAssignment
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    uid = _uid()
+    user = User.objects.create_user(email=f'sector_{uid}@test.com', password='x')
+    user.sector = org_sector
+    user.save()
+    role = Role.objects.create(code=f'ROLE_{uid}', name=f'SECTOR_{uid}')
+    RoleAssignment.objects.create(user=user, role=role, scope_type='SECTOR', scope_id=org_sector.id)
+    for code in ('registry:view', 'ministry:view'):
+        resource, action = code.split(':')
+        perm, _ = Permission.objects.get_or_create(code=code, defaults={'name': code, 'resource': resource, 'action': action})
+        role.permissions.add(perm)
+    return user
+
+
+@pytest.mark.django_db
+class TestDashboardScoping:
+    """M4-3-bis: /dashboard/tree/ + /dashboard/summary/ مقيّدان."""
+
+    def test_dashboard_tree_state_user_sees_only_own_subtree(self):
+        root = _ensure_root()
+        uid = _uid()
+        state_a = _make_state('A')
+        state_b = _make_state('B')
+
+        node_a = ReportingNode.objects.create(
+            code=f'NA_{uid}', name_ar='A', kind='STATE', parent=root,
+        )
+        node_b = ReportingNode.objects.create(
+            code=f'NB_{uid}', name_ar='B', kind='STATE', parent=root,
+        )
+        StateNodeAssignment.objects.create(
+            state=state_a, node=node_a, valid_from='2026-01-01', is_primary=True,
+        )
+        StateNodeAssignment.objects.create(
+            state=state_b, node=node_b, valid_from='2026-01-01', is_primary=True,
+        )
+
+        def _collect_ids(payload):
+            out = set()
+            def walk(n):
+                out.add(str(n['id']))
+                for c in n.get('children', []) or []:
+                    walk(c)
+            for r in (payload if isinstance(payload, list) else []):
+                walk(r)
+            return out
+
+        client = APIClient()
+        client.force_authenticate(user=_make_state_user(state_a))
+        response = client.get('/api/v1/registry/dashboard/tree/', HTTP_HOST='localhost')
+        assert response.status_code == 200, response.json()
+        ids = _collect_ids(response.json().get('data', []))
+        assert str(node_a.id) in ids, 'STATE user لا يرى عقدة ولايته'
+        assert str(node_b.id) not in ids, 'تسريب: عقدة ولاية أخرى في الشجرة'
+
+    def test_dashboard_tree_sector_user_sees_only_own_sector(self):
+        from apps.masterdata.models import Sector as MasterdataSector, EntryPoint, HealthFacility
+        from apps.organization.models import Sector as OrgSector, Locality
+
+        uid = _uid()
+        # Sector A
+        md_a = MasterdataSector.objects.create(code=f'MD_A_{uid}', name_ar='نقل أ')
+        org_a = OrgSector.objects.create(code=f'ORG_A_{uid}', name_ar='قطاع أ')
+        state_a = State.objects.create(code=f'ST_A_{uid}', name_ar='ولاية أ', sector=md_a)
+        loc_a = Locality.objects.create(code=f'LOC_A_{uid}', name_ar='محلية أ', sector=org_a)
+        ep_a = EntryPoint.objects.create(code=f'EP_A_{uid}', name_ar='منفذ أ', state=state_a, sector=org_a, locality=loc_a)
+        fac_a = HealthFacility.objects.create(code=f'FAC_A_{uid}', name_ar='منشأة أ', sector=org_a, locality=loc_a, entry_point=ep_a)
+
+        # Sector B
+        md_b = MasterdataSector.objects.create(code=f'MD_B_{uid}', name_ar='نقل ب')
+        org_b = OrgSector.objects.create(code=f'ORG_B_{uid}', name_ar='قطاع ب')
+        state_b = State.objects.create(code=f'ST_B_{uid}', name_ar='ولاية ب', sector=md_b)
+        loc_b = Locality.objects.create(code=f'LOC_B_{uid}', name_ar='محلية ب', sector=org_b)
+        ep_b = EntryPoint.objects.create(code=f'EP_B_{uid}', name_ar='منفذ ب', state=state_b, sector=org_b, locality=loc_b)
+        fac_b = HealthFacility.objects.create(code=f'FAC_B_{uid}', name_ar='منشأة ب', sector=org_b, locality=loc_b, entry_point=ep_b)
+
+        root = _ensure_root()
+        node_a = ReportingNode.objects.create(code=f'NA_{uid}', name_ar='A', kind='FACILITY', parent=root)
+        node_b = ReportingNode.objects.create(code=f'NB_{uid}', name_ar='B', kind='FACILITY', parent=root)
+        from apps.registry.models import HealthFacilityNodeAssignment
+        HealthFacilityNodeAssignment.objects.create(facility=fac_a, node=node_a, valid_from='2026-01-01', is_primary=True)
+        HealthFacilityNodeAssignment.objects.create(facility=fac_b, node=node_b, valid_from='2026-01-01', is_primary=True)
+
+        user = _make_sector_user(org_a)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/v1/registry/dashboard/tree/', HTTP_HOST='localhost')
+        assert response.status_code == 200, response.json()
+
+        def _collect_ids(payload):
+            out = set()
+            def walk(n):
+                out.add(str(n['id']))
+                for c in n.get('children', []) or []:
+                    walk(c)
+            for r in (payload if isinstance(payload, list) else []):
+                walk(r)
+            return out
+
+        ids = _collect_ids(response.json().get('data', []))
+        assert str(node_a.id) in ids, 'SECTOR user لا يرى عقدة قطاعه'
+        assert str(node_b.id) not in ids, 'تسريب: عقدة قطاع آخر في الشجرة'
+
+    def test_dashboard_summary_scoped(self):
+        state = _make_state('A')
+        user = _make_state_user(state)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get('/api/v1/registry/dashboard/summary/', HTTP_HOST='localhost')
+        assert response.status_code == 200, response.json()
+        data = response.json().get('data', {})
+        # STATE user (no nodes assigned) → 0 nodes
+        assert data.get('nodes', -1) == 0, f'STATE user summary not scoped: {data}'

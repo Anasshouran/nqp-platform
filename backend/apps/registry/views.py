@@ -68,6 +68,110 @@ from .serializers import (
 )
 
 
+def _visible_reporting_node_ids(user):
+    """يعيد set من ReportingNode.id المرئية للمستخدم (M4-3-bis).
+
+    - superuser / GLOBAL → None (لا تقييد).
+    - لا scope → set() (fail-safe).
+    - غير ذلك → set of IDs (قد تكون فارغة).
+
+    Centralizes ReportingNode scoping so RegistryScopedViewSet.get_queryset
+    and RegistryDashboardViewSet (tree/summary) share one source of truth.
+    Reuses M4-2-bis logic: entry points + STATE path derivation + valid_to
+    filters + trailing-slash prefix defense.
+    """
+    if user.is_superuser or has_global_scope(user):
+        return None
+    if not _active_assignments(user).exists():
+        return set()
+
+    entry_point_ids = resolve_authorized_entry_points(user)
+    if entry_point_ids is None:
+        return None
+    user_state_ids = get_user_state_ids(user) if has_state_scope(user) else set()
+    user_state_ids = user_state_ids or set()
+
+    if not entry_point_ids and not user_state_ids:
+        return set()
+
+    from apps.masterdata.models import EntryPoint, HealthFacility
+
+    facility_ids = list(
+        HealthFacility.objects.filter(entry_point_id__in=entry_point_ids).values_list('id', flat=True)
+    )
+    locality_ids = list(
+        HealthFacility.objects.filter(
+            entry_point_id__in=entry_point_ids, locality__isnull=False,
+        ).values_list('locality_id', flat=True)
+    )
+    state_ids = list(
+        EntryPoint.objects.filter(id__in=entry_point_ids, state__isnull=False).values_list('state_id', flat=True)
+    )
+    if user_state_ids:
+        state_ids = list(set(state_ids) | set(user_state_ids))
+
+    org_sector_ids = list(
+        HealthFacility.objects.filter(
+            entry_point_id__in=entry_point_ids, sector__isnull=False,
+        ).values_list('sector_id', flat=True)
+    )
+
+    # M4-2-bis: STATE path derivation (facilities/localities/org sectors)
+    if user_state_ids:
+        state_node_ids = StateNodeAssignment.objects.filter(
+            state_id__in=user_state_ids, valid_to__isnull=True,
+        ).values_list('node_id', flat=True)
+        state_node_paths = list(
+            ReportingNode.objects.filter(id__in=state_node_ids).values_list('path', flat=True)
+        )
+        if state_node_paths:
+            path_q = Q()
+            for node_path in state_node_paths:
+                if not node_path:
+                    continue
+                path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+            subtree_node_ids = list(ReportingNode.objects.filter(path_q).values_list('id', flat=True))
+            if subtree_node_ids:
+                path_facility_ids = set(
+                    HealthFacilityNodeAssignment.objects.filter(
+                        node_id__in=subtree_node_ids, valid_to__isnull=True,
+                    ).values_list('facility_id', flat=True)
+                )
+                facility_ids = list(set(facility_ids) | path_facility_ids)
+                path_locality_ids = set(
+                    LocalityNodeAssignment.objects.filter(
+                        node_id__in=subtree_node_ids, valid_to__isnull=True,
+                    ).values_list('locality_id', flat=True)
+                )
+                locality_ids = list(set(locality_ids) | path_locality_ids)
+                path_org_sector_ids = set(
+                    HealthFacility.objects.filter(id__in=path_facility_ids, sector__isnull=False).values_list('sector_id', flat=True)
+                )
+                org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
+
+    # STATE path Q for ReportingNode descendants
+    state_path_q = Q(pk__in=[])
+    if user_state_ids:
+        state_node_ids = StateNodeAssignment.objects.filter(
+            state_id__in=user_state_ids, valid_to__isnull=True,
+        ).values_list('node_id', flat=True)
+        state_node_paths = ReportingNode.objects.filter(id__in=state_node_ids).values_list('path', flat=True)
+        for node_path in state_node_paths:
+            if not node_path:
+                continue
+            state_path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+
+    node_visibility_q = (
+        Q(statenodeassignment_set__state_id__in=state_ids, statenodeassignment_set__valid_to__isnull=True)
+        | Q(localitynodeassignment_set__locality_id__in=locality_ids, localitynodeassignment_set__valid_to__isnull=True)
+        | Q(healthfacilitynodeassignment_set__facility_id__in=facility_ids, healthfacilitynodeassignment_set__valid_to__isnull=True)
+        | Q(department_assignments__department__facility_id__in=facility_ids, department_assignments__valid_to__isnull=True)
+        | Q(department_assignments__department__facility__isnull=True, department_assignments__department__sector_id__in=org_sector_ids, department_assignments__valid_to__isnull=True)
+        | state_path_q
+    )
+    return set(ReportingNode.objects.filter(node_visibility_q).values_list('id', flat=True))
+
+
 class RegistryScopedViewSet(viewsets.ModelViewSet):
     """ViewSet أساسي للسجل — يفرض scoping fail-safe.
 
@@ -276,7 +380,13 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
         )
 
         if model_name == 'ReportingNode':
-            return qs.filter(node_visibility_q).distinct()
+            # M4-3-bis: use centralized helper (single source of truth)
+            visible = _visible_reporting_node_ids(user)
+            if visible is None:
+                return qs
+            if not visible:
+                return qs.none()
+            return qs.filter(id__in=visible).distinct()
 
         if model_name == 'ServiceNodeAssignment':
             # M4-2: عقدة الخدمة ورقةٌ تحت عقدة المنشأة/الولاية، لذا التطابق
@@ -454,17 +564,37 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
-        """ملخص السجل: عدد العقد + KPI مؤشرات."""
+        """ملخص السجل: عدد العقد + KPI مؤشرات (مقيّد بـ scoping)."""
         from apps.registry.models import ReportingNode
 
-        nodes_count = ReportingNode.objects.count()
-        states_count = ReportingNode.objects.filter(
-            kind=ReportingNode.Kind.STATE
-        ).count()
-        facilities_count = ReportingNode.objects.filter(
-            kind=ReportingNode.Kind.FACILITY
-        ).count()
-        ministries_count = StateMinistry.objects.count()
+        user = request.user
+        nodes_qs = ReportingNode.objects.filter(is_active=True)
+
+        visible_ids = _visible_reporting_node_ids(user)
+        if visible_ids is not None:
+            nodes_qs = nodes_qs.filter(id__in=visible_ids)
+
+        nodes_count = nodes_qs.count()
+        states_count = nodes_qs.filter(kind=ReportingNode.Kind.STATE).count()
+        facilities_count = nodes_qs.filter(kind=ReportingNode.Kind.FACILITY).count()
+
+        ministries_qs = StateMinistry.objects.all()
+        if not (user.is_superuser or has_global_scope(user)):
+            from apps.masterdata.models import EntryPoint
+            entry_point_ids = resolve_authorized_entry_points(user)
+            ep_state_ids = set()
+            if entry_point_ids:
+                ep_state_ids = set(
+                    EntryPoint.objects.filter(id__in=entry_point_ids, state__isnull=False).values_list('state_id', flat=True)
+                )
+            user_state_ids = get_user_state_ids(user) if has_state_scope(user) else set()
+            user_state_ids = user_state_ids or set()
+            visible_state_ids = ep_state_ids | user_state_ids
+            if visible_state_ids:
+                ministries_qs = ministries_qs.filter(state_id__in=visible_state_ids)
+            else:
+                ministries_qs = ministries_qs.none()
+        ministries_count = ministries_qs.count()
 
         data = {
             "nodes": nodes_count,
@@ -483,14 +613,12 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
         """
         user = request.user
 
-        # IDs مرئية (None = global → كل شيء)
-        visible_ids = None
-        if not (user.is_superuser or has_global_scope(user)):
-            viewset = RegistryScopedViewSet()
-            viewset.request = request
-            viewset.queryset = ReportingNode.objects.all()
-            viewset.action = 'list'
-            visible_ids = set(viewset.get_queryset().values_list('id', flat=True))
+        # M4-3-bis: استخدم helper موحّد (لا instantiate viewset).
+        visible_ids = _visible_reporting_node_ids(user)
+        if visible_ids is None:
+            visible_ids = None  # global → all
+        else:
+            visible_ids = set(visible_ids)
 
         nodes = ReportingNode.objects.filter(
             is_active=True

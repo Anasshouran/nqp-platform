@@ -168,6 +168,9 @@ SCOPED_ENDPOINTS = [
     '/api/v1/registry/service-availability/',
     '/api/v1/registry/service-node-assignments/',
     '/api/v1/registry/changelog/',
+    # M4-3-bis: dashboard nested actions (were unscoped until M4-3)
+    '/api/v1/registry/dashboard/tree/',
+    '/api/v1/registry/dashboard/summary/',
 ]
 
 
