@@ -175,6 +175,58 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             ).values_list('sector_id', flat=True)
         )
 
+        # M4-2-bis (D-M4-2-8): STATE user بلا EntryPoints → اشتقاق
+        # facility_ids / locality_ids / org_sector_ids من StateNodeAssignment
+        # path (subtree). D-M4-2-9: trailing '/' لتفادي prefix collision.
+        if user_state_ids:
+            state_node_ids = StateNodeAssignment.objects.filter(
+                state_id__in=user_state_ids,
+                valid_to__isnull=True,
+            ).values_list('node_id', flat=True)
+
+            state_node_paths = list(
+                ReportingNode.objects.filter(id__in=state_node_ids).values_list('path', flat=True)
+            )
+
+            subtree_node_ids = []
+            if state_node_paths:
+                path_q = Q()
+                for node_path in state_node_paths:
+                    if not node_path:
+                        continue
+                    path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+                subtree_node_ids = list(
+                    ReportingNode.objects.filter(path_q).values_list('id', flat=True)
+                )
+
+            if subtree_node_ids:
+                # facilities from HealthFacilityNodeAssignment under subtree
+                path_facility_ids = set(
+                    HealthFacilityNodeAssignment.objects.filter(
+                        node_id__in=subtree_node_ids,
+                        valid_to__isnull=True,
+                    ).values_list('facility_id', flat=True)
+                )
+                facility_ids = list(set(facility_ids) | path_facility_ids)
+
+                # localities from LocalityNodeAssignment under subtree
+                path_locality_ids = set(
+                    LocalityNodeAssignment.objects.filter(
+                        node_id__in=subtree_node_ids,
+                        valid_to__isnull=True,
+                    ).values_list('locality_id', flat=True)
+                )
+                locality_ids = list(set(locality_ids) | path_locality_ids)
+
+                # org sectors from facilities under subtree
+                path_org_sector_ids = set(
+                    HealthFacility.objects.filter(
+                        id__in=path_facility_ids,
+                        sector__isnull=False,
+                    ).values_list('sector_id', flat=True)
+                )
+                org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
+
         # M4-2: مسار STATE — كل descendants لعقدة الولاية (D-M4-1-1).
         # path مبني من UUIDs مفصولة بـ '/'، لذا نستخدم تطابقاً صريحاً
         # (path = X أو path يبدأ بـ 'X/') لتفادي أي تطابق بادئة عرضي.

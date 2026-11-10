@@ -64,3 +64,23 @@
 - ❌ FacilityOwnership / TechnicalSupervision / ServiceAvailability لا تزال تعتمد على EntryPoints → STATE user بلا EntryPoints يرى صفراً.
 
 **الحل (M4-3 أو M5):** توسيع `_allowed_entity_ids_for_user` (أو get_queryset) لاشتقاق facility_ids من StateNodeAssignment path (nodes → HealthFacilityNodeAssignment). needs careful security review.
+
+
+### STATUS UPDATE (M4-2-bis)
+
+D-M4-2-8 CLOSED. STATE user without EntryPoints now sees:
+- nodes (path descendants)
+- ministries (state_ids union)
+- states/assignments (state_ids union)
+- service-node-assignments (descendants of visible nodes)
+- facility-ownerships (D-M4-2-8 NEW)
+- technical-supervisions (D-M4-2-8 NEW)
+- service-availability (D-M4-2-8 NEW)
+- department-assignments (D-M4-2-8 NEW)
+
+D-M4-2-9 CLOSED. path__startswith now uses trailing slash in both sites
+(state_path_q + D-M4-2-8 derivation).
+
+D-M4-1-1 CLOSED (fully). STATE user without EntryPoints sees all endpoints.
+
+Tests: 205 passed (201 + 4 new, incl. anti-leak regression).

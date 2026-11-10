@@ -7,9 +7,14 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from apps.accounts.models import Role, RoleAssignment
-from apps.masterdata.models import Sector as MasterdataSector, State
+from apps.masterdata.models import Sector as MasterdataSector, State, HealthFacility
+from apps.organization.models import Sector as OrgSector, Locality
 from apps.registry.models import (
     ReportingNode, StateNodeAssignment, StateMinistry,
+    HealthFacilityNodeAssignment, LocalityNodeAssignment,
+    FacilityOwner, FacilityOwnership,
+    TechnicalSupervisor, TechnicalSupervision,
+    Service, ServiceAvailability,
 )
 
 User = get_user_model()
@@ -245,3 +250,103 @@ class TestStatePathClosure:
         client.force_authenticate(user=user)
         ids = _node_ids(client.get('/api/v1/registry/nodes/'))
         assert str(node.id) in ids
+
+
+def _build_state_world(tag):
+    """ولاية بلا EntryPoints + منشأة + ownership/supervision/availability."""
+    uid = _uid()
+    md = MasterdataSector.objects.create(code=f'MD_{tag}_{uid}', name_ar=f'نقل {tag}')
+    org = OrgSector.objects.create(code=f'ORG_{tag}_{uid}', name_ar=f'قطاع {tag}')
+    state = State.objects.create(code=f'ST_{tag}_{uid}', name_ar=f'ولاية {tag}', sector=md)
+    loc = Locality.objects.create(code=f'LOC_{tag}_{uid}', name_ar=f'محلية {tag}', sector=org)
+    fac = HealthFacility.objects.create(
+        code=f'FAC_{tag}_{uid}', name_ar=f'منشأة {tag}',
+        sector=org, locality=loc, entry_point=None,
+    )
+
+    root = _ensure_root()
+    state_node = ReportingNode.objects.create(
+        code=f'SN_{tag}_{uid}', name_ar=f'عقدة ولاية {tag}', kind='STATE', parent=root,
+    )
+    fac_node = ReportingNode.objects.create(
+        code=f'FN_{tag}_{uid}', name_ar=f'عقدة منشأة {tag}', kind='FACILITY', parent=state_node,
+    )
+    StateNodeAssignment.objects.create(
+        state=state, node=state_node, valid_from='2026-01-01', is_primary=True,
+    )
+    HealthFacilityNodeAssignment.objects.create(
+        facility=fac, node=fac_node, valid_from='2026-01-01', is_primary=True,
+    )
+    LocalityNodeAssignment.objects.create(
+        locality=loc, node=fac_node, valid_from='2026-01-01', is_primary=True,
+    )
+
+    owner = FacilityOwner.objects.create(
+        code=f'OWN_{tag}_{uid}', name_ar=f'مالك {tag}', kind='PRIVATE',
+    )
+    ownership = FacilityOwnership.objects.create(
+        facility=fac, owner=owner, valid_from='2026-01-01', is_primary=True,
+    )
+
+    supervisor = TechnicalSupervisor.objects.create(
+        code=f'TSUP_{tag}_{uid}', name_ar=f'مشرف {tag}',
+        kind='STATE_HEALTH_DEPT', domain='GENERAL',
+    )
+    supervision = TechnicalSupervision.objects.create(
+        facility=fac, supervisor=supervisor, supervision_level='PRIMARY',
+        valid_from='2026-01-01',
+    )
+
+    svc = Service.objects.create(code=f'SVC_{tag}_{uid}', name_ar=f'خدمة {tag}', category='TB')
+    availability = ServiceAvailability.objects.create(
+        service=svc, target_type='FACILITY', facility=fac, valid_from='2026-01-01',
+    )
+
+    return {
+        'state': state, 'facility': fac, 'ownership': ownership,
+        'supervision': supervision, 'availability': availability,
+    }
+
+
+@pytest.mark.django_db
+class TestStatePathFullCoverage:
+    """D-M4-2-8: STATE user (no EntryPoints) sees ownerships/supervisions/availability."""
+
+    def test_state_user_sees_ownerships_without_entry_points(self):
+        a = _build_state_world('A')
+        client = APIClient()
+        client.force_authenticate(user=_make_state_user(a['state']))
+        response = client.get('/api/v1/registry/facility-ownerships/')
+        assert response.status_code == 200, response.json()
+        ids = {str(i['id']) for i in _payload(response)}
+        assert str(a['ownership'].id) in ids, 'STATE user لا يرى ownership منشأة ولايته'
+
+    def test_state_user_sees_supervisions_without_entry_points(self):
+        a = _build_state_world('A')
+        client = APIClient()
+        client.force_authenticate(user=_make_state_user(a['state']))
+        response = client.get('/api/v1/registry/technical-supervisions/')
+        assert response.status_code == 200, response.json()
+        ids = {str(i['id']) for i in _payload(response)}
+        assert str(a['supervision'].id) in ids, 'STATE user لا يرى supervision منشأة ولايته'
+
+    def test_state_user_sees_service_availability_without_entry_points(self):
+        a = _build_state_world('A')
+        client = APIClient()
+        client.force_authenticate(user=_make_state_user(a['state']))
+        response = client.get('/api/v1/registry/service-availability/')
+        assert response.status_code == 200, response.json()
+        ids = {str(i['id']) for i in _payload(response)}
+        assert str(a['availability'].id) in ids, 'STATE user لا يرى availability منشأة ولايته'
+
+    def test_state_user_does_not_see_other_state_subtree(self):
+        """لا تسريب: STATE A user لا يرى ownerships في subtree B."""
+        a = _build_state_world('A')
+        b = _build_state_world('B')
+        client = APIClient()
+        client.force_authenticate(user=_make_state_user(a['state']))
+        response = client.get('/api/v1/registry/facility-ownerships/')
+        assert response.status_code == 200, response.json()
+        ids = {str(i['id']) for i in _payload(response)}
+        assert str(a['ownership'].id) in ids
+        assert str(b['ownership'].id) not in ids, 'تسريب: ownership ولاية أخرى'

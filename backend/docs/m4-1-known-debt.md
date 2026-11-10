@@ -129,3 +129,16 @@
 - مسار ServiceNodeAssignment (descendants of visible nodes)
 
 `has_state_scope` يُستخدم كبوابة رخيصة قبل `get_user_state_ids`. D-M4-1-7 → CLOSED.
+
+
+### ✅ STATUS UPDATE (M4-2-bis)
+
+**D-M4-1-1 — CLOSED (fully).** STATE user بلا EntryPoints يرى الآن كل endpoints (nodes, ministries, states/assignments, service-node-assignments, facility-ownerships, technical-supervisions, service-availability, department-assignments) — через STATE path derivation (D-M4-2-8).
+
+
+### STATUS UPDATE (M4-2-bis)
+
+D-M4-1-1 CLOSED (fully). STATE user without EntryPoints now sees all endpoints
+(nodes, ministries, states/assignments, service-node-assignments,
+facility-ownerships, technical-supervisions, service-availability,
+department-assignments) via STATE path derivation (D-M4-2-8).
