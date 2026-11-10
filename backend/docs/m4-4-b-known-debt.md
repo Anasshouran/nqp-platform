@@ -1,18 +1,20 @@
 # M4-4-B Known Debt — Facility Detail Page
 
-## D-M4-4-B-1: Client-side filter (not backend)
+## D-M4-4-B-1: Client-side filter (not backend) — ✅ CLOSED (M4-4-C-Part1)
 
-**الوضع:** `listFacilityOwnerships(facilityId)` يجلب كل ownerships ويفلتر في client (لأن backend viewsets لا تدعم `?facility=`).
+**الوضع الأصلي:** `listFacilityOwnerships(facilityId)` يجلب كل ownerships ويفلتر في client.
 
-**الأثر:** مع <100 صفوف، مقبول. مع >1000، بطيء.
+**الحل المُنفَّذ:** `_apply_exact_filters` في `RegistryScopedViewSet` subclasses.
+كل viewsets تدعم الآن `?facility=` / `?service=` / `?state=` / `?node=` / `?department=`
+(بدون تبعية `django-filter` — انظر D-M4-4-C-1).
 
-**الحل المقترح (M4-4-C أو M5):** إضافة `filter_backends = [DjangoFilterBackend]` + `filterset_fields = ['facility']` لكل viewset.
+Frontend يستخدم `?facility=` مباشرة (M4-4-C-Part2).
 
-## D-M4-4-B-2: Navigation from tree requires 2 requests
+## D-M4-4-B-2: Navigation from tree requires 2 requests — ✅ CLOSED (M4-4-C-Part1)
 
-**الوضع:** `ReportingNode` serializer لا يحوي `facility_id`. عند النقر على node، نجلب `HealthFacilityNodeAssignment` ثم `HealthFacility`.
-
-**الحل المقترح (M4-4-C):** إضافة `facility_id` (nullable) إلى `ReportingNodeTreeSerializer` (backend).
+**الحل المُنفَّذ:** `/dashboard/tree/` يُرجع الآن `facility_id` (nullable) لكل عقدة FACILITY.
+الواجهة تستطيع الانتقال مباشرة إلى `/app/registry/facility/<facility_id>` دون lookup ثانٍ
+(تحديث `ReportingNodeTree` type في Part2).
 
 ## D-M4-4-B-3: Tree Position tab — read-only path display
 
@@ -20,17 +22,14 @@
 
 **الحل المقترح (M5):** clickable breadcrumb.
 
-## D-M4-4-B-4: Departments tab يعرض كل departments في النطاق (BUG)
+## D-M4-4-B-4: Departments tab يعرض كل departments في النطاق (BUG) — ✅ CLOSED (M4-4-C-Part1)
 
-**الوضع:** عند فتح facility A، Departments tab يعرض كل departments في نطاق المستخدم (ليس فقط أقسام A).
+**الوضع الأصلي:** عند فتح facility A، Departments tab يعرض كل departments في نطاق المستخدم.
 
-**التأثير:** يُضلّل المستخدم — يظن أن هذه أقسام A.
+**الحل المُنفَّذ:** `DepartmentNodeAssignmentViewSet.filter_queryset` يدعم
+`?department__facility=` (و `?facility=` كاختصار). scoping يبقى أولاً ثم الفلترة.
 
-**السبب:** `DepartmentNodeAssignment` ViewSet لا يدعم `?department__facility=` filter. Frontend لا يستطيع الفلترة لأن `DepartmentNodeAssignment` serializer لا يحوي `department.facility`.
+**اختبار:** `test_department_assignment_filter_by_department_facility` +
+`test_department_assignment_facility_alias`.
 
-**الإصلاح (M4-4-C):**
-1. Backend: إضافة `filter_backends` + `filterset_fields = {'department__facility': ['exact']}` إلى `DepartmentNodeAssignmentViewSet`.
-2. Frontend: تمرير `?department__facility=<facilityId>`.
-3. اختبار SECTOR/STATE على الفلترة.
-
-**الأولوية:** 🔴 قبل أي إضافات أخرى في M4-4-C.
+**المتبقّي (Part2):** تمرير `?department__facility=<facilityId>` من الـ frontend.

@@ -4,6 +4,8 @@ M2-core: GLOBAL-only للكتابة، و GLOBAL-based للقراءة.
 كل ViewSet يُعلن permission_resource وScoped queryset.
 """
 
+import uuid as _uuid
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -66,6 +68,26 @@ from .serializers import (
     StateNodeAssignmentSerializer,
     StateNodeAssignmentWriteSerializer,
 )
+
+
+def _apply_exact_filters(qs, request, mapping):
+    """M4-4-C-1: تطبيق فلاتر exact-match من query params بعد الـ scoping.
+
+    ``mapping`` = {param_name: orm_field}. يُطبَّق بعد ``get_queryset`` (الذي
+    يفرض scoping)، لذا لا يمكن لأي فلتر أن يوسّع الرؤية (D-M4-4-C-3).
+
+    قيمة UUID غير صالحة تُعيد ``qs.none()`` بدل رفع 500 عند التقييم.
+    """
+    for param, orm_field in mapping.items():
+        value = request.query_params.get(param)
+        if value in (None, ''):
+            continue
+        try:
+            _uuid.UUID(str(value))
+        except (ValueError, AttributeError, TypeError):
+            return qs.none()
+        qs = qs.filter(**{orm_field: value})
+    return qs
 
 
 def _visible_reporting_node_ids(user):
@@ -484,6 +506,13 @@ class StateNodeAssignmentViewSet(RegistryScopedViewSet):
     permission_resource = "registry"
     search_fields = ["state__code", "node__code"]
 
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "state": "state_id",
+            "node": "node_id",
+        })
+
 
 class LocalityNodeAssignmentViewSet(RegistryScopedViewSet):
     queryset = LocalityNodeAssignment.objects.select_related(
@@ -494,6 +523,13 @@ class LocalityNodeAssignmentViewSet(RegistryScopedViewSet):
     permission_resource = "registry"
     search_fields = ["locality__code", "node__code"]
 
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "locality": "locality_id",
+            "node": "node_id",
+        })
+
 
 class HealthFacilityNodeAssignmentViewSet(RegistryScopedViewSet):
     queryset = HealthFacilityNodeAssignment.objects.select_related(
@@ -503,6 +539,13 @@ class HealthFacilityNodeAssignmentViewSet(RegistryScopedViewSet):
     write_serializer_class = HealthFacilityNodeAssignmentWriteSerializer
     permission_resource = "registry"
     search_fields = ["facility__code", "node__code"]
+
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "facility": "facility_id",
+            "node": "node_id",
+        })
 
 
 # ---------------------------------------------------------------------------
@@ -638,6 +681,19 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
         result = []
 
         def build(node):
+            # M4-4-C-2 (D-M4-4-B-2): expose facility_id for FACILITY nodes so
+            # the frontend can navigate directly without a second lookup.
+            facility_id = None
+            if node.kind == ReportingNode.Kind.FACILITY:
+                assignment = (
+                    node.healthfacilitynodeassignment_set
+                    .filter(valid_to__isnull=True)
+                    .only("facility_id")
+                    .first()
+                )
+                if assignment is not None:
+                    facility_id = str(assignment.facility_id)
+
             item = {
                 "id": str(node.id),
                 "kind": node.kind,
@@ -645,6 +701,7 @@ class RegistryDashboardViewSet(viewsets.ViewSet):
                 "name_ar": node.name_ar,
                 "name_en": node.name_en,
                 "depth": node.depth,
+                "facility_id": facility_id,
                 "children": [],
             }
             children_qs = node.children.filter(is_active=True).order_by("order", "code")
@@ -683,6 +740,13 @@ class FacilityOwnershipViewSet(RegistryScopedViewSet):
     permission_resource = "registry"
     search_fields = ["facility__code", "owner__code"]
 
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "facility": "facility_id",
+            "owner": "owner_id",
+        })
+
 
 # ---------------------------------------------------------------------------
 # TechnicalSupervisor (Technical Supervision مرجع)
@@ -707,6 +771,13 @@ class TechnicalSupervisionViewSet(RegistryScopedViewSet):
     permission_resource = "registry"
     search_fields = ["facility__code", "supervisor__code"]
 
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "facility": "facility_id",
+            "supervisor": "supervisor_id",
+        })
+
 
 class DepartmentNodeAssignmentViewSet(RegistryScopedViewSet):
     """تعيين الإدارات إلى عقد الشجرة."""
@@ -717,6 +788,17 @@ class DepartmentNodeAssignmentViewSet(RegistryScopedViewSet):
     write_serializer_class = DepartmentNodeAssignmentWriteSerializer
     permission_resource = "registry"
     search_fields = ["department__code", "node__code"]
+
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        # D-M4-4-B-4: Departments tab يفلتر عبر department.facility.
+        # `facility` مدعوم كاختصار لنفس الحقل.
+        return _apply_exact_filters(qs, self.request, {
+            "department": "department_id",
+            "node": "node_id",
+            "department__facility": "department__facility_id",
+            "facility": "department__facility_id",
+        })
 
 
 class ServiceViewSet(RegistryScopedViewSet):
@@ -746,6 +828,14 @@ class ServiceAvailabilityViewSet(RegistryScopedViewSet):
     permission_resource = "registry"
     search_fields = ["service__code", "facility__code", "department__code"]
 
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "facility": "facility_id",
+            "service": "service_id",
+            "department": "department_id",
+        })
+
 
 class ServiceNodeAssignmentViewSet(RegistryScopedViewSet):
     """تعيين الخدمات إلى عقد الشجرة (M4-2)."""
@@ -756,3 +846,10 @@ class ServiceNodeAssignmentViewSet(RegistryScopedViewSet):
     write_serializer_class = ServiceNodeAssignmentWriteSerializer
     permission_resource = "registry"
     search_fields = ["service__code", "node__code"]
+
+    def filter_queryset(self, qs):
+        qs = super().filter_queryset(qs)
+        return _apply_exact_filters(qs, self.request, {
+            "service": "service_id",
+            "node": "node_id",
+        })
