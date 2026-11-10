@@ -340,7 +340,19 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "قطاع البحر الأحمر"
+        "sectorName": "قطاع البحر الأحمر",
+        "media": {
+          "pageTitle": "مكتبة الوسائط",
+          "pageSubtitle": "رفع وإدارة الصور والملفات المستخدمة في المحتوى",
+          "titleLabel": "العنوان",
+          "chooseFile": "اختيار ملف",
+          "uploading": "جارٍ الرفع...",
+          "upload": "رفع",
+          "deleteAction": "حذف",
+          "emptyState": "لا توجد وسائط بعد.",
+          "confirmDeleteTitle": "حذف الوسيط",
+          "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{title}}\"؟"
+        }
       },
       "it": {
         "eyebrow": "قسم تقنية المعلومات",

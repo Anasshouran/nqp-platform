@@ -340,7 +340,19 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "Red Sea Sector"
+        "sectorName": "Red Sea Sector",
+        "media": {
+          "pageTitle": "Media library",
+          "pageSubtitle": "Upload and manage the images and files used in content",
+          "titleLabel": "Title",
+          "chooseFile": "Choose file",
+          "uploading": "Uploading...",
+          "upload": "Upload",
+          "deleteAction": "Delete",
+          "emptyState": "No media yet.",
+          "confirmDeleteTitle": "Delete media",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        }
       },
       "it": {
         "eyebrow": "Information Technology Department",

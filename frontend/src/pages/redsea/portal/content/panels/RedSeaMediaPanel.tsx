@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -17,6 +18,7 @@ import { getCmsMedia, uploadCmsMedia, deleteCmsMedia } from '../../../../../api/
 import type { CmsMedia } from '../../../../../api/endpoints/cms';
 
 const RedSeaMediaPanel = () => {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<CmsMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -53,15 +55,15 @@ const RedSeaMediaPanel = () => {
   const isImage = (m: CmsMedia) => m.kind === 'image';
 
   return (
-    <SectionCard title="مكتبة الوسائط" subtitle="رفع وإدارة الصور والملفات المستخدمة في المحتوى">
+    <SectionCard title={t('redsea.portal.content.media.pageTitle')} subtitle={t('redsea.portal.content.media.pageSubtitle')}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-        <TextField size="small" label="العنوان" value={title} onChange={(e) => setTitle(e.target.value)} sx={{ width: 220 }} />
+        <TextField size="small" label={t('redsea.portal.content.media.titleLabel')} value={title} onChange={(e) => setTitle(e.target.value)} sx={{ width: 220 }} />
         <input ref={fileInput} type="file" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         <Button variant="outlined" component="span" onClick={() => fileInput.current?.click()} startIcon={<Sheet />}>
-          {file ? file.name : 'اختيار ملف'}
+          {file ? file.name : t('redsea.portal.content.media.chooseFile')}
         </Button>
         <Button variant="contained" startIcon={<AddIcon />} onClick={upload} disabled={!file || uploading}>
-          {uploading ? 'جارٍ الرفع...' : 'رفع'}
+          {uploading ? t('redsea.portal.content.media.uploading') : t('redsea.portal.content.media.upload')}
         </Button>
       </Box>
 
@@ -85,7 +87,7 @@ const RedSeaMediaPanel = () => {
                 </Typography>
               </CardContent>
               <CardActions sx={{ position: 'absolute', top: 4, left: 4 }}>
-                <IconButton size="small" aria-label="حذف" onClick={() => setDeleting(m)} color="error" sx={{ bgcolor: 'background.paper' }}>
+                <IconButton size="small" aria-label={t('redsea.portal.content.media.deleteAction')} onClick={() => setDeleting(m)} color="error" sx={{ bgcolor: 'background.paper' }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </CardActions>
@@ -94,16 +96,16 @@ const RedSeaMediaPanel = () => {
         ))}
         {!loading && rows.length === 0 && (
           <Grid item xs={12}>
-            <Typography color="text.secondary">لا توجد وسائط بعد.</Typography>
+            <Typography color="text.secondary">{t('redsea.portal.content.media.emptyState')}</Typography>
           </Grid>
         )}
       </Grid>
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="حذف الوسيط"
-        message={`هل أنت متأكد من حذف "${deleting?.title}"؟`}
-        confirmLabel="حذف"
+        title={t('redsea.portal.content.media.confirmDeleteTitle')}
+        message={deleting ? t('redsea.portal.content.media.confirmDeleteMessage', { title: deleting.title }) : ''}
+        confirmLabel={t('redsea.portal.content.media.deleteAction')}
         onConfirm={() => {
           if (!deleting) return;
           deleteCmsMedia(deleting.id).then(() => {
