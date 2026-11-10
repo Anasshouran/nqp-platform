@@ -33,6 +33,17 @@
           "success": "Success",
           "info": "Info"
         }
+      },
+      "worklist": {
+        "searchPlaceholder": "Search by declaration, customs, policy, vessel, consignee…",
+        "emptyTitle": "No requests",
+        "emptyDescription": "No requests matching these criteria",
+        "sendTitle": "Send to collect fees",
+        "send": "Send",
+        "draftTooltip": "Draft — editable and deletable",
+        "viewTooltip": "View",
+        "edit": "Edit",
+        "delete": "Delete"
       }
     },
     "views": {

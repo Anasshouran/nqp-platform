@@ -1,5 +1,6 @@
 // The clerk worklist table.
 // Extracted from ClerkDashboardPage without behavioural change.
+import { useTranslation } from 'react-i18next';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import SendIcon from '@mui/icons-material/Send';
@@ -27,9 +28,11 @@ export const WorklistTable = ({
   onAction: (r: FoodShipment) => void;
   onDelete: (r: FoodShipment) => void;
   onSend: (r: FoodShipment) => void;
-}) => (
-  <DataTable<FoodShipment>
-    columns={WORKLIST_COLUMNS}
+}) => {
+  const { t } = useTranslation();
+  return (
+    <DataTable<FoodShipment>
+      columns={WORKLIST_COLUMNS}
     rows={table.rows}
     rowKey={(r) => r.id}
     count={table.count}
@@ -43,35 +46,36 @@ export const WorklistTable = ({
     subtitle={subtitle}
     searchInput={table.searchInput}
     onSearchChange={table.setSearchInput}
-    searchPlaceholder="بحث برقم البيان، جمركي، بوليصة، مورد، باخرة…"
+    searchPlaceholder={t('clerk.components.worklist.searchPlaceholder')}
     sortBy={table.sortBy}
     sortOrder={table.sortOrder}
     onSortChange={table.setSorting}
     onPageChange={table.setPage}
     onRowsPerPageChange={table.setRowsPerPage}
     onRefresh={table.refresh}
-    emptyTitle="لا توجد طلبات"
-    emptyDescription="لم يتم العثور على طلبات تطابق هذه المعايير"
+    emptyTitle={t('clerk.components.worklist.emptyTitle')}
+    emptyDescription={t('clerk.components.worklist.emptyDescription')}
     actions={(r) => (
       <>
         {isDraftRow(r) && (
-          <Tooltip title="إرسال لتحصيل الرسوم">
-            <IconButton aria-label="إرسال" size="medium" color="success" onClick={() => onSend(r)} sx={{ borderRadius: 2 }}>
+          <Tooltip title={t('clerk.components.worklist.sendTitle')}>
+            <IconButton aria-label={t('clerk.components.worklist.send')} size="medium" color="success" onClick={() => onSend(r)} sx={{ borderRadius: 2 }}>
               <SendIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip title={isDraftRow(r) ? 'مسودة — قابلة للتعديل والحذف' : 'مشاهدة'}>
-          <IconButton aria-label="تعديل" size="medium" color={isDraftRow(r) ? 'primary' : 'default'} onClick={() => onAction(r)} sx={{ borderRadius: 2 }}>
+        <Tooltip title={isDraftRow(r) ? t('clerk.components.worklist.draftTooltip') : t('clerk.components.worklist.viewTooltip')}>
+          <IconButton aria-label={t('clerk.components.worklist.edit')} size="medium" color={isDraftRow(r) ? 'primary' : 'default'} onClick={() => onAction(r)} sx={{ borderRadius: 2 }}>
             {isDraftRow(r) ? <EditIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
           </IconButton>
         </Tooltip>
         {isDraftRow(r) && (
-          <IconButton aria-label="حذف" size="medium" color="error" onClick={() => onDelete(r)} sx={{ borderRadius: 2 }}>
+          <IconButton aria-label={t('clerk.components.worklist.delete')} size="medium" color="error" onClick={() => onDelete(r)} sx={{ borderRadius: 2 }}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         )}
       </>
     )}
   />
-);
+  );
+}
