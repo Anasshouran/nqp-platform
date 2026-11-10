@@ -74,9 +74,26 @@ FIELD خارج نطاق STATE أو PORT لن يرى. (موثق مسبقاً في
 
 ---
 
-## D-M5-B-4 (قادم): HR STATE derivation — يعتمد `OrgAssignment.entry_point`
+## §H4 — HR SCOPE_LOOKUPS + STATE (M5-B-3 CLOSED)
 
-**الوضع:** اشتقاق state لـ HR يمر عبر `OrgAssignment.entry_point` (nullable).
-أي OrgAssignment بلا entry_point لا تُسهم في نطاق STATE — تُوثَّق كـ
-"scope-expansion gap" وليست bug. (موثق مسبقاً في m5-a-known-debt.)
-**ستُؤكَّد/تُحل في M5-B-3.**
+**قبل:** STATE-only HR user → deny-all (لا شيء يُعرض؛ `OrgAssignment` بلا ولاية
+تُعرَض ولو كان موظفه في الولاية).
+**بعد (M5-B-3):**
+- `SCOPE_LOOKUPS['STATE'] = ('entry_point__state_id',)`
+  → `_assignments_in_scope('STATE', X)` يُرجع التعيينات النشطة التي تساوي
+  `entry_point__state_id = X`.
+- `resolve_own_org_scope_keys()` يُصدر `('STATE', a.entry_point.state_id)` لكل
+  التعيين الهيكلي النشط يحمل `entry_point.state`. لا حذف لـ `POINT`، إضافة فقط.
+- `select_related('entry_point')` يمنع N+1.
+
+**اتحاد القطاع المنزلي:** `user.sector_id` يُدمج كمفتاح `('SECTOR', sector_id)`
+— اتساق مع قرار H1′ (home-sector grant بالبقية).
+
+**لا migrations:** `OrgAssignment.entry_point` FK موجود منذ M1.
+**النطاق:** موظف لا يحمل `entry_point` نهائياً → لا يتصل بـ state؛ يُرى فقط
+عبر SECTOR/DEPARTMENT/STATION grant إن وُجد. **سلوك موثّق**; scope-expansion
+gap، P0 ليس.
+
+**الاختبارات:** `test_hr_h4.py` (xfail مُزالة، مع تعديل التعيين البحثي لـ
+`entry_point=world['entry_point']`) + `test_h4_no_widening.py` (3 اختبارات:
+baseline / cross-leak / union مع منزل-sector + STATE).

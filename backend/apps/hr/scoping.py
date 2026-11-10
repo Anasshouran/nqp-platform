@@ -63,6 +63,9 @@ SCOPE_LOOKUPS = {
         'entry_point__sector_id',
         'position__department__sector_id',
     ),
+    # M5-B-3: STATE — يُشتق من `OrgAssignment.entry_point` (M1 FK) إلى ولاية
+    # `masterdata.EntryPoint.state`. لا migration — المسار موجود فعلاً.
+    'STATE': ('entry_point__state_id',),
 }
 
 
@@ -104,7 +107,9 @@ def resolve_own_org_scope_keys(user):
     from apps.organization.models import OrgAssignment
 
     try:
-        assignments = OrgAssignment.objects.filter(user=user, is_active=True)
+        assignments = OrgAssignment.objects.filter(
+            user=user, is_active=True,
+        ).select_related('entry_point')
     except (FieldError, AttributeError):
         return set()
 
@@ -118,6 +123,15 @@ def resolve_own_org_scope_keys(user):
             keys.add(('STATION', a.station_id))
         if a.entry_point_id:
             keys.add(('POINT', a.entry_point_id))
+            # M5-B-3: اشتقاق الولاية من `entry_point.state` (nullable) — يُضاف
+            # ولا يُستبدل POINT (union).
+            if a.entry_point and a.entry_point.state_id:
+                keys.add(('STATE', a.entry_point.state_id))
+    # اتحاد يبقى مع القطاع المنزلي `user.sector_id` (H1′ — M3/M5-A:
+    # home-sector grant بالبقية). لا يتجاوز نطاق actor نفسه ولا يشمل point/state.
+    home_sector = getattr(user, 'sector_id', None)
+    if home_sector is not None:
+        keys.add(('SECTOR', home_sector))
     return keys
 
 
