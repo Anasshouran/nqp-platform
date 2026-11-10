@@ -117,6 +117,27 @@
         "detail": "التفاصيل",
         "checkedAt": "وقت الفحص"
       }
+    },
+    "integrationDetail": {
+      "loadError": "تعذّر تحميل بيانات التكامل",
+      "title": "تفاصيل التكامل",
+      "notFound": "التكامل غير موجود",
+      "settingsTitle": "الإعدادات",
+      "orgLabel": "المنظمة",
+      "endpointLabel": "نقطة الـAPI",
+      "envLabel": "البيئة",
+      "authLabel": "نوع المصادقة",
+      "urlLabel": "الرابط",
+      "verifiedLabel": "آخر توثيق",
+      "notesLabel": "ملاحظات",
+      "credentialsTitle": "بيانات الاعتماد",
+      "credentialsInfo": "القيم مشفّرة ولا تُعرض. يمكن تدويرها من شاشة «بيانات الاعتماد».",
+      "noCredentials": "لا توجد اعتمادات مسجلة.",
+      "healthTitle": "سجلات الصحة",
+      "noHealth": "لا توجد فحوصات مسجلة بعد.",
+      "passed": "ناجح",
+      "failed": "فاشل",
+      "backToIntegrations": "رجوع للتكاملات"
     }
   },
   "common": {
