@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
@@ -45,6 +46,7 @@ export interface VectorFocusMapProps {
 }
 
 export const VectorFocusMap = ({ height = 480, interactive = true }: VectorFocusMapProps) => {
+  const { t } = useTranslation();
   const [foci, setFoci] = useState<VectorMapFocus[]>([]);
   const [loading, setLoading] = useState(true);
   const [severityFilter, setSeverityFilter] = useState('');
@@ -74,7 +76,7 @@ export const VectorFocusMap = ({ height = 480, interactive = true }: VectorFocus
   return (
     <Box>
       <Stack direction="row" spacing={1} sx={{ mb: 1.5 }} alignItems="center">
-        <Typography variant="body2" sx={{ fontWeight: 700 }}>الفلترة:</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('vectorcontrol.focusMap.filterLabel')}</Typography>
         {Object.entries(vectorSeverity).map(([k, m]) => (
           <Chip
             key={k}
@@ -92,7 +94,7 @@ export const VectorFocusMap = ({ height = 480, interactive = true }: VectorFocus
         {withCoords.length === 0 && !loading ? (
           <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Typography color="text.secondary">
-              {foci.length === 0 ? 'لا توجد بؤر مطابقة (أضف إحداثيات GPS للبؤر لتظهر على الخريطة)' : 'البؤر المسجلة لا تحوي إحداثيات GPS بعد'}
+              {foci.length === 0 ? t('vectorcontrol.focusMap.noMatchingFoci') : t('vectorcontrol.focusMap.noGpsCoords')}
             </Typography>
           </Box>
         ) : (

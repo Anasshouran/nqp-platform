@@ -289,6 +289,29 @@
       "content": {
         "sectorName": "قطاع البحر الأحمر"
       },
+      "it": {
+        "eyebrow": "قسم تقنية المعلومات",
+        "title": "التقارير الفنية",
+        "subtitle": "تجميع شامل لحالة الأنظمة والأصول والتذاكر والشبكات ضمن القطاع.",
+        "sectorChip": "قطاع البحر الأحمر",
+        "backToDashboard": "لوحة تقنية المعلومات",
+        "kpi": {
+          "totalSystems": "الأنظمة الكلية",
+          "activeAssets": "الأجهزة النشطة",
+          "openTickets": "تذاكر مفتوحة",
+          "connectedPorts": "منافذ متصلة"
+        },
+        "systemsStatusTitle": "حالة الأنظمة",
+        "warningChip": "تحذير: {{count}}",
+        "offlineChip": "متوقف: {{count}}",
+        "ticketsTitle": "توزيع التذاكر بالأولوية",
+        "ticketsSubtitle": "{{total}} تذكرة · {{critical}} حرجة مفتوحة",
+        "ticketCount": "{{count}} تذكرة",
+        "assetsTitle": "الأصول بالحالة",
+        "assetsSubtitle": "توزيع الأجهزة حسب الحالة التشغيلية",
+        "activeLabel": "نشط",
+        "maintenanceLabel": "قيد الصيانة/مُعطّل"
+      },
       "modules": {
         "staff": {
           "eyebrow": "إدارة القطاع",
@@ -461,6 +484,11 @@
       "messages": {
         "actionFailed": "فشلت العملية"
       }
+    },
+    "focusMap": {
+      "filterLabel": "الفلترة:",
+      "noMatchingFoci": "لا توجد بؤر مطابقة (أضف إحداثيات GPS للبؤر لتظهر على الخريطة)",
+      "noGpsCoords": "البؤر المسجلة لا تحوي إحداثيات GPS بعد"
     }
   },
   "vaccination": {
