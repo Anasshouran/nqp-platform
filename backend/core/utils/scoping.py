@@ -362,7 +362,7 @@ def asserts_geographic_scope(user):
     if not user or getattr(user, 'is_anonymous', True):
         return False
     if _active_assignments(user).filter(
-        scope_type__in=SECTOR_LIKE_SCOPES + ENTRY_POINT_SCOPES + ('DEPARTMENT', 'STATION'),
+        scope_type__in=SECTOR_LIKE_SCOPES + ENTRY_POINT_SCOPES + ('DEPARTMENT', 'STATION', 'STATE'),
     ).exists():
         return True
     return _has_entry_point_assignment(user)
