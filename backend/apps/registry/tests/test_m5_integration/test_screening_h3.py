@@ -1,8 +1,9 @@
-"""M5-A-2 — P1 / H3: custom scope parse in screening has no STATE branch.
+"""M5-B-2 — H3: screening STATE branch في `_entry_point_ids_for()`.
 
-`ScreeningViewSet._entry_point_ids_for()` manually parses active scopes with
-`_ENTRY_POINT_SCOPE_TYPES = {POINT, PORT, STATION}` plus a SECTOR fallback —
-STATE matches neither → silent deny-all (no leak, no functional data).
+`ScreeningViewSet._entry_point_ids_for()` سابقاً كان يقرأ PORT/POINT/STATION
+ثم SECTOR fallback — ما أسقط STATE صامتاً (deny-all بلا تسرب). الآن يدمج
+نطاقات STATE → كل منافذ الدخول `state_id__in` في الولاية. القطاع يبقى يخوض
+عبر union (قرار H1′).
 """
 import uuid
 
@@ -32,8 +33,7 @@ def _screening(ep, officer):
 @pytest.mark.django_db
 class TestScreeningH3:
 
-    @pytest.mark.xfail(reason='H3 — custom scope parse has no STATE branch (screening).',
-                       strict=False)
+    # M5-B-2: نُزعت xfail — STATE branch أصبح فعلياً في `_entry_point_ids_for()`.
     def test_state_user_sees_own_state_screenings(self):
         world_a = _build_world('A')
         user = make_state_user(world_a['state'])

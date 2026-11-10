@@ -1,14 +1,14 @@
 # M5-B Known Debt — دفتر ديون M5-B
 
-> يُحدَّث مع كل sub-phase. كل D-M5-B-* يثبت أثره بالاختبار.
+> يُحدَّث مع كل sub-phase. كل D-M5-B-* يثبت أثره بالاختبار. H-closed تُرجع
+> تسجيلها.
 
-## D-M5-B-1: Sector-only models — STATE deny-all
+## D-M5-B-1: Sector-only models — STATE deny-all (M5-B-1 CLOSED)
 
 **الوضع:** النماذج التالية **لا تملك** `entry_point` FK — لا مباشرة، لا عبر
 سلسلة علاقية يمكن اشتقاق state منها. المستخدم STATE-only يرى **0 سجل**.
 
-**النماذج المتأثرة (بعد M5-B-1):**
-
+**النماذج المتأثرة:**
 - `laboratory`: `LabEquipment`, `Reagent`, `ReagentLot`, `MaterialIssue`,
   `QCRecord`, `NonConformity`, `CapaRecord`, `CriticalResultNotification`.
 - `vector_control`: `VectorUnit`.
@@ -17,7 +17,7 @@
 (نتيجة M0). أي اشتقاق state يجب أن يمر عبر `EntryPoint`. النماذج أعلاه لا تحمل
 EntryPoint في هيكلها.
 
-**قرار M5-B-1 (صريح):** هذه النماذج **تفشل بالحجب الآمن** (fail-safe) بدلاً من
+**قرار M5-B-1 (صريح):** هذه النماذج تفشل بالحجب الآمن (fail-safe) بدلاً من
 التسرب عبر `Q()` بلا شروط — ليست "خطأ تنفيذي" بل نتيجة قرار معماري. أي توسيع
 هنا يجب أن يمر بقرار منتج/مخطط (M6).
 
@@ -35,7 +35,7 @@ EntryPoint في هيكلها.
 
 ---
 
-## D-M5-B-2: `SectorFieldScopedMixin.state_path = None` افتراضياً
+## D-M5-B-2: `SectorFieldScopedMixin.state_path = None` افتراضياً (M5-B-1 CLOSED)
 
 **الوضع:** أي viewset جديد يستخدم `SectorFieldScopedMixin` **بدون** ضبط
 `state_path` → STATE deny-all (لا يرى records جديدة مرتبطة بولاية مستخدمها).
@@ -43,9 +43,10 @@ EntryPoint في هيكلها.
 **السبب:** القرار معماري — STATE اختياري، ويُعلَّن صراحةً على كل viewset
 `state_path` = مسار علائقي إلى `masterdata.State.id`.
 
-**التخفيف الحالي:** هذا الملف + docstring الـ mixin (انظر `scoping.py`).
+**التخفيف الحالي:** هذا الملف + docstring الـ mixin (انظر `scoping.py`) — مواد
+مرجعية، وليس pass-fail متيناً.
 
-**الحل المقترح (M6):** structural test —
+**الحل المقترح (M6):** structural test
 `test_all_sector_field_viewsets_declare_state_path_or_are_documented`
 يفشل لو ظهر viewset جديد بلا `state_path` وبلا D-M5-B-* مرجعي.
 
@@ -53,12 +54,25 @@ EntryPoint في هيكلها.
 
 ---
 
-## D-M5-B-3 (قادم): Screening STATE path — قيد نقطي فقط
+## §H3 — screening + STATE (M5-B-2 CLOSED)
 
-**الوضع:** فحص `HealthScreening` لا يحمل `sector`؛ STATE يعمل فقط عبر
-`port__state_id` (سلسلة عبر `masterdata.EntryPoint.state`). أي screening نُفذ
-من مستخدم FIELD خارج نطاق STATE أو PORT لن يرى. (موثق مسبقاً في m5-a-known-debt.)
-**ستُؤكَّد/تُحل في M5-B-2.**
+**قبل:** STATE-only user → deny-all (never leaks, never sees).
+**بعد (M5-B-2):** `ScreeningViewSet._entry_point_ids_for()` يدمج نطاق STATE → كل
+EntryPoints `state_id__in=state_ids` مباشرة في `port_ids` — اتحاد يبقى مع PORT/POINT/STATION
+وسقط fallback القطاعي (قطاع منزلي `user.sector_id` — قرار H1′) في نفس البذرة.
+`port_ids` تُعيد قائمة منزوعة التكرار، وكلا مساري
+`get_queryset` و`_assert_port_in_scope` يرثان السلوك تلقائياً.
+
+**الاختبارات:** `test_screening_h3.py` (xfail مُزالة) + `test_h3_no_widening.py`
+(3 اختبارات: baseline / cross-leak / union مع القطاع المنزلي).
+
+**H1′ محفوظ:** القطاع المنزلي (`user.sector_id`) يُدمج.
+
+**النطاق:** `HealthScreening` لا يحمل `sector`؛ STATE يعمل فقط عبر `port__state_id`
+(سلسلة عبر `masterdata.EntryPoint.state`). أي screening نُفِذ من مستخدم
+FIELD خارج نطاق STATE أو PORT لن يرى. (موثق مسبقاً في m5-a-known-debt.)
+
+---
 
 ## D-M5-B-4 (قادم): HR STATE derivation — يعتمد `OrgAssignment.entry_point`
 
