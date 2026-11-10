@@ -90,3 +90,17 @@ superuser + STATE + SECTOR) — انظر بروتوكول V-1 بعد Part2.
 **الأثر:** سلوك آمن لكنه لا يُرجع رسالة 400 توضيحية. مقبول (فلتر اختياري).
 
 **الحل المقترح (اختياري):** 400 مع رسالة عند الحاجة في M5.
+
+## D-M4-4-C-9: Test command baseline — registry + organization together
+
+**الوضع:** حُكّمت الاختبارات حتى Part3-A/B بأوامر مختلفة: `apps/registry/`
+فقط (221)، أو `apps/organization/tests/test_department_facility.py` فقط (4)
+= 225 ظاهرياً.
+**M4-4-C-Part3-A/B:** كشف أن organization كاملة تضم **147 اختباراً** ولم تكن
+تُشغَّل.
+**القاعدة الجديدة (إلزامية من الآن):**
+```bash
+pytest apps/registry/ apps/organization/ -q --reuse-db
+```
+**Baseline جديد: 373 passed.** أي commit لاحق يستهدف ≥ 385 (بعد Part3-C/D).
+تشغيل `apps/registry/` فقط أو ملف واحد منها غير مقبول كـ gate.

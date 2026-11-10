@@ -56,6 +56,23 @@ const LIST_PARAMS = { page_size: 500 };
 export const getRegistryTree = (): Promise<ReportingNodeTree[]> =>
   axios.get(`${BASE}/dashboard/tree/`).then((r) => unwrap<ReportingNodeTree[]>(r));
 
+// --- Nodes (GLOBAL-only write: POST/PATCH → backend enforces Global scope —
+// frontend gating is UX only; non-GLOBAL gets 403 from PermissionAction or
+// the explicit write guard in ReportingNodeViewSet.) ---
+export const updateNode = (id: string, data: Partial<ReportingNode>): Promise<ReportingNode> =>
+  axios.patch(`${BASE}/nodes/${id}/`, data).then((r) => unwrap<ReportingNode>(r));
+
+export const createNode = (data: {
+  kind: string; code: string; name_ar: string; name_en?: string; parent?: string;
+}): Promise<ReportingNode> =>
+  axios.post(`${BASE}/nodes/`, data).then((r) => unwrap<ReportingNode>(r));
+
+export const deactivateNode = (id: string): Promise<{ id: string; is_active: boolean }> =>
+  axios.post(`${BASE}/nodes/${id}/deactivate/`).then((r) => unwrap(r));
+
+export const reactivateNode = (id: string): Promise<{ id: string; is_active: boolean }> =>
+  axios.post(`${BASE}/nodes/${id}/reactivate/`).then((r) => unwrap(r));
+
 export const listNodes = (params?: {
   kind?: string;
   parent?: string;
@@ -66,15 +83,6 @@ export const listNodes = (params?: {
 
 export const getNode = (id: string): Promise<ReportingNode> =>
   axios.get(`${BASE}/nodes/${id}/`).then((r) => unwrap<ReportingNode>(r));
-
-export const createNode = (data: Partial<ReportingNode>): Promise<ReportingNode> =>
-  axios.post(`${BASE}/nodes/`, data).then((r) => unwrap<ReportingNode>(r));
-
-export const updateNode = (
-  id: string,
-  data: Partial<ReportingNode>,
-): Promise<ReportingNode> =>
-  axios.patch(`${BASE}/nodes/${id}/`, data).then((r) => unwrap<ReportingNode>(r));
 
 // --- Ministries ---
 export const listStateMinistries = (): Promise<StateMinistry[]> =>

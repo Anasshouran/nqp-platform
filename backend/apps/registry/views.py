@@ -493,6 +493,71 @@ class ReportingNodeViewSet(RegistryScopedViewSet):
     search_fields = ["code", "name_ar", "name_en"]
     ordering_fields = ["order", "code", "kind", "depth"]
 
+    @staticmethod
+    def _is_global_write(user):
+        """GLOBAL-only write gate (Part3-1 decision).
+
+        Superuser or active GLOBAL scope required to write — read scoping
+        already exists via get_queryset for non-GLOBAL roles.
+        """
+        return bool(
+            user
+            and getattr(user, "is_authenticated", False)
+            and (user.is_superuser or has_global_scope(user))
+        )
+
+    @staticmethod
+    def _forbidden():
+        return Response(
+            {"status": "error", "message": "GLOBAL scope required for write"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    def create(self, request, *args, **kwargs):
+        if not self._is_global_write(request.user):
+            return self._forbidden()
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if not self._is_global_write(request.user):
+            return self._forbidden()
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        if not self._is_global_write(request.user):
+            return self._forbidden()
+        return super().partial_update(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"])
+    def deactivate(self, request, pk=None):
+        """Soft-delete: is_active=False. GLOBAL only. FEDERAL root protected."""
+        if not self._is_global_write(request.user):
+            return self._forbidden()
+        node = self.get_object()
+        if node.kind == ReportingNode.Kind.FEDERAL:
+            return Response(
+                {"status": "error", "message": "Cannot deactivate FEDERAL root"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        node.is_active = False
+        node.save()
+        return Response(
+            {"status": "success",
+             "data": {"id": str(node.id), "is_active": False}},
+        )
+
+    @action(detail=True, methods=["post"])
+    def reactivate(self, request, pk=None):
+        if not self._is_global_write(request.user):
+            return self._forbidden()
+        node = self.get_object()
+        node.is_active = True
+        node.save()
+        return Response(
+            {"status": "success",
+             "data": {"id": str(node.id), "is_active": True}},
+        )
+
 
 # ---------------------------------------------------------------------------
 # Assignment ViewSets
