@@ -209,3 +209,20 @@ export interface ServiceAvailability {
   is_active: boolean;
   note?: string;
 }
+
+export interface FacilitySummaryScopeRef {
+  id: string | null;
+  name_ar: string | null;
+}
+
+export interface FacilitySummary {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en?: string;
+  kind?: string;
+  sector: FacilitySummaryScopeRef;
+  locality: FacilitySummaryScopeRef;
+  entry_point: FacilitySummaryScopeRef;
+  is_active: boolean;
+}

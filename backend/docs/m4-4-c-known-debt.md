@@ -25,17 +25,23 @@
 
 **الأثر:** لا روابط محفوظة بعد (الميزة جديدة). مقبول.
 
-## D-M4-4-C-8: master-data يقيّد `IsAdmin` (is_staff)
+## D-M4-4-C-8: master-data يقيّد `IsAdmin` (is_staff) — ✅ CLOSED (Part3-A)
 
-**الوضع (Part2):** `HealthFacilityViewSet` يستخدم `IsAdmin` (`is_staff`).
-مستخدم STATE/SECTOR غير الموظف يحصل على 403 عند جلب تفاصيل المنشأة، لذا
-Overview/header يعتمد على `facility_name` من تعيين الشجرة + بيانات العقدة.
+**الحل المنفذ (Part3-A):** أُضيف endpoint سجل مخصّص:
 
-**التأثير:** حقول القطاع/المحلية/نقطة الدخول تظهر فقط للموظفين/المشرفين.
+`GET /api/v1/registry/facility-summary/<uuid>/`
 
-**الحل المقترح (Part3/M5):** endpoint سجل مقيّد بالـ scoping يعيد حقول
-المنشأة الأساسية (أو تضمينها في `HealthFacilityNodeAssignmentSerializer`)
-حتى يراها STATE/SECTOR ضمن نطاقهم دون `is_staff`.
+- scoped: GLOBAL (superuser/scope) → أي منشأة؛ مستخدم STATE/SECTOR → `200` فقط
+  إذا كان هناك `HealthFacilityNodeAssignment` مرئي (valid_to NULL) ضمن نطاقه،
+  وإلا `404`. plain user بدون scope → `404`.
+- يعيد: `id, code, name_ar, name_en, kind, sector/locality/entry_point (id+name_ar), is_active`.
+- لا يُوفّر list — `retrieve` فقط، بدون `IsAdmin`.
+
+**Frontend:** `getFacilitySummary(id)` بدل `getMasterHealthFacility` في
+`FacilityDetailPage.tsx` (د-M4-4-C-8)، يتبعها `OverviewTab` بالشكل المتداخل.
+
+**التحقق:** 5 اختبارات في `apps/registry/tests/test_facility_summary.py`
+(superuser 200، SECTOR 200 لنطاقه، SECTOR 404 لغير نطاقه، plain 404، UUID غير صالح 404).
 
 ## D-M4-4-C-7: Tree Position يعتمد على جلب كل العقد
 

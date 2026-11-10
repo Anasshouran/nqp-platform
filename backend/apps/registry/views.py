@@ -9,6 +9,7 @@ import uuid as _uuid
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.filters import ExactFilterBackend
@@ -853,3 +854,83 @@ class ServiceNodeAssignmentViewSet(RegistryScopedViewSet):
             "service": "service_id",
             "node": "node_id",
         })
+
+
+# ---------------------------------------------------------------------------
+# Facility summary (read-only, scoped) — M4-4-C-Part3-A (D-M4-4-C-8)
+# ---------------------------------------------------------------------------
+
+class FacilitySummaryViewSet(viewsets.ViewSet):
+    """ملخص المنشأة فقط — scoped.
+
+    يُستخدم بدل ``masterdata/health-facilities/`` (الذي يجبر IsAdmin/is_staff)
+    حتى يرى مستخدم SECTOR/STATE غير الموظف بيانات منشأته ضمن نطاقه.
+
+    لا يُوفّر list — فقط retrieve. أي غياب/عدم ظهور الـ assignment → 404
+    (لا تسريب جنسي).
+    """
+
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "head", "options"]
+
+    def retrieve(self, request, pk=None):
+        from apps.masterdata.models import HealthFacility
+
+        try:
+            facility_id = _uuid.UUID(str(pk))
+        except (ValueError, AttributeError, TypeError):
+            return Response(
+                {"status": "error", "message": "not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        visible_nodes = _visible_reporting_node_ids(request.user)
+        if visible_nodes is None:
+            # GLOBAL — أي منشأة مسموحة
+            facility = (
+                HealthFacility.objects
+                .select_related("sector", "locality", "entry_point")
+                .filter(pk=facility_id)
+                .first()
+            )
+        else:
+            assignment = HealthFacilityNodeAssignment.objects.filter(
+                facility_id=facility_id,
+                node_id__in=set(visible_nodes),
+                valid_to__isnull=True,
+            ).select_related(
+                "facility__sector", "facility__locality", "facility__entry_point",
+            ).first()
+            facility = assignment.facility if assignment else None
+
+        if facility is None:
+            return Response(
+                {"status": "error", "message": "not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        sector = getattr(facility, "sector", None)
+        locality = getattr(facility, "locality", None)
+        entry_point = getattr(facility, "entry_point", None)
+
+        data = {
+            "id": str(facility.id),
+            "code": facility.code,
+            "name_ar": facility.name_ar,
+            "name_en": facility.name_en,
+            "kind": facility.kind,
+            "sector": {
+                "id": str(sector.id) if sector else None,
+                "name_ar": sector.name_ar if sector else None,
+            },
+            "locality": {
+                "id": str(locality.id) if locality else None,
+                "name_ar": locality.name_ar if locality else None,
+            },
+            "entry_point": {
+                "id": str(entry_point.id) if entry_point else None,
+                "name_ar": entry_point.name_ar if entry_point else None,
+            },
+            "is_active": facility.is_active,
+        }
+        return Response({"status": "success", "data": data})

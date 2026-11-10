@@ -1,12 +1,11 @@
 import { Box, Typography, Stack, Chip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-import type { ReportingNode } from '../../../types/registry';
-import type { MasterHealthFacility } from '../../../types/masterdata';
+import type { ReportingNode, FacilitySummary } from '../../../types/registry';
 
 interface Props {
   node: ReportingNode | null;
-  facility: MasterHealthFacility | null;
+  facility: FacilitySummary | null;
 }
 
 export function OverviewTab({ node, facility }: Props) {
@@ -28,22 +27,22 @@ export function OverviewTab({ node, facility }: Props) {
           <Chip label={facility.kind} size="small" />
         </Box>
       )}
-      {facility?.sector_name && (
+      {facility?.sector?.name_ar && (
         <Box>
           <Typography variant="subtitle2" color="text.secondary">{t('registry.facility.overview.sector')}</Typography>
-          <Typography variant="body1">{facility.sector_name}</Typography>
+          <Typography variant="body1">{facility.sector.name_ar}</Typography>
         </Box>
       )}
-      {facility?.locality_name && (
+      {facility?.locality?.name_ar && (
         <Box>
           <Typography variant="subtitle2" color="text.secondary">{t('registry.facility.overview.locality')}</Typography>
-          <Typography variant="body1">{facility.locality_name}</Typography>
+          <Typography variant="body1">{facility.locality.name_ar}</Typography>
         </Box>
       )}
-      {facility?.entry_point_name && (
+      {facility?.entry_point?.name_ar && (
         <Box>
           <Typography variant="subtitle2" color="text.secondary">{t('registry.facility.overview.entry_point')}</Typography>
-          <Typography variant="body1">{facility.entry_point_name}</Typography>
+          <Typography variant="body1">{facility.entry_point.name_ar}</Typography>
         </Box>
       )}
       {node && (

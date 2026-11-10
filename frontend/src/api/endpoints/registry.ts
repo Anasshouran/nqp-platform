@@ -15,6 +15,7 @@ import type {
   DepartmentNodeAssignment,
   Service,
   ServiceAvailability,
+  FacilitySummary,
 } from '../../types/registry';
 
 const BASE = '/api/v1/registry';
@@ -203,3 +204,6 @@ export const createServiceAvailability = (
   axios.post(`${BASE}/service-availability/`, data).then((r) =>
     unwrap<ServiceAvailability>(r),
   );
+
+export const getFacilitySummary = (id: string): Promise<FacilitySummary> =>
+  axios.get(`${BASE}/facility-summary/${id}/`).then((r) => unwrap<FacilitySummary>(r));

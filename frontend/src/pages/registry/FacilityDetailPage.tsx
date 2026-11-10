@@ -6,10 +6,8 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-import { getNode, listFacilityAssignments, listNodes } from '../../api/endpoints/registry';
-import { getMasterHealthFacility } from '../../api/endpoints/masterdata';
-import type { HealthFacilityNodeAssignment, ReportingNode } from '../../types/registry';
-import type { MasterHealthFacility } from '../../types/masterdata';
+import { getNode, listFacilityAssignments, listNodes, getFacilitySummary } from '../../api/endpoints/registry';
+import type { HealthFacilityNodeAssignment, ReportingNode, FacilitySummary } from '../../types/registry';
 import { OverviewTab } from '../../components/registry/facility/OverviewTab';
 import { OwnershipTab } from '../../components/registry/facility/OwnershipTab';
 import { SupervisionTab } from '../../components/registry/facility/SupervisionTab';
@@ -27,7 +25,7 @@ export default function FacilityDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [node, setNode] = useState<ReportingNode | null>(null);
-  const [facility, setFacility] = useState<MasterHealthFacility | null>(null);
+  const [facility, setFacility] = useState<FacilitySummary | null>(null);
   const [facilitySummary, setFacilitySummary] = useState<HealthFacilityNodeAssignment | null>(null);
   const [allNodes, setAllNodes] = useState<ReportingNode[]>([]);
 
@@ -57,10 +55,11 @@ export default function FacilityDetailPage() {
         }
         setFacilitySummary(match);
 
+        // Registry-scoped summary endpoint (D-M4-4-C-8): returns code/name/sector/
+        // locality/entry_point for the visible facility without requiring is_staff.
+        // Out of scope / not-found → null → page falls back to assignment name.
         const [facResult, nodeResult, nodesResult] = await Promise.all([
-          getMasterHealthFacility(id)
-            .then((r) => (r as { data?: { data?: MasterHealthFacility } })?.data?.data ?? null)
-            .catch(() => null),
+          getFacilitySummary(id).catch(() => null),
           getNode(match.node).catch(() => null),
           listNodes().catch(() => [] as ReportingNode[]),
         ]);

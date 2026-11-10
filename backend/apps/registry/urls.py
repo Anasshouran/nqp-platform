@@ -5,6 +5,7 @@ from .views import (
     DepartmentNodeAssignmentViewSet,
     FacilityOwnershipViewSet,
     FacilityOwnerViewSet,
+    FacilitySummaryViewSet,
     HealthFacilityNodeAssignmentViewSet,
     LocalityNodeAssignmentViewSet,
     RegistryChangeLogViewSet,
@@ -35,6 +36,7 @@ router.register("department-assignments", DepartmentNodeAssignmentViewSet, basen
 router.register("services", ServiceViewSet, basename="registry-services")
 router.register("service-availability", ServiceAvailabilityViewSet, basename="registry-service-availability")
 router.register("service-node-assignments", ServiceNodeAssignmentViewSet, basename="registry-service-node-assignments")
+router.register("facility-summary", FacilitySummaryViewSet, basename="registry-facility-summary")
 
 urlpatterns = [
     path("", include(router.urls)),
