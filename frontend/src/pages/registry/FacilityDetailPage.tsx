@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -6,9 +6,9 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-import { getNode, listFacilityAssignments, listFacilityOwnerships, listTechnicalSupervisions, listServiceAvailability, listDepartmentAssignments } from '../../api/endpoints/registry';
+import { getNode, listFacilityAssignments, listNodes } from '../../api/endpoints/registry';
 import { getMasterHealthFacility } from '../../api/endpoints/masterdata';
-import type { ReportingNode, HealthFacilityNodeAssignment, FacilityOwnership, TechnicalSupervision, ServiceAvailability, DepartmentNodeAssignment } from '../../types/registry';
+import type { ReportingNode } from '../../types/registry';
 import type { MasterHealthFacility } from '../../types/masterdata';
 import { OverviewTab } from '../../components/registry/facility/OverviewTab';
 import { OwnershipTab } from '../../components/registry/facility/OwnershipTab';
@@ -25,61 +25,42 @@ export default function FacilityDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [node, setNode] = useState<ReportingNode | null>(null);
   const [facility, setFacility] = useState<MasterHealthFacility | null>(null);
-  const [facilityId, setFacilityId] = useState<string | null>(null);
-
-  const [ownerships, setOwnerships] = useState<FacilityOwnership[]>([]);
-  const [supervisions, setSupervisions] = useState<TechnicalSupervision[]>([]);
-  const [services, setServices] = useState<ServiceAvailability[]>([]);
-  const [departments, setDepartments] = useState<DepartmentNodeAssignment[]>([]);
   const [allNodes, setAllNodes] = useState<ReportingNode[]>([]);
 
+  // `:id` is the HealthFacility id (M4-4-C-Part2: navigation passes node.facility_id).
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setNotFound(false);
 
     (async () => {
       try {
-        const nodeData = await getNode(id);
+        // Resolve the facility's tree node via a scoped backend filter (1 request).
+        const assignments = await listFacilityAssignments({ facility: id });
         if (cancelled) return;
-        setNode(nodeData);
+        const match = assignments.find((a) => a.facility === id);
+        const nodeId = match?.node ?? null;
 
-        // Resolve HealthFacility from node via facility assignments (scoped)
-        const assignments = await listFacilityAssignments();
-        if (cancelled) return;
-        const match = (assignments || []).find((a: HealthFacilityNodeAssignment) => a.node === id);
-        const fid = match ? match.facility : null;
-        setFacilityId(fid);
-
-        let fac: MasterHealthFacility | null = null;
-        if (fid) {
-          try {
-            const r = await getMasterHealthFacility(fid);
-            fac = (r as any)?.data?.data ?? null;
-          } catch {
-            fac = null;
-          }
-        }
-        if (cancelled) return;
-        setFacility(fac);
-
-        // Load scoped lists (client-side filter by facility)
-        const [owns, sups, svcs, depts, nodes] = await Promise.all([
-          listFacilityOwnerships().catch(() => [] as FacilityOwnership[]),
-          listTechnicalSupervisions().catch(() => [] as TechnicalSupervision[]),
-          listServiceAvailability().catch(() => [] as ServiceAvailability[]),
-          listDepartmentAssignments().catch(() => [] as DepartmentNodeAssignment[]),
-          (await import('../../api/endpoints/registry')).listNodes().catch(() => [] as ReportingNode[]),
+        const [facResult, nodeResult, nodesResult] = await Promise.all([
+          getMasterHealthFacility(id)
+            .then((r) => (r as { data?: { data?: MasterHealthFacility } })?.data?.data ?? null)
+            .catch(() => null),
+          nodeId ? getNode(nodeId).catch(() => null) : Promise.resolve(null),
+          listNodes().catch(() => [] as ReportingNode[]),
         ]);
         if (cancelled) return;
-        setOwnerships((owns || []).filter((o) => !fid || o.facility === fid));
-        setSupervisions((sups || []).filter((s) => !fid || (s as any).facility === fid));
-        setServices((svcs || []).filter((s) => !fid || s.facility === fid));
-        setDepartments((depts || []));
-        setAllNodes(nodes || []);
+
+        if (!facResult && !nodeResult) {
+          setNotFound(true);
+        }
+        setFacility(facResult);
+        setNode(nodeResult);
+        setAllNodes(nodesResult);
       } catch (err: unknown) {
         if (!cancelled) {
           const data = (err as { response?: { data?: { message?: string } } })?.response?.data;
@@ -105,10 +86,12 @@ export default function FacilityDetailPage() {
     );
   }
 
-  if (error) {
+  if (error || notFound) {
     return (
       <Box p={3}>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">
+          {error || t('registry.facility.error.not_found')}
+        </Alert>
         <Button sx={{ mt: 2 }} startIcon={<ArrowBackIcon />} onClick={() => navigate('/app/registry/tree')}>
           {t('common.back', { defaultValue: 'رجوع' })}
         </Button>
@@ -140,10 +123,10 @@ export default function FacilityDetailPage() {
 
         <Box sx={{ p: 2 }}>
           {tab === 0 && <OverviewTab node={node} facility={facility} />}
-          {tab === 1 && <OwnershipTab items={ownerships} />}
-          {tab === 2 && <SupervisionTab items={supervisions} />}
-          {tab === 3 && <ServicesTab items={services} />}
-          {tab === 4 && <DepartmentsTab items={departments} />}
+          {tab === 1 && <OwnershipTab facilityId={id} />}
+          {tab === 2 && <SupervisionTab facilityId={id} />}
+          {tab === 3 && <ServicesTab facilityId={id} />}
+          {tab === 4 && <DepartmentsTab facilityId={id} />}
           {tab === 5 && <TreePositionTab node={node} allNodes={allNodes} />}
         </Box>
       </Paper>

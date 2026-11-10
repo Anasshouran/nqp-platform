@@ -35,6 +35,22 @@ const unwrap = <T,>(r: AxiosResponse): T => {
   return body as T;
 };
 
+/**
+ * List endpoints are paginated by DRF (`{ count, next, previous, results }`).
+ * This unwraps the envelope *and* extracts `results` when present, returning a
+ * plain array for callers. Defensive against non-paginated responses.
+ */
+const unwrapList = <T,>(r: AxiosResponse): T[] => {
+  const data = unwrap<T[] | { results: T[] }>(r);
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object' && 'results' in data) {
+    return (data as { results: T[] }).results;
+  }
+  return [];
+};
+
+const LIST_PARAMS = { page_size: 500 };
+
 // --- Tree & Nodes ---
 export const getRegistryTree = (): Promise<ReportingNodeTree[]> =>
   axios.get(`${BASE}/dashboard/tree/`).then((r) => unwrap<ReportingNodeTree[]>(r));
@@ -43,7 +59,9 @@ export const listNodes = (params?: {
   kind?: string;
   parent?: string;
 }): Promise<ReportingNode[]> =>
-  axios.get(`${BASE}/nodes/`, { params }).then((r) => unwrap<ReportingNode[]>(r));
+  axios
+    .get(`${BASE}/nodes/`, { params: { ...LIST_PARAMS, ...params } })
+    .then((r) => unwrapList<ReportingNode>(r));
 
 export const getNode = (id: string): Promise<ReportingNode> =>
   axios.get(`${BASE}/nodes/${id}/`).then((r) => unwrap<ReportingNode>(r));
@@ -86,10 +104,13 @@ export const listLocalityAssignments = (): Promise<LocalityNodeAssignment[]> =>
     .get(`${BASE}/localities/assignments/`)
     .then((r) => unwrap<LocalityNodeAssignment[]>(r));
 
-export const listFacilityAssignments = (): Promise<HealthFacilityNodeAssignment[]> =>
+export const listFacilityAssignments = (params?: {
+  facility?: string;
+  node?: string;
+}): Promise<HealthFacilityNodeAssignment[]> =>
   axios
-    .get(`${BASE}/facilities/assignments/`)
-    .then((r) => unwrap<HealthFacilityNodeAssignment[]>(r));
+    .get(`${BASE}/facilities/assignments/`, { params: { ...LIST_PARAMS, ...params } })
+    .then((r) => unwrapList<HealthFacilityNodeAssignment>(r));
 
 // --- ChangeLog ---
 export const listChangeLog = (params?: {
@@ -109,8 +130,12 @@ export const listFacilityOwners = (): Promise<FacilityOwner[]> =>
 export const createFacilityOwner = (data: Partial<FacilityOwner>): Promise<FacilityOwner> =>
   axios.post(`${BASE}/owners/`, data).then((r) => unwrap<FacilityOwner>(r));
 
-export const listFacilityOwnerships = (): Promise<FacilityOwnership[]> =>
-  axios.get(`${BASE}/facility-ownerships/`).then((r) => unwrap<FacilityOwnership[]>(r));
+export const listFacilityOwnerships = (facilityId?: string): Promise<FacilityOwnership[]> =>
+  axios
+    .get(`${BASE}/facility-ownerships/`, {
+      params: { ...LIST_PARAMS, ...(facilityId ? { facility: facilityId } : {}) },
+    })
+    .then((r) => unwrapList<FacilityOwnership>(r));
 
 export const createFacilityOwnership = (data: Partial<FacilityOwnership>): Promise<FacilityOwnership> =>
   axios.post(`${BASE}/facility-ownerships/`, data).then((r) => unwrap<FacilityOwnership>(r));
@@ -125,8 +150,12 @@ export const createTechnicalSupervisor = (
   axios.post(`${BASE}/technical-supervisors/`, data).then((r) => unwrap<TechnicalSupervisor>(r));
 
 // --- Technical Supervisions ---
-export const listTechnicalSupervisions = (): Promise<TechnicalSupervision[]> =>
-  axios.get(`${BASE}/technical-supervisions/`).then((r) => unwrap<TechnicalSupervision[]>(r));
+export const listTechnicalSupervisions = (facilityId?: string): Promise<TechnicalSupervision[]> =>
+  axios
+    .get(`${BASE}/technical-supervisions/`, {
+      params: { ...LIST_PARAMS, ...(facilityId ? { facility: facilityId } : {}) },
+    })
+    .then((r) => unwrapList<TechnicalSupervision>(r));
 
 export const createTechnicalSupervision = (
   data: Partial<TechnicalSupervision>,
@@ -134,8 +163,16 @@ export const createTechnicalSupervision = (
   axios.post(`${BASE}/technical-supervisions/`, data).then((r) => unwrap<TechnicalSupervision>(r));
 
 // --- Department Assignments (M3-4) ---
-export const listDepartmentAssignments = (): Promise<DepartmentNodeAssignment[]> =>
-  axios.get(`${BASE}/department-assignments/`).then((r) => unwrap<DepartmentNodeAssignment[]>(r));
+export const listDepartmentAssignments = (facilityId?: string): Promise<DepartmentNodeAssignment[]> =>
+  axios
+    .get(`${BASE}/department-assignments/`, {
+      // D-M4-4-B-4: filter by the facility owning the department.
+      params: {
+        ...LIST_PARAMS,
+        ...(facilityId ? { department__facility: facilityId } : {}),
+      },
+    })
+    .then((r) => unwrapList<DepartmentNodeAssignment>(r));
 
 export const createDepartmentAssignment = (
   data: Partial<DepartmentNodeAssignment>,
@@ -153,14 +190,12 @@ export const createService = (data: Partial<Service>): Promise<Service> =>
   axios.post(`${BASE}/services/`, data).then((r) => unwrap<Service>(r));
 
 // --- Service Availability ---
-export const listServiceAvailability = (params?: {
-  service?: string;
-  facility?: string;
-  department?: string;
-}): Promise<ServiceAvailability[]> =>
-  axios.get(`${BASE}/service-availability/`, { params }).then((r) =>
-    unwrap<ServiceAvailability[]>(r),
-  );
+export const listServiceAvailability = (facilityId?: string): Promise<ServiceAvailability[]> =>
+  axios
+    .get(`${BASE}/service-availability/`, {
+      params: { ...LIST_PARAMS, ...(facilityId ? { facility: facilityId } : {}) },
+    })
+    .then((r) => unwrapList<ServiceAvailability>(r));
 
 export const createServiceAvailability = (
   data: Partial<ServiceAvailability>,

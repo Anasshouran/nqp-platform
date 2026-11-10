@@ -1,4 +1,30 @@
-# M4-4-C Known Debt (Part1 — Backend filters)
+# M4-4-C Known Debt (Part1 → Part2)
+
+## D-M4-4-C-5: Pagination envelope — frontend `unwrapList`
+
+**الوضع (Part2):** list endpoints تُرجع `{ count, next, previous, results }`
+(DRF `StandardPagination`, `PAGE_SIZE=10`). أُضيف `unwrapList` في
+`api/endpoints/registry.ts` يستخرج `results` كقائمة، ويطلب `page_size=500`
+لجلب صفوف المنشأة كاملة.
+
+**الأثر:** إن تجاوزت صفوف منشأة واحدة 500، تُعرض أول 500 فقط.
+
+**الحل المقترح (M5):** pagination حقيقي في tabs (أو server-side paging UI).
+
+## D-M4-4-C-6: صفحة التفاصيل تعتمد على `facility_id` في المسار
+
+**الوضع (Part2):** `/app/registry/facility/:id` صار `:id` = `HealthFacility.id`
+(من `node.facility_id`). الروابط القديمة التي كانت تمرّر `ReportingNode.id`
+لم تعد صالحة (dev فقط).
+
+**الأثر:** لا روابط محفوظة بعد (الميزة جديدة). مقبول.
+
+## D-M4-4-C-7: Tree Position يعتمد على جلب كل العقد
+
+**الوضع (Part2):** `TreePositionTab` يبني سلسلة الآباء من `listNodes()`
+(`page_size=500`) + `node.parent`. لا endpoint مخصص للـ ancestors بعد.
+
+**الحل المقترح (M5):** endpoint `nodes/:id/ancestors/` أو `path` مع أسماء.
 
 ## D-M4-4-C-1: لا `django-filter` — فلترة مخصصة
 
@@ -27,8 +53,10 @@ declarative). عند زيادة عدد الفلاتر، أعد تقييم `djang
 **الأثر:** STATE/SECTOR user يمرّر `?facility=<other_state>` → scoping يحجب
 أولاً، فالفلتر يعمل على مجموعة فارغة/مقيّدة. لا تسريب.
 
-**التأكيد المطلوب (Part2):** اختبار SECTOR/STATE صريح على كل فلتر
-(مع `?facility=` خارج النطاق → نتيجة فارغة، لا بيانات).
+**التأكيد المطلوب:** اختبار SECTOR/STATE صريح على كل فلتر
+(مع `?facility=` خارج النطاق → نتيجة فارغة، لا بيانات). Part2 لم يُضِف
+اختبارات backend (frontend-only)؛ يُغطّى هذا ضمن Manual V-1 (browser،
+superuser + STATE + SECTOR) — انظر بروتوكول V-1 بعد Part2.
 
 ## D-M4-4-C-4: UUID غير صالح → قائمة فارغة
 

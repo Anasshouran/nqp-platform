@@ -32,4 +32,5 @@ Frontend يستخدم `?facility=` مباشرة (M4-4-C-Part2).
 **اختبار:** `test_department_assignment_filter_by_department_facility` +
 `test_department_assignment_facility_alias`.
 
-**المتبقّي (Part2):** تمرير `?department__facility=<facilityId>` من الـ frontend.
+**المتبقّي (Part2):** ✅ مُنفَّذ — `listDepartmentAssignments(facilityId)` يمرّر
+`?department__facility=<facilityId>` في `DepartmentsTab`.

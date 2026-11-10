@@ -188,6 +188,7 @@ export interface ReportingNodeTree {
   name_ar: string;
   name_en?: string;
   depth: number;
+  facility_id: string | null;
   children: ReportingNodeTree[];
 }
 

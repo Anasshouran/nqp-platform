@@ -9901,16 +9901,20 @@
         "entry_point": "Entry Point"
       },
       "ownership": {
-        "empty": "No ownership records"
+        "empty": "No ownership records",
+        "error": "Failed to load ownership records"
       },
       "supervision": {
-        "empty": "No supervision records"
+        "empty": "No supervision records",
+        "error": "Failed to load supervision records"
       },
       "services": {
-        "empty": "No services registered"
+        "empty": "No services registered",
+        "error": "Failed to load services"
       },
       "departments": {
-        "empty": "No departments registered"
+        "empty": "No departments registered",
+        "error": "Failed to load departments"
       },
       "tree_position": {
         "empty": "Facility not linked to tree"

@@ -40,7 +40,9 @@ function NodeRow({ node, level }: { node: ReportingNodeTree; level: number }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(level < 1);
   const hasChildren = (node.children?.length ?? 0) > 0;
-  const clickable = node.kind === 'FACILITY';
+  // M4-4-C-Part2: navigate directly with the facility id from the tree payload
+  // (no second lookup). A FACILITY node without an active assignment isn't clickable.
+  const clickable = node.kind === 'FACILITY' && !!node.facility_id;
 
   return (
     <>
@@ -48,7 +50,7 @@ function NodeRow({ node, level }: { node: ReportingNodeTree; level: number }) {
         <ListItemButton
           onClick={() => {
             if (clickable) {
-              navigate(`/app/registry/facility/${node.id}`);
+              navigate(`/app/registry/facility/${node.facility_id}`);
             } else if (hasChildren) {
               setOpen(!open);
             }
