@@ -487,7 +487,7 @@ const PublicLayout = () => {
                       <Box sx={{ px: 2, pt: i > 0 ? 0.75 : 1, pb: 0.25 }}>
                         {i > 0 && <Divider sx={{ mb: 1 }} />}
                         <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
-                          {tt(child.section)}
+                          {child.section && t(child.section)}
                         </Typography>
                       </Box>
                     )}
@@ -635,7 +635,7 @@ const PublicLayout = () => {
                               <Box sx={{ px: 3, pt: i > 0 ? 1 : 1.5, pb: 0.25 }}>
                                 {i > 0 && <Divider sx={{ mb: 1 }} />}
                                 <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
-                                  {tt(child.section)}
+                                  {child.section && t(child.section)}
                                 </Typography>
                               </Box>
                             )}
@@ -733,7 +733,7 @@ const PublicLayout = () => {
                 {footerLinkGroups.map((group) => (
                   <Stack key={group.title} spacing={1}>
                     <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {tt(group.title)}
+                      {t(group.title)}
                     </Typography>
                     {group.links.map((link) => (
                       <Link
@@ -741,7 +741,7 @@ const PublicLayout = () => {
                         to={link.path}
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {tt(link.label)}
+                        {t(link.label)}
                       </Link>
                     ))}
                   </Stack>
@@ -759,7 +759,7 @@ const PublicLayout = () => {
                         rel="noopener noreferrer"
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {tt(link.label)}
+                        {t(link.label)}
                       </a>
                     ))}
                   </Stack>
