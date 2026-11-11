@@ -124,10 +124,10 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.about',
     path: '/about',
     children: [
-      { label: 'من نحن', path: '/about', section: 'المنصة' },
-      { label: 'مدير المنصة', path: '/director', section: 'المنصة' },
-      { label: 'الأسئلة الشائعة', path: '/faq', section: 'الدعم' },
-      { label: 'اتصل بنا', path: '/contact', section: 'الدعم' },
+      { label: 'public.layout.nav.menu.about.aboutUs', path: '/about', section: 'public.layout.nav.menu.about.section.platform' },
+      { label: 'public.layout.nav.menu.about.director', path: '/director', section: 'public.layout.nav.menu.about.section.platform' },
+      { label: 'public.layout.nav.menu.about.faq', path: '/faq', section: 'public.layout.nav.menu.about.section.support' },
+      { label: 'public.layout.nav.menu.about.contact', path: '/contact', section: 'public.layout.nav.menu.about.section.support' },
     ],
   },
 ];

@@ -726,6 +726,16 @@
               "preparation": "الاستعداد للسفر",
               "knowledge": "المعرفة"
             }
+          },
+          "about": {
+            "aboutUs": "من نحن",
+            "director": "مدير المنصة",
+            "faq": "الأسئلة الشائعة",
+            "contact": "اتصل بنا",
+            "section": {
+              "platform": "المنصة",
+              "support": "الدعم"
+            }
           }
         },
         "home": "الرئيسية",

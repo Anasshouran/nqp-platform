@@ -726,6 +726,16 @@
               "preparation": "Preparing to Travel",
               "knowledge": "Knowledge"
             }
+          },
+          "about": {
+            "aboutUs": "About Us",
+            "director": "Platform Director",
+            "faq": "FAQ",
+            "contact": "Contact Us",
+            "section": {
+              "platform": "Platform",
+              "support": "Support"
+            }
           }
         },
         "home": "Home",
