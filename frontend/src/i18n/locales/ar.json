@@ -149,6 +149,27 @@
       "passed": "ناجح",
       "failed": "فاشل",
       "backToIntegrations": "رجوع للتكاملات"
+    },
+    "dataScopes": {
+      "deleteSuccess": "تم حذف النطاق",
+      "deleteError": "تعذّر حذف النطاق",
+      "orgColumn": "المنظمة",
+      "apiPointColumn": "نقطة API",
+      "directionColumn": "الاتجاه",
+      "directionRead": "قراءة",
+      "directionWrite": "كتابة",
+      "resourceColumn": "المورد",
+      "grantedByColumn": "الممنوح من",
+      "grantedAtColumn": "تاريخ المنح",
+      "pageTitle": "نطاقات البيانات",
+      "pageSubtitle": "ما يُسمح بتبادله مع كل منظمة (قراءة/كتابة)",
+      "searchPlaceholder": "ابحث بالمنظمة أو المورد",
+      "emptyTitle": "لا توجد نطاقات",
+      "emptyDescription": "امنح صلاحية تبادل البيانات لمنظمة",
+      "deleteAction": "حذف",
+      "confirmDeleteTitle": "تأكيد الحذف",
+      "confirmDeleteMessage": "حذف نطاق «{{organization}} / {{resource}}»؟",
+      "cancelDeleteLabel": "إلغاء"
     }
   },
   "common": {
@@ -319,7 +340,19 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "قطاع البحر الأحمر"
+        "sectorName": "قطاع البحر الأحمر",
+        "media": {
+          "pageTitle": "مكتبة الوسائط",
+          "pageSubtitle": "رفع وإدارة الصور والملفات المستخدمة في المحتوى",
+          "titleLabel": "العنوان",
+          "chooseFile": "اختيار ملف",
+          "uploading": "جارٍ الرفع...",
+          "upload": "رفع",
+          "deleteAction": "حذف",
+          "emptyState": "لا توجد وسائط بعد.",
+          "confirmDeleteTitle": "حذف الوسيط",
+          "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{title}}\"؟"
+        }
       },
       "it": {
         "eyebrow": "قسم تقنية المعلومات",

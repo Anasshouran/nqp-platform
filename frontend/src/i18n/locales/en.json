@@ -149,6 +149,27 @@
       "passed": "Passed",
       "failed": "Failed",
       "backToIntegrations": "Back to integrations"
+    },
+    "dataScopes": {
+      "deleteSuccess": "Scope deleted",
+      "deleteError": "Failed to delete scope",
+      "orgColumn": "Organization",
+      "apiPointColumn": "API endpoint",
+      "directionColumn": "Direction",
+      "directionRead": "Read",
+      "directionWrite": "Write",
+      "resourceColumn": "Resource",
+      "grantedByColumn": "Granted by",
+      "grantedAtColumn": "Granted at",
+      "pageTitle": "Data scopes",
+      "pageSubtitle": "What data can be exchanged between organizations (read/write)",
+      "searchPlaceholder": "Search by organization or resource",
+      "emptyTitle": "No scopes",
+      "emptyDescription": "Grant data exchange permission to an organization",
+      "deleteAction": "Delete",
+      "confirmDeleteTitle": "Confirm deletion",
+      "confirmDeleteMessage": "Delete scope \"{{organization}} / {{resource}}\"?",
+      "cancelDeleteLabel": "Cancel"
     }
   },
   "common": {
@@ -319,7 +340,19 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "Red Sea Sector"
+        "sectorName": "Red Sea Sector",
+        "media": {
+          "pageTitle": "Media library",
+          "pageSubtitle": "Upload and manage the images and files used in content",
+          "titleLabel": "Title",
+          "chooseFile": "Choose file",
+          "uploading": "Uploading...",
+          "upload": "Upload",
+          "deleteAction": "Delete",
+          "emptyState": "No media yet.",
+          "confirmDeleteTitle": "Delete media",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        }
       },
       "it": {
         "eyebrow": "Information Technology Department",
