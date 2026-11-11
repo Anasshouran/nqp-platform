@@ -248,6 +248,8 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
 
     def _validate_scope_id(self, scope_type, scope_id):
         mapping = {
+            # M5-C-F: FACILITY — منشآت masterdata.
+            'FACILITY': ('masterdata.HealthFacility', 'المنشأة الصحية'),
             # M5-C-L (M5-C Discovery e5fd708): LOCALITY — محليات organization.
             'LOCALITY': ('organization.Locality', 'المحلية'),
             # M5-C-0 (discovery e5fd708): STATE was missing here since M4-1 —

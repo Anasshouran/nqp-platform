@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from apps.masterdata.models import (
-    Sector as MasterdataSector, State,
+    Sector as MasterdataSector, State, HealthFacility,
 )
 from apps.organization.models import (
     Sector as OrgSector, Locality,
@@ -53,6 +53,13 @@ def _make_locality():
     uid = _uid()
     org = OrgSector.objects.create(code=f'ORG_{uid}', name_ar='قطاع')
     return Locality.objects.create(code=f'LOC_{uid}', name_ar='محلية', sector=org)
+
+
+def _make_facility():
+    """منشأة masterdata — الحد الأدنى من الحقول (M5-C-F)."""
+    return HealthFacility.objects.create(
+        code=f'FAC_{_uid()}', name_ar='منشأة صحية',
+    )
 
 
 def _make_role():
@@ -160,6 +167,31 @@ class TestScopeValidationAPI:
         )
         assert resp.status_code == 400
         assert 'locality' in str(resp.json()).lower() or 'المحلية' in str(resp.json())
+
+    def test_facility_scope_via_api_now_works(self):
+        """M5-C-F: POST FACILITY + valid facility_id → 201."""
+        facility = _make_facility()
+        client = APIClient()
+        client.force_authenticate(user=_make_superuser())
+        resp = self._post_assignment(
+            client, scope_type='FACILITY', scope_id=str(facility.id),
+        )
+        assert resp.status_code == 201, resp.json()
+        body = resp.json()
+        assignment_id = body.get('data', {}).get('id') or body.get('id')
+        assert RoleAssignment.objects.filter(
+            pk=assignment_id, scope_type='FACILITY', scope_id=facility.id,
+        ).exists()
+
+    def test_facility_scope_invalid_id_rejected(self):
+        """M5-C-F: POST FACILITY + random UUID → 400."""
+        client = APIClient()
+        client.force_authenticate(user=_make_superuser())
+        resp = self._post_assignment(
+            client, scope_type='FACILITY', scope_id=str(uuid.uuid4()),
+        )
+        assert resp.status_code == 400
+        assert 'facility' in str(resp.json()).lower() or 'المنشأة' in str(resp.json())
 
     def test_unknown_scope_type_rejected(self):
         """POST with an unknown scope_type → 400 (ChoiceField)."""

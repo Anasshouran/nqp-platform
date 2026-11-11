@@ -14,6 +14,7 @@ export const scopeType: Record<string, string> = {
   GLOBAL: 'عام (كل النظام)',
   STATE: 'ولاية',
   LOCALITY: 'محلية',
+  FACILITY: 'منشأة صحية',
   POINT: 'نقطة حدودية',
   PORT: 'ميناء',
   REGION: 'منطقة',

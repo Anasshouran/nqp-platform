@@ -20,6 +20,7 @@ from core.utils.scoping import (
     has_state_scope,
     get_user_state_ids,
     get_user_locality_ids,
+    get_user_facility_ids,
     resolve_authorized_entry_points,
     _active_assignments,
 )
@@ -118,8 +119,11 @@ def _visible_reporting_node_ids(user):
     # وإلا بقي LOCALITY user أعمى عن LocalityNodeAssignment. البوابة داخل
     # `get_user_locality_ids` (prod بلا PROD_SCOPING_ENABLED ⇒ set() ⇒ حجب).
     user_locality_ids = get_user_locality_ids(user) or set()
+    # M5-C-F: منشآت المستخدم نفسها — مرئية عبر HealthFacilityNodeAssignment حتى
+    # لو كانت بلا entry_point (لا مسار EP). البوابة داخل get_user_facility_ids.
+    user_facility_ids = get_user_facility_ids(user) or set()
 
-    if not entry_point_ids and not user_state_ids and not user_locality_ids:
+    if not entry_point_ids and not user_state_ids and not user_locality_ids and not user_facility_ids:
         return set()
 
     from apps.masterdata.models import EntryPoint, HealthFacility
@@ -140,6 +144,9 @@ def _visible_reporting_node_ids(user):
     # M5-C-L: محليات المستخدم نفسها تُتحد مع المشتقة من نقاط الدخول.
     if user_locality_ids:
         locality_ids = list(set(locality_ids) | set(user_locality_ids))
+    # M5-C-F: منشآت المستخدم نفسها تُتحد مع المشتقة من نقاط الدخول.
+    if user_facility_ids:
+        facility_ids = list(set(facility_ids) | set(user_facility_ids))
 
     org_sector_ids = list(
         HealthFacility.objects.filter(
@@ -217,6 +224,43 @@ def _visible_reporting_node_ids(user):
             )
             org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
 
+    # M5-C-F: FACILITY path derivation (نفس نمط LOCALITY/STATE subtree) —
+    # منشآت المستخدم تُدخل عقد HealthFacilityNodeAssignment + فروعها،
+    # وتوسّع facility/locality/org_sector. البوابة داخل get_user_facility_ids.
+    facility_path_q = Q(pk__in=[])
+    if user_facility_ids:
+        facility_node_ids = HealthFacilityNodeAssignment.objects.filter(
+            facility_id__in=user_facility_ids, valid_to__isnull=True,
+        ).values_list('node_id', flat=True)
+        facility_node_paths = list(
+            ReportingNode.objects.filter(id__in=facility_node_ids).values_list('path', flat=True)
+        )
+        for node_path in facility_node_paths:
+            if not node_path:
+                continue
+            facility_path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+        subtree_node_ids = list(ReportingNode.objects.filter(facility_path_q).values_list('id', flat=True)) \
+            if facility_node_paths else []
+        if subtree_node_ids:
+            path_facility_ids = set(
+                HealthFacilityNodeAssignment.objects.filter(
+                    node_id__in=subtree_node_ids, valid_to__isnull=True,
+                ).values_list('facility_id', flat=True)
+            )
+            facility_ids = list(set(facility_ids) | path_facility_ids)
+            path_locality_ids = set(
+                LocalityNodeAssignment.objects.filter(
+                    node_id__in=subtree_node_ids, valid_to__isnull=True,
+                ).values_list('locality_id', flat=True)
+            )
+            locality_ids = list(set(locality_ids) | path_locality_ids)
+            path_org_sector_ids = set(
+                HealthFacility.objects.filter(
+                    id__in=path_facility_ids, sector__isnull=False,
+                ).values_list('sector_id', flat=True)
+            )
+            org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
+
     # STATE path Q for ReportingNode descendants
     state_path_q = Q(pk__in=[])
     if user_state_ids:
@@ -237,6 +281,7 @@ def _visible_reporting_node_ids(user):
         | Q(department_assignments__department__facility__isnull=True, department_assignments__department__sector_id__in=org_sector_ids, department_assignments__valid_to__isnull=True)
         | state_path_q
         | locality_path_q
+        | facility_path_q
     )
     return set(ReportingNode.objects.filter(node_visibility_q).values_list('id', flat=True))
 
@@ -313,8 +358,11 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
         # M5-C-L: نفس الحجة لـ LOCALITY — محليات المستخدم نفسه مرئية بدون
         # EntryPoints/STATE عبر LocalityNodeAssignment (البوابة داخلها).
         user_locality_ids = get_user_locality_ids(user) or set()
+        # M5-C-F: منشآت المستخدم نفسه مرئية عبر HealthFacilityNodeAssignment
+        # (حتى بلا entry_point) — البوابة داخل get_user_facility_ids.
+        user_facility_ids = get_user_facility_ids(user) or set()
 
-        if not entry_point_ids and not user_state_ids and not user_locality_ids:
+        if not entry_point_ids and not user_state_ids and not user_locality_ids and not user_facility_ids:
             return qs.none()  # fail-safe محفوظ لكل scope آخر
 
         # حساب الكيانات المسموحة عبر entry_points
@@ -345,6 +393,9 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
         # M5-C-L: محليات المستخدم نفسها تُتحد مع المشتقة من نقاط الدخول.
         if user_locality_ids:
             locality_ids = list(set(locality_ids) | set(user_locality_ids))
+        # M5-C-F: منشآت المستخدم نفسها تُتحد مع المشتقة من نقاط الدخول.
+        if user_facility_ids:
+            facility_ids = list(set(facility_ids) | set(user_facility_ids))
         # M4-1-bis: قطاعات organization المشتقة من نقاط الدخول — تُستخدم
         # في عقد الإدارات وفي DepartmentNodeAssignment (كانت تُحسب مرتين).
         org_sector_ids = list(
@@ -446,6 +497,46 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
                 )
                 org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
 
+        # M5-C-F: FACILITY path derivation (نفس نمط LOCALITY أعلاه).
+        facility_path_q = Q(pk__in=[])  # False افتراضياً
+        if user_facility_ids:
+            facility_node_ids = HealthFacilityNodeAssignment.objects.filter(
+                facility_id__in=user_facility_ids,
+                valid_to__isnull=True,
+            ).values_list('node_id', flat=True)
+            facility_node_paths = list(
+                ReportingNode.objects.filter(id__in=facility_node_ids).values_list('path', flat=True)
+            )
+            for node_path in facility_node_paths:
+                if not node_path:
+                    continue
+                facility_path_q |= Q(path=node_path) | Q(path__startswith=f'{node_path}/')
+            if facility_node_paths:
+                facility_subtree_ids = list(
+                    ReportingNode.objects.filter(facility_path_q).values_list('id', flat=True)
+                )
+                path_facility_ids = set(
+                    HealthFacilityNodeAssignment.objects.filter(
+                        node_id__in=facility_subtree_ids,
+                        valid_to__isnull=True,
+                    ).values_list('facility_id', flat=True)
+                )
+                facility_ids = list(set(facility_ids) | path_facility_ids)
+                path_locality_ids = set(
+                    LocalityNodeAssignment.objects.filter(
+                        node_id__in=facility_subtree_ids,
+                        valid_to__isnull=True,
+                    ).values_list('locality_id', flat=True)
+                )
+                locality_ids = list(set(locality_ids) | path_locality_ids)
+                path_org_sector_ids = set(
+                    HealthFacility.objects.filter(
+                        id__in=path_facility_ids,
+                        sector__isnull=False,
+                    ).values_list('sector_id', flat=True)
+                )
+                org_sector_ids = list(set(org_sector_ids) | path_org_sector_ids)
+
         # M4-2: مسار STATE — كل descendants لعقدة الولاية (D-M4-1-1).
         # path مبني من UUIDs مفصولة بـ '/'، لذا نستخدم تطابقاً صريحاً
         # (path = X أو path يبدأ بـ 'X/') لتفادي أي تطابق بادئة عرضي.
@@ -493,6 +584,7 @@ class RegistryScopedViewSet(viewsets.ModelViewSet):
             )
             | state_path_q
             | locality_path_q
+            | facility_path_q
         )
 
         if model_name == 'ReportingNode':

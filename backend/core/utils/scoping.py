@@ -62,6 +62,10 @@ def locality_scope_enabled():
     return bool(getattr(settings, 'PROD_SCOPING_ENABLED', False))
 
 
+# M5-C-F (D-F-5): FACILITY تشترك في نفس البوابة — لا مفتاح جديد.
+facility_scope_enabled = locality_scope_enabled
+
+
 def resolve_user_sectors(user):
     """قطاعات المستخدم كقائمة Sector (user.sector + تعيينات الدور بنطاق SECTOR).
 
@@ -137,6 +141,25 @@ def get_user_locality_ids(user):
     return set(
         _active_assignments(user)
         .filter(scope_type='LOCALITY')
+        .values_list('scope_id', flat=True)
+    )
+
+
+def get_user_facility_ids(user):
+    """يعيد set من HealthFacility UUIDs التي للمستخدم نطاق FACILITY عليها (M5-C-F).
+
+    None = GLOBAL (لا تقييد).
+    set() = لا FACILITY scope — أو البوابة مغلقة (نفس بوابة LOCALITY — D-F-5).
+    """
+    if not user or getattr(user, 'is_anonymous', True):
+        return set()
+    if user.is_superuser or has_global_scope(user):
+        return None  # GLOBAL
+    if not facility_scope_enabled():
+        return set()  # M5-C-F gate: fail-safe prod
+    return set(
+        _active_assignments(user)
+        .filter(scope_type='FACILITY')
         .values_list('scope_id', flat=True)
     )
 
@@ -240,6 +263,27 @@ def _locality_entry_point_ids(locality_ids):
     )
 
 
+def _facility_entry_point_ids(facility_ids):
+    """يحوّل FACILITY UUIDs إلى EntryPoint IDs (M5-C-F).
+
+    الجسر الوحيد المتاح: `HealthFacility.entry_point` (SET_NULL).
+    منشآت بلا `entry_point` تُتَجاهَل — لا مسار للانضمام (fail-safe).
+    Gate (D-F-5): نفس بوابة LOCALITY (`facility_scope_enabled`).
+    """
+    if not facility_ids:
+        return set()
+    if not facility_scope_enabled():
+        return set()
+    from apps.masterdata.models import HealthFacility
+    return set(
+        HealthFacility.objects.filter(
+            id__in=facility_ids,
+            entry_point__isnull=False,  # مخصص بقصد: منشآت بلا EP لا تفتح شيئاً
+            is_active=True,
+        ).values_list('entry_point_id', flat=True)
+    )
+
+
 # ---------------------------------------------------------------------------
 # المحلّ المعتمد: نطاق المستخدم → نقاط الدخول
 # ---------------------------------------------------------------------------
@@ -331,6 +375,8 @@ def resolve_authorized_entry_points(user):
     `STATION`   نقاط دخول تعيينات `OrgAssignment` التي تنتمي إلى المحطة.
     `LOCALITY`  نقاط دخول المحلية(ات) — بوابة الإنتاج
                 (`PROD_SCOPING_ENABLED` أو `DEBUG`)؛ وإلا يُتجاهل (deny-safe).
+    `FACILITY`  نقطة دخول المنشأة عبر `HealthFacility.entry_point` — نفس
+                البوابة؛ منشآت بلا EP تُتجاهل (M5-C-F).
     ==========  ==========================================================
 
     `OrgAssignment.entry_point` النشط للمستخدم يدخل في الاتحاد دائماً،
@@ -349,6 +395,7 @@ def resolve_authorized_entry_points(user):
     station_ids = set()
     state_ids = set()          # ← M4-1
     locality_ids = set()       # ← M5-C-L
+    facility_ids = set()       # ← M5-C-F
     direct_ids = set()
 
     for a in _active_assignments(user):
@@ -358,6 +405,8 @@ def resolve_authorized_entry_points(user):
             state_ids.add(a.scope_id)
         elif a.scope_type == 'LOCALITY':           # ← M5-C-L
             locality_ids.add(a.scope_id)
+        elif a.scope_type == 'FACILITY':           # ← M5-C-F
+            facility_ids.add(a.scope_id)
         elif a.scope_type == 'DEPARTMENT':
             department_ids.add(a.scope_id)
         elif a.scope_type == 'STATION':
@@ -377,6 +426,7 @@ def resolve_authorized_entry_points(user):
     entry_point_ids.update(_assigned_entry_point_ids(user))
     entry_point_ids.update(_state_entry_point_ids(state_ids))  # ← M4-1
     entry_point_ids.update(_locality_entry_point_ids(locality_ids))  # ← M5-C-L
+    entry_point_ids.update(_facility_entry_point_ids(facility_ids))  # ← M5-C-F
     entry_point_ids.update(_sector_port_ids(sector_ids))
     entry_point_ids.update(_org_entry_point_ids(
         user,
