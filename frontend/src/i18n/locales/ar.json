@@ -554,6 +554,18 @@
       "filterLabel": "الفلترة:",
       "noMatchingFoci": "لا توجد بؤر مطابقة (أضف إحداثيات GPS للبؤر لتظهر على الخريطة)",
       "noGpsCoords": "البؤر المسجلة لا تحوي إحداثيات GPS بعد"
+    },
+    "casesSection": {
+      "title": "الحالات",
+      "sectionSubtitle": "أمراض منقولة بالنواقل",
+      "caseNumberLabel": "الرقم",
+      "focusNumberLabel": "البؤرة",
+      "diseaseLabel": "المرض",
+      "classificationLabel": "التصنيف",
+      "detectedAtLabel": "تاريخ الرصد",
+      "casesSubtitle": "بيانات الحالات من نظام الترصد الوبائي",
+      "emptyTitle": "الأمراض المنقولة بالنواقل",
+      "emptyDescription": "تُعرض هنا الحالات المسجلة لدى نظام الترصد الوبائي — يُفتح رابطها من لوحة البوابة"
     }
   },
   "vaccination": {

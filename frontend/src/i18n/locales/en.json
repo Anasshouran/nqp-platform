@@ -554,6 +554,18 @@
       "filterLabel": "Filter:",
       "noMatchingFoci": "No matching foci (add GPS coordinates to foci to display on the map)",
       "noGpsCoords": "Registered foci have no GPS coordinates yet"
+    },
+    "casesSection": {
+      "title": "Cases",
+      "sectionSubtitle": "Vector-borne diseases",
+      "caseNumberLabel": "Number",
+      "focusNumberLabel": "Focus",
+      "diseaseLabel": "Disease",
+      "classificationLabel": "Classification",
+      "detectedAtLabel": "Detected at",
+      "casesSubtitle": "Case data from the epidemiological surveillance system",
+      "emptyTitle": "Vector-borne diseases",
+      "emptyDescription": "Recorded cases monitored by the epidemiological surveillance system are displayed here — their link opens from the portal dashboard"
     }
   },
   "vaccination": {
