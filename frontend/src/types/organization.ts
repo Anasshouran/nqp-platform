@@ -196,3 +196,18 @@ export interface OrgHierarchy {
   positions: OrgTreeNode[];
   sectors: OrgSectorNode[];
 }
+export interface OrganizationLocality {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en: string;
+  sector: string | null;
+  sector_name: string | null;
+  location: string;
+  description: string;
+  order: number;
+  is_active: boolean;
+  facilities_count: number;
+  created_at: string;
+  updated_at: string;
+}

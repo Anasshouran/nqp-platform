@@ -16,6 +16,7 @@ def test_all_scope_types_handled():
     
     handled = set(SECTOR_LIKE_SCOPES) | set(ENTRY_POINT_SCOPES) | {
         'GLOBAL', 'DEPARTMENT', 'STATION', 'STATE', 'COMPANY',
+        'LOCALITY',  # M5-C-L: handled explicitly in resolve_authorized_entry_points
         # COMPANY handled via resolve_combined_scope_ids (separate path)
     }
     declared = set(ScopeType.values)

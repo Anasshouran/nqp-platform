@@ -20,6 +20,7 @@ import logging
 from django.core.exceptions import FieldError
 
 from core.utils.authorization import active_assignments, has_active_global_scope
+from core.utils.scoping import locality_scope_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,10 @@ SCOPE_LOOKUPS = {
     # M5-B-3: STATE — يُشتق من `OrgAssignment.entry_point` (M1 FK) إلى ولاية
     # `masterdata.EntryPoint.state`. لا migration — المسار موجود فعلاً.
     'STATE': ('entry_point__state_id',),
+    # M5-C-L: LOCALITY — يُشتق من `OrgAssignment.entry_point` إلى محلية
+    # `masterdata.EntryPoint.locality`. لا migration — المسار موجود فعلاً.
+    # تخضع لبوابة الإنتاج `PROD_SCOPING_ENABLED` (انظر `resolve_hr_scope_keys`).
+    'LOCALITY': ('entry_point__locality_id',),
 }
 
 
@@ -99,6 +104,10 @@ def resolve_hr_scope_keys(user):
         keys.add((a.scope_type, a.scope_id))
 
     keys |= resolve_own_org_scope_keys(user)
+    # M5-C-L gate: في الإنتاج بلا تفعيل صريح ⇒ إسقاط كل مفاتيح LOCALITY
+    # (تتحمل الاثنين: مفاتيح الأدوار المعلنة صراحةً والمشتقة من OrgAssignment).
+    if not locality_scope_enabled():
+        keys = {k for k in keys if k[0] != 'LOCALITY'}
     return keys
 
 
@@ -127,6 +136,10 @@ def resolve_own_org_scope_keys(user):
             # ولا يُستبدل POINT (union).
             if a.entry_point and a.entry_point.state_id:
                 keys.add(('STATE', a.entry_point.state_id))
+            # M5-C-L: اشتقاق المحلية من `entry_point.locality` (nullable) — union.
+            # تُحجب في الإنتاج ما لم تُفعَّل البوابة `PROD_SCOPING_ENABLED`.
+            if a.entry_point and a.entry_point.locality_id and locality_scope_enabled():
+                keys.add(('LOCALITY', a.entry_point.locality_id))
     # اتحاد يبقى مع القطاع المنزلي `user.sector_id` (H1′ — M3/M5-A:
     # home-sector grant بالبقية). لا يتجاوز نطاق actor نفسه ولا يشمل point/state.
     home_sector = getattr(user, 'sector_id', None)

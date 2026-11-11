@@ -15,6 +15,7 @@
 مصدر الحقيقة للتفويض: تعيينات الأدوار النشطة ضمن النافذة الزمنية فقط
 (الحقل القديم ``User.role`` غير معتبر في القرارات).
 """
+from django.conf import settings
 from django.core.exceptions import FieldError
 from django.db.models import Q
 
@@ -48,6 +49,17 @@ SCOPE_OPT_OUT_ATTR = 'scope_optional'
 def scope_is_optional(view):
     """هل أعلن هذا الـ viewset صراحةً أنه بلا بُعد نطاق؟"""
     return bool(getattr(view, SCOPE_OPT_OUT_ATTR, False))
+
+
+# M5-C-L: بوابة الإنتاج لنطاق LOCALITY (فشل آمن حتى يُتحقَّق من البيانات).
+# في التطوير (DEBUG=True) تعمل LOCALITY دائماً. في الإنتاج (DEBUG=False)
+# تحتاج `PROD_SCOPING_ENABLED=True` صراحةً — وإلا تُحجب كل مسارات LOCALITY
+# (deny-all). تُضبط في `nqp_backend/settings.py` و`docs/m5-c-l.md`.
+def locality_scope_enabled():
+    """هل مسارات LOCALITY مفعّلة؟ (DEBUG أو PROD_SCOPING_ENABLED)."""
+    if getattr(settings, 'DEBUG', False):
+        return True
+    return bool(getattr(settings, 'PROD_SCOPING_ENABLED', False))
 
 
 def resolve_user_sectors(user):
@@ -104,6 +116,27 @@ def get_user_state_ids(user):
     return set(
         _active_assignments(user)
         .filter(scope_type='STATE')
+        .values_list('scope_id', flat=True)
+    )
+
+
+def get_user_locality_ids(user):
+    """يعيد set من Locality UUIDs التي للمستخدم نطاق LOCALITY عليها (M5-C-L).
+
+    None = GLOBAL (لا تقييد).
+    set() = لا LOCALITY scope — أو البوابة مغلقة في الإنتاج
+            (`PROD_SCOPING_ENABLED=False` و`DEBUG=False`) ⇒ فشل آمن.
+    """
+    if not user or getattr(user, 'is_anonymous', True):
+        return set()
+    if user.is_superuser or has_global_scope(user):
+        return None  # GLOBAL
+    # M5-C-L gate: في الإنتاج بلا تحقّق من البيانات ⇒ نفي كامل (fail-safe).
+    if not locality_scope_enabled():
+        return set()
+    return set(
+        _active_assignments(user)
+        .filter(scope_type='LOCALITY')
         .values_list('scope_id', flat=True)
     )
 
@@ -180,6 +213,28 @@ def _state_entry_point_ids(state_ids):
     return set(
         EntryPoint.objects.filter(
             state_id__in=state_ids,
+            is_active=True,
+        ).values_list('id', flat=True)
+    )
+
+
+def _locality_entry_point_ids(locality_ids):
+    """يحوّل LOCALITY UUIDs إلى EntryPoint IDs (النشطة فقط) (M5-C-L).
+
+    M5-C-L: LOCALITY scope يفتح كل EntryPoints الموجودة في المحلية.
+    fail-safe: محليات بلا EntryPoints ⇒ مجموعة فارغة (لا يتسرب من أخواتها).
+
+    Gate (M5-C-L): إن لم تكن LOCALITY مفعّلة في البيئة
+    (`DEBUG=True` أو `PROD_SCOPING_ENABLED=True`) ⇒ مجموعة فارغة.
+    """
+    if not locality_ids:
+        return set()
+    if not locality_scope_enabled():
+        return set()
+    from apps.masterdata.models import EntryPoint
+    return set(
+        EntryPoint.objects.filter(
+            locality_id__in=locality_ids,
             is_active=True,
         ).values_list('id', flat=True)
     )
@@ -274,6 +329,8 @@ def resolve_authorized_entry_points(user):
     `DEPARTMENT` نقاط دخول تعيينات `OrgAssignment` التي تنتمي إلى الإدارة
                 (أو محطة/منصب فيها).
     `STATION`   نقاط دخول تعيينات `OrgAssignment` التي تنتمي إلى المحطة.
+    `LOCALITY`  نقاط دخول المحلية(ات) — بوابة الإنتاج
+                (`PROD_SCOPING_ENABLED` أو `DEBUG`)؛ وإلا يُتجاهل (deny-safe).
     ==========  ==========================================================
 
     `OrgAssignment.entry_point` النشط للمستخدم يدخل في الاتحاد دائماً،
@@ -291,6 +348,7 @@ def resolve_authorized_entry_points(user):
     department_ids = set()
     station_ids = set()
     state_ids = set()          # ← M4-1
+    locality_ids = set()       # ← M5-C-L
     direct_ids = set()
 
     for a in _active_assignments(user):
@@ -298,6 +356,8 @@ def resolve_authorized_entry_points(user):
             sector_ids.add(a.scope_id)
         elif a.scope_type == 'STATE':              # ← M4-1
             state_ids.add(a.scope_id)
+        elif a.scope_type == 'LOCALITY':           # ← M5-C-L
+            locality_ids.add(a.scope_id)
         elif a.scope_type == 'DEPARTMENT':
             department_ids.add(a.scope_id)
         elif a.scope_type == 'STATION':
@@ -316,6 +376,7 @@ def resolve_authorized_entry_points(user):
     entry_point_ids = set(direct_ids)
     entry_point_ids.update(_assigned_entry_point_ids(user))
     entry_point_ids.update(_state_entry_point_ids(state_ids))  # ← M4-1
+    entry_point_ids.update(_locality_entry_point_ids(locality_ids))  # ← M5-C-L
     entry_point_ids.update(_sector_port_ids(sector_ids))
     entry_point_ids.update(_org_entry_point_ids(
         user,
@@ -363,7 +424,7 @@ def asserts_geographic_scope(user):
     if not user or getattr(user, 'is_anonymous', True):
         return False
     if _active_assignments(user).filter(
-        scope_type__in=SECTOR_LIKE_SCOPES + ENTRY_POINT_SCOPES + ('DEPARTMENT', 'STATION', 'STATE'),
+        scope_type__in=SECTOR_LIKE_SCOPES + ENTRY_POINT_SCOPES + ('DEPARTMENT', 'STATION', 'STATE', 'LOCALITY'),
     ).exists():
         return True
     return _has_entry_point_assignment(user)
@@ -463,6 +524,12 @@ class CompanyPortScopedMixin:
     geographic and ownership scoping are independent dimensions, and an empty
     result on one dimension must not silently veto the other.
 
+    Note: ``asserts_geographic_scope`` recognises ``LOCALITY`` unconditionally
+    (M5-C-L) — independent of the ``PROD_SCOPING_ENABLED`` gate — so that in a
+    gated-off production deployment a LOCALITY-only user fails *closed*
+    (``has_port_scope=True`` with empty ``port_ids`` ⇒ ``qs.none()``) instead of
+    being read as "no geographic dimension" (⇒ unrestricted).
+
     Semantics
     ---------
     - PORT scope only    -> filter on ``port_field`` (EntryPoint ids)
@@ -560,6 +627,11 @@ class SectorFieldScopedMixin:
             (مثال: `entry_point__state_id`). الافتراضي `None` = الولاية
             غير قابلة للاشتقاق → STATE يُحجب (فشل آمن). المُنحى القطاعي
             (قرار H1′) يبقى كما هو؛ القناة STATE تُضاف بالتوازي فقط.
+        locality_path: المسار العلائقي من النموذج إلى `organization.Locality.id`
+            (مثال: `entry_point__locality_id`). الافتراضي `None` = المحلية
+            غير قابلة للاشتقاق → LOCALITY يُحجب (فشل آمن).
+            تخضع لبوابة الإنتاج (`PROD_SCOPING_ENABLED` / `DEBUG`) — في
+            الإنتاج بلا تفعيل تُعيد `get_user_locality_ids` مجموعة فارغة.
 
     يعيد الكل للوطني (superuser / GLOBAL scope / NATIONAL_LAB_ADMIN) — وهي
     تغطية عامة *مُتحقَّق منها* لا غياب نطاق.
@@ -569,6 +641,7 @@ class SectorFieldScopedMixin:
 
     sector_field = 'sector'
     state_path = None
+    locality_path = None  # ← M5-C-L
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -606,15 +679,32 @@ class SectorFieldScopedMixin:
                     user, self.state_path,
                 )
                 state_ids = set()
-        if not sectors and not state_ids:
+        # M5-C-L: LOCALITY grant (اتحاد مع القطاع/الولاية — لا استبدال).
+        # يُفعَّل فقط عندما يضبط الـ viewset `locality_path` صراحةً.
+        # البوابة داخل `get_user_locality_ids`: prod بلا `PROD_SCOPING_ENABLED`
+        # ⇒ `set()` ⇒ الحجب الكامل (fail-safe).
+        locality_ids = set()
+        if self.locality_path:
+            try:
+                resolved = get_user_locality_ids(user)
+                if resolved:
+                    locality_ids = set(resolved)
+            except (FieldError, ValueError):
+                logger.exception(
+                    'SectorFieldScopedMixin: failed to resolve LOCALITY for %s '
+                    '(locality_path=%s) - DENYING locality branch',
+                    user, self.locality_path,
+                )
+                locality_ids = set()
+        if not sectors and not state_ids and not locality_ids:
             # لا قطاع/ولاية قابل للحل ≠ تغطية عامة. الافتراضي حجب كامل؛ الاستثناء
             # الوحيد تصريح صريح عبر `scope_optional` (انظر SCOPE_OPT_OUT_ATTR).
             if scope_is_optional(self):
                 return qs
             logger.warning(
-                'SectorFieldScopedMixin: user %s has no resolvable sector/state scope on %s '
-                '(sector_field=%s, state_path=%s) - DENYING all rows',
-                user, self.__class__.__name__, self.sector_field, self.state_path,
+                'SectorFieldScopedMixin: user %s has no resolvable sector/state/locality scope on %s '
+                '(sector_field=%s, state_path=%s, locality_path=%s) - DENYING all rows',
+                user, self.__class__.__name__, self.sector_field, self.state_path, self.locality_path,
             )
             return qs.none()
         try:
@@ -623,6 +713,8 @@ class SectorFieldScopedMixin:
                 scope_q |= Q(**{f'{self.sector_field}__in': [s.pk for s in sectors]})
             if state_ids and self.state_path:
                 scope_q |= Q(**{f'{self.state_path}__in': list(state_ids)})
+            if locality_ids and self.locality_path:
+                scope_q |= Q(**{f'{self.locality_path}__in': list(locality_ids)})
             filtered = qs.filter(scope_q)
             if requested and requested in allowed_codes:
                 filtered = filtered.filter(**{f'{self.sector_field}__code': requested})
@@ -632,7 +724,7 @@ class SectorFieldScopedMixin:
         except (FieldError, ValueError):
             logger.exception(
                 'SectorFieldScopedMixin failed to scope queryset for %s '
-                '(sector_field=%s, state_path=%s) - DENYING access',
-                user, self.sector_field, self.state_path,
+                '(sector_field=%s, state_path=%s, locality_path=%s) - DENYING access',
+                user, self.sector_field, self.state_path, self.locality_path,
             )
             return qs.none()

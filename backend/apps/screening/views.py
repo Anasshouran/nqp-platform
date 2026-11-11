@@ -66,7 +66,7 @@ class ScreeningViewSet(viewsets.ModelViewSet):
 
     def _entry_point_ids_for(self, user):
         """يرجع معرفات منافذ الدخول المتاحة لنطاقات المستخدم (فشل آمن = قائمة فارغة)."""
-        from core.utils.scoping import has_active_global_scope
+        from core.utils.scoping import has_active_global_scope, locality_scope_enabled
 
         # GLOBAL scope (مدير/جهة وطنية) → كل السجلات؛ لا نُقيّد إلا بالنطاق الفعلي.
         if user.is_superuser or has_active_global_scope(user):
@@ -88,6 +88,18 @@ class ScreeningViewSet(viewsets.ModelViewSet):
         if state_ids:
             port_ids += list(
                 EntryPoint.objects.filter(is_active=True, state_id__in=state_ids)
+                .values_list('id', flat=True)
+            )
+        # M5-C-L: نطاق المحلية → كل منافذ الدخول في المحلية(ات) — اتحاد مع الولاية.
+        # بوابة الإنتاج: في DEBUG أو مع PROD_SCOPING_ENABLED فقط؛ وإلا لا شيء (fail-safe).
+        locality_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.LOCALITY and s['scope_id'] is not None
+        ]
+        if locality_ids and locality_scope_enabled():
+            port_ids += list(
+                EntryPoint.objects.filter(is_active=True, locality_id__in=locality_ids)
                 .values_list('id', flat=True)
             )
         # اتحاد يبقى مع القطاع (نطاق SECTOR) والقطاع المنزلي `user.sector_id`

@@ -12,6 +12,8 @@ export const userType: Record<string, StatusMeta> = {
 
 export const scopeType: Record<string, string> = {
   GLOBAL: 'عام (كل النظام)',
+  STATE: 'ولاية',
+  LOCALITY: 'محلية',
   POINT: 'نقطة حدودية',
   PORT: 'ميناء',
   REGION: 'منطقة',

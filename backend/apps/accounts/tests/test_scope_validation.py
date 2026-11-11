@@ -16,7 +16,7 @@ from apps.masterdata.models import (
     Sector as MasterdataSector, State,
 )
 from apps.organization.models import (
-    Sector as OrgSector,
+    Sector as OrgSector, Locality,
 )
 from apps.accounts.models import Role, RoleAssignment
 
@@ -47,6 +47,12 @@ def _make_state():
 
 def _make_sector():
     return OrgSector.objects.create(code=f'ORG_{_uid()}', name_ar='قطاع')
+
+
+def _make_locality():
+    uid = _uid()
+    org = OrgSector.objects.create(code=f'ORG_{uid}', name_ar='قطاع')
+    return Locality.objects.create(code=f'LOC_{uid}', name_ar='محلية', sector=org)
 
 
 def _make_role():
@@ -129,6 +135,31 @@ class TestScopeValidationAPI:
             client, scope_type='SECTOR', scope_id=str(sector.id),
         )
         assert resp.status_code == 201, resp.json()
+
+    def test_locality_scope_via_api_now_works(self):
+        """M5-C-L: POST LOCALITY + valid locality_id → 201."""
+        locality = _make_locality()
+        client = APIClient()
+        client.force_authenticate(user=_make_superuser())
+        resp = self._post_assignment(
+            client, scope_type='LOCALITY', scope_id=str(locality.id),
+        )
+        assert resp.status_code == 201, resp.json()
+        body = resp.json()
+        assignment_id = body.get('data', {}).get('id') or body.get('id')
+        assert RoleAssignment.objects.filter(
+            pk=assignment_id, scope_type='LOCALITY', scope_id=locality.id,
+        ).exists()
+
+    def test_locality_scope_invalid_id_rejected(self):
+        """M5-C-L: POST LOCALITY + random UUID → 400."""
+        client = APIClient()
+        client.force_authenticate(user=_make_superuser())
+        resp = self._post_assignment(
+            client, scope_type='LOCALITY', scope_id=str(uuid.uuid4()),
+        )
+        assert resp.status_code == 400
+        assert 'locality' in str(resp.json()).lower() or 'المحلية' in str(resp.json())
 
     def test_unknown_scope_type_rejected(self):
         """POST with an unknown scope_type → 400 (ChoiceField)."""

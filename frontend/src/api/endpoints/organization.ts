@@ -8,6 +8,7 @@ import type {
   OrgHierarchy,
   OrgPosition,
   OrgPositionInput,
+  OrganizationLocality,
   Sector,
   SectorInput,
   Station,
@@ -52,6 +53,9 @@ export const updateDepartment = (id: string, data: Partial<DepartmentInput>) =>
 
 export const deleteDepartment = (id: string) =>
   apiClient.delete(`/organization/departments/${id}/`);
+
+export const getLocalities = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<OrganizationLocality>>>('/organization/localities/', { params });
 
 export const getStations = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<Station>>>('/organization/stations/', { params });

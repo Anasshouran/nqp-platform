@@ -111,6 +111,18 @@ def make_state_user_with_sector(state, sector, **kwargs):
     return user
 
 
+def make_locality_user(locality, *, with_perm=('port_health', 'shipping', 'laboratory',
+                                              'vector', 'screening', 'hr_employee',
+                                              'surveillance', 'vaccination',
+                                              'borders_health')):
+    """LOCALITY user — scope_type=LOCALITY, scope_id=<organization.Locality id> (M5-C-L)."""
+    uid = _uid()
+    user = User.objects.create_user(email=f'locality_{uid}@x.com', password='x')
+    role = _role_with_perm('LOCALITY', list(with_perm))
+    RoleAssignment.objects.create(user=user, role=role, scope_type='LOCALITY', scope_id=locality.id)
+    return user
+
+
 def make_sector_user(org_sector, *, with_perm=('port_health', 'laboratory',
                                                'vector', 'screening', 'surveillance')):
     uid = _uid()

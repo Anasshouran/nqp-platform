@@ -17,11 +17,13 @@ import { FormTextField, FormSelect } from '../uikit';
 import { createRoleAssignment, updateRoleAssignment } from '../../api/endpoints/roleAssignments';
 import { getRoles, getUsers } from '../../api/endpoints/users';
 import { getMasterStates } from '../../api/endpoints/masterdata';
+import { getLocalities } from '../../api/endpoints/organization';
 import { SCOPE_TYPES } from '../../types/user';
 import { scopeType } from '../../utils/status';
 import { notifySuccess } from '../../utils/toast';
 import type { RoleAssignment, RoleAssignmentInput, Role, User, ScopeType } from '../../types/user';
 import type { MasterState } from '../../types/masterdata';
+import type { OrganizationLocality } from '../../types/organization';
 
 interface Props {
   open: boolean;
@@ -42,6 +44,8 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
   const [scopeId, setScopeId] = useState('');
   const [states, setStates] = useState<MasterState[]>([]);
   const [selectedState, setSelectedState] = useState<MasterState | null>(null);
+  const [localities, setLocalities] = useState<OrganizationLocality[]>([]);
+  const [selectedLocality, setSelectedLocality] = useState<OrganizationLocality | null>(null);
   const [startDate, setStartDate] = useState(todayStr());
   const [endDate, setEndDate] = useState('');
   const [isActive, setIsActive] = useState(true);
@@ -62,6 +66,11 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
         const list = Array.isArray(data) ? data : (data?.results ?? []);
         setStates(list);
       }).catch(() => undefined),
+      getLocalities({ page_size: 500, is_active: true }).then((r) => {
+        const data = r.data?.data;
+        const list = Array.isArray(data) ? data : (data?.results ?? []);
+        setLocalities(list);
+      }).catch(() => undefined),
     ]).catch(() => undefined);
   }, [open]);
 
@@ -73,6 +82,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setScopeTypeVal((assignment.scope_type as ScopeType) || 'GLOBAL');
       setScopeId(assignment.scope_id || '');
       setSelectedState(states.find((s) => s.id === assignment.scope_id) || null);
+      setSelectedLocality(localities.find((l) => l.id === assignment.scope_id) || null);
       setStartDate(assignment.start_date || todayStr());
       setEndDate(assignment.end_date || '');
       setIsActive(assignment.is_active);
@@ -82,11 +92,12 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setScopeTypeVal('GLOBAL');
       setScopeId('');
       setSelectedState(null);
+      setSelectedLocality(null);
       setStartDate(todayStr());
       setEndDate('');
       setIsActive(true);
     }
-  }, [open, assignment, users, roles, defaultUserId]);
+  }, [open, assignment, users, roles, states, localities, defaultUserId]);
 
   const handleSubmit = async () => {
     if (!selectedUser || !selectedRole) {
@@ -97,10 +108,16 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
       setError('يجب اختيار ولاية للنطاق STATE');
       return;
     }
+    if (scopeTypeVal === 'LOCALITY' && !selectedLocality) {
+      setError('يجب اختيار محلية للنطاق LOCALITY');
+      return;
+    }
     setSubmitting(true);
     setError(null);
     const resolvedScopeId =
-      scopeTypeVal === 'STATE' ? (selectedState?.id ?? null) : (scopeId || null);
+      scopeTypeVal === 'STATE' ? (selectedState?.id ?? null)
+        : scopeTypeVal === 'LOCALITY' ? (selectedLocality?.id ?? null)
+        : (scopeId || null);
     const payload: RoleAssignmentInput = {
       user: selectedUser.id,
       role: selectedRole.code,
@@ -127,7 +144,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
     }
   };
 
-  const disableCreate = submitting || !selectedUser || !selectedRole || (scopeTypeVal === 'STATE' && !selectedState);
+  const disableCreate = submitting || !selectedUser || !selectedRole || (scopeTypeVal === 'STATE' && !selectedState) || (scopeTypeVal === 'LOCALITY' && !selectedLocality);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -219,6 +236,7 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
               const next = v as ScopeType;
               setScopeTypeVal(next);
               if (next !== 'STATE') setSelectedState(null);
+              if (next !== 'LOCALITY') setSelectedLocality(null);
             }}
             options={SCOPE_TYPES.map((s) => ({ value: s, label: scopeType[s] || s }))}
             hint="نطاق تطبيق الصلاحيات"
@@ -239,6 +257,26 @@ const RoleAssignmentFormDialog = ({ open, assignment, defaultUserId, onClose, on
                   {...params}
                   label="الولاية"
                   placeholder="ابحث عن ولاية..."
+                  fullWidth
+                  required
+                />
+              )}
+            />
+          ) : scopeTypeVal === 'LOCALITY' ? (
+            <Autocomplete
+              options={localities}
+              getOptionLabel={(opt) => `${opt.name_ar} (${opt.code})`}
+              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              value={selectedLocality}
+              onChange={(_, v) => {
+                setSelectedLocality(v);
+                setScopeId(v?.id || '');
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="المحلية"
+                  placeholder="ابحث عن محلية..."
                   fullWidth
                   required
                 />
