@@ -10141,5 +10141,29 @@
       "collect": "تحصيل",
       "confirmed": "مؤكد"
     }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "تعذر تحميل تفاصيل الرحلة",
+      "notFound": "الرحلة غير موجودة",
+      "pageTitle": "تفاصيل الرحلة {{flightNumber}}",
+      "companyLabel": "الشركة",
+      "aircraftLabel": "الطائرة",
+      "flightLabel": "الرحلة",
+      "originLabel": "من",
+      "destinationLabel": "إلى",
+      "departureLabel": "المغادرة المجدولة",
+      "arrivalLabel": "الوصول المجدول",
+      "currentStatusLabel": "الحالة الحالية",
+      "declarationStatusLabel": "حالة الإقرار الصحي",
+      "documentsTitle": "المستندات",
+      "noDocuments": "لا توجد مستندات مرتبطة بهذه الرحلة",
+      "documentFallback": "مستند",
+      "download": "تنزيل",
+      "timelineTitle": "سجل أحداث الرحلة",
+      "noEvents": "لا توجد أحداث مسجلة لهذه الرحلة",
+      "operationalCategoryLabel": "تشغيلي",
+      "healthAdminCategoryLabel": "صحي / إداري"
+    }
   }
 }

@@ -10141,5 +10141,29 @@
       "collect": "Collect",
       "confirmed": "Confirmed"
     }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "Failed to load flight details",
+      "notFound": "Flight not found",
+      "pageTitle": "Flight details {{flightNumber}}",
+      "companyLabel": "Company",
+      "aircraftLabel": "Aircraft",
+      "flightLabel": "Flight",
+      "originLabel": "From",
+      "destinationLabel": "To",
+      "departureLabel": "Scheduled departure",
+      "arrivalLabel": "Scheduled arrival",
+      "currentStatusLabel": "Current status",
+      "declarationStatusLabel": "Health declaration status",
+      "documentsTitle": "Documents",
+      "noDocuments": "No documents associated with this flight",
+      "documentFallback": "Document",
+      "download": "Download",
+      "timelineTitle": "Flight event log",
+      "noEvents": "No events recorded for this flight",
+      "operationalCategoryLabel": "Operational",
+      "healthAdminCategoryLabel": "Health / Administrative"
+    }
   }
 }
