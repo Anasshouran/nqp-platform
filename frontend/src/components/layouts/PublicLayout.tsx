@@ -133,9 +133,9 @@ const navItems: NavItem[] = [
 ];
 
 const PORT_TYPE_SECTION: Record<PublicPort['type'], string> = {
-  AIRPORT: 'المطارات',
-  SEAPORT: 'الموانئ',
-  LAND_PORT: 'المعابر البرية',
+  AIRPORT: 'public.layout.portType.airport',
+  SEAPORT: 'public.layout.portType.seaport',
+  LAND_PORT: 'public.layout.portType.land',
 };
 
 const UI_STRINGS: Record<string, string> = {
@@ -221,9 +221,9 @@ const UI_STRINGS: Record<string, string> = {
 };
 
 const externalLinks = [
-  { label: 'وزارة الصحة الاتحادية', href: 'https://fmoh.gov.sd' },
-  { label: 'منظمة الصحة العالمية', href: 'https://www.who.int' },
-  { label: 'اللوائح الصحية الدولية (IHR)', href: 'https://www.who.int/health-topics/international-health-regulations' },
+  { label: 'public.layout.externalLinks.moh', href: 'https://fmoh.gov.sd' },
+  { label: 'public.layout.externalLinks.who', href: 'https://www.who.int' },
+  { label: 'public.layout.externalLinks.ihr', href: 'https://www.who.int/health-topics/international-health-regulations' },
 ];
 
 const footerLinkGroups = [
@@ -834,7 +834,7 @@ const PublicLayout = () => {
                 {externalLinks.length > 0 && (
                   <Stack spacing={1}>
                     <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {tl('دولي')}
+                      {t('public.layout.externalLinks.sectionTitle')}
                     </Typography>
                     {externalLinks.map((link) => (
                       <a
@@ -844,7 +844,7 @@ const PublicLayout = () => {
                         rel="noopener noreferrer"
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {link.label}
+                        {tt(link.label)}
                       </a>
                     ))}
                   </Stack>

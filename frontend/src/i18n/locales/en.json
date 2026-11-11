@@ -685,6 +685,17 @@
   },
   "public": {
     "layout": {
+      "portType": {
+        "airport": "Airports",
+        "seaport": "Seaports",
+        "land": "Land Crossings"
+      },
+      "externalLinks": {
+        "moh": "Federal Ministry of Health",
+        "who": "World Health Organization",
+        "ihr": "International Health Regulations (IHR)",
+        "sectionTitle": "International"
+      },
       "nav": {
         "menu": {
           "services": {
