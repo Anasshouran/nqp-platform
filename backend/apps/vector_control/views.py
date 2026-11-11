@@ -229,6 +229,7 @@ class VectorUnitViewSet(VectorPermissionMixin, SectorFieldScopedMixin, viewsets.
     filter_fields = ['kind', 'sector', 'is_active']
     search_fields = ['name_ar', 'code']
     sector_field = 'sector'
+    state_path = 'sector__state_ids'  # M6
 
 
 class VectorSiteViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
