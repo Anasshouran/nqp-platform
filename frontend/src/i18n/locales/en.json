@@ -715,6 +715,17 @@
             "section": {
               "knowledge": "Health Knowledge"
             }
+          },
+          "travelers": {
+            "travelRequirements": "Travel Requirements",
+            "preRegister": "Pre-Registration",
+            "trackApplication": "Track Application",
+            "diseaseGuide": "Disease Guide",
+            "verify": "Certificate Verification",
+            "section": {
+              "preparation": "Preparing to Travel",
+              "knowledge": "Knowledge"
+            }
           }
         },
         "home": "Home",

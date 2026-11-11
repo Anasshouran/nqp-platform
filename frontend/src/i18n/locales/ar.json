@@ -715,6 +715,17 @@
             "section": {
               "knowledge": "المعرفة الصحية"
             }
+          },
+          "travelers": {
+            "travelRequirements": "متطلبات السفر",
+            "preRegister": "التسجيل المسبق",
+            "trackApplication": "متابعة الطلب",
+            "diseaseGuide": "دليل الأمراض",
+            "verify": "التحقق من الشهادات",
+            "section": {
+              "preparation": "الاستعداد للسفر",
+              "knowledge": "المعرفة"
+            }
           }
         },
         "home": "الرئيسية",

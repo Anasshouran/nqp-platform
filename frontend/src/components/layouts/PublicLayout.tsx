@@ -68,11 +68,11 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.travelers',
     path: '/travel-requirements',
     children: [
-      { label: 'متطلبات السفر', path: '/travel-requirements', section: 'الاستعداد للسفر' },
-      { label: 'التسجيل المسبق', path: '/traveler/register', section: 'الاستعداد للسفر' },
-      { label: 'متابعة الطلب', path: '/traveler/tracking', section: 'الاستعداد للسفر' },
-      { label: 'دليل الأمراض', path: '/diseases', section: 'المعرفة' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'المعرفة' },
+      { label: 'public.layout.nav.menu.travelers.travelRequirements', path: '/travel-requirements', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.preRegister', path: '/traveler/register', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.trackApplication', path: '/traveler/tracking', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.diseaseGuide', path: '/diseases', section: 'public.layout.nav.menu.travelers.section.knowledge' },
+      { label: 'public.layout.nav.menu.travelers.verify', path: '/verify', section: 'public.layout.nav.menu.travelers.section.knowledge' },
     ],
   },
   {
