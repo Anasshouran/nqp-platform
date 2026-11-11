@@ -132,14 +132,11 @@ class TestStateWideningH1Laboratory:
             'relation to sector C sees C samples!'
         )
 
-    @pytest.mark.xfail(reason='H5 — SectorFieldScopedMixin has no STATE branch (laboratory).',
-                       strict=False)
     def test_state_user_sees_own_state_samples(self):
         """STATE user should see samples collected in state A.
 
-        H5 expected: sector_field never reads STATE, so a STATE-only user only
-        sees user.sector/SECTOR rows (none here) → 0 rows. EXPECTED TO FAIL
-        today; should go green only after an explicit H5 fix.
+        H5 confirmed — `SectorFieldScopedMixin` STATE branch added in M5-B-1
+        (`entry_point__state_id`). Now passes (was xfail before M5-B-1).
         """
         world_a = _build_world('A')
         collector = make_state_user(world_a['state'])
@@ -154,5 +151,5 @@ class TestStateWideningH1Laboratory:
         assert resp.status_code == 200
         ids = {str(i['id']) for i in list_items(resp)}
         assert str(sample_a.id) in ids, (
-            'H5 CONFIRMED — STATE user sees 0 sample in their state (silent deny-all).'
+            'H5 confirmed — STATE user sees own LabSample in their state after M5-B-1 fix.'
         )
