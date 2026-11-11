@@ -740,8 +740,13 @@
           "gateways": {
             "traveler": "Traveler Portal",
             "verify": "Certificate Verification",
+            "sectorsPortal": "Sectors Portal",
+            "portsGateway": "Ports Gateway",
+            "airlines": "Airlines Portal",
+            "shippingCompanies": "Shipping & Port Companies Portal",
             "section": {
-              "forTravelers": "Travelers"
+              "forTravelers": "Travelers",
+              "sectorsAndPorts": "Sectors & Ports"
             }
           }
         },

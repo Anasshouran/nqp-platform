@@ -740,8 +740,13 @@
           "gateways": {
             "traveler": "بوابة المسافر",
             "verify": "التحقق من الشهادات",
+            "sectorsPortal": "بوابة القطاعات",
+            "portsGateway": "بوابة المنافذ",
+            "airlines": "بوابة شركات الطيران",
+            "shippingCompanies": "بوابة شركات الشحن والموانئ",
             "section": {
-              "forTravelers": "للمسافرين"
+              "forTravelers": "للمسافرين",
+              "sectorsAndPorts": "القطاعات والمنافذ"
             }
           }
         },
