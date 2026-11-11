@@ -248,6 +248,11 @@ class RoleAssignmentWriteSerializer(serializers.ModelSerializer):
 
     def _validate_scope_id(self, scope_type, scope_id):
         mapping = {
+            # M5-C-0 (discovery e5fd708): STATE was missing here since M4-1 —
+            # every POST /api/v1/auth/role-assignments/ with scope_type='STATE'
+            # was rejected with 400 «نوع النطاق غير معروف». Frontend
+            # RoleAssignmentFormDialog sends STATE.
+            'STATE': ('masterdata.State', 'الولاية'),
             'SECTOR': ('organization.Sector', 'القطاع'),
             'DEPARTMENT': ('organization.Department', 'الإدارة'),
             'STATION': ('organization.Station', 'المحطة'),
