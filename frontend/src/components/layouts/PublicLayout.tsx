@@ -866,11 +866,10 @@ const PublicLayout = () => {
             spacing={1}
           >
             <Typography variant="caption" color="grey.500">
-              {lang === 'ar' ? (
-                <>{`© ${new Date().getFullYear()} الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة. جميع الحقوق محفوظة.`}</>
-              ) : (
-                <>© {new Date().getFullYear()} General Directorate of Health Emergencies &amp; Epidemic Control. All rights reserved.</>
-              )}
+              {t('public.layout.body.allRightsReserved', {
+                year: new Date().getFullYear(),
+                org: t('public.layout.body.emergencyAdmin'),
+              })}
             </Typography>
             <Stack direction="row" spacing={2}>
               <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none', fontSize: 13 }}>

@@ -761,7 +761,8 @@
         "khartoumSudan": "Khartoum, Republic of Sudan",
         "privacy": "Privacy Policy",
         "terms": "Terms & Conditions",
-        "afyatna": "National Quarantine Platform - AFYATNA"
+        "afyatna": "National Quarantine Platform - AFYATNA",
+        "allRightsReserved": "© {{year}} {{org}}. All rights reserved."
       },
       "nav": {
         "menu": {
