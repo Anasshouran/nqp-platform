@@ -766,6 +766,12 @@
       },
       "nav": {
         "menu": {
+          "entryPoints": {
+            "allPorts": "جميع المنافذ",
+            "section": {
+              "portsNetwork": "شبكة المنافذ"
+            }
+          },
           "services": {
             "catalog": "كتالوج الخدمات",
             "travelers": "خدمات المسافرين",

@@ -79,7 +79,7 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.entryPoints',
     path: '/ports',
     children: [
-      { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
+      { label: 'public.layout.nav.menu.entryPoints.allPorts', path: '/ports', section: 'public.layout.nav.menu.entryPoints.section.portsNetwork' },
     ],
   },
   {
@@ -387,7 +387,7 @@ const PublicLayout = () => {
   const activeNavItems = useMemo(() => {
     if (cmsSlug) return sectorNavItems(cmsSlug);
     const portChildren: NavItem[] = [
-      { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
+      { label: 'public.layout.nav.menu.entryPoints.allPorts', path: '/ports', section: 'public.layout.nav.menu.entryPoints.section.portsNetwork' },
       ...(['AIRPORT', 'SEAPORT', 'LAND_PORT'] as PublicPort['type'][]).flatMap((type) =>
         ports
           .filter((p) => p.is_active && p.type === type)

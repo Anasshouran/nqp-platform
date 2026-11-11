@@ -766,6 +766,12 @@
       },
       "nav": {
         "menu": {
+          "entryPoints": {
+            "allPorts": "All Ports",
+            "section": {
+              "portsNetwork": "Ports Network"
+            }
+          },
           "services": {
             "catalog": "Service Catalog",
             "travelers": "Traveler Services",
