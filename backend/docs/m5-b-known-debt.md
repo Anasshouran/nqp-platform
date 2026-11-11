@@ -1,0 +1,120 @@
+# M5-B Known Debt — دفتر ديون M5-B
+
+> يُحدَّث مع كل sub-phase. كل D-M5-B-* يثبت أثره بالاختبار. H-closed تُرجع
+> تسجيلها.
+
+## D-M5-B-1: Sector-only models — STATE deny-all (M5-B-1 CLOSED)
+
+**الوضع:** النماذج التالية **لا تملك** `entry_point` FK — لا مباشرة، لا عبر
+سلسلة علاقية يمكن اشتقاق state منها. المستخدم STATE-only يرى **0 سجل**.
+
+**النماذج المتأثرة:**
+- `laboratory`: `LabEquipment`, `Reagent`, `ReagentLot`, `MaterialIssue`,
+  `QCRecord`, `NonConformity`, `CapaRecord`, `CriticalResultNotification`.
+- `vector_control`: `VectorUnit`.
+
+**السبب الجذري:** `organization.Sector` **لا يملك** FK إلى `masterdata.State`
+(نتيجة M0). أي اشتقاق state يجب أن يمر عبر `EntryPoint`. النماذج أعلاه لا تحمل
+EntryPoint في هيكلها.
+
+**قرار M5-B-1 (صريح):** هذه النماذج تفشل بالحجب الآمن (fail-safe) بدلاً من
+التسرب عبر `Q()` بلا شروط — ليست "خطأ تنفيذي" بل نتيجة قرار معماري. أي توسيع
+هنا يجب أن يمر بقرار منتج/مخطط (M6).
+
+**الاختبار الموثِّق:**
+`test_vector_control_h5.py::test_state_user_sees_own_state_vector_unit`
+— يُعلَّم الآن `xfail(strict=True)`: لو نجح (STATE user يرى VectorUnit)
+فهو bug (توسعة) يجب أن تفشل البذرة (suite).
+
+**الحلول المقترحة (M6):**
+- Option A — `Sector.state_ids` M2M (schema migration + backfill).
+- Option B — `Sector.entry_point_hint` FK nullable (derivation مباشر).
+- Option C — `state_ids` API على `SectorSerializer` + اشتقاق في الـ mixin.
+
+**الأولوية:** 🟡 متوسطة — ليس widening، بل حجب كامل. يعتمد على قرار منتج.
+
+---
+
+## D-M5-B-2: `SectorFieldScopedMixin.state_path = None` افتراضياً (M5-B-1 CLOSED)
+
+**الوضع:** أي viewset جديد يستخدم `SectorFieldScopedMixin` **بدون** ضبط
+`state_path` → STATE deny-all (لا يرى records جديدة مرتبطة بولاية مستخدمها).
+
+**السبب:** القرار معماري — STATE اختياري، ويُعلَّن صراحةً على كل viewset
+`state_path` = مسار علائقي إلى `masterdata.State.id`.
+
+**التخفيف الحالي:** هذا الملف + docstring الـ mixin (انظر `scoping.py`) — مواد
+مرجعية، وليس pass-fail متيناً.
+
+**الحل المقترح (M6):** structural test
+`test_all_sector_field_viewsets_declare_state_path_or_are_documented`
+يفشل لو ظهر viewset جديد بلا `state_path` وبلا D-M5-B-* مرجعي.
+
+**الأولوية:** 🟡 متوسطة — يمنع تكرار H5 صامتاً في viewset جديد لاحقاً.
+
+---
+
+## §H3 — screening + STATE (M5-B-2 CLOSED)
+
+**قبل:** STATE-only user → deny-all (never leaks, never sees).
+**بعد (M5-B-2):** `ScreeningViewSet._entry_point_ids_for()` يدمج نطاق STATE → كل
+EntryPoints `state_id__in=state_ids` مباشرة في `port_ids` — اتحاد يبقى مع PORT/POINT/STATION
+وسقط fallback القطاعي (قطاع منزلي `user.sector_id` — قرار H1′) في نفس البذرة.
+`port_ids` تُعيد قائمة منزوعة التكرار، وكلا مساري
+`get_queryset` و`_assert_port_in_scope` يرثان السلوك تلقائياً.
+
+**الاختبارات:** `test_screening_h3.py` (xfail مُزالة) + `test_h3_no_widening.py`
+(3 اختبارات: baseline / cross-leak / union مع القطاع المنزلي).
+
+**H1′ محفوظ:** القطاع المنزلي (`user.sector_id`) يُدمج.
+
+**النطاق:** `HealthScreening` لا يحمل `sector`؛ STATE يعمل فقط عبر `port__state_id`
+(سلسلة عبر `masterdata.EntryPoint.state`). أي screening نُفِذ من مستخدم
+FIELD خارج نطاق STATE أو PORT لن يرى. (موثق مسبقاً في m5-a-known-debt.)
+
+---
+
+## §H4 — HR SCOPE_LOOKUPS + STATE (M5-B-3 CLOSED)
+
+**قبل:** STATE-only HR user → deny-all (لا شيء يُعرض؛ `OrgAssignment` بلا ولاية
+تُعرَض ولو كان موظفه في الولاية).
+**بعد (M5-B-3):**
+- `SCOPE_LOOKUPS['STATE'] = ('entry_point__state_id',)`
+  → `_assignments_in_scope('STATE', X)` يُرجع التعيينات النشطة التي تساوي
+  `entry_point__state_id = X`.
+- `resolve_own_org_scope_keys()` يُصدر `('STATE', a.entry_point.state_id)` لكل
+  التعيين الهيكلي النشط يحمل `entry_point.state`. لا حذف لـ `POINT`، إضافة فقط.
+- `select_related('entry_point')` يمنع N+1.
+
+**اتحاد القطاع المنزلي:** `user.sector_id` يُدمج كمفتاح `('SECTOR', sector_id)`
+— اتساق مع قرار H1′ (home-sector grant بالبقية).
+
+**لا migrations:** `OrgAssignment.entry_point` FK موجود منذ M1.
+**النطاق:** موظف لا يحمل `entry_point` نهائياً → لا يتصل بـ state؛ يُرى فقط
+عبر SECTOR/DEPARTMENT/STATION grant إن وُجد. **سلوك موثّق**; scope-expansion
+gap، P0 ليس.
+
+**الاختبارات:** `test_hr_h4.py` (xfail مُزالة، مع تعديل التعيين البحثي لـ
+`entry_point=world['entry_point']`) + `test_h4_no_widening.py` (3 اختبارات:
+baseline / cross-leak / union مع منزل-sector + STATE).
+
+---
+
+## Deltas introduced in M5-B (H1′-consistent)
+
+| # | Sub-phase | App | Type | Status |
+|---|---|---|---|---|
+| Delta 1 | M5-B-2 | screening | `user.sector_id` grant merged into `port_ids` | ✅ Approved + tested (`test_screening_h3.py`, `test_h3_no_widening.py`, `test_h3_deltas.py`) |
+| Delta 2 | M5-B-2 | screening | PORT ∪ SECTOR (was PORT-dominant) | ✅ Approved + tested (`test_h3_deltas.py`) |
+| Delta 4 | M5-B-3 | hr | `user.sector_id` grant in `resolve_own_org_scope_keys` | ✅ Approved + tested (`test_hr_h4.py`, `test_h4_no_widening.py`, `test_h1prime_consistency.py`) |
+
+Delta 3 = implicit (no change to `SectorFieldScopedMixin` — already used `resolve_user_sectors`).
+
+All deltas are H1′-consistent. See `m5-a-audit.md` §9.
+
+**Enforcement (M5-B-T, done):**
+`test_h1prime_consistency.py` (4 tests) — fails if any mixin is missed in future
+refactors. `test_h3_deltas.py` (5 tests) — Delta 1 (`user.sector_id` grant),
+Delta 2 (`PORT ∪ SECTOR`), cross-state leak guard, STATE ∪ home-sector union,
+STATE-only sanity. `test_state_widening_h1.py` — H5 marker removed (xpass → pass).
+**Final baseline: 443 passed + 1 xfailed (D-M5-B-1) + 0 xpassed.**

@@ -249,6 +249,8 @@ class VectorTeamViewSet(VectorPermissionMixin, SectorFieldScopedMixin, viewsets.
     filter_fields = ['team_type', 'sector', 'entry_point', 'is_active']
     search_fields = ['name_ar', 'code']
     sector_field = 'sector'
+    state_path = 'entry_point__state_id'  # M5-B-1: STATE branch (VectorUnit stays D-M5-B-1)
+    locality_path = 'entry_point__locality_id'  # M5-C-L: LOCALITY branch (gate داخل get_user_locality_ids)
 
 
 class VectorReportViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):

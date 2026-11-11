@@ -383,9 +383,15 @@
           "title": "Administrative Structure and Staff — Red Sea Sector",
           "subtitle": "Departments, their performance, and sector staff within the sector scope.",
           "kpi": {
-            "staff": { "label": "Total staff" },
-            "departments": { "label": "Departments" },
-            "ports": { "label": "Entry points" }
+            "staff": {
+              "label": "Total staff"
+            },
+            "departments": {
+              "label": "Departments"
+            },
+            "ports": {
+              "label": "Entry points"
+            }
           },
           "departmentsSection": {
             "title": "Department performance",
@@ -450,10 +456,18 @@
           "subtitle": "Terminals, screening points, and travelers at sector airports.",
           "noFlight": "No flight",
           "kpi": {
-            "airports": { "label": "Airports" },
-            "terminals": { "label": "Terminals" },
-            "points": { "label": "Screening points" },
-            "screenings": { "label": "Traveler screenings" }
+            "airports": {
+              "label": "Airports"
+            },
+            "terminals": {
+              "label": "Terminals"
+            },
+            "points": {
+              "label": "Screening points"
+            },
+            "screenings": {
+              "label": "Traveler screenings"
+            }
           },
           "screeningsSection": {
             "title": "Recent traveler screenings",
@@ -485,10 +499,18 @@
           "title": "Vector control — Red Sea sector",
           "subtitle": "Vector surveys and work orders within sector entry points.",
           "kpi": {
-            "surveys": { "label": "Surveys this month" },
-            "reports": { "label": "New reports" },
-            "activeOperations": { "label": "Active operations" },
-            "completedOperations": { "label": "Completed operations" }
+            "surveys": {
+              "label": "Surveys this month"
+            },
+            "reports": {
+              "label": "New reports"
+            },
+            "activeOperations": {
+              "label": "Active operations"
+            },
+            "completedOperations": {
+              "label": "Completed operations"
+            }
           },
           "surveysSection": {
             "title": "Recent surveys",
@@ -1436,10 +1458,10 @@
       },
       "title": "Border Pre-Registration",
       "subtitle": "Please fill in the following information before arriving at the entry point",
-      "eyebrow": "Traveler",
+      "eyebrow": "Traveler Portal",
       "submit": "Submit Request",
       "submitting": "Submitting...",
-      "success": "Request submitted successfully",
+      "success": "Registration Successful",
       "steps": {
         "start": "Start",
         "personal": "Personal Info",
@@ -1547,13 +1569,13 @@
         "transportMode": "Transport Mode",
         "arrivalDate": "Arrival Date",
         "transitCountries": "Transit Countries (Optional)",
-      "phone": "Phone Number",
-      "whatsapp": "WhatsApp (Optional)",
-      "email": "Email (Optional)",
-      "emergencyPhone": "Emergency Phone (Closest Person)",
-      "temperature": "Temperature (°C)",
-      "patientName": "Patient Name",
-      "trip": "Trip"
+        "phone": "Phone Number",
+        "whatsapp": "WhatsApp (Optional)",
+        "email": "Email (Optional)",
+        "emergencyPhone": "Emergency Phone (Closest Person)",
+        "temperature": "Temperature (°C)",
+        "patientName": "Patient Name",
+        "trip": "Trip"
       },
       "risk": {
         "initial": "Initial risk assessment:",
@@ -1586,12 +1608,10 @@
       "summary": "Data Summary",
       "consent": "I confirm the data is correct",
       "save": "Save and Issue Health Pass",
-      "success": "Registration Successful",
       "registrationNumber": "Registration Number",
       "qrAlt": "QR Code",
       "qrInstruction": "Show this code to the health quarantine officer upon arrival to expedite your procedures.",
       "qrIssuance": "Your QR code will be issued after document review and request approval.",
-      "date": "Date",
       "symptomsLabel": "Symptoms:",
       "purposeLabel": "Purpose of Visit",
       "purposeSpecifyLabel": "Specify purpose",
@@ -1599,10 +1619,7 @@
       "trackRequest": "Track request status",
       "dashboard": "Dashboard",
       "uploadLater": "You can upload documents later from the \"Upload Documents\" page in the Traveler Portal.",
-      "back": "Back",
-      "next": "Next",
-      "nextReview": "Next: Review and Confirm",
-      "eyebrow": "Traveler Portal"
+      "nextReview": "Next: Review and Confirm"
     },
     "requestTracking": {
       "status": {
@@ -10176,6 +10193,89 @@
       "noEvents": "No events recorded for this flight",
       "operationalCategoryLabel": "Operational",
       "healthAdminCategoryLabel": "Health / Administrative"
+    }
+  },
+  "registry": {
+    "tree": {
+      "title": "Organizational Registry — Tree",
+      "picker": {
+        "label": "Root",
+        "all": "All available roots"
+      },
+      "empty": "No nodes to display",
+      "error": {
+        "load": "Failed to load tree. Please try again."
+      },
+      "banner": {
+        "scoped": "You are viewing a scoped subset of the registry (state/sector)."
+      }
+    },
+    "nodes": {
+      "create": {
+        "button": "Add Node",
+        "title": "Create Node"
+      },
+      "edit": {
+        "title": "Edit Node"
+      },
+      "deactivate": {
+        "button": "Deactivate",
+        "confirm": "Are you sure you want to deactivate this node? It will disappear from the tree until reactivated."
+      },
+      "field": {
+        "kind": "Kind",
+        "code": "Code",
+        "name_ar": "Name (AR)",
+        "name_en": "Name (EN)",
+        "parent": "Parent"
+      },
+      "error": {
+        "create": "Failed to create node",
+        "edit": "Failed to save node",
+        "deactivate": "Failed to deactivate node"
+      }
+    },
+    "facility": {
+      "title": "Facility Detail",
+      "error": {
+        "missing_id": "Facility id missing",
+        "load": "Failed to load details",
+        "not_found": "Facility not found or not visible"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "ownership": "Ownership",
+        "supervision": "Supervision",
+        "services": "Services",
+        "departments": "Departments",
+        "tree_position": "Tree Position"
+      },
+      "overview": {
+        "name": "Name",
+        "code": "Code",
+        "sector": "Sector",
+        "locality": "Locality",
+        "entry_point": "Entry Point"
+      },
+      "ownership": {
+        "empty": "No ownership records",
+        "error": "Failed to load ownership records"
+      },
+      "supervision": {
+        "empty": "No supervision records",
+        "error": "Failed to load supervision records"
+      },
+      "services": {
+        "empty": "No services registered",
+        "error": "Failed to load services"
+      },
+      "departments": {
+        "empty": "No departments registered",
+        "error": "Failed to load departments"
+      },
+      "tree_position": {
+        "empty": "Facility not linked to tree"
+      }
     }
   }
 }
