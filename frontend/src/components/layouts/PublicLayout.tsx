@@ -473,7 +473,7 @@ const PublicLayout = () => {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <a href="#main-content" className="skip-link">
-        {tl('تخطي إلى المحتوى الرئيسي')}
+        {t('public.layout.body.skipToContent')}
       </a>
 
       {/* Top utility bar (ministry + directorate merged) */}
@@ -496,7 +496,7 @@ const PublicLayout = () => {
                   textOverflow: 'ellipsis',
                 }}
               >
-                {cmsSlug ? orgLabel : tl('وزارة الصحة الاتحادية')}
+                {cmsSlug ? orgLabel : t('public.layout.externalLinks.moh')}
               </Typography>
               {!cmsSlug && (
                 <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 1 }}>
@@ -505,7 +505,7 @@ const PublicLayout = () => {
                     variant="caption"
                     sx={{ fontWeight: 600, opacity: 0.95, whiteSpace: 'nowrap' }}
                   >
-                    {tl('الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة')}
+                    {t('public.layout.body.emergencyAdmin')}
                   </Typography>
                 </Box>
               )}
@@ -606,7 +606,7 @@ const PublicLayout = () => {
                 startIcon={<LoginIcon sx={{ fontSize: 18 }} />}
                 sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
               >
-                {tl('تسجيل الدخول')}
+                {t('public.layout.body.signIn')}
               </Button>
               <IconButton
                 component={Link}
@@ -649,7 +649,7 @@ const PublicLayout = () => {
 <Typography variant="body2" sx={{ fontWeight: 700, flex: 1 }}>
                   {urgentNotice?.title ??
                     (lang === 'ar'
-                      ? 'التسجيل المسبق إلزامي للمسافرين القادمين عبر جميع منافذ الدخول'
+                      ? t('public.layout.body.preregMandatory')
                       : 'Pre-registration is mandatory for travelers arriving through all ports of entry')}
                 </Typography>
               <Button
@@ -664,7 +664,7 @@ const PublicLayout = () => {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
                 }}
               >
-                {tl(urgentNotice ? 'تفاصيل التنبيه' : 'سجّل الآن')}
+                {t(urgentNotice ? 'public.layout.body.alertDetails' : 'public.layout.body.registerNow')}
               </Button>
               <IconButton
                 aria-label={lang === 'ar' ? t('public.layout.body.closeNotification') : 'Close notification'}
@@ -772,7 +772,7 @@ const PublicLayout = () => {
                 fullWidth
                 startIcon={<LoginIcon />}
               >
-                {tl('تسجيل الدخول')}
+                {t('public.layout.body.signIn')}
               </Button>
               <Button
                 onClick={openGlobalSearch}
@@ -808,8 +808,7 @@ const PublicLayout = () => {
             <Box sx={{ maxWidth: 360 }}>
               <BrandLogo light product="afyatna" />
               <Typography variant="body2" sx={{ mt: 2, color: 'grey.400' }}>
-                منصة وطنية متكاملة لإدارة الحجر الصحي والرصد الوبائي في جميع منافذ الدخول بجمهورية السودان،
-                وفق معايير اللوائح الصحية الدولية (IHR).
+                {t('public.layout.body.nationalPlatform')} {t('public.layout.body.ihrCompliance')}
               </Typography>
             </Box>
             {/* روابط سريعة مقسمة */}
@@ -853,10 +852,10 @@ const PublicLayout = () => {
             </nav>
             <Stack spacing={1}>
               <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {tl('تواصل معنا')}
+                {t('public.layout.body.contactUs')}
               </Typography>
               <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PublicIcon sx={{ fontSize: 16 }} /> الخرطوم، جمهورية السودان
+                <PublicIcon sx={{ fontSize: 16 }} /> {t('public.layout.body.khartoumSudan')}
               </Typography>
             </Stack>
           </Stack>
@@ -875,14 +874,14 @@ const PublicLayout = () => {
             </Typography>
             <Stack direction="row" spacing={2}>
               <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none', fontSize: 13 }}>
-                {tl('الخصوصية')}
+                {t('public.layout.body.privacy')}
               </Link>
               <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none', fontSize: 13 }}>
-                {tl('الشروط والأحكام')}
+                {t('public.layout.body.terms')}
               </Link>
             </Stack>
             <Typography variant="caption" color="grey.600">
-              {lang === 'ar' ? 'منصة الحجر الصحي القومي - عافيتنا' : 'National Quarantine Platform - AFYATNA'} | AFYATNA
+              {t('public.layout.body.afyatna')} | AFYATNA
             </Typography>
           </Stack>
         </Container>

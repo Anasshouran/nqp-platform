@@ -748,7 +748,20 @@
         "openMenu": "Open menu",
         "closeNotification": "Close notification",
         "closeMenu": "Close menu",
-        "quickLinks": "Quick links"
+        "quickLinks": "Quick links",
+        "skipToContent": "Skip to main content",
+        "emergencyAdmin": "General Directorate of Health Emergencies and Epidemic Control",
+        "signIn": "Sign In",
+        "preregMandatory": "Pre-registration is mandatory for travelers arriving through all entry ports",
+        "alertDetails": "Alert details",
+        "registerNow": "Register now",
+        "nationalPlatform": "Integrated national platform for managing quarantine and epidemic surveillance at all entry points of the Republic of Sudan,",
+        "ihrCompliance": "in accordance with the International Health Regulations (IHR).",
+        "contactUs": "Contact Us",
+        "khartoumSudan": "Khartoum, Republic of Sudan",
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "afyatna": "National Quarantine Platform - AFYATNA"
       },
       "nav": {
         "menu": {
