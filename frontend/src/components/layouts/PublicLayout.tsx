@@ -105,9 +105,9 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.news',
     path: '/news',
     children: [
-      { label: 'الأخبار', path: '/news' },
-      { label: 'التنبيهات الصحية', path: '/notices' },
-      { label: 'التعاميم', path: '/circulars' },
+      { label: 'public.layout.nav.menu.news.all', path: '/news' },
+      { label: 'public.layout.nav.menu.news.healthNotices', path: '/notices' },
+      { label: 'public.layout.nav.menu.news.circulars', path: '/circulars' },
     ],
   },
   { label: 'public.layout.nav.documents', path: '/documents' },
@@ -115,9 +115,9 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.diseases',
     path: '/diseases',
     children: [
-      { label: 'دليل الأمراض والإرشادات', path: '/diseases', section: 'المعرفة الصحية' },
-      { label: 'التنبيهات الصحية', path: '/notices', section: 'المعرفة الصحية' },
-      { label: 'التعاميم', path: '/circulars', section: 'المعرفة الصحية' },
+      { label: 'public.layout.nav.menu.diseases.guide', path: '/diseases', section: 'public.layout.nav.menu.diseases.section.knowledge' },
+      { label: 'public.layout.nav.menu.diseases.healthNotices', path: '/notices', section: 'public.layout.nav.menu.diseases.section.knowledge' },
+      { label: 'public.layout.nav.menu.diseases.circulars', path: '/circulars', section: 'public.layout.nav.menu.diseases.section.knowledge' },
     ],
   },
   {

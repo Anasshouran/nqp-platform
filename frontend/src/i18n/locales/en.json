@@ -702,6 +702,19 @@
               "platforms": "Portals",
               "tools": "Tools"
             }
+          },
+          "news": {
+            "all": "News",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars"
+          },
+          "diseases": {
+            "guide": "Disease & Guidelines Guide",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars",
+            "section": {
+              "knowledge": "Health Knowledge"
+            }
           }
         },
         "home": "Home",
