@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, Link, useLocation, useNavigationType } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
@@ -17,8 +18,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Collapse from '@mui/material/Collapse';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -298,6 +297,7 @@ const sectorNavItems = (slug: string): NavItem[] => [
 ];
 
 const PublicLayout = () => {
+  const { i18n } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuState, setMenuState] = useState<{ anchor: HTMLElement; children: NavItem[] } | null>(null);
   const [drawerOpenItem, setDrawerOpenItem] = useState<string | null>(null);
@@ -305,7 +305,9 @@ const PublicLayout = () => {
     () => sessionStorage.getItem('nqp_banner_dismissed') !== '1'
   );
   const [urgentNotice, setUrgentNotice] = useState<HealthNotice | null>(null);
-  const [lang, setLang] = useState<'ar' | 'en'>('ar');
+  const [lang, setLang] = useState<'ar' | 'en'>(() =>
+    i18n.language === 'en' ? 'en' : 'ar',
+  );
   const tl = (ar?: string) => (lang === 'ar' ? (ar ?? '') : ar ? UI_STRINGS[ar] ?? ar : '');
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -314,13 +316,12 @@ const PublicLayout = () => {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    localStorage.setItem('nqp_lang', lang);
   }, [lang]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('nqp_lang');
-    if (saved === 'ar' || saved === 'en') setLang(saved);
-  }, []);
+    const l = i18n.language === 'ar' ? 'ar' : 'en';
+    if (l !== lang) setLang(l);
+  }, [i18n.language, lang]);
 
   const pathSlug = location.pathname.match(/^\/sector\/([^/]+)(?:\/|$)/)?.[1] ?? null;
   const cmsSlug = isCmsSector(pathSlug ?? undefined) ? pathSlug : null;
@@ -508,45 +509,6 @@ const PublicLayout = () => {
               )}
             </Stack>
 
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={lang}
-                onChange={(_, next) => {
-                  if (next === 'ar' || next === 'en') setLang(next);
-                }}
-                aria-label={lang === 'ar' ? 'اختيار اللغة' : 'Language'}
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.12)',
-                  borderRadius: 8,
-                  p: 0.25,
-                  '& .MuiToggleButtonGroup-grouped': { border: 'none', borderRadius: 6 },
-                }}
-              >
-                {(['ar', 'en'] as const).map((code) => (
-                  <ToggleButton
-                    key={code}
-                    value={code}
-                    sx={{
-                      minWidth: 0,
-                      px: 1.25,
-                      py: 0.25,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      color: '#fff',
-                      bgcolor: 'transparent',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.18)', color: '#fff' },
-                      '&.Mui-selected': { bgcolor: '#fff', color: 'primary.darker' },
-                      '&.Mui-selected:hover': { bgcolor: '#fff', color: 'primary.darker' },
-                    }}
-                  >
-                    {code === 'ar' ? 'العربية' : 'English'}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-            </Stack>
           </Stack>
         </Container>
       </Box>
