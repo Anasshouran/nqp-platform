@@ -744,9 +744,17 @@
             "portsGateway": "بوابة المنافذ",
             "airlines": "بوابة شركات الطيران",
             "shippingCompanies": "بوابة شركات الشحن والموانئ",
+            "clinics": "بوابة العيادات",
+            "laboratories": "بوابة المختبرات",
+            "surveillance": "بوابة الترصد",
+            "foodControl": "بوابة رقابة الأغذية",
+            "vectorControl": "بوابة مكافحة النواقل",
+            "vaccination": "بوابة التطعيم الدولي",
+            "partners": "بوابة المنظمات والشركاء",
             "section": {
               "forTravelers": "للمسافرين",
-              "sectorsAndPorts": "القطاعات والمنافذ"
+              "sectorsAndPorts": "القطاعات والمنافذ",
+              "healthAdmin": "الإدارة الصحية"
             }
           }
         },

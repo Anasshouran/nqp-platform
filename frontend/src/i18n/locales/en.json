@@ -744,9 +744,17 @@
             "portsGateway": "Ports Gateway",
             "airlines": "Airlines Portal",
             "shippingCompanies": "Shipping & Port Companies Portal",
+            "clinics": "Clinics Portal",
+            "laboratories": "Laboratories Portal",
+            "surveillance": "Surveillance Portal",
+            "foodControl": "Food Control Portal",
+            "vectorControl": "Vector Control Portal",
+            "vaccination": "International Vaccination Portal",
+            "partners": "Partners Portal",
             "section": {
               "forTravelers": "Travelers",
-              "sectorsAndPorts": "Sectors & Ports"
+              "sectorsAndPorts": "Sectors & Ports",
+              "healthAdmin": "Health Administration"
             }
           }
         },
