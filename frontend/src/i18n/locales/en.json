@@ -554,6 +554,18 @@
       "filterLabel": "Filter:",
       "noMatchingFoci": "No matching foci (add GPS coordinates to foci to display on the map)",
       "noGpsCoords": "Registered foci have no GPS coordinates yet"
+    },
+    "casesSection": {
+      "title": "Cases",
+      "sectionSubtitle": "Vector-borne diseases",
+      "caseNumberLabel": "Number",
+      "focusNumberLabel": "Focus",
+      "diseaseLabel": "Disease",
+      "classificationLabel": "Classification",
+      "detectedAtLabel": "Detected at",
+      "casesSubtitle": "Case data from the epidemiological surveillance system",
+      "emptyTitle": "Vector-borne diseases",
+      "emptyDescription": "Recorded cases monitored by the epidemiological surveillance system are displayed here — their link opens from the portal dashboard"
     }
   },
   "vaccination": {
@@ -10140,6 +10152,30 @@
       "extraPayment": "Extra Payment",
       "collect": "Collect",
       "confirmed": "Confirmed"
+    }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "Failed to load flight details",
+      "notFound": "Flight not found",
+      "pageTitle": "Flight details {{flightNumber}}",
+      "companyLabel": "Company",
+      "aircraftLabel": "Aircraft",
+      "flightLabel": "Flight",
+      "originLabel": "From",
+      "destinationLabel": "To",
+      "departureLabel": "Scheduled departure",
+      "arrivalLabel": "Scheduled arrival",
+      "currentStatusLabel": "Current status",
+      "declarationStatusLabel": "Health declaration status",
+      "documentsTitle": "Documents",
+      "noDocuments": "No documents associated with this flight",
+      "documentFallback": "Document",
+      "download": "Download",
+      "timelineTitle": "Flight event log",
+      "noEvents": "No events recorded for this flight",
+      "operationalCategoryLabel": "Operational",
+      "healthAdminCategoryLabel": "Health / Administrative"
     }
   }
 }

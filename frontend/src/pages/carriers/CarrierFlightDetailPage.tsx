@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,6 +26,7 @@ const formatFileSize = (size?: number) => {
 };
 
 const CarrierFlightDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [flight, setFlight] = useState<Flight | null>(null);
   const [timeline, setTimeline] = useState<FlightTimelineEvent[]>([]);
@@ -45,7 +47,7 @@ const CarrierFlightDetailPage = () => {
         setDocuments(documentsResponse.data.data.results);
       })
       .catch(() => {
-        if (active) setError('تعذر تحميل تفاصيل الرحلة');
+        if (active) setError(t('carriers.flightDetail.loadError'));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -53,7 +55,7 @@ const CarrierFlightDetailPage = () => {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   if (loading) {
     return (
@@ -74,7 +76,7 @@ const CarrierFlightDetailPage = () => {
   if (!flight) {
     return (
       <Paper sx={{ p: 3 }}>
-        <Alert severity="info">الرحلة غير موجودة</Alert>
+        <Alert severity="info">{t('carriers.flightDetail.notFound')}</Alert>
       </Paper>
     );
   }
@@ -85,41 +87,41 @@ const CarrierFlightDetailPage = () => {
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 800 }}>
-        تفاصيل الرحلة {flight.flight_number}
+        {t('carriers.flightDetail.pageTitle', { flightNumber: flight.flight_number })}
       </Typography>
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Stack spacing={1.5}>
-          <Typography><strong>الشركة:</strong> {flight.carrier_name ?? '—'}</Typography>
-          <Typography><strong>الطائرة:</strong> {flight.aircraft_type ?? '—'}</Typography>
-          <Typography><strong>الرحلة:</strong> {flight.flight_number}</Typography>
-          <Typography><strong>من:</strong> {flight.origin_country_name ?? flight.origin_code ?? '—'}</Typography>
-          <Typography><strong>إلى:</strong> {flight.destination_port_name ?? flight.destination_port ?? '—'}</Typography>
-          <Typography><strong>المغادرة المجدولة:</strong> {formatDateTime(flight.scheduled_departure)}</Typography>
-          <Typography><strong>الوصول المجدول:</strong> {formatDateTime(flight.scheduled_arrival)}</Typography>
-          <Box><strong>الحالة الحالية:</strong> <Chip label={flight.status} size="small" /></Box>
-          <Typography><strong>حالة الإقرار الصحي:</strong> {latestDeclarationStatus ?? '—'}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.companyLabel')}:</strong> {flight.carrier_name ?? '—'}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.aircraftLabel')}:</strong> {flight.aircraft_type ?? '—'}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.flightLabel')}:</strong> {flight.flight_number}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.originLabel')}:</strong> {flight.origin_country_name ?? flight.origin_code ?? '—'}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.destinationLabel')}:</strong> {flight.destination_port_name ?? flight.destination_port ?? '—'}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.departureLabel')}:</strong> {formatDateTime(flight.scheduled_departure)}</Typography>
+          <Typography><strong>{t('carriers.flightDetail.arrivalLabel')}:</strong> {formatDateTime(flight.scheduled_arrival)}</Typography>
+          <Box><strong>{t('carriers.flightDetail.currentStatusLabel')}:</strong> <Chip label={flight.status} size="small" /></Box>
+          <Typography><strong>{t('carriers.flightDetail.declarationStatusLabel')}:</strong> {latestDeclarationStatus ?? '—'}</Typography>
         </Stack>
       </Paper>
 
       <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 800 }}>
-        المستندات
+        {t('carriers.flightDetail.documentsTitle')}
       </Typography>
       <Paper sx={{ p: 2, mb: 3 }}>
         {documents.length === 0 ? (
-          <Alert severity="info" variant="outlined">لا توجد مستندات مرتبطة بهذه الرحلة</Alert>
+          <Alert severity="info" variant="outlined">{t('carriers.flightDetail.noDocuments')}</Alert>
         ) : (
           <List disablePadding>
             {documents.map((doc) => (
               <ListItem key={doc.id} disableGutters sx={{ py: 1.25, justifyContent: 'space-between' }}>
                 <Box>
-                  <Typography sx={{ fontWeight: 700 }}>{doc.title || doc.original_filename || 'مستند'}</Typography>
+                  <Typography sx={{ fontWeight: 700 }}>{doc.title || doc.original_filename || t('carriers.flightDetail.documentFallback')}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {doc.document_type_label ?? doc.document_type} · {formatDateTime(doc.created_at)} · {formatFileSize(doc.file_size)}
                   </Typography>
                 </Box>
                 <Button variant="outlined" size="small" onClick={() => downloadCarrierDocument(doc.id)}>
-                  تنزيل
+                  {t('carriers.flightDetail.download')}
                 </Button>
               </ListItem>
             ))}
@@ -128,18 +130,18 @@ const CarrierFlightDetailPage = () => {
       </Paper>
 
       <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 800 }}>
-        سجل أحداث الرحلة
+        {t('carriers.flightDetail.timelineTitle')}
       </Typography>
       <Paper sx={{ p: 2 }}>
         {timeline.length === 0 ? (
-          <Alert severity="info">لا توجد أحداث مسجلة لهذه الرحلة</Alert>
+          <Alert severity="info">{t('carriers.flightDetail.noEvents')}</Alert>
         ) : (
           <List disablePadding>
             {timeline.map((event, index) => (
               <ListItem key={`${event.source_type}-${event.source_id}-${index}`} disableGutters sx={{ py: 1.25 }}>
                 <Box sx={{ width: '100%' }}>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                    <Chip size="small" label={event.category === 'operational' ? 'تشغيلي' : 'صحي / إداري'} />
+                    <Chip size="small" label={event.category === 'operational' ? t('carriers.flightDetail.operationalCategoryLabel') : t('carriers.flightDetail.healthAdminCategoryLabel')} />
                     <Typography sx={{ fontWeight: 700 }}>{event.title}</Typography>
                   </Stack>
                   <Typography variant="body2" color="text.secondary">
