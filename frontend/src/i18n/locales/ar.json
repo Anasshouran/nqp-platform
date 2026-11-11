@@ -33,6 +33,17 @@
           "success": "نجاح",
           "info": "معلومة"
         }
+      },
+      "worklist": {
+        "searchPlaceholder": "بحث برقم البيان، جمركي، بوليصة، مورد، باخرة…",
+        "emptyTitle": "لا توجد طلبات",
+        "emptyDescription": "لم يتم العثور على طلبات تطابق هذه المعايير",
+        "sendTitle": "إرسال لتحصيل الرسوم",
+        "send": "إرسال",
+        "draftTooltip": "مسودة — قابلة للتعديل والحذف",
+        "viewTooltip": "مشاهدة",
+        "edit": "تعديل",
+        "delete": "حذف"
       }
     },
     "views": {
@@ -79,6 +90,86 @@
         "numberFormatArabic": "عربي (ar-EG)",
         "numberFormatToggleToast": "تم تبديل التنسيق"
       }
+    }
+  },
+  "portal": {
+    "auditLogs": {
+      "title": "سجلات المراجعة",
+      "subtitle": "تتبّع العمليات الحساسة على البوابة",
+      "searchPlaceholder": "ابحث بالمستخدم أو الإجراء",
+      "emptyTitle": "لا توجد سجلات",
+      "emptyDescription": "ستظهر هنا عمليات البوابة المسجّلة",
+      "columns": {
+        "time": "الوقت",
+        "user": "المستخدم",
+        "action": "الإجراء",
+        "resource": "المورد",
+        "result": "النتيجة"
+      },
+      "result": {
+        "success": "نجح",
+        "failure": "فشل",
+        "blocked": "محظور"
+      }
+    },
+    "health": {
+      "title": "الصحة والمراقبة",
+      "subtitle": "نتائج فحوصات الاتصال الموثّقة لكل تكامل",
+      "searchPlaceholder": "ابحث باسم التكامل أو نوع الفحص",
+      "emptyTitle": "لا توجد سجلات صحة",
+      "emptyDescription": "تُسجَّل نتائج الفحص هنا عند تشغيل فحص تكامل",
+      "columns": {
+        "integration": "التكامل",
+        "checkType": "نوع الفحص",
+        "result": "النتيجة",
+        "passed": "ناجح",
+        "failed": "فاشل",
+        "checkedBy": "الفاحص",
+        "detail": "التفاصيل",
+        "checkedAt": "وقت الفحص"
+      }
+    },
+    "integrationDetail": {
+      "loadError": "تعذّر تحميل بيانات التكامل",
+      "title": "تفاصيل التكامل",
+      "notFound": "التكامل غير موجود",
+      "settingsTitle": "الإعدادات",
+      "orgLabel": "المنظمة",
+      "endpointLabel": "نقطة الـAPI",
+      "envLabel": "البيئة",
+      "authLabel": "نوع المصادقة",
+      "urlLabel": "الرابط",
+      "verifiedLabel": "آخر توثيق",
+      "notesLabel": "ملاحظات",
+      "credentialsTitle": "بيانات الاعتماد",
+      "credentialsInfo": "القيم مشفّرة ولا تُعرض. يمكن تدويرها من شاشة «بيانات الاعتماد».",
+      "noCredentials": "لا توجد اعتمادات مسجلة.",
+      "healthTitle": "سجلات الصحة",
+      "noHealth": "لا توجد فحوصات مسجلة بعد.",
+      "passed": "ناجح",
+      "failed": "فاشل",
+      "backToIntegrations": "رجوع للتكاملات"
+    },
+    "dataScopes": {
+      "deleteSuccess": "تم حذف النطاق",
+      "deleteError": "تعذّر حذف النطاق",
+      "orgColumn": "المنظمة",
+      "apiPointColumn": "نقطة API",
+      "directionColumn": "الاتجاه",
+      "directionRead": "قراءة",
+      "directionWrite": "كتابة",
+      "resourceColumn": "المورد",
+      "grantedByColumn": "الممنوح من",
+      "grantedAtColumn": "تاريخ المنح",
+      "pageTitle": "نطاقات البيانات",
+      "pageSubtitle": "ما يُسمح بتبادله مع كل منظمة (قراءة/كتابة)",
+      "searchPlaceholder": "ابحث بالمنظمة أو المورد",
+      "emptyTitle": "لا توجد نطاقات",
+      "emptyDescription": "امنح صلاحية تبادل البيانات لمنظمة",
+      "deleteAction": "حذف",
+      "confirmDeleteTitle": "تأكيد الحذف",
+      "confirmDeleteMessage": "حذف نطاق «{{organization}} / {{resource}}»؟",
+      "cancelDeleteLabel": "إلغاء"
     }
   },
   "common": {
@@ -189,6 +280,10 @@
     }
   },
   "sector-content": {
+    "khartoum": {
+      "sectorName": "قطاع الخرطوم",
+      "subtitle": "أدر أخبار القطاع، التعاميم، الإعلانات، الصفحات، الأسئلة الشائعة، الوثائق، الشرائح والوسائط وإعدادات الاتصال."
+    },
     "sectorContentPage": {
       "eyebrow": "نظام إدارة المحتوى",
       "title": "إدارة المحتوى",
@@ -245,7 +340,195 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "قطاع البحر الأحمر"
+        "sectorName": "قطاع البحر الأحمر",
+        "media": {
+          "pageTitle": "مكتبة الوسائط",
+          "pageSubtitle": "رفع وإدارة الصور والملفات المستخدمة في المحتوى",
+          "titleLabel": "العنوان",
+          "chooseFile": "اختيار ملف",
+          "uploading": "جارٍ الرفع...",
+          "upload": "رفع",
+          "deleteAction": "حذف",
+          "emptyState": "لا توجد وسائط بعد.",
+          "confirmDeleteTitle": "حذف الوسيط",
+          "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{title}}\"؟"
+        }
+      },
+      "it": {
+        "eyebrow": "قسم تقنية المعلومات",
+        "title": "التقارير الفنية",
+        "subtitle": "تجميع شامل لحالة الأنظمة والأصول والتذاكر والشبكات ضمن القطاع.",
+        "sectorChip": "قطاع البحر الأحمر",
+        "backToDashboard": "لوحة تقنية المعلومات",
+        "kpi": {
+          "totalSystems": "الأنظمة الكلية",
+          "activeAssets": "الأجهزة النشطة",
+          "openTickets": "تذاكر مفتوحة",
+          "connectedPorts": "منافذ متصلة"
+        },
+        "systemsStatusTitle": "حالة الأنظمة",
+        "warningChip": "تحذير: {{count}}",
+        "offlineChip": "متوقف: {{count}}",
+        "ticketsTitle": "توزيع التذاكر بالأولوية",
+        "ticketsSubtitle": "{{total}} تذكرة · {{critical}} حرجة مفتوحة",
+        "ticketCount": "{{count}} تذكرة",
+        "assetsTitle": "الأصول بالحالة",
+        "assetsSubtitle": "توزيع الأجهزة حسب الحالة التشغيلية",
+        "activeLabel": "نشط",
+        "maintenanceLabel": "قيد الصيانة/مُعطّل"
+      },
+      "modules": {
+        "staff": {
+          "eyebrow": "إدارة القطاع",
+          "title": "الهيكل الإداري والموظفون — قطاع البحر الأحمر",
+          "subtitle": "الإدارات وأدائها وموظفو القطاع ضمن نطاق القطاع.",
+          "kpi": {
+            "staff": {
+              "label": "إجمالي الموظفين"
+            },
+            "departments": {
+              "label": "الإدارات"
+            },
+            "ports": {
+              "label": "نقاط الدخول"
+            }
+          },
+          "departmentsSection": {
+            "title": "أداء الإدارات",
+            "subtitle": "درجات الأداء حسب الإدارة"
+          },
+          "departmentsEmpty": {
+            "title": "لا توجد إدارات",
+            "description": "لم تُسجّل إدارات ضمن القطاع بعد."
+          },
+          "staffCount": "{{count}} موظف",
+          "staffSection": {
+            "title": "الموظفون",
+            "subtitle": "موظفو القطاع حسب الإدارة والمحطة"
+          },
+          "staffEmpty": {
+            "title": "لا يوجد موظفون",
+            "description": "لم يُسجّل موظفون ضمن القطاع بعد."
+          }
+        },
+        "itSystems": {
+          "eyebrow": "قسم تقنية المعلومات",
+          "title": "حالة الأنظمة",
+          "subtitle": "جاهزية الأنظمة والخدمات التقنية داخل قطاع البحر الأحمر.",
+          "recheck": "إعادة فحص الأنظمة",
+          "backToDashboard": "لوحة تقنية المعلومات",
+          "tableTitle": "قائمة الأنظمة التقنية",
+          "tableSubtitle": "{{count}} نظام ضمن نطاق القطاع",
+          "searchPlaceholder": "بحث باسم النظام أو الكود...",
+          "emptyTitle": "لا توجد أنظمة",
+          "emptyDescription": "لا توجد أنظمة تقنية مسجلة ضمن هذا القطاع.",
+          "columns": {
+            "system": "النظام",
+            "status": "الحالة",
+            "requests": "الطلبات",
+            "lastCheck": "آخر فحص",
+            "lastError": "آخر خطأ"
+          }
+        },
+        "itNetworks": {
+          "eyebrow": "قسم تقنية المعلومات",
+          "title": "الشبكات والاتصال",
+          "subtitle": "حالة اتصال كل نقطة دخول وزمن الاستجابة وآخر مزامنة.",
+          "syncStatus": "مزامنة الحالة",
+          "backToDashboard": "لوحة تقنية المعلومات",
+          "tableTitle": "حالة الشبكات",
+          "tableSubtitle": "{{count}} نقطة دخول · {{connected}} متصلة",
+          "searchPlaceholder": "بحث باسم نقطة الدخول...",
+          "emptyTitle": "لا توجد شبكات",
+          "emptyDescription": "لا توجد نقاط دخول مسجلة ضمن هذا القطاع.",
+          "columns": {
+            "entryPoint": "نقطة الدخول",
+            "status": "الحالة",
+            "connected": "متصل",
+            "disconnected": "منقطع",
+            "responseTime": "زمن الاستجابة",
+            "lastSync": "آخر مزامنة"
+          }
+        },
+        "airportHealth": {
+          "eyebrow": "الأنظمة التشغيلية",
+          "title": "صحة المطارات — قطاع البحر الأحمر",
+          "subtitle": "صالات ونقاط فحص ومسافرين في مطارات القطاع.",
+          "noFlight": "بلا رحلة",
+          "kpi": {
+            "airports": {
+              "label": "المطارات"
+            },
+            "terminals": {
+              "label": "الصالات"
+            },
+            "points": {
+              "label": "نقاط الفحص"
+            },
+            "screenings": {
+              "label": "فحوصات المسافرين"
+            }
+          },
+          "screeningsSection": {
+            "title": "فحوصات المسافرين الأخيرة",
+            "subtitle": "آخر فحوصات مطارات القطاع"
+          },
+          "screeningsEmpty": {
+            "title": "لا توجد فحوصات",
+            "description": "لم تُسجّل فحوصات مطارات ضمن القطاع بعد."
+          },
+          "pointsSection": {
+            "title": "نقاط الفحص",
+            "subtitle": "نقاط فحص الصحة داخل المطارات"
+          },
+          "pointsEmpty": {
+            "title": "لا توجد نقاط فحص",
+            "description": "لم تُسجّل نقاط فحص ضمن القطاع بعد."
+          },
+          "inspectionsSection": {
+            "title": "تفتيش الطائرات",
+            "subtitle": "أحدث التفتيشات"
+          },
+          "inspectionsEmpty": {
+            "title": "لا توجد تفتيشات طائرات",
+            "description": "لم تُسجّل تفتيشات ضمن القطاع بعد."
+          }
+        },
+        "vectorControl": {
+          "eyebrow": "الأنظمة التشغيلية",
+          "title": "مكافحة النواقل — قطاع البحر الأحمر",
+          "subtitle": "مسوحات النواقل وأوامر العمل ضمن منافذ القطاع.",
+          "kpi": {
+            "surveys": {
+              "label": "المسوحات هذا الشهر"
+            },
+            "reports": {
+              "label": "البلاغات الجديدة"
+            },
+            "activeOperations": {
+              "label": "عمليات نشطة"
+            },
+            "completedOperations": {
+              "label": "عمليات منفذة"
+            }
+          },
+          "surveysSection": {
+            "title": "المسوحات الأخيرة",
+            "subtitle": "مسوحات النواقل في القطاع"
+          },
+          "surveysEmpty": {
+            "title": "لا توجد مسوحات",
+            "description": "لم تُسجّل مسوحات نواقل ضمن القطاع بعد."
+          },
+          "operationsSection": {
+            "title": "عمليات المكافحة",
+            "subtitle": "عمليات المكافحة الأخيرة"
+          },
+          "operationsEmpty": {
+            "title": "لا توجد عمليات",
+            "description": "لم تُسجّل عمليات مكافحة ضمن القطاع بعد."
+          }
+        }
       }
     },
     "settings": {
@@ -288,6 +571,23 @@
       "messages": {
         "actionFailed": "فشلت العملية"
       }
+    },
+    "focusMap": {
+      "filterLabel": "الفلترة:",
+      "noMatchingFoci": "لا توجد بؤر مطابقة (أضف إحداثيات GPS للبؤر لتظهر على الخريطة)",
+      "noGpsCoords": "البؤر المسجلة لا تحوي إحداثيات GPS بعد"
+    },
+    "casesSection": {
+      "title": "الحالات",
+      "sectionSubtitle": "أمراض منقولة بالنواقل",
+      "caseNumberLabel": "الرقم",
+      "focusNumberLabel": "البؤرة",
+      "diseaseLabel": "المرض",
+      "classificationLabel": "التصنيف",
+      "detectedAtLabel": "تاريخ الرصد",
+      "casesSubtitle": "بيانات الحالات من نظام الترصد الوبائي",
+      "emptyTitle": "الأمراض المنقولة بالنواقل",
+      "emptyDescription": "تُعرض هنا الحالات المسجلة لدى نظام الترصد الوبائي — يُفتح رابطها من لوحة البوابة"
     }
   },
   "vaccination": {
@@ -5998,6 +6298,14 @@
       }
     }
   },
+  "chemistry": {
+    "samples": {
+      "list": {
+        "startAnalysis": "▶️ بدء",
+        "viewDetails": "👁️ تفاصيل"
+      }
+    }
+  },
   "food": {
     "foodWindow": {
       "pageHeader": {
@@ -9861,6 +10169,30 @@
       "extraPayment": "دفعة إضافية",
       "collect": "تحصيل",
       "confirmed": "مؤكد"
+    }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "تعذر تحميل تفاصيل الرحلة",
+      "notFound": "الرحلة غير موجودة",
+      "pageTitle": "تفاصيل الرحلة {{flightNumber}}",
+      "companyLabel": "الشركة",
+      "aircraftLabel": "الطائرة",
+      "flightLabel": "الرحلة",
+      "originLabel": "من",
+      "destinationLabel": "إلى",
+      "departureLabel": "المغادرة المجدولة",
+      "arrivalLabel": "الوصول المجدول",
+      "currentStatusLabel": "الحالة الحالية",
+      "declarationStatusLabel": "حالة الإقرار الصحي",
+      "documentsTitle": "المستندات",
+      "noDocuments": "لا توجد مستندات مرتبطة بهذه الرحلة",
+      "documentFallback": "مستند",
+      "download": "تنزيل",
+      "timelineTitle": "سجل أحداث الرحلة",
+      "noEvents": "لا توجد أحداث مسجلة لهذه الرحلة",
+      "operationalCategoryLabel": "تشغيلي",
+      "healthAdminCategoryLabel": "صحي / إداري"
     }
   },
   "registry": {

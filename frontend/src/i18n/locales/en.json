@@ -33,6 +33,17 @@
           "success": "Success",
           "info": "Info"
         }
+      },
+      "worklist": {
+        "searchPlaceholder": "Search by declaration, customs, policy, vessel, consignee…",
+        "emptyTitle": "No requests",
+        "emptyDescription": "No requests matching these criteria",
+        "sendTitle": "Send to collect fees",
+        "send": "Send",
+        "draftTooltip": "Draft — editable and deletable",
+        "viewTooltip": "View",
+        "edit": "Edit",
+        "delete": "Delete"
       }
     },
     "views": {
@@ -79,6 +90,86 @@
         "numberFormatArabic": "Arabic (ar-EG)",
         "numberFormatToggleToast": "Number format changed"
       }
+    }
+  },
+  "portal": {
+    "auditLogs": {
+      "title": "Audit logs",
+      "subtitle": "Track sensitive operations on the portal",
+      "searchPlaceholder": "Search by user or action",
+      "emptyTitle": "No logs",
+      "emptyDescription": "Portal operations will appear here",
+      "columns": {
+        "time": "Time",
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "result": "Result"
+      },
+      "result": {
+        "success": "Succeeded",
+        "failure": "Failed",
+        "blocked": "Blocked"
+      }
+    },
+    "health": {
+      "title": "Health and monitoring",
+      "subtitle": "Documented connectivity check results for each integration",
+      "searchPlaceholder": "Search by integration name or check type",
+      "emptyTitle": "No health records",
+      "emptyDescription": "Check results are recorded here when an integration check runs",
+      "columns": {
+        "integration": "Integration",
+        "checkType": "Check type",
+        "result": "Result",
+        "passed": "Passed",
+        "failed": "Failed",
+        "checkedBy": "Checked by",
+        "detail": "Details",
+        "checkedAt": "Check time"
+      }
+    },
+    "integrationDetail": {
+      "loadError": "Failed to load integration data",
+      "title": "Integration details",
+      "notFound": "Integration not found",
+      "settingsTitle": "Settings",
+      "orgLabel": "Organization",
+      "endpointLabel": "API endpoint",
+      "envLabel": "Environment",
+      "authLabel": "Authentication type",
+      "urlLabel": "URL",
+      "verifiedLabel": "Last verified",
+      "notesLabel": "Notes",
+      "credentialsTitle": "Credentials",
+      "credentialsInfo": "Values are encrypted and not displayed. They can be rotated from the \"Credentials\" screen.",
+      "noCredentials": "No credentials registered.",
+      "healthTitle": "Health records",
+      "noHealth": "No checks recorded yet.",
+      "passed": "Passed",
+      "failed": "Failed",
+      "backToIntegrations": "Back to integrations"
+    },
+    "dataScopes": {
+      "deleteSuccess": "Scope deleted",
+      "deleteError": "Failed to delete scope",
+      "orgColumn": "Organization",
+      "apiPointColumn": "API endpoint",
+      "directionColumn": "Direction",
+      "directionRead": "Read",
+      "directionWrite": "Write",
+      "resourceColumn": "Resource",
+      "grantedByColumn": "Granted by",
+      "grantedAtColumn": "Granted at",
+      "pageTitle": "Data scopes",
+      "pageSubtitle": "What data can be exchanged between organizations (read/write)",
+      "searchPlaceholder": "Search by organization or resource",
+      "emptyTitle": "No scopes",
+      "emptyDescription": "Grant data exchange permission to an organization",
+      "deleteAction": "Delete",
+      "confirmDeleteTitle": "Confirm deletion",
+      "confirmDeleteMessage": "Delete scope \"{{organization}} / {{resource}}\"?",
+      "cancelDeleteLabel": "Cancel"
     }
   },
   "common": {
@@ -189,6 +280,10 @@
     }
   },
   "sector-content": {
+    "khartoum": {
+      "sectorName": "Khartoum Sector",
+      "subtitle": "Manage sector news, circulars, announcements, pages, FAQs, documents, slides, media, and contact settings."
+    },
     "sectorContentPage": {
       "eyebrow": "Content Management System",
       "title": "Content Management",
@@ -245,7 +340,195 @@
   "redsea": {
     "portal": {
       "content": {
-        "sectorName": "Red Sea Sector"
+        "sectorName": "Red Sea Sector",
+        "media": {
+          "pageTitle": "Media library",
+          "pageSubtitle": "Upload and manage the images and files used in content",
+          "titleLabel": "Title",
+          "chooseFile": "Choose file",
+          "uploading": "Uploading...",
+          "upload": "Upload",
+          "deleteAction": "Delete",
+          "emptyState": "No media yet.",
+          "confirmDeleteTitle": "Delete media",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        }
+      },
+      "it": {
+        "eyebrow": "Information Technology Department",
+        "title": "Technical Reports",
+        "subtitle": "Comprehensive summary of systems, assets, tickets, and networks status in the sector.",
+        "sectorChip": "Red Sea Sector",
+        "backToDashboard": "IT Dashboard",
+        "kpi": {
+          "totalSystems": "Total systems",
+          "activeAssets": "Active devices",
+          "openTickets": "Open tickets",
+          "connectedPorts": "Connected ports"
+        },
+        "systemsStatusTitle": "Systems status",
+        "warningChip": "Warning: {{count}}",
+        "offlineChip": "Offline: {{count}}",
+        "ticketsTitle": "Tickets by priority",
+        "ticketsSubtitle": "{{total}} tickets · {{critical}} critical open",
+        "ticketCount": "{{count}} tickets",
+        "assetsTitle": "Assets by status",
+        "assetsSubtitle": "Distribution of devices by operational status",
+        "activeLabel": "Active",
+        "maintenanceLabel": "Maintenance / disabled"
+      },
+      "modules": {
+        "staff": {
+          "eyebrow": "Sector Management",
+          "title": "Administrative Structure and Staff — Red Sea Sector",
+          "subtitle": "Departments, their performance, and sector staff within the sector scope.",
+          "kpi": {
+            "staff": {
+              "label": "Total staff"
+            },
+            "departments": {
+              "label": "Departments"
+            },
+            "ports": {
+              "label": "Entry points"
+            }
+          },
+          "departmentsSection": {
+            "title": "Department performance",
+            "subtitle": "Performance scores by department"
+          },
+          "departmentsEmpty": {
+            "title": "No departments",
+            "description": "No departments have been registered in the sector yet."
+          },
+          "staffCount": "{{count}} staff",
+          "staffSection": {
+            "title": "Staff",
+            "subtitle": "Sector staff by department and station"
+          },
+          "staffEmpty": {
+            "title": "No staff",
+            "description": "No staff have been registered in the sector yet."
+          }
+        },
+        "itSystems": {
+          "eyebrow": "Information Technology Department",
+          "title": "Systems status",
+          "subtitle": "Readiness of systems and IT services within the Red Sea sector.",
+          "recheck": "Recheck systems",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Technical systems list",
+          "tableSubtitle": "{{count}} systems within sector scope",
+          "searchPlaceholder": "Search by system name or code...",
+          "emptyTitle": "No systems",
+          "emptyDescription": "No technical systems are registered in this sector.",
+          "columns": {
+            "system": "System",
+            "status": "Status",
+            "requests": "Requests",
+            "lastCheck": "Last check",
+            "lastError": "Last error"
+          }
+        },
+        "itNetworks": {
+          "eyebrow": "Information Technology Department",
+          "title": "Networks and connectivity",
+          "subtitle": "Connection status of each entry point, response time, and last sync.",
+          "syncStatus": "Sync status",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Networks status",
+          "tableSubtitle": "{{count}} entry points · {{connected}} connected",
+          "searchPlaceholder": "Search by entry point name...",
+          "emptyTitle": "No networks",
+          "emptyDescription": "No entry points are registered in this sector.",
+          "columns": {
+            "entryPoint": "Entry point",
+            "status": "Status",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "responseTime": "Response time",
+            "lastSync": "Last sync"
+          }
+        },
+        "airportHealth": {
+          "eyebrow": "Operational systems",
+          "title": "Airport health — Red Sea sector",
+          "subtitle": "Terminals, screening points, and travelers at sector airports.",
+          "noFlight": "No flight",
+          "kpi": {
+            "airports": {
+              "label": "Airports"
+            },
+            "terminals": {
+              "label": "Terminals"
+            },
+            "points": {
+              "label": "Screening points"
+            },
+            "screenings": {
+              "label": "Traveler screenings"
+            }
+          },
+          "screeningsSection": {
+            "title": "Recent traveler screenings",
+            "subtitle": "Latest sector airport screenings"
+          },
+          "screeningsEmpty": {
+            "title": "No screenings",
+            "description": "No airport screenings have been registered in the sector yet."
+          },
+          "pointsSection": {
+            "title": "Screening points",
+            "subtitle": "Health screening points inside airports"
+          },
+          "pointsEmpty": {
+            "title": "No screening points",
+            "description": "No screening points have been registered in the sector yet."
+          },
+          "inspectionsSection": {
+            "title": "Aircraft inspections",
+            "subtitle": "Latest inspections"
+          },
+          "inspectionsEmpty": {
+            "title": "No aircraft inspections",
+            "description": "No inspections have been registered in the sector yet."
+          }
+        },
+        "vectorControl": {
+          "eyebrow": "Operational systems",
+          "title": "Vector control — Red Sea sector",
+          "subtitle": "Vector surveys and work orders within sector entry points.",
+          "kpi": {
+            "surveys": {
+              "label": "Surveys this month"
+            },
+            "reports": {
+              "label": "New reports"
+            },
+            "activeOperations": {
+              "label": "Active operations"
+            },
+            "completedOperations": {
+              "label": "Completed operations"
+            }
+          },
+          "surveysSection": {
+            "title": "Recent surveys",
+            "subtitle": "Vector surveys in the sector"
+          },
+          "surveysEmpty": {
+            "title": "No surveys",
+            "description": "No vector surveys have been registered in the sector yet."
+          },
+          "operationsSection": {
+            "title": "Control operations",
+            "subtitle": "Recent control operations"
+          },
+          "operationsEmpty": {
+            "title": "No operations",
+            "description": "No control operations have been registered in the sector yet."
+          }
+        }
       }
     },
     "settings": {
@@ -288,6 +571,23 @@
       "messages": {
         "actionFailed": "Operation failed"
       }
+    },
+    "focusMap": {
+      "filterLabel": "Filter:",
+      "noMatchingFoci": "No matching foci (add GPS coordinates to foci to display on the map)",
+      "noGpsCoords": "Registered foci have no GPS coordinates yet"
+    },
+    "casesSection": {
+      "title": "Cases",
+      "sectionSubtitle": "Vector-borne diseases",
+      "caseNumberLabel": "Number",
+      "focusNumberLabel": "Focus",
+      "diseaseLabel": "Disease",
+      "classificationLabel": "Classification",
+      "detectedAtLabel": "Detected at",
+      "casesSubtitle": "Case data from the epidemiological surveillance system",
+      "emptyTitle": "Vector-borne diseases",
+      "emptyDescription": "Recorded cases monitored by the epidemiological surveillance system are displayed here — their link opens from the portal dashboard"
     }
   },
   "vaccination": {
@@ -5998,6 +6298,14 @@
       }
     }
   },
+  "chemistry": {
+    "samples": {
+      "list": {
+        "startAnalysis": "▶️ Start",
+        "viewDetails": "👁️ Details"
+      }
+    }
+  },
   "food": {
     "foodWindow": {
       "pageHeader": {
@@ -9861,6 +10169,30 @@
       "extraPayment": "Extra Payment",
       "collect": "Collect",
       "confirmed": "Confirmed"
+    }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "Failed to load flight details",
+      "notFound": "Flight not found",
+      "pageTitle": "Flight details {{flightNumber}}",
+      "companyLabel": "Company",
+      "aircraftLabel": "Aircraft",
+      "flightLabel": "Flight",
+      "originLabel": "From",
+      "destinationLabel": "To",
+      "departureLabel": "Scheduled departure",
+      "arrivalLabel": "Scheduled arrival",
+      "currentStatusLabel": "Current status",
+      "declarationStatusLabel": "Health declaration status",
+      "documentsTitle": "Documents",
+      "noDocuments": "No documents associated with this flight",
+      "documentFallback": "Document",
+      "download": "Download",
+      "timelineTitle": "Flight event log",
+      "noEvents": "No events recorded for this flight",
+      "operationalCategoryLabel": "Operational",
+      "healthAdminCategoryLabel": "Health / Administrative"
     }
   },
   "registry": {
