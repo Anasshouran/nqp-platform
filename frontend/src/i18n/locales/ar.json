@@ -686,6 +686,24 @@
   "public": {
     "layout": {
       "nav": {
+        "menu": {
+          "services": {
+            "catalog": "كتالوج الخدمات",
+            "travelers": "خدمات المسافرين",
+            "foodSafety": "سلامة الأغذية",
+            "preRegister": "التسجيل المسبق",
+            "travelerPortal": "بوابة المسافرين",
+            "companiesPortal": "بوابة الشركات",
+            "verify": "التحقق من الشهادات",
+            "smartServices": "الخدمات الذكية",
+            "assistant": "المساعد الذكي",
+            "section": {
+              "actions": "الإجراءات",
+              "platforms": "المنصات",
+              "tools": "الأدوات"
+            }
+          }
+        },
         "home": "الرئيسية",
         "services": "الخدمات",
         "travelers": "المسافرون",

@@ -686,6 +686,24 @@
   "public": {
     "layout": {
       "nav": {
+        "menu": {
+          "services": {
+            "catalog": "Service Catalog",
+            "travelers": "Traveler Services",
+            "foodSafety": "Food Safety",
+            "preRegister": "Pre-Registration",
+            "travelerPortal": "Traveler Portal",
+            "companiesPortal": "Companies Portal",
+            "verify": "Certificate Verification",
+            "smartServices": "Smart Services",
+            "assistant": "Smart Assistant",
+            "section": {
+              "actions": "Procedures",
+              "platforms": "Portals",
+              "tools": "Tools"
+            }
+          }
+        },
         "home": "Home",
         "services": "Services",
         "travelers": "Travelers",

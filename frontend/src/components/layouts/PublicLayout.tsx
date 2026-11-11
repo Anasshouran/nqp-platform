@@ -53,15 +53,15 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.services',
     path: '/services',
     children: [
-      { label: 'كتالوج الخدمات', path: '/services', section: 'الإجراءات' },
-      { label: 'خدمات المسافرين', path: '/services/travelers', section: 'الإجراءات' },
-      { label: 'سلامة الأغذية', path: '/services/food-safety', section: 'الإجراءات' },
-      { label: 'التسجيل المسبق', path: '/traveler/register', section: 'الإجراءات' },
-      { label: 'بوابة المسافرين', path: '/traveler/dashboard', section: 'المنصات' },
-      { label: 'بوابة الشركات', path: '/partners', section: 'المنصات' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'الأدوات' },
-      { label: 'الخدمات الذكية', path: '/services/tools', section: 'الأدوات' },
-      { label: 'المساعد الذكي', path: '/services/assistant', section: 'الأدوات' },
+      { label: 'public.layout.nav.menu.services.catalog', path: '/services', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.travelers', path: '/services/travelers', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.foodSafety', path: '/services/food-safety', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.preRegister', path: '/traveler/register', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.travelerPortal', path: '/traveler/dashboard', section: 'public.layout.nav.menu.services.section.platforms' },
+      { label: 'public.layout.nav.menu.services.companiesPortal', path: '/partners', section: 'public.layout.nav.menu.services.section.platforms' },
+      { label: 'public.layout.nav.menu.services.verify', path: '/verify', section: 'public.layout.nav.menu.services.section.tools' },
+      { label: 'public.layout.nav.menu.services.smartServices', path: '/services/tools', section: 'public.layout.nav.menu.services.section.tools' },
+      { label: 'public.layout.nav.menu.services.assistant', path: '/services/assistant', section: 'public.layout.nav.menu.services.section.tools' },
     ],
   },
   {
@@ -309,6 +309,8 @@ const PublicLayout = () => {
     i18n.language === 'en' ? 'en' : 'ar',
   );
   const tl = (ar?: string) => (lang === 'ar' ? (ar ?? '') : ar ? UI_STRINGS[ar] ?? ar : '');
+  // Transitional: keys via t(), remaining Arabic via tl() until 1a.6
+  const tt = (label?: string) => (label && label.startsWith('public.') ? t(label) : tl(label));
   const location = useLocation();
   const navigationType = useNavigationType();
   const scrolled = useScrollTrigger({ disableHysteresis: true, threshold: 24 });
@@ -569,7 +571,7 @@ const PublicLayout = () => {
                       <Box sx={{ px: 2, pt: i > 0 ? 0.75 : 1, pb: 0.25 }}>
                         {i > 0 && <Divider sx={{ mb: 1 }} />}
                         <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
-                          {tl(child.section)}
+                          {tt(child.section)}
                         </Typography>
                       </Box>
                     )}
@@ -580,7 +582,7 @@ const PublicLayout = () => {
                       selected={location.pathname === child.path}
                       sx={{ fontWeight: 700 }}
                     >
-                      {tl(child.label)}
+                      {tt(child.label)}
                     </MenuItem>
                   </Fragment>
                 );
@@ -717,7 +719,7 @@ const PublicLayout = () => {
                               <Box sx={{ px: 3, pt: i > 0 ? 1 : 1.5, pb: 0.25 }}>
                                 {i > 0 && <Divider sx={{ mb: 1 }} />}
                                 <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
-                                  {tl(child.section)}
+                                  {tt(child.section)}
                                 </Typography>
                               </Box>
                             )}
@@ -733,7 +735,7 @@ const PublicLayout = () => {
                                   '&.active': { bgcolor: 'primary.light', color: 'primary.dark', fontWeight: 700 },
                                 }}
                               >
-                                <ListItemText primary={tl(child.label)} />
+                                <ListItemText primary={tt(child.label)} />
                               </ListItemButton>
                             </ListItem>
                           </Fragment>
