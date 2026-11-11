@@ -48,9 +48,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'الرئيسية', path: '/' },
+  { label: 'public.layout.nav.home', path: '/' },
   {
-    label: 'الخدمات',
+    label: 'public.layout.nav.services',
     path: '/services',
     children: [
       { label: 'كتالوج الخدمات', path: '/services', section: 'الإجراءات' },
@@ -65,7 +65,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'المسافرون',
+    label: 'public.layout.nav.travelers',
     path: '/travel-requirements',
     children: [
       { label: 'متطلبات السفر', path: '/travel-requirements', section: 'الاستعداد للسفر' },
@@ -76,14 +76,14 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'نقاط الدخول',
+    label: 'public.layout.nav.entryPoints',
     path: '/ports',
     children: [
       { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
     ],
   },
   {
-    label: 'البوابات',
+    label: 'public.layout.nav.gateways',
     path: '/gateways',
     children: [
       { label: 'بوابة المسافر', path: '/traveler/login', section: 'للمسافرين' },
@@ -102,7 +102,7 @@ const navItems: NavItem[] = [
     ],
   },
 {
-    label: 'الأخبار',
+    label: 'public.layout.nav.news',
     path: '/news',
     children: [
       { label: 'الأخبار', path: '/news' },
@@ -110,9 +110,9 @@ const navItems: NavItem[] = [
       { label: 'التعاميم', path: '/circulars' },
     ],
   },
-  { label: 'الوثائق', path: '/documents' },
+  { label: 'public.layout.nav.documents', path: '/documents' },
   {
-    label: 'الأمراض والأوبئة',
+    label: 'public.layout.nav.diseases',
     path: '/diseases',
     children: [
       { label: 'دليل الأمراض والإرشادات', path: '/diseases', section: 'المعرفة الصحية' },
@@ -121,7 +121,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'حول',
+    label: 'public.layout.nav.about',
     path: '/about',
     children: [
       { label: 'من نحن', path: '/about', section: 'المنصة' },
@@ -297,7 +297,7 @@ const sectorNavItems = (slug: string): NavItem[] => [
 ];
 
 const PublicLayout = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuState, setMenuState] = useState<{ anchor: HTMLElement; children: NavItem[] } | null>(null);
   const [drawerOpenItem, setDrawerOpenItem] = useState<string | null>(null);
@@ -427,7 +427,7 @@ const PublicLayout = () => {
   };
 
   const renderNavButton = (item: NavItem) => {
-    const active = isNavItemActive(item) || (item.children && servicesActive && item.label === 'الخدمات');
+    const active = isNavItemActive(item) || (item.children && servicesActive && item.label === 'public.layout.nav.services');
     return item.children ? (
       <Button
         key={item.label}
@@ -445,7 +445,7 @@ const PublicLayout = () => {
         }}
         endIcon={<ExpandMoreIcon />}
       >
-        {tl(item.label)}
+        {t(item.label)}
       </Button>
     ) : (
       <Button
@@ -463,7 +463,7 @@ const PublicLayout = () => {
           '&:hover': { bgcolor: 'primary.lighter' },
         }}
       >
-        {tl(item.label)}
+        {t(item.label)}
       </Button>
     );
   };
@@ -697,7 +697,7 @@ const PublicLayout = () => {
                       sx={{ borderRadius: 2, mx: 1 }}
                     >
                       <ListItemText
-                        primary={tl(item.label)}
+                        primary={t(item.label)}
                         primaryTypographyProps={{
                           fontWeight: 700,
                           color: isNavItemActive(item) ? 'primary.main' : 'inherit',
@@ -755,7 +755,7 @@ const PublicLayout = () => {
                       '&.active': { bgcolor: 'primary.light', color: 'primary.dark', fontWeight: 700 },
                     }}
                   >
-                    <ListItemText primary={tl(item.label)} />
+                    <ListItemText primary={t(item.label)} />
                   </ListItemButton>
                 </ListItem>
               ),
