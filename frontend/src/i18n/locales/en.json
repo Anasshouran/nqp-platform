@@ -722,6 +722,24 @@
           "faq": "FAQ"
         }
       },
+      "sectorNav": {
+        "home": "Home",
+        "about": "About the Sector",
+        "aboutUs": "About Us",
+        "director": "Sector Director",
+        "ports": "Ports",
+        "documentsCenter": "Documents Center",
+        "faq": "FAQ",
+        "contact": "Contact Us",
+        "services": "Services",
+        "serviceCatalog": "Service Catalog",
+        "foodSafety": "Food Safety",
+        "vectorControl": "Vector Control",
+        "entryExitRequirements": "Entry & Exit Requirements",
+        "alertsNews": "Alerts & News",
+        "news": "News",
+        "circulars": "Circulars"
+      },
       "nav": {
         "menu": {
           "services": {

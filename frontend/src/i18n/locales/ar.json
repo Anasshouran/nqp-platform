@@ -722,6 +722,24 @@
           "faq": "الأسئلة الشائعة"
         }
       },
+      "sectorNav": {
+        "home": "الرئيسية",
+        "about": "حول القطاع",
+        "aboutUs": "من نحن",
+        "director": "مدير القطاع",
+        "ports": "المنافذ",
+        "documentsCenter": "مركز الوثائق",
+        "faq": "الأسئلة الشائعة",
+        "contact": "اتصل بنا",
+        "services": "الخدمات",
+        "serviceCatalog": "كتالوج الخدمات",
+        "foodSafety": "سلامة الغذاء",
+        "vectorControl": "مكافحة النواقل",
+        "entryExitRequirements": "متطلبات الدخول والخروج",
+        "alertsNews": "التنبيهات والأخبار",
+        "news": "الأخبار",
+        "circulars": "التعميمات"
+      },
       "nav": {
         "menu": {
           "services": {

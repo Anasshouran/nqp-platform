@@ -263,35 +263,35 @@ const footerLinkGroups = [
 ];
 
 const sectorNavItems = (slug: string): NavItem[] => [
-  { label: 'الرئيسية', path: `/sector/${slug}` },
+  { label: 'public.layout.sectorNav.home', path: `/sector/${slug}` },
   {
-    label: 'حول القطاع',
+    label: 'public.layout.sectorNav.about',
     path: `/sector/${slug}/about`,
     children: [
-      { label: 'من نحن', path: `/sector/${slug}/about` },
-      { label: 'مدير القطاع', path: `/sector/${slug}/director` },
-      { label: 'المنافذ', path: `/sector/${slug}/ports` },
-      { label: 'مركز الوثائق', path: `/sector/${slug}/documents` },
-      { label: 'الأسئلة الشائعة', path: `/sector/${slug}/faq` },
-      { label: 'اتصل بنا', path: `/sector/${slug}/contact` },
+      { label: 'public.layout.sectorNav.aboutUs', path: `/sector/${slug}/about` },
+      { label: 'public.layout.sectorNav.director', path: `/sector/${slug}/director` },
+      { label: 'public.layout.sectorNav.ports', path: `/sector/${slug}/ports` },
+      { label: 'public.layout.sectorNav.documentsCenter', path: `/sector/${slug}/documents` },
+      { label: 'public.layout.sectorNav.faq', path: `/sector/${slug}/faq` },
+      { label: 'public.layout.sectorNav.contact', path: `/sector/${slug}/contact` },
     ],
   },
   {
-    label: 'الخدمات',
+    label: 'public.layout.sectorNav.services',
     path: `/sector/${slug}/services`,
     children: [
-      { label: 'كتالوج الخدمات', path: `/sector/${slug}/services` },
-      { label: 'سلامة الغذاء', path: `/sector/${slug}/services/food-safety` },
-      { label: 'مكافحة النواقل', path: `/sector/${slug}/services/vector-control` },
-      { label: 'متطلبات الدخول والخروج', path: `/sector/${slug}/travel-requirements` },
+      { label: 'public.layout.sectorNav.serviceCatalog', path: `/sector/${slug}/services` },
+      { label: 'public.layout.sectorNav.foodSafety', path: `/sector/${slug}/services/food-safety` },
+      { label: 'public.layout.sectorNav.vectorControl', path: `/sector/${slug}/services/vector-control` },
+      { label: 'public.layout.sectorNav.entryExitRequirements', path: `/sector/${slug}/travel-requirements` },
     ],
   },
   {
-    label: 'التنبيهات والأخبار',
+    label: 'public.layout.sectorNav.alertsNews',
     path: `/sector/${slug}/news`,
     children: [
-      { label: 'الأخبار', path: `/sector/${slug}/news` },
-      { label: 'التعميمات', path: `/sector/${slug}/circulars` },
+      { label: 'public.layout.sectorNav.news', path: `/sector/${slug}/news` },
+      { label: 'public.layout.sectorNav.circulars', path: `/sector/${slug}/circulars` },
     ],
   },
 ];
