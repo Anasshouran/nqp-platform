@@ -736,6 +736,13 @@
               "platform": "Platform",
               "support": "Support"
             }
+          },
+          "gateways": {
+            "traveler": "Traveler Portal",
+            "verify": "Certificate Verification",
+            "section": {
+              "forTravelers": "Travelers"
+            }
           }
         },
         "home": "Home",

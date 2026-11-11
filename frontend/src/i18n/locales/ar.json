@@ -736,6 +736,13 @@
               "platform": "المنصة",
               "support": "الدعم"
             }
+          },
+          "gateways": {
+            "traveler": "بوابة المسافر",
+            "verify": "التحقق من الشهادات",
+            "section": {
+              "forTravelers": "للمسافرين"
+            }
           }
         },
         "home": "الرئيسية",

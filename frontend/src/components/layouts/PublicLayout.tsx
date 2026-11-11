@@ -86,8 +86,8 @@ const navItems: NavItem[] = [
     label: 'public.layout.nav.gateways',
     path: '/gateways',
     children: [
-      { label: 'بوابة المسافر', path: '/traveler/login', section: 'للمسافرين' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'للمسافرين' },
+      { label: 'public.layout.nav.menu.gateways.traveler', path: '/traveler/login', section: 'public.layout.nav.menu.gateways.section.forTravelers' },
+      { label: 'public.layout.nav.menu.gateways.verify', path: '/verify', section: 'public.layout.nav.menu.gateways.section.forTravelers' },
       { label: 'بوابة القطاعات', path: '/gateways', to: '/gateways#sectors', section: 'القطاعات والمنافذ' },
       { label: 'بوابة المنافذ', path: '/gateways', to: '/gateways#ports', section: 'القطاعات والمنافذ' },
       { label: 'بوابة شركات الطيران', path: '/app/carrier', section: 'القطاعات والمنافذ' },
