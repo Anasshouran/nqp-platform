@@ -539,7 +539,7 @@ const PublicLayout = () => {
               '@media (min-width:600px)': { minHeight: scrolled ? 54 : 74 },
             }}
           >
-            <Link to={cmsSlug ? `/sector/${cmsSlug}` : '/'} aria-label="الصفحة الرئيسية" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={cmsSlug ? `/sector/${cmsSlug}` : '/'} aria-label={t('public.layout.body.homepage')} style={{ textDecoration: 'none', color: 'inherit' }}>
               <BrandLogo
                 compact
                 product="afyatna"
@@ -560,7 +560,7 @@ const PublicLayout = () => {
               onClose={() => setMenuState(null)}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': lang === 'ar' ? 'قائمة التنقل' : 'Navigation menu' } }}
+              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': lang === 'ar' ? t('public.layout.body.navigationMenu') : 'Navigation menu' } }}
             >
               {menuState?.children.map((child, i) => {
                 const prev = i > 0 ? menuState?.children?.[i - 1] : undefined;
@@ -592,7 +592,7 @@ const PublicLayout = () => {
             <Stack direction="row" spacing={1} alignItems="center">
               <LanguageSwitcher />
               <IconButton
-                aria-label={lang === 'ar' ? 'البحث الشامل' : 'Global search'}
+                aria-label={lang === 'ar' ? t('public.layout.body.globalSearch') : 'Global search'}
                 onClick={openGlobalSearch}
                 sx={{ color: 'text.secondary' }}
               >
@@ -611,13 +611,13 @@ const PublicLayout = () => {
               <IconButton
                 component={Link}
                 to={loginLink}
-                aria-label={lang === 'ar' ? 'حساب المستخدم' : 'User account'}
+                aria-label={lang === 'ar' ? t('public.layout.body.userAccount') : 'User account'}
                 sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
               >
                 <AccountCircleIcon />
               </IconButton>
               <IconButton
-                aria-label={lang === 'ar' ? 'فتح القائمة' : 'Open menu'}
+                aria-label={lang === 'ar' ? t('public.layout.body.openMenu') : 'Open menu'}
                 edge="end"
                 onClick={() => setMobileOpen(true)}
                 sx={{ display: { md: 'none' }, color: 'primary.main' }}
@@ -667,7 +667,7 @@ const PublicLayout = () => {
                 {tl(urgentNotice ? 'تفاصيل التنبيه' : 'سجّل الآن')}
               </Button>
               <IconButton
-                aria-label={lang === 'ar' ? 'إغلاق الإشعار' : 'Close notification'}
+                aria-label={lang === 'ar' ? t('public.layout.body.closeNotification') : 'Close notification'}
                 onClick={dismissBanner}
                 size="small"
                 sx={{ color: '#fff', position: { xs: 'absolute', sm: 'static' }, top: 4, left: 4 }}
@@ -684,7 +684,7 @@ const PublicLayout = () => {
         <Box sx={{ width: 280, py: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, mb: 1 }}>
             <BrandLogo compact product="afyatna" />
-            <IconButton aria-label={lang === 'ar' ? 'إغلاق القائمة' : 'Close menu'} onClick={closeMobile}>
+            <IconButton aria-label={lang === 'ar' ? t('public.layout.body.closeMenu') : 'Close menu'} onClick={closeMobile}>
               <CloseIcon />
             </IconButton>
           </Stack>
@@ -777,7 +777,7 @@ const PublicLayout = () => {
               <Button
                 onClick={openGlobalSearch}
                 variant="outlined"
-                aria-label={lang === 'ar' ? 'البحث الشامل' : 'Global search'}
+                aria-label={lang === 'ar' ? t('public.layout.body.globalSearch') : 'Global search'}
                 sx={{ minWidth: 52 }}
               >
                 <SearchIcon />
@@ -813,7 +813,7 @@ const PublicLayout = () => {
               </Typography>
             </Box>
             {/* روابط سريعة مقسمة */}
-            <nav aria-label="روابط سريعة">
+            <nav aria-label={t('public.layout.body.quickLinks')}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 6 }} useFlexGap>
                 {footerLinkGroups.map((group) => (
                   <Stack key={group.title} spacing={1}>

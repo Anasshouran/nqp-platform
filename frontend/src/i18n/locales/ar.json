@@ -740,6 +740,16 @@
         "news": "الأخبار",
         "circulars": "التعميمات"
       },
+      "body": {
+        "homepage": "الصفحة الرئيسية",
+        "navigationMenu": "قائمة التنقل",
+        "globalSearch": "البحث الشامل",
+        "userAccount": "حساب المستخدم",
+        "openMenu": "فتح القائمة",
+        "closeNotification": "إغلاق الإشعار",
+        "closeMenu": "إغلاق القائمة",
+        "quickLinks": "روابط سريعة"
+      },
       "nav": {
         "menu": {
           "services": {

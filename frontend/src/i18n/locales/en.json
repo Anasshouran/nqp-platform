@@ -740,6 +740,16 @@
         "news": "News",
         "circulars": "Circulars"
       },
+      "body": {
+        "homepage": "Homepage",
+        "navigationMenu": "Navigation menu",
+        "globalSearch": "Global search",
+        "userAccount": "User account",
+        "openMenu": "Open menu",
+        "closeNotification": "Close notification",
+        "closeMenu": "Close menu",
+        "quickLinks": "Quick links"
+      },
       "nav": {
         "menu": {
           "services": {
