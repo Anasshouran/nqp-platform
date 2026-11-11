@@ -1053,6 +1053,7 @@ class SampleTestViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class LabEquipmentViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
+    state_path = 'sector__state_ids'  # M6
     queryset = LabEquipment.objects.select_related('section').all()
     serializer_class = LabEquipmentSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1072,6 +1073,7 @@ class StorageLocationViewSet(viewsets.ModelViewSet):
 
 class ReagentViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
+    state_path = 'sector__state_ids'  # M6
     queryset = Reagent.objects.select_related('section', 'storage').prefetch_related('lots').all()
     serializer_class = ReagentSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1083,6 +1085,7 @@ class ReagentViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class ReagentLotViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'reagent__sector'
+    state_path = 'reagent__sector__state_ids'  # M6
     queryset = ReagentLot.objects.select_related('reagent', 'storage').all()
     serializer_class = ReagentLotSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1094,6 +1097,7 @@ class ReagentLotViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class MaterialIssueViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'lot__reagent__sector'
+    state_path = 'lot__reagent__sector__state_ids'  # M6
     queryset = MaterialIssue.objects.select_related('lot__reagent', 'issued_by').all()
     serializer_class = MaterialIssueSerializer
     http_method_names = ['get', 'post']
@@ -1112,6 +1116,7 @@ class MaterialIssueViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class QCRecordViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
+    state_path = 'sector__state_ids'  # M6
     queryset = QCRecord.objects.select_related('section', 'test', 'reviewed_by').all()
     serializer_class = QCRecordSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1140,6 +1145,7 @@ class QCRecordViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class NonConformityViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
+    state_path = 'sector__state_ids'  # M6
     queryset = NonConformity.objects.select_related('section', 'reported_by').all()
     serializer_class = NonConformitySerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1176,6 +1182,7 @@ class NonConformityViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class CapaRecordViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'non_conformity__sector'
+    state_path = 'non_conformity__sector__state_ids'  # M6
     queryset = CapaRecord.objects.select_related('non_conformity', 'responsible_user').all()
     serializer_class = CapaRecordSerializer
     http_method_names = ['get', 'post', 'patch']
@@ -1207,6 +1214,7 @@ class CapaRecordViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
 
 class CriticalResultViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'test__sample__sector'
+    state_path = 'test__sample__sector__state_ids'  # M6
     queryset = CriticalResultNotification.objects.select_related(
         'test', 'test__sample', 'acknowledged_by'
     ).all()

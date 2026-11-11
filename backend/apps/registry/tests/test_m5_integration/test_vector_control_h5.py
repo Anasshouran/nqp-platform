@@ -34,14 +34,9 @@ class TestVectorControlH5:
             'M4-1 regression.'
         )
 
-    @pytest.mark.xfail(
-        reason='D-M5-B-1: VectorUnit sector-only (no entry_point FK). '
-               '`SectorFieldScopedMixin` has no derivable state for it, so STATE-only '
-               'users stay denied (fail-safe). Requires M6 product/schema decision.',
-        strict=True,
-    )
-    def test_state_user_sees_own_state_vector_unit(self):
+    def test_state_user_sees_own_state_vector_unit(self):  # M6: D-M5-B-1 closed
         world_a = _build_world('A')
+        world_a['org_sector'].state_ids.add(world_a['state'])
         unit = VectorUnit.objects.create(
             code=f'U_{uuid.uuid4().hex[:6]}', name_ar='وحدة أ', sector=world_a['org_sector'],
         )
