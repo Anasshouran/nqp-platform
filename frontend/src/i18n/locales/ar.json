@@ -696,6 +696,32 @@
         "ihr": "اللوائح الصحية الدولية (IHR)",
         "sectionTitle": "دولي"
       },
+      "footer": {
+        "group": {
+          "important": "روابط مهمة",
+          "services": "الخدمات",
+          "knowledge": "المعرفة"
+        },
+        "link": {
+          "home": "رئيسية",
+          "serviceCatalog": "كتالوج الخدمات",
+          "travelRequirements": "متطلبات السفر",
+          "healthPorts": "المنافذ الصحية",
+          "indicators": "المؤشرات العامة",
+          "platformGateways": "بوابات المنصة",
+          "documents": "الوثائق",
+          "verify": "التحقق من الشهادات",
+          "smartServices": "الخدمات الذكية",
+          "travelerPortal": "بوابة المسافرين",
+          "companiesPortal": "بوابة الشركات",
+          "preRegister": "التسجيل المسبق",
+          "healthAlerts": "التنبيهات الصحية",
+          "news": "الأخبار",
+          "circulars": "التعاميم",
+          "diseasesGuidelines": "الأمراض والإرشادات",
+          "faq": "الأسئلة الشائعة"
+        }
+      },
       "nav": {
         "menu": {
           "services": {

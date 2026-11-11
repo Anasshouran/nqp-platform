@@ -228,36 +228,36 @@ const externalLinks = [
 
 const footerLinkGroups = [
   {
-    title: 'روابط مهمة',
+    title: 'public.layout.footer.group.important',
     links: [
-      { label: 'رئيسية', path: '/' },
-      { label: 'كتالوج الخدمات', path: '/services' },
-      { label: 'متطلبات السفر', path: '/travel-requirements' },
-      { label: 'المنافذ الصحية', path: '/ports' },
-      { label: 'المؤشرات العامة', path: '/indicators' },
-      { label: 'بوابات المنصة', path: '/gateways' },
-      { label: 'الوثائق', path: '/documents' },
+      { label: 'public.layout.footer.link.home', path: '/' },
+      { label: 'public.layout.footer.link.serviceCatalog', path: '/services' },
+      { label: 'public.layout.footer.link.travelRequirements', path: '/travel-requirements' },
+      { label: 'public.layout.footer.link.healthPorts', path: '/ports' },
+      { label: 'public.layout.footer.link.indicators', path: '/indicators' },
+      { label: 'public.layout.footer.link.platformGateways', path: '/gateways' },
+      { label: 'public.layout.footer.link.documents', path: '/documents' },
     ],
   },
   {
-    title: 'الخدمات',
+    title: 'public.layout.footer.group.services',
     links: [
-      { label: 'التحقق من الشهادات', path: '/verify' },
-      { label: 'الخدمات الذكية', path: '/services/tools' },
-      { label: 'بوابة المسافرين', path: '/traveler/dashboard' },
-      { label: 'بوابة الشركات', path: '/partners' },
-      { label: 'التسجيل المسبق', path: '/traveler/register' },
+      { label: 'public.layout.footer.link.verify', path: '/verify' },
+      { label: 'public.layout.footer.link.smartServices', path: '/services/tools' },
+      { label: 'public.layout.footer.link.travelerPortal', path: '/traveler/dashboard' },
+      { label: 'public.layout.footer.link.companiesPortal', path: '/partners' },
+      { label: 'public.layout.footer.link.preRegister', path: '/traveler/register' },
     ],
   },
   {
-    title: 'المعرفة',
+    title: 'public.layout.footer.group.knowledge',
     links: [
-      { label: 'التنبيهات الصحية', path: '/notices' },
-      { label: 'الأخبار', path: '/news' },
-      { label: 'التعاميم', path: '/circulars' },
-      { label: 'الوثائق', path: '/documents' },
-      { label: 'الأمراض والإرشادات', path: '/diseases' },
-      { label: 'الأسئلة الشائعة', path: '/faq' },
+      { label: 'public.layout.footer.link.healthAlerts', path: '/notices' },
+      { label: 'public.layout.footer.link.news', path: '/news' },
+      { label: 'public.layout.footer.link.circulars', path: '/circulars' },
+      { label: 'public.layout.footer.link.documents', path: '/documents' },
+      { label: 'public.layout.footer.link.diseasesGuidelines', path: '/diseases' },
+      { label: 'public.layout.footer.link.faq', path: '/faq' },
     ],
   },
 ];
@@ -818,7 +818,7 @@ const PublicLayout = () => {
                 {footerLinkGroups.map((group) => (
                   <Stack key={group.title} spacing={1}>
                     <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {tl(group.title)}
+                      {tt(group.title)}
                     </Typography>
                     {group.links.map((link) => (
                       <Link
@@ -826,7 +826,7 @@ const PublicLayout = () => {
                         to={link.path}
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {tl(link.label)}
+                        {tt(link.label)}
                       </Link>
                     ))}
                   </Stack>

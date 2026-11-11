@@ -696,6 +696,32 @@
         "ihr": "International Health Regulations (IHR)",
         "sectionTitle": "International"
       },
+      "footer": {
+        "group": {
+          "important": "Important Links",
+          "services": "Services",
+          "knowledge": "Knowledge"
+        },
+        "link": {
+          "home": "Home",
+          "serviceCatalog": "Service Catalog",
+          "travelRequirements": "Travel Requirements",
+          "healthPorts": "Health Ports",
+          "indicators": "Indicators",
+          "platformGateways": "Platform Gateways",
+          "documents": "Documents",
+          "verify": "Certificate Verification",
+          "smartServices": "Smart Services",
+          "travelerPortal": "Traveler Portal",
+          "companiesPortal": "Companies Portal",
+          "preRegister": "Pre-Registration",
+          "healthAlerts": "Health Alerts",
+          "news": "News",
+          "circulars": "Circulars",
+          "diseasesGuidelines": "Diseases & Guidelines",
+          "faq": "FAQ"
+        }
+      },
       "nav": {
         "menu": {
           "services": {
