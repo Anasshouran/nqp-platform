@@ -1,9 +1,12 @@
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: 'ar', changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock('react-i18next', () => {
+  const t = (key: string) => key;
+  return {
+    useTranslation: () => ({
+      t,
+      i18n: { language: 'ar', changeLanguage: vi.fn() },
+    }),
+  };
+});
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';

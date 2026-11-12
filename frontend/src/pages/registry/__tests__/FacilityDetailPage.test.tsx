@@ -1,9 +1,12 @@
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: 'ar', changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock('react-i18next', () => {
+  const t = (key: string) => key;
+  return {
+    useTranslation: () => ({
+      t,
+      i18n: { language: 'ar', changeLanguage: vi.fn() },
+    }),
+  };
+});
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -16,6 +19,7 @@ vi.mock('../../../api/endpoints/registry', () => ({
   listNodes: vi.fn(),
   getFacilitySummary: vi.fn(),
   listFacilityOwnerships: vi.fn(),
+  listFacilityOwnershipsPaginated: vi.fn(),
   listTechnicalSupervisions: vi.fn(),
   listServiceAvailability: vi.fn(),
   listDepartmentAssignments: vi.fn(),
@@ -37,6 +41,7 @@ describe('FacilityDetailPage', () => {
     vi.mocked(registryApi.listTechnicalSupervisions).mockResolvedValue([]);
     vi.mocked(registryApi.listServiceAvailability).mockResolvedValue([]);
     vi.mocked(registryApi.listDepartmentAssignments).mockResolvedValue([]);
+    vi.mocked(registryApi.listFacilityOwnershipsPaginated).mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
     render(<MemoryRouter initialEntries={['/app/registry/facilities/fac-1']}><Routes><Route path="/app/registry/facilities/:id" element={<FacilityDetailPage />} /></Routes></MemoryRouter>);
     await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
     expect(screen.getAllByRole('tab')).toHaveLength(6);
@@ -51,6 +56,7 @@ describe('FacilityDetailPage', () => {
     vi.mocked(registryApi.listTechnicalSupervisions).mockResolvedValue([]);
     vi.mocked(registryApi.listServiceAvailability).mockResolvedValue([]);
     vi.mocked(registryApi.listDepartmentAssignments).mockResolvedValue([]);
+    vi.mocked(registryApi.listFacilityOwnershipsPaginated).mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
     const user = (await import('@testing-library/user-event')).default.setup();
     render(<MemoryRouter initialEntries={['/app/registry/facilities/fac-1']}><Routes><Route path="/app/registry/facilities/:id" element={<FacilityDetailPage />} /></Routes></MemoryRouter>);
     await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(6));

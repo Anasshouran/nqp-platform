@@ -1,4 +1,6 @@
 import { Box, Alert, Stack, Chip, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { Link as MuiLink } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import type { ReportingNode } from '../../../types/registry';
@@ -14,7 +16,6 @@ export function TreePositionTab({ node, allNodes }: Props) {
     return <Alert severity="info">{t('registry.facility.tree_position.empty')}</Alert>;
   }
 
-  // Build ancestor chain by walking parent_id
   const byId = new Map(allNodes.map((n) => [n.id, n]));
   const chain: ReportingNode[] = [];
   let cur: ReportingNode | undefined = node;
@@ -31,12 +32,23 @@ export function TreePositionTab({ node, allNodes }: Props) {
 
   return (
     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-      {chain.map((n, i) => (
-        <Stack key={n.id} direction="row" spacing={1} alignItems="center">
-          {i > 0 && <Typography variant="body2">→</Typography>}
-          <Chip label={`${n.name_ar} (${n.kind})`} color={i === chain.length - 1 ? 'success' : 'default'} />
-        </Stack>
-      ))}
+      {chain.map((n, i) => {
+        const isLast = i === chain.length - 1;
+        const facilityId = (n as ReportingNode & { facility_id?: string | null }).facility_id;
+        const linkable = !isLast && !!facilityId;
+        return (
+          <Stack key={n.id} direction="row" spacing={1} alignItems="center">
+            {i > 0 && <Typography variant="body2">→</Typography>}
+            {linkable ? (
+              <MuiLink component={Link} to={`/app/registry/facility/${facilityId}`} underline="hover">
+                {n.name_ar} ({n.kind})
+              </MuiLink>
+            ) : (
+              <Chip label={`${n.name_ar} (${n.kind})`} color={isLast ? 'success' : 'default'} />
+            )}
+          </Stack>
+        );
+      })}
     </Stack>
   );
 }
