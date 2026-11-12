@@ -417,6 +417,18 @@
             "admin": "Administrative",
             "travel": "Travel",
             "other": "Other"
+          },
+          "status": {
+            "published": "Published",
+            "approved": "Approved",
+            "draft": "Draft",
+            "review": "Review",
+            "archived": "Archived"
+          },
+          "priority": {
+            "urgent": "Urgent",
+            "important": "Important",
+            "normal": "Normal"
           }
         }
       },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cmsContentRole } from "../../../../../api/endpoints/cmsWorkflow";
 import { useAuth } from "../../../../../hooks/useAuth";
@@ -24,25 +24,6 @@ import {
 } from '../../../../../api/endpoints/cms';
 import type { CmsCircular, ContentStatus } from '../../../../../api/endpoints/cms';
 
-const STATUS_META: Record<string, { label: string; color: 'success' | 'warning' | 'default' | 'error' | 'info' }> = {
-  PUBLISHED: { label: 'منشور', color: 'success' },
-  APPROVED: { label: 'معتمد', color: 'info' },
-  DRAFT: { label: 'مسودة', color: 'warning' },
-  REVIEW: { label: 'مراجعة', color: 'warning' },
-  ARCHIVED: { label: 'مؤرشف', color: 'error' },
-};
-
-const PRIORITY_META: Record<string, { label: string; color: 'error' | 'warning' | 'default' }> = {
-  URGENT: { label: 'عاجل', color: 'error' },
-  IMPORTANT: { label: 'مهم', color: 'warning' },
-  NORMAL: { label: 'عادي', color: 'default' },
-};
-
-const CATEGORIES = ['OFFICIAL', 'HEALTH', 'ADMIN', 'TRAVEL', 'OTHER'].map((v) => ({
-  value: v,
-  label: v === 'OFFICIAL' ? 'رسمي' : v === 'HEALTH' ? 'صحي' : v === 'ADMIN' ? 'إداري' : v === 'TRAVEL' ? 'سفر' : 'أخرى',
-}));
-
 const EMPTY: Partial<CmsCircular> = {
   title: '',
   body: '',
@@ -54,6 +35,25 @@ const EMPTY: Partial<CmsCircular> = {
 
 const RedSeaCircularsPanel = () => {
   const { t } = useTranslation();
+  const STATUS_META = useMemo<Record<string, { label: string; color: 'success' | 'warning' | 'default' | 'error' | 'info' }>>(() => ({
+    PUBLISHED: { label: t('redsea.portal.content.circulars.status.published'), color: 'success' },
+    APPROVED: { label: t('redsea.portal.content.circulars.status.approved'), color: 'info' },
+    DRAFT: { label: t('redsea.portal.content.circulars.status.draft'), color: 'warning' },
+    REVIEW: { label: t('redsea.portal.content.circulars.status.review'), color: 'warning' },
+    ARCHIVED: { label: t('redsea.portal.content.circulars.status.archived'), color: 'error' },
+  }), [t]);
+  const PRIORITY_META = useMemo<Record<string, { label: string; color: 'error' | 'warning' | 'default' }>>(() => ({
+    URGENT: { label: t('redsea.portal.content.circulars.priority.urgent'), color: 'error' },
+    IMPORTANT: { label: t('redsea.portal.content.circulars.priority.important'), color: 'warning' },
+    NORMAL: { label: t('redsea.portal.content.circulars.priority.normal'), color: 'default' },
+  }), [t]);
+  const CATEGORIES = useMemo<{ value: string; label: string }[]>(() => ([
+    { value: 'OFFICIAL', label: t('redsea.portal.content.circulars.category.official') },
+    { value: 'HEALTH', label: t('redsea.portal.content.circulars.category.health') },
+    { value: 'ADMIN', label: t('redsea.portal.content.circulars.category.admin') },
+    { value: 'TRAVEL', label: t('redsea.portal.content.circulars.category.travel') },
+    { value: 'OTHER', label: t('redsea.portal.content.circulars.category.other') },
+  ]), [t]);
   const [rows, setRows] = useState<CmsCircular[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
