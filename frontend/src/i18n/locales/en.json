@@ -706,6 +706,176 @@
     "نوع الجرعة": "Dose type"
   },
   "public": {
+    "layout": {
+      "portType": {
+        "airport": "Airports",
+        "seaport": "Seaports",
+        "land": "Land Crossings"
+      },
+      "externalLinks": {
+        "moh": "Federal Ministry of Health",
+        "who": "World Health Organization",
+        "ihr": "International Health Regulations (IHR)",
+        "sectionTitle": "International"
+      },
+      "footer": {
+        "group": {
+          "important": "Important Links",
+          "services": "Services",
+          "knowledge": "Knowledge"
+        },
+        "link": {
+          "home": "Home",
+          "serviceCatalog": "Service Catalog",
+          "travelRequirements": "Travel Requirements",
+          "healthPorts": "Health Ports",
+          "indicators": "Indicators",
+          "platformGateways": "Platform Gateways",
+          "documents": "Documents",
+          "verify": "Certificate Verification",
+          "smartServices": "Smart Services",
+          "travelerPortal": "Traveler Portal",
+          "companiesPortal": "Companies Portal",
+          "preRegister": "Pre-Registration",
+          "healthAlerts": "Health Alerts",
+          "news": "News",
+          "circulars": "Circulars",
+          "diseasesGuidelines": "Diseases & Guidelines",
+          "faq": "FAQ"
+        }
+      },
+      "sectorNav": {
+        "home": "Home",
+        "about": "About the Sector",
+        "aboutUs": "About Us",
+        "director": "Sector Director",
+        "ports": "Ports",
+        "documentsCenter": "Documents Center",
+        "faq": "FAQ",
+        "contact": "Contact Us",
+        "services": "Services",
+        "serviceCatalog": "Service Catalog",
+        "foodSafety": "Food Safety",
+        "vectorControl": "Vector Control",
+        "entryExitRequirements": "Entry & Exit Requirements",
+        "alertsNews": "Alerts & News",
+        "news": "News",
+        "circulars": "Circulars"
+      },
+      "body": {
+        "homepage": "Homepage",
+        "navigationMenu": "Navigation menu",
+        "globalSearch": "Global search",
+        "userAccount": "User account",
+        "openMenu": "Open menu",
+        "closeNotification": "Close notification",
+        "closeMenu": "Close menu",
+        "quickLinks": "Quick links",
+        "skipToContent": "Skip to main content",
+        "emergencyAdmin": "General Directorate of Health Emergencies and Epidemic Control",
+        "signIn": "Sign In",
+        "preregMandatory": "Pre-registration is mandatory for travelers arriving through all entry ports",
+        "alertDetails": "Alert details",
+        "registerNow": "Register now",
+        "nationalPlatform": "Integrated national platform for managing quarantine and epidemic surveillance at all entry points of the Republic of Sudan,",
+        "ihrCompliance": "in accordance with the International Health Regulations (IHR).",
+        "contactUs": "Contact Us",
+        "khartoumSudan": "Khartoum, Republic of Sudan",
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "afyatna": "National Quarantine Platform - AFYATNA",
+        "allRightsReserved": "© {{year}} {{org}}. All rights reserved."
+      },
+      "nav": {
+        "menu": {
+          "entryPoints": {
+            "allPorts": "All Ports",
+            "section": {
+              "portsNetwork": "Ports Network"
+            }
+          },
+          "services": {
+            "catalog": "Service Catalog",
+            "travelers": "Traveler Services",
+            "foodSafety": "Food Safety",
+            "preRegister": "Pre-Registration",
+            "travelerPortal": "Traveler Portal",
+            "companiesPortal": "Companies Portal",
+            "verify": "Certificate Verification",
+            "smartServices": "Smart Services",
+            "assistant": "Smart Assistant",
+            "section": {
+              "actions": "Procedures",
+              "platforms": "Portals",
+              "tools": "Tools"
+            }
+          },
+          "news": {
+            "all": "News",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars"
+          },
+          "diseases": {
+            "guide": "Disease & Guidelines Guide",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars",
+            "section": {
+              "knowledge": "Health Knowledge"
+            }
+          },
+          "travelers": {
+            "travelRequirements": "Travel Requirements",
+            "preRegister": "Pre-Registration",
+            "trackApplication": "Track Application",
+            "diseaseGuide": "Disease Guide",
+            "verify": "Certificate Verification",
+            "section": {
+              "preparation": "Preparing to Travel",
+              "knowledge": "Knowledge"
+            }
+          },
+          "about": {
+            "aboutUs": "About Us",
+            "director": "Platform Director",
+            "faq": "FAQ",
+            "contact": "Contact Us",
+            "section": {
+              "platform": "Platform",
+              "support": "Support"
+            }
+          },
+          "gateways": {
+            "traveler": "Traveler Portal",
+            "verify": "Certificate Verification",
+            "sectorsPortal": "Sectors Portal",
+            "portsGateway": "Ports Gateway",
+            "airlines": "Airlines Portal",
+            "shippingCompanies": "Shipping & Port Companies Portal",
+            "clinics": "Clinics Portal",
+            "laboratories": "Laboratories Portal",
+            "surveillance": "Surveillance Portal",
+            "foodControl": "Food Control Portal",
+            "vectorControl": "Vector Control Portal",
+            "vaccination": "International Vaccination Portal",
+            "partners": "Partners Portal",
+            "section": {
+              "forTravelers": "Travelers",
+              "sectorsAndPorts": "Sectors & Ports",
+              "healthAdmin": "Health Administration"
+            }
+          }
+        },
+        "home": "Home",
+        "services": "Services",
+        "travelers": "Travelers",
+        "entryPoints": "Entry Points",
+        "gateways": "Gateways",
+        "news": "News",
+        "documents": "Documents",
+        "diseases": "Diseases & Epidemics",
+        "about": "About"
+      }
+    },
     "آخر الأخبار والتعاميم": "Latest news and circulars",
     "أبرز الأهداف الاستراتيجية للإدارة العامة للحجر الصحي القومي": "Key strategic objectives of the General Directorate of Quarantine",
     "أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات": "Live platform indicators across entry points, travelers, cases and certificates",

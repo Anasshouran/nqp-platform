@@ -706,6 +706,176 @@
     "نوع الجرعة": "نوع الجرعة"
   },
   "public": {
+    "layout": {
+      "portType": {
+        "airport": "المطارات",
+        "seaport": "الموانئ",
+        "land": "المعابر البرية"
+      },
+      "externalLinks": {
+        "moh": "وزارة الصحة الاتحادية",
+        "who": "منظمة الصحة العالمية",
+        "ihr": "اللوائح الصحية الدولية (IHR)",
+        "sectionTitle": "دولي"
+      },
+      "footer": {
+        "group": {
+          "important": "روابط مهمة",
+          "services": "الخدمات",
+          "knowledge": "المعرفة"
+        },
+        "link": {
+          "home": "رئيسية",
+          "serviceCatalog": "كتالوج الخدمات",
+          "travelRequirements": "متطلبات السفر",
+          "healthPorts": "المنافذ الصحية",
+          "indicators": "المؤشرات العامة",
+          "platformGateways": "بوابات المنصة",
+          "documents": "الوثائق",
+          "verify": "التحقق من الشهادات",
+          "smartServices": "الخدمات الذكية",
+          "travelerPortal": "بوابة المسافرين",
+          "companiesPortal": "بوابة الشركات",
+          "preRegister": "التسجيل المسبق",
+          "healthAlerts": "التنبيهات الصحية",
+          "news": "الأخبار",
+          "circulars": "التعاميم",
+          "diseasesGuidelines": "الأمراض والإرشادات",
+          "faq": "الأسئلة الشائعة"
+        }
+      },
+      "sectorNav": {
+        "home": "الرئيسية",
+        "about": "حول القطاع",
+        "aboutUs": "من نحن",
+        "director": "مدير القطاع",
+        "ports": "المنافذ",
+        "documentsCenter": "مركز الوثائق",
+        "faq": "الأسئلة الشائعة",
+        "contact": "اتصل بنا",
+        "services": "الخدمات",
+        "serviceCatalog": "كتالوج الخدمات",
+        "foodSafety": "سلامة الغذاء",
+        "vectorControl": "مكافحة النواقل",
+        "entryExitRequirements": "متطلبات الدخول والخروج",
+        "alertsNews": "التنبيهات والأخبار",
+        "news": "الأخبار",
+        "circulars": "التعميمات"
+      },
+      "body": {
+        "homepage": "الصفحة الرئيسية",
+        "navigationMenu": "قائمة التنقل",
+        "globalSearch": "البحث الشامل",
+        "userAccount": "حساب المستخدم",
+        "openMenu": "فتح القائمة",
+        "closeNotification": "إغلاق الإشعار",
+        "closeMenu": "إغلاق القائمة",
+        "quickLinks": "روابط سريعة",
+        "skipToContent": "تخطي إلى المحتوى الرئيسي",
+        "emergencyAdmin": "الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة",
+        "signIn": "تسجيل الدخول",
+        "preregMandatory": "التسجيل المسبق إلزامي للمسافرين القادمين عبر جميع منافذ الدخول",
+        "alertDetails": "تفاصيل التنبيه",
+        "registerNow": "سجّل الآن",
+        "nationalPlatform": "منصة وطنية متكاملة لإدارة الحجر الصحي والرصد الوبائي في جميع منافذ الدخول بجمهورية السودان،",
+        "ihrCompliance": "وفق معايير اللوائح الصحية الدولية (IHR).",
+        "contactUs": "تواصل معنا",
+        "khartoumSudan": "الخرطوم، جمهورية السودان",
+        "privacy": "الخصوصية",
+        "terms": "الشروط والأحكام",
+        "afyatna": "منصة الحجر الصحي القومي - عافيتنا",
+        "allRightsReserved": "© {{year}} {{org}}. جميع الحقوق محفوظة."
+      },
+      "nav": {
+        "menu": {
+          "entryPoints": {
+            "allPorts": "جميع المنافذ",
+            "section": {
+              "portsNetwork": "شبكة المنافذ"
+            }
+          },
+          "services": {
+            "catalog": "كتالوج الخدمات",
+            "travelers": "خدمات المسافرين",
+            "foodSafety": "سلامة الأغذية",
+            "preRegister": "التسجيل المسبق",
+            "travelerPortal": "بوابة المسافرين",
+            "companiesPortal": "بوابة الشركات",
+            "verify": "التحقق من الشهادات",
+            "smartServices": "الخدمات الذكية",
+            "assistant": "المساعد الذكي",
+            "section": {
+              "actions": "الإجراءات",
+              "platforms": "المنصات",
+              "tools": "الأدوات"
+            }
+          },
+          "news": {
+            "all": "الأخبار",
+            "healthNotices": "التنبيهات الصحية",
+            "circulars": "التعاميم"
+          },
+          "diseases": {
+            "guide": "دليل الأمراض والإرشادات",
+            "healthNotices": "التنبيهات الصحية",
+            "circulars": "التعاميم",
+            "section": {
+              "knowledge": "المعرفة الصحية"
+            }
+          },
+          "travelers": {
+            "travelRequirements": "متطلبات السفر",
+            "preRegister": "التسجيل المسبق",
+            "trackApplication": "متابعة الطلب",
+            "diseaseGuide": "دليل الأمراض",
+            "verify": "التحقق من الشهادات",
+            "section": {
+              "preparation": "الاستعداد للسفر",
+              "knowledge": "المعرفة"
+            }
+          },
+          "about": {
+            "aboutUs": "من نحن",
+            "director": "مدير المنصة",
+            "faq": "الأسئلة الشائعة",
+            "contact": "اتصل بنا",
+            "section": {
+              "platform": "المنصة",
+              "support": "الدعم"
+            }
+          },
+          "gateways": {
+            "traveler": "بوابة المسافر",
+            "verify": "التحقق من الشهادات",
+            "sectorsPortal": "بوابة القطاعات",
+            "portsGateway": "بوابة المنافذ",
+            "airlines": "بوابة شركات الطيران",
+            "shippingCompanies": "بوابة شركات الشحن والموانئ",
+            "clinics": "بوابة العيادات",
+            "laboratories": "بوابة المختبرات",
+            "surveillance": "بوابة الترصد",
+            "foodControl": "بوابة رقابة الأغذية",
+            "vectorControl": "بوابة مكافحة النواقل",
+            "vaccination": "بوابة التطعيم الدولي",
+            "partners": "بوابة المنظمات والشركاء",
+            "section": {
+              "forTravelers": "للمسافرين",
+              "sectorsAndPorts": "القطاعات والمنافذ",
+              "healthAdmin": "الإدارة الصحية"
+            }
+          }
+        },
+        "home": "الرئيسية",
+        "services": "الخدمات",
+        "travelers": "المسافرون",
+        "entryPoints": "نقاط الدخول",
+        "gateways": "البوابات",
+        "news": "الأخبار",
+        "documents": "الوثائق",
+        "diseases": "الأمراض والأوبئة",
+        "about": "حول"
+      }
+    },
     "آخر الأخبار والتعاميم": "آخر الأخبار والتعاميم",
     "أبرز الأهداف الاستراتيجية للإدارة العامة للحجر الصحي القومي": "أبرز الأهداف الاستراتيجية للإدارة العامة للحجر الصحي القومي",
     "أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات": "أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات",
