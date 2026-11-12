@@ -370,6 +370,31 @@
           "deletePageTitle": "Delete page",
           "confirmDeleteMessage": "Are you sure you want to delete \"{{slug}}\"?",
           "confirmDeleteAction": "Delete"
+        },
+        "documents": {
+          "docLabel": "Document",
+          "categoryLabel": "Category",
+          "downloadAction": "Download",
+          "panelTitle": "Documents",
+          "panelSubtitle": "Upload and manage documents attached to the sector",
+          "uploadDoc": "Upload document",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit document",
+          "titleLabel": "Title",
+          "descLabel": "Description",
+          "filePickerNew": "Choose new file (optional)",
+          "filePicker": "Choose file",
+          "deleteDocTitle": "Delete document",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "confirmDeleteAction": "Delete",
+          "category": {
+            "regulation": "Regulations",
+            "circular": "Circulars",
+            "form": "Forms",
+            "guide": "Guides",
+            "other": "Other"
+          }
         }
       },
       "it": {

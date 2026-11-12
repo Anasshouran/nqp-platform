@@ -370,6 +370,31 @@
           "deletePageTitle": "حذف الصفحة",
           "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{slug}}\"؟",
           "confirmDeleteAction": "حذف"
+        },
+        "documents": {
+          "docLabel": "المستند",
+          "categoryLabel": "الفئة",
+          "downloadAction": "تحميل",
+          "panelTitle": "الوثائق",
+          "panelSubtitle": "رفع وإدارة الوثائق المرفقات العام للقطاع",
+          "uploadDoc": "رفع مستند",
+          "editAction": "تعديل",
+          "deleteAction": "حذف",
+          "editDocTitle": "تعديل المستند",
+          "titleLabel": "العنوان",
+          "descLabel": "الوصف",
+          "filePickerNew": "اختيار ملف جديد (اختياري)",
+          "filePicker": "اختيار ملف",
+          "deleteDocTitle": "حذف المستند",
+          "confirmDeleteMsg": "هل أنت متأكد من حذف \"{{title}}\"؟",
+          "confirmDeleteAction": "حذف",
+          "category": {
+            "regulation": "أنظمة ولوائح",
+            "circular": "تعاميم",
+            "form": "نماذج",
+            "guide": "أدلة",
+            "other": "أخرى"
+          }
         }
       },
       "it": {
