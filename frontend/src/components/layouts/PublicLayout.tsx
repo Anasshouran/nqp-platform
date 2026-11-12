@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, Link, useLocation, useNavigationType } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
@@ -17,8 +18,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Collapse from '@mui/material/Collapse';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -49,255 +48,174 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'الرئيسية', path: '/' },
+  { label: 'public.layout.nav.home', path: '/' },
   {
-    label: 'الخدمات',
+    label: 'public.layout.nav.services',
     path: '/services',
     children: [
-      { label: 'كتالوج الخدمات', path: '/services', section: 'الإجراءات' },
-      { label: 'خدمات المسافرين', path: '/services/travelers', section: 'الإجراءات' },
-      { label: 'سلامة الأغذية', path: '/services/food-safety', section: 'الإجراءات' },
-      { label: 'التسجيل المسبق', path: '/traveler/register', section: 'الإجراءات' },
-      { label: 'بوابة المسافرين', path: '/traveler/dashboard', section: 'المنصات' },
-      { label: 'بوابة الشركات', path: '/partners', section: 'المنصات' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'الأدوات' },
-      { label: 'الخدمات الذكية', path: '/services/tools', section: 'الأدوات' },
-      { label: 'المساعد الذكي', path: '/services/assistant', section: 'الأدوات' },
+      { label: 'public.layout.nav.menu.services.catalog', path: '/services', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.travelers', path: '/services/travelers', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.foodSafety', path: '/services/food-safety', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.preRegister', path: '/traveler/register', section: 'public.layout.nav.menu.services.section.actions' },
+      { label: 'public.layout.nav.menu.services.travelerPortal', path: '/traveler/dashboard', section: 'public.layout.nav.menu.services.section.platforms' },
+      { label: 'public.layout.nav.menu.services.companiesPortal', path: '/partners', section: 'public.layout.nav.menu.services.section.platforms' },
+      { label: 'public.layout.nav.menu.services.verify', path: '/verify', section: 'public.layout.nav.menu.services.section.tools' },
+      { label: 'public.layout.nav.menu.services.smartServices', path: '/services/tools', section: 'public.layout.nav.menu.services.section.tools' },
+      { label: 'public.layout.nav.menu.services.assistant', path: '/services/assistant', section: 'public.layout.nav.menu.services.section.tools' },
     ],
   },
   {
-    label: 'المسافرون',
+    label: 'public.layout.nav.travelers',
     path: '/travel-requirements',
     children: [
-      { label: 'متطلبات السفر', path: '/travel-requirements', section: 'الاستعداد للسفر' },
-      { label: 'التسجيل المسبق', path: '/traveler/register', section: 'الاستعداد للسفر' },
-      { label: 'متابعة الطلب', path: '/traveler/tracking', section: 'الاستعداد للسفر' },
-      { label: 'دليل الأمراض', path: '/diseases', section: 'المعرفة' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'المعرفة' },
+      { label: 'public.layout.nav.menu.travelers.travelRequirements', path: '/travel-requirements', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.preRegister', path: '/traveler/register', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.trackApplication', path: '/traveler/tracking', section: 'public.layout.nav.menu.travelers.section.preparation' },
+      { label: 'public.layout.nav.menu.travelers.diseaseGuide', path: '/diseases', section: 'public.layout.nav.menu.travelers.section.knowledge' },
+      { label: 'public.layout.nav.menu.travelers.verify', path: '/verify', section: 'public.layout.nav.menu.travelers.section.knowledge' },
     ],
   },
   {
-    label: 'نقاط الدخول',
+    label: 'public.layout.nav.entryPoints',
     path: '/ports',
     children: [
-      { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
+      { label: 'public.layout.nav.menu.entryPoints.allPorts', path: '/ports', section: 'public.layout.nav.menu.entryPoints.section.portsNetwork' },
     ],
   },
   {
-    label: 'البوابات',
+    label: 'public.layout.nav.gateways',
     path: '/gateways',
     children: [
-      { label: 'بوابة المسافر', path: '/traveler/login', section: 'للمسافرين' },
-      { label: 'التحقق من الشهادات', path: '/verify', section: 'للمسافرين' },
-      { label: 'بوابة القطاعات', path: '/gateways', to: '/gateways#sectors', section: 'القطاعات والمنافذ' },
-      { label: 'بوابة المنافذ', path: '/gateways', to: '/gateways#ports', section: 'القطاعات والمنافذ' },
-      { label: 'بوابة شركات الطيران', path: '/app/carrier', section: 'القطاعات والمنافذ' },
-      { label: 'بوابة شركات الشحن والموانئ', path: '/app/food-ops', section: 'القطاعات والمنافذ' },
-      { label: 'بوابة العيادات', path: '/app/clinic', section: 'الإدارة الصحية' },
-      { label: 'بوابة المختبرات', path: '/app/laboratory', section: 'الإدارة الصحية' },
-      { label: 'بوابة الترصد', path: '/app/surveillance', section: 'الإدارة الصحية' },
-      { label: 'بوابة رقابة الأغذية', path: '/app/food', section: 'الإدارة الصحية' },
-      { label: 'بوابة مكافحة النواقل', path: '/app/vector-control', section: 'الإدارة الصحية' },
-      { label: 'بوابة التطعيم الدولي', path: '/app/vaccination', section: 'الإدارة الصحية' },
-      { label: 'بوابة المنظمات والشركاء', path: '/partners', section: 'الإدارة الصحية' },
+      { label: 'public.layout.nav.menu.gateways.traveler', path: '/traveler/login', section: 'public.layout.nav.menu.gateways.section.forTravelers' },
+      { label: 'public.layout.nav.menu.gateways.verify', path: '/verify', section: 'public.layout.nav.menu.gateways.section.forTravelers' },
+      { label: 'public.layout.nav.menu.gateways.sectorsPortal', path: '/gateways', to: '/gateways#sectors', section: 'public.layout.nav.menu.gateways.section.sectorsAndPorts' },
+      { label: 'public.layout.nav.menu.gateways.portsGateway', path: '/gateways', to: '/gateways#ports', section: 'public.layout.nav.menu.gateways.section.sectorsAndPorts' },
+      { label: 'public.layout.nav.menu.gateways.airlines', path: '/app/carrier', section: 'public.layout.nav.menu.gateways.section.sectorsAndPorts' },
+      { label: 'public.layout.nav.menu.gateways.shippingCompanies', path: '/app/food-ops', section: 'public.layout.nav.menu.gateways.section.sectorsAndPorts' },
+      { label: 'public.layout.nav.menu.gateways.clinics', path: '/app/clinic', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.laboratories', path: '/app/laboratory', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.surveillance', path: '/app/surveillance', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.foodControl', path: '/app/food', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.vectorControl', path: '/app/vector-control', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.vaccination', path: '/app/vaccination', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
+      { label: 'public.layout.nav.menu.gateways.partners', path: '/partners', section: 'public.layout.nav.menu.gateways.section.healthAdmin' },
     ],
   },
 {
-    label: 'الأخبار',
+    label: 'public.layout.nav.news',
     path: '/news',
     children: [
-      { label: 'الأخبار', path: '/news' },
-      { label: 'التنبيهات الصحية', path: '/notices' },
-      { label: 'التعاميم', path: '/circulars' },
+      { label: 'public.layout.nav.menu.news.all', path: '/news' },
+      { label: 'public.layout.nav.menu.news.healthNotices', path: '/notices' },
+      { label: 'public.layout.nav.menu.news.circulars', path: '/circulars' },
     ],
   },
-  { label: 'الوثائق', path: '/documents' },
+  { label: 'public.layout.nav.documents', path: '/documents' },
   {
-    label: 'الأمراض والأوبئة',
+    label: 'public.layout.nav.diseases',
     path: '/diseases',
     children: [
-      { label: 'دليل الأمراض والإرشادات', path: '/diseases', section: 'المعرفة الصحية' },
-      { label: 'التنبيهات الصحية', path: '/notices', section: 'المعرفة الصحية' },
-      { label: 'التعاميم', path: '/circulars', section: 'المعرفة الصحية' },
+      { label: 'public.layout.nav.menu.diseases.guide', path: '/diseases', section: 'public.layout.nav.menu.diseases.section.knowledge' },
+      { label: 'public.layout.nav.menu.diseases.healthNotices', path: '/notices', section: 'public.layout.nav.menu.diseases.section.knowledge' },
+      { label: 'public.layout.nav.menu.diseases.circulars', path: '/circulars', section: 'public.layout.nav.menu.diseases.section.knowledge' },
     ],
   },
   {
-    label: 'حول',
+    label: 'public.layout.nav.about',
     path: '/about',
     children: [
-      { label: 'من نحن', path: '/about', section: 'المنصة' },
-      { label: 'مدير المنصة', path: '/director', section: 'المنصة' },
-      { label: 'الأسئلة الشائعة', path: '/faq', section: 'الدعم' },
-      { label: 'اتصل بنا', path: '/contact', section: 'الدعم' },
+      { label: 'public.layout.nav.menu.about.aboutUs', path: '/about', section: 'public.layout.nav.menu.about.section.platform' },
+      { label: 'public.layout.nav.menu.about.director', path: '/director', section: 'public.layout.nav.menu.about.section.platform' },
+      { label: 'public.layout.nav.menu.about.faq', path: '/faq', section: 'public.layout.nav.menu.about.section.support' },
+      { label: 'public.layout.nav.menu.about.contact', path: '/contact', section: 'public.layout.nav.menu.about.section.support' },
     ],
   },
 ];
 
 const PORT_TYPE_SECTION: Record<PublicPort['type'], string> = {
-  AIRPORT: 'المطارات',
-  SEAPORT: 'الموانئ',
-  LAND_PORT: 'المعابر البرية',
-};
-
-const UI_STRINGS: Record<string, string> = {
-  'وزارة الصحة الاتحادية': 'Federal Ministry of Health',
-  'الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة': 'General Directorate of Health Emergencies & Epidemic Control',
-  'الرئيسية': 'Home',
-  'الخدمات': 'Services',
-  'السفر': 'Travel',
-  'المنافذ': 'Ports',
-  'الأخبار': 'News',
-  'الوثائق': 'Documents',
-  'كتالوج الخدمات': 'Service Catalog',
-  'خدمات المسافرين': 'Traveler Services',
-  'سلامة الأغذية': 'Food Safety',
-  'التسجيل المسبق': 'Pre-Registration',
-  'بوابة المسافرين': 'Traveler Portal',
-  'بوابة الشركات': 'Companies Portal',
-  'التحقق من الشهادات': 'Certificate Verification',
-  'الخدمات الذكية': 'Smart Services',
-  'المساعد الذكي': 'Smart Assistant',
-  'الإجراءات': 'Procedures',
-  'المنصات': 'Portals',
-  'الأدوات': 'Tools',
-  'متطلبات السفر': 'Travel Requirements',
-  'متابعة الطلب': 'Track Application',
-  'دليل الأمراض': 'Disease Guide',
-  'الاستعداد للسفر': 'Preparing to Travel',
-  'المعرفة': 'Knowledge',
-  'جميع المنافذ': 'All Ports',
-  'بوابة المنافذ': 'Ports Gateway',
-  'شبكة المنافذ': 'Ports Network',
-  'المطارات': 'Airports',
-  'الموانئ': 'Seaports',
-  'المعابر البرية': 'Land Crossings',
-  'التنبيهات الصحية': 'Health Alerts',
-  'التعاميم': 'Circulars',
-  'تسجيل الدخول': 'Sign In',
-  'تخطي إلى المحتوى الرئيسي': 'Skip to main content',
-  'سجّل الآن': 'Register Now',
-  'تفاصيل التنبيه': 'Alert Details',
-  'قائمة التنقل': 'Navigation menu',
-  'فتح القائمة': 'Open menu',
-  'إغلاق القائمة': 'Close menu',
-  'البحث الشامل': 'Global search',
-  'حساب المستخدم': 'User account',
-  'روابط مهمة': 'Important Links',
-  'دولي': 'International',
-  'تواصل معنا': 'Contact Us',
-  'رئيسية': 'Home',
-  'المنافذ الصحية': 'Health Ports',
-  'نقاط الدخول': 'Entry Points',
-  'المسافرون': 'Travelers',
-  'بوابات المنصة': 'Platform Gateways',
-  'البوابات': 'Gateways',
-  'للمسافرين': 'Travelers',
-  'القطاعات والمنافذ': 'Sectors & Ports',
-  'الإدارة الصحية': 'Health Administration',
-  'بوابة المسافر': 'Traveler Portal',
-  'بوابة القطاعات': 'Sectors Portal',
-  'بوابة شركات الطيران': 'Airlines Portal',
-  'بوابة شركات الشحن والموانئ': 'Shipping & Port Companies Portal',
-  'بوابة العيادات': 'Clinics Portal',
-  'بوابة المختبرات': 'Laboratories Portal',
-  'بوابة الترصد': 'Surveillance Portal',
-  'بوابة رقابة الأغذية': 'Food Control Portal',
-  'بوابة مكافحة النواقل': 'Vector Control Portal',
-  'بوابة التطعيم الدولي': 'International Vaccination Portal',
-  'بوابة المنظمات والشركاء': 'Partners Portal',
-  'الأمراض والإرشادات': 'Diseases & Guidelines',
-  'الأمراض والأوبئة': 'Diseases & Epidemics',
-  'دليل الأمراض والإرشادات': 'Disease & Guidelines Guide',
-  'المعرفة الصحية': 'Health Knowledge',
-  'الأسئلة الشائعة': 'FAQ',
-  'المؤشرات العامة': 'Indicators',
-  'حول': 'About',
-  'من نحن': 'About Us',
-  'مدير المنصة': 'Platform Director',
-  'اتصل بنا': 'Contact Us',
-  'المنصة': 'Platform',
-  'الدعم': 'Support',
-  'الخصوصية': 'Privacy Policy',
-  'الشروط والأحكام': 'Terms & Conditions',
+  AIRPORT: 'public.layout.portType.airport',
+  SEAPORT: 'public.layout.portType.seaport',
+  LAND_PORT: 'public.layout.portType.land',
 };
 
 const externalLinks = [
-  { label: 'وزارة الصحة الاتحادية', href: 'https://fmoh.gov.sd' },
-  { label: 'منظمة الصحة العالمية', href: 'https://www.who.int' },
-  { label: 'اللوائح الصحية الدولية (IHR)', href: 'https://www.who.int/health-topics/international-health-regulations' },
+  { label: 'public.layout.externalLinks.moh', href: 'https://fmoh.gov.sd' },
+  { label: 'public.layout.externalLinks.who', href: 'https://www.who.int' },
+  { label: 'public.layout.externalLinks.ihr', href: 'https://www.who.int/health-topics/international-health-regulations' },
 ];
 
 const footerLinkGroups = [
   {
-    title: 'روابط مهمة',
+    title: 'public.layout.footer.group.important',
     links: [
-      { label: 'رئيسية', path: '/' },
-      { label: 'كتالوج الخدمات', path: '/services' },
-      { label: 'متطلبات السفر', path: '/travel-requirements' },
-      { label: 'المنافذ الصحية', path: '/ports' },
-      { label: 'المؤشرات العامة', path: '/indicators' },
-      { label: 'بوابات المنصة', path: '/gateways' },
-      { label: 'الوثائق', path: '/documents' },
+      { label: 'public.layout.footer.link.home', path: '/' },
+      { label: 'public.layout.footer.link.serviceCatalog', path: '/services' },
+      { label: 'public.layout.footer.link.travelRequirements', path: '/travel-requirements' },
+      { label: 'public.layout.footer.link.healthPorts', path: '/ports' },
+      { label: 'public.layout.footer.link.indicators', path: '/indicators' },
+      { label: 'public.layout.footer.link.platformGateways', path: '/gateways' },
+      { label: 'public.layout.footer.link.documents', path: '/documents' },
     ],
   },
   {
-    title: 'الخدمات',
+    title: 'public.layout.footer.group.services',
     links: [
-      { label: 'التحقق من الشهادات', path: '/verify' },
-      { label: 'الخدمات الذكية', path: '/services/tools' },
-      { label: 'بوابة المسافرين', path: '/traveler/dashboard' },
-      { label: 'بوابة الشركات', path: '/partners' },
-      { label: 'التسجيل المسبق', path: '/traveler/register' },
+      { label: 'public.layout.footer.link.verify', path: '/verify' },
+      { label: 'public.layout.footer.link.smartServices', path: '/services/tools' },
+      { label: 'public.layout.footer.link.travelerPortal', path: '/traveler/dashboard' },
+      { label: 'public.layout.footer.link.companiesPortal', path: '/partners' },
+      { label: 'public.layout.footer.link.preRegister', path: '/traveler/register' },
     ],
   },
   {
-    title: 'المعرفة',
+    title: 'public.layout.footer.group.knowledge',
     links: [
-      { label: 'التنبيهات الصحية', path: '/notices' },
-      { label: 'الأخبار', path: '/news' },
-      { label: 'التعاميم', path: '/circulars' },
-      { label: 'الوثائق', path: '/documents' },
-      { label: 'الأمراض والإرشادات', path: '/diseases' },
-      { label: 'الأسئلة الشائعة', path: '/faq' },
+      { label: 'public.layout.footer.link.healthAlerts', path: '/notices' },
+      { label: 'public.layout.footer.link.news', path: '/news' },
+      { label: 'public.layout.footer.link.circulars', path: '/circulars' },
+      { label: 'public.layout.footer.link.documents', path: '/documents' },
+      { label: 'public.layout.footer.link.diseasesGuidelines', path: '/diseases' },
+      { label: 'public.layout.footer.link.faq', path: '/faq' },
     ],
   },
 ];
 
 const sectorNavItems = (slug: string): NavItem[] => [
-  { label: 'الرئيسية', path: `/sector/${slug}` },
+  { label: 'public.layout.sectorNav.home', path: `/sector/${slug}` },
   {
-    label: 'حول القطاع',
+    label: 'public.layout.sectorNav.about',
     path: `/sector/${slug}/about`,
     children: [
-      { label: 'من نحن', path: `/sector/${slug}/about` },
-      { label: 'مدير القطاع', path: `/sector/${slug}/director` },
-      { label: 'المنافذ', path: `/sector/${slug}/ports` },
-      { label: 'مركز الوثائق', path: `/sector/${slug}/documents` },
-      { label: 'الأسئلة الشائعة', path: `/sector/${slug}/faq` },
-      { label: 'اتصل بنا', path: `/sector/${slug}/contact` },
+      { label: 'public.layout.sectorNav.aboutUs', path: `/sector/${slug}/about` },
+      { label: 'public.layout.sectorNav.director', path: `/sector/${slug}/director` },
+      { label: 'public.layout.sectorNav.ports', path: `/sector/${slug}/ports` },
+      { label: 'public.layout.sectorNav.documentsCenter', path: `/sector/${slug}/documents` },
+      { label: 'public.layout.sectorNav.faq', path: `/sector/${slug}/faq` },
+      { label: 'public.layout.sectorNav.contact', path: `/sector/${slug}/contact` },
     ],
   },
   {
-    label: 'الخدمات',
+    label: 'public.layout.sectorNav.services',
     path: `/sector/${slug}/services`,
     children: [
-      { label: 'كتالوج الخدمات', path: `/sector/${slug}/services` },
-      { label: 'سلامة الغذاء', path: `/sector/${slug}/services/food-safety` },
-      { label: 'مكافحة النواقل', path: `/sector/${slug}/services/vector-control` },
-      { label: 'متطلبات الدخول والخروج', path: `/sector/${slug}/travel-requirements` },
+      { label: 'public.layout.sectorNav.serviceCatalog', path: `/sector/${slug}/services` },
+      { label: 'public.layout.sectorNav.foodSafety', path: `/sector/${slug}/services/food-safety` },
+      { label: 'public.layout.sectorNav.vectorControl', path: `/sector/${slug}/services/vector-control` },
+      { label: 'public.layout.sectorNav.entryExitRequirements', path: `/sector/${slug}/travel-requirements` },
     ],
   },
   {
-    label: 'التنبيهات والأخبار',
+    label: 'public.layout.sectorNav.alertsNews',
     path: `/sector/${slug}/news`,
     children: [
-      { label: 'الأخبار', path: `/sector/${slug}/news` },
-      { label: 'التعميمات', path: `/sector/${slug}/circulars` },
+      { label: 'public.layout.sectorNav.news', path: `/sector/${slug}/news` },
+      { label: 'public.layout.sectorNav.circulars', path: `/sector/${slug}/circulars` },
     ],
   },
 ];
 
 const PublicLayout = () => {
+  const { t, i18n } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuState, setMenuState] = useState<{ anchor: HTMLElement; children: NavItem[] } | null>(null);
   const [drawerOpenItem, setDrawerOpenItem] = useState<string | null>(null);
@@ -305,22 +223,16 @@ const PublicLayout = () => {
     () => sessionStorage.getItem('nqp_banner_dismissed') !== '1'
   );
   const [urgentNotice, setUrgentNotice] = useState<HealthNotice | null>(null);
-  const [lang, setLang] = useState<'ar' | 'en'>('ar');
-  const tl = (ar?: string) => (lang === 'ar' ? (ar ?? '') : ar ? UI_STRINGS[ar] ?? ar : '');
+  const tt = (label?: string) => (label && label.startsWith('public.') ? t(label) : (label ?? ''));
   const location = useLocation();
   const navigationType = useNavigationType();
   const scrolled = useScrollTrigger({ disableHysteresis: true, threshold: 24 });
 
   useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    localStorage.setItem('nqp_lang', lang);
-  }, [lang]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('nqp_lang');
-    if (saved === 'ar' || saved === 'en') setLang(saved);
-  }, []);
+    const htmlLang: 'ar' | 'en' = i18n.language === 'ar' ? 'ar' : 'en';
+    document.documentElement.lang = htmlLang;
+    document.documentElement.dir = htmlLang === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   const pathSlug = location.pathname.match(/^\/sector\/([^/]+)(?:\/|$)/)?.[1] ?? null;
   const cmsSlug = isCmsSector(pathSlug ?? undefined) ? pathSlug : null;
@@ -384,7 +296,7 @@ const PublicLayout = () => {
   const activeNavItems = useMemo(() => {
     if (cmsSlug) return sectorNavItems(cmsSlug);
     const portChildren: NavItem[] = [
-      { label: 'جميع المنافذ', path: '/ports', section: 'شبكة المنافذ' },
+      { label: 'public.layout.nav.menu.entryPoints.allPorts', path: '/ports', section: 'public.layout.nav.menu.entryPoints.section.portsNetwork' },
       ...(['AIRPORT', 'SEAPORT', 'LAND_PORT'] as PublicPort['type'][]).flatMap((type) =>
         ports
           .filter((p) => p.is_active && p.type === type)
@@ -426,7 +338,7 @@ const PublicLayout = () => {
   };
 
   const renderNavButton = (item: NavItem) => {
-    const active = isNavItemActive(item) || (item.children && servicesActive && item.label === 'الخدمات');
+    const active = isNavItemActive(item) || (item.children && servicesActive && item.label === 'public.layout.nav.services');
     return item.children ? (
       <Button
         key={item.label}
@@ -444,7 +356,7 @@ const PublicLayout = () => {
         }}
         endIcon={<ExpandMoreIcon />}
       >
-        {tl(item.label)}
+        {t(item.label)}
       </Button>
     ) : (
       <Button
@@ -462,7 +374,7 @@ const PublicLayout = () => {
           '&:hover': { bgcolor: 'primary.lighter' },
         }}
       >
-        {tl(item.label)}
+        {t(item.label)}
       </Button>
     );
   };
@@ -470,7 +382,7 @@ const PublicLayout = () => {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <a href="#main-content" className="skip-link">
-        {tl('تخطي إلى المحتوى الرئيسي')}
+        {t('public.layout.body.skipToContent')}
       </a>
 
       {/* Top utility bar (ministry + directorate merged) */}
@@ -493,7 +405,7 @@ const PublicLayout = () => {
                   textOverflow: 'ellipsis',
                 }}
               >
-                {cmsSlug ? orgLabel : tl('وزارة الصحة الاتحادية')}
+                {cmsSlug ? orgLabel : t('public.layout.externalLinks.moh')}
               </Typography>
               {!cmsSlug && (
                 <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 1 }}>
@@ -502,51 +414,12 @@ const PublicLayout = () => {
                     variant="caption"
                     sx={{ fontWeight: 600, opacity: 0.95, whiteSpace: 'nowrap' }}
                   >
-                    {tl('الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة')}
+                    {t('public.layout.body.emergencyAdmin')}
                   </Typography>
                 </Box>
               )}
             </Stack>
 
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={lang}
-                onChange={(_, next) => {
-                  if (next === 'ar' || next === 'en') setLang(next);
-                }}
-                aria-label={lang === 'ar' ? 'اختيار اللغة' : 'Language'}
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.12)',
-                  borderRadius: 8,
-                  p: 0.25,
-                  '& .MuiToggleButtonGroup-grouped': { border: 'none', borderRadius: 6 },
-                }}
-              >
-                {(['ar', 'en'] as const).map((code) => (
-                  <ToggleButton
-                    key={code}
-                    value={code}
-                    sx={{
-                      minWidth: 0,
-                      px: 1.25,
-                      py: 0.25,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      color: '#fff',
-                      bgcolor: 'transparent',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.18)', color: '#fff' },
-                      '&.Mui-selected': { bgcolor: '#fff', color: 'primary.darker' },
-                      '&.Mui-selected:hover': { bgcolor: '#fff', color: 'primary.darker' },
-                    }}
-                  >
-                    {code === 'ar' ? 'العربية' : 'English'}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-            </Stack>
           </Stack>
         </Container>
       </Box>
@@ -575,7 +448,7 @@ const PublicLayout = () => {
               '@media (min-width:600px)': { minHeight: scrolled ? 54 : 74 },
             }}
           >
-            <Link to={cmsSlug ? `/sector/${cmsSlug}` : '/'} aria-label="الصفحة الرئيسية" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={cmsSlug ? `/sector/${cmsSlug}` : '/'} aria-label={t('public.layout.body.homepage')} style={{ textDecoration: 'none', color: 'inherit' }}>
               <BrandLogo
                 compact
                 product="afyatna"
@@ -596,7 +469,7 @@ const PublicLayout = () => {
               onClose={() => setMenuState(null)}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': lang === 'ar' ? 'قائمة التنقل' : 'Navigation menu' } }}
+              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': t('public.layout.body.navigationMenu') } }}
             >
               {menuState?.children.map((child, i) => {
                 const prev = i > 0 ? menuState?.children?.[i - 1] : undefined;
@@ -607,7 +480,7 @@ const PublicLayout = () => {
                       <Box sx={{ px: 2, pt: i > 0 ? 0.75 : 1, pb: 0.25 }}>
                         {i > 0 && <Divider sx={{ mb: 1 }} />}
                         <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 0 }}>
-                          {tl(child.section)}
+                          {child.section && t(child.section)}
                         </Typography>
                       </Box>
                     )}
@@ -618,7 +491,7 @@ const PublicLayout = () => {
                       selected={location.pathname === child.path}
                       sx={{ fontWeight: 700 }}
                     >
-                      {tl(child.label)}
+                      {tt(child.label)}
                     </MenuItem>
                   </Fragment>
                 );
@@ -628,7 +501,7 @@ const PublicLayout = () => {
             <Stack direction="row" spacing={1} alignItems="center">
               <LanguageSwitcher />
               <IconButton
-                aria-label={lang === 'ar' ? 'البحث الشامل' : 'Global search'}
+                aria-label={t('public.layout.body.globalSearch')}
                 onClick={openGlobalSearch}
                 sx={{ color: 'text.secondary' }}
               >
@@ -642,18 +515,18 @@ const PublicLayout = () => {
                 startIcon={<LoginIcon sx={{ fontSize: 18 }} />}
                 sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
               >
-                {tl('تسجيل الدخول')}
+                {t('public.layout.body.signIn')}
               </Button>
               <IconButton
                 component={Link}
                 to={loginLink}
-                aria-label={lang === 'ar' ? 'حساب المستخدم' : 'User account'}
+                aria-label={t('public.layout.body.userAccount')}
                 sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
               >
                 <AccountCircleIcon />
               </IconButton>
               <IconButton
-                aria-label={lang === 'ar' ? 'فتح القائمة' : 'Open menu'}
+                aria-label={t('public.layout.body.openMenu')}
                 edge="end"
                 onClick={() => setMobileOpen(true)}
                 sx={{ display: { md: 'none' }, color: 'primary.main' }}
@@ -683,10 +556,7 @@ const PublicLayout = () => {
             >
               <CampaignIcon sx={{ fontSize: 20, flexShrink: 0 }} />
 <Typography variant="body2" sx={{ fontWeight: 700, flex: 1 }}>
-                  {urgentNotice?.title ??
-                    (lang === 'ar'
-                      ? 'التسجيل المسبق إلزامي للمسافرين القادمين عبر جميع منافذ الدخول'
-                      : 'Pre-registration is mandatory for travelers arriving through all ports of entry')}
+                  {urgentNotice?.title ?? t('public.layout.body.preregMandatory')}
                 </Typography>
               <Button
                 component={Link}
@@ -700,10 +570,10 @@ const PublicLayout = () => {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
                 }}
               >
-                {tl(urgentNotice ? 'تفاصيل التنبيه' : 'سجّل الآن')}
+                {t(urgentNotice ? 'public.layout.body.alertDetails' : 'public.layout.body.registerNow')}
               </Button>
               <IconButton
-                aria-label={lang === 'ar' ? 'إغلاق الإشعار' : 'Close notification'}
+                aria-label={t('public.layout.body.closeNotification')}
                 onClick={dismissBanner}
                 size="small"
                 sx={{ color: '#fff', position: { xs: 'absolute', sm: 'static' }, top: 4, left: 4 }}
@@ -720,7 +590,7 @@ const PublicLayout = () => {
         <Box sx={{ width: 280, py: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, mb: 1 }}>
             <BrandLogo compact product="afyatna" />
-            <IconButton aria-label={lang === 'ar' ? 'إغلاق القائمة' : 'Close menu'} onClick={closeMobile}>
+            <IconButton aria-label={t('public.layout.body.closeMenu')} onClick={closeMobile}>
               <CloseIcon />
             </IconButton>
           </Stack>
@@ -735,7 +605,7 @@ const PublicLayout = () => {
                       sx={{ borderRadius: 2, mx: 1 }}
                     >
                       <ListItemText
-                        primary={tl(item.label)}
+                        primary={t(item.label)}
                         primaryTypographyProps={{
                           fontWeight: 700,
                           color: isNavItemActive(item) ? 'primary.main' : 'inherit',
@@ -755,7 +625,7 @@ const PublicLayout = () => {
                               <Box sx={{ px: 3, pt: i > 0 ? 1 : 1.5, pb: 0.25 }}>
                                 {i > 0 && <Divider sx={{ mb: 1 }} />}
                                 <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
-                                  {tl(child.section)}
+                                  {child.section && t(child.section)}
                                 </Typography>
                               </Box>
                             )}
@@ -771,7 +641,7 @@ const PublicLayout = () => {
                                   '&.active': { bgcolor: 'primary.light', color: 'primary.dark', fontWeight: 700 },
                                 }}
                               >
-                                <ListItemText primary={tl(child.label)} />
+                                <ListItemText primary={tt(child.label)} />
                               </ListItemButton>
                             </ListItem>
                           </Fragment>
@@ -793,7 +663,7 @@ const PublicLayout = () => {
                       '&.active': { bgcolor: 'primary.light', color: 'primary.dark', fontWeight: 700 },
                     }}
                   >
-                    <ListItemText primary={tl(item.label)} />
+                    <ListItemText primary={t(item.label)} />
                   </ListItemButton>
                 </ListItem>
               ),
@@ -808,12 +678,12 @@ const PublicLayout = () => {
                 fullWidth
                 startIcon={<LoginIcon />}
               >
-                {tl('تسجيل الدخول')}
+                {t('public.layout.body.signIn')}
               </Button>
               <Button
                 onClick={openGlobalSearch}
                 variant="outlined"
-                aria-label={lang === 'ar' ? 'البحث الشامل' : 'Global search'}
+                aria-label={t('public.layout.body.globalSearch')}
                 sx={{ minWidth: 52 }}
               >
                 <SearchIcon />
@@ -844,17 +714,16 @@ const PublicLayout = () => {
             <Box sx={{ maxWidth: 360 }}>
               <BrandLogo light product="afyatna" />
               <Typography variant="body2" sx={{ mt: 2, color: 'grey.400' }}>
-                منصة وطنية متكاملة لإدارة الحجر الصحي والرصد الوبائي في جميع منافذ الدخول بجمهورية السودان،
-                وفق معايير اللوائح الصحية الدولية (IHR).
+                {t('public.layout.body.nationalPlatform')} {t('public.layout.body.ihrCompliance')}
               </Typography>
             </Box>
             {/* روابط سريعة مقسمة */}
-            <nav aria-label="روابط سريعة">
+            <nav aria-label={t('public.layout.body.quickLinks')}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 6 }} useFlexGap>
                 {footerLinkGroups.map((group) => (
                   <Stack key={group.title} spacing={1}>
                     <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {tl(group.title)}
+                      {t(group.title)}
                     </Typography>
                     {group.links.map((link) => (
                       <Link
@@ -862,7 +731,7 @@ const PublicLayout = () => {
                         to={link.path}
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {tl(link.label)}
+                        {t(link.label)}
                       </Link>
                     ))}
                   </Stack>
@@ -870,7 +739,7 @@ const PublicLayout = () => {
                 {externalLinks.length > 0 && (
                   <Stack spacing={1}>
                     <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {tl('دولي')}
+                      {t('public.layout.externalLinks.sectionTitle')}
                     </Typography>
                     {externalLinks.map((link) => (
                       <a
@@ -880,7 +749,7 @@ const PublicLayout = () => {
                         rel="noopener noreferrer"
                         style={{ color: 'inherit', textDecoration: 'none', fontSize: 14 }}
                       >
-                        {link.label}
+                        {t(link.label)}
                       </a>
                     ))}
                   </Stack>
@@ -889,10 +758,10 @@ const PublicLayout = () => {
             </nav>
             <Stack spacing={1}>
               <Typography variant="subtitle1" color="white" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {tl('تواصل معنا')}
+                {t('public.layout.body.contactUs')}
               </Typography>
               <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PublicIcon sx={{ fontSize: 16 }} /> الخرطوم، جمهورية السودان
+                <PublicIcon sx={{ fontSize: 16 }} /> {t('public.layout.body.khartoumSudan')}
               </Typography>
             </Stack>
           </Stack>
@@ -903,22 +772,21 @@ const PublicLayout = () => {
             spacing={1}
           >
             <Typography variant="caption" color="grey.500">
-              {lang === 'ar' ? (
-                <>{`© ${new Date().getFullYear()} الإدارة العامة للطوارئ الصحية ومكافحة الأوبئة. جميع الحقوق محفوظة.`}</>
-              ) : (
-                <>© {new Date().getFullYear()} General Directorate of Health Emergencies &amp; Epidemic Control. All rights reserved.</>
-              )}
+              {t('public.layout.body.allRightsReserved', {
+                year: new Date().getFullYear(),
+                org: t('public.layout.body.emergencyAdmin'),
+              })}
             </Typography>
             <Stack direction="row" spacing={2}>
               <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none', fontSize: 13 }}>
-                {tl('الخصوصية')}
+                {t('public.layout.body.privacy')}
               </Link>
               <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none', fontSize: 13 }}>
-                {tl('الشروط والأحكام')}
+                {t('public.layout.body.terms')}
               </Link>
             </Stack>
             <Typography variant="caption" color="grey.600">
-              {lang === 'ar' ? 'منصة الحجر الصحي القومي - عافيتنا' : 'National Quarantine Platform - AFYATNA'} | AFYATNA
+              {t('public.layout.body.afyatna')} | AFYATNA
             </Typography>
           </Stack>
         </Container>
