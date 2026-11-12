@@ -476,7 +476,7 @@ const PublicLayout = () => {
               onClose={() => setMenuState(null)}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': lang === 'ar' ? t('public.layout.body.navigationMenu') : 'Navigation menu' } }}
+              slotProps={{ paper: { sx: { mt: 1, borderRadius: 3, minWidth: 200 }, 'aria-label': t('public.layout.body.navigationMenu') } }}
             >
               {menuState?.children.map((child, i) => {
                 const prev = i > 0 ? menuState?.children?.[i - 1] : undefined;
@@ -508,7 +508,7 @@ const PublicLayout = () => {
             <Stack direction="row" spacing={1} alignItems="center">
               <LanguageSwitcher />
               <IconButton
-                aria-label={lang === 'ar' ? t('public.layout.body.globalSearch') : 'Global search'}
+                aria-label={t('public.layout.body.globalSearch')}
                 onClick={openGlobalSearch}
                 sx={{ color: 'text.secondary' }}
               >
@@ -527,13 +527,13 @@ const PublicLayout = () => {
               <IconButton
                 component={Link}
                 to={loginLink}
-                aria-label={lang === 'ar' ? t('public.layout.body.userAccount') : 'User account'}
+                aria-label={t('public.layout.body.userAccount')}
                 sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
               >
                 <AccountCircleIcon />
               </IconButton>
               <IconButton
-                aria-label={lang === 'ar' ? t('public.layout.body.openMenu') : 'Open menu'}
+                aria-label={t('public.layout.body.openMenu')}
                 edge="end"
                 onClick={() => setMobileOpen(true)}
                 sx={{ display: { md: 'none' }, color: 'primary.main' }}
@@ -583,7 +583,7 @@ const PublicLayout = () => {
                 {t(urgentNotice ? 'public.layout.body.alertDetails' : 'public.layout.body.registerNow')}
               </Button>
               <IconButton
-                aria-label={lang === 'ar' ? t('public.layout.body.closeNotification') : 'Close notification'}
+                aria-label={t('public.layout.body.closeNotification')}
                 onClick={dismissBanner}
                 size="small"
                 sx={{ color: '#fff', position: { xs: 'absolute', sm: 'static' }, top: 4, left: 4 }}
@@ -600,7 +600,7 @@ const PublicLayout = () => {
         <Box sx={{ width: 280, py: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, mb: 1 }}>
             <BrandLogo compact product="afyatna" />
-            <IconButton aria-label={lang === 'ar' ? t('public.layout.body.closeMenu') : 'Close menu'} onClick={closeMobile}>
+            <IconButton aria-label={t('public.layout.body.closeMenu')} onClick={closeMobile}>
               <CloseIcon />
             </IconButton>
           </Stack>
@@ -693,7 +693,7 @@ const PublicLayout = () => {
               <Button
                 onClick={openGlobalSearch}
                 variant="outlined"
-                aria-label={lang === 'ar' ? t('public.layout.body.globalSearch') : 'Global search'}
+                aria-label={t('public.layout.body.globalSearch')}
                 sx={{ minWidth: 52 }}
               >
                 <SearchIcon />
