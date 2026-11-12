@@ -79,8 +79,8 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
-      - name: Test
-        run: npm test -- --run
+      - name: Test (vitest)
+        run: npm run test
       - name: Build (tsc + vite)
         run: npm run build
 
