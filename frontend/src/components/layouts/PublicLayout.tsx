@@ -566,7 +566,7 @@ const PublicLayout = () => {
                   {urgentNotice?.title ??
                     (lang === 'ar'
                       ? t('public.layout.body.preregMandatory')
-                      : 'Pre-registration is mandatory for travelers arriving through all ports of entry')}
+                      : 'Pre-registration is mandatory for travelers arriving through all entry ports')}
                 </Typography>
               <Button
                 component={Link}
