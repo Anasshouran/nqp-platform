@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cmsContentRole } from "../../../../../api/endpoints/cmsWorkflow";
 import { useAuth } from "../../../../../hooks/useAuth";
 import Box from '@mui/material/Box';
@@ -52,6 +53,7 @@ const EMPTY: Partial<CmsCircular> = {
 };
 
 const RedSeaCircularsPanel = () => {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<CmsCircular[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -111,7 +113,7 @@ const RedSeaCircularsPanel = () => {
   const columns: DataTableColumn<CmsCircular>[] = [
     {
       key: 'title',
-      label: 'العنوان',
+      label: t('redsea.portal.content.circulars.titleLabel'),
       render: (r) => (
         <Box>
           <Typography sx={{ fontWeight: 700 }}>{r.title}</Typography>
@@ -126,12 +128,12 @@ const RedSeaCircularsPanel = () => {
     },
     {
       key: 'category',
-      label: 'الفئة',
+      label: t('redsea.portal.content.circulars.categoryLabel'),
       render: (r) => CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category,
     },
     {
       key: 'priority',
-      label: 'الأولوية',
+      label: t('redsea.portal.content.circulars.priorityLabel'),
       render: (r) => {
         const m = PRIORITY_META[r.priority] ?? PRIORITY_META.NORMAL;
         return <Chip size="small" label={m.label} color={m.color} variant="outlined" />;
@@ -139,7 +141,7 @@ const RedSeaCircularsPanel = () => {
     },
     {
       key: 'status',
-      label: 'الحالة',
+      label: t('redsea.portal.content.circulars.statusLabel'),
       render: (r) => {
         const m = STATUS_META[r.status] ?? STATUS_META.DRAFT;
         return <Chip size="small" label={m.label} color={m.color} variant="outlined" />;
@@ -149,11 +151,11 @@ const RedSeaCircularsPanel = () => {
 
   return (
     <SectionCard
-      title="التعاميم الرسمية"
-      subtitle="نشر التعاميم والتنبيهات الرسمية للقطاع"
+      title={t('redsea.portal.content.circulars.panelTitle')}
+      subtitle={t('redsea.portal.content.circulars.panelSubtitle')}
       action={
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-          إضافة تعميم
+          {t('redsea.portal.content.circulars.addDoc')}
         </Button>
       }
     >
@@ -168,15 +170,15 @@ const RedSeaCircularsPanel = () => {
         hidePagination
         actions={(r) => (
           <>
-            <IconButton aria-label="تعديل" onClick={() => openEdit(r)} color="primary"><EditIcon /></IconButton>
-            <IconButton aria-label="حذف" onClick={() => setDeleting(r)} color="error"><DeleteIcon /></IconButton>
+            <IconButton aria-label={t('redsea.portal.content.circulars.editAction')} onClick={() => openEdit(r)} color="primary"><EditIcon /></IconButton>
+            <IconButton aria-label={t('redsea.portal.content.circulars.deleteAction')} onClick={() => setDeleting(r)} color="error"><DeleteIcon /></IconButton>
           </>
         )}
       />
 
       <FormDialog
         open={opened}
-        title={editing ? 'تعديل تعميم' : 'إضافة تعميم'}
+        title={editing ? t('redsea.portal.content.circulars.editDocTitle') : t('redsea.portal.content.circulars.addDoc')}
         maxWidth="md"
         onClose={() => setOpened(false)}
         onSubmit={save}
@@ -184,37 +186,37 @@ const RedSeaCircularsPanel = () => {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TextField fullWidth label="العنوان" required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.portal.content.circulars.titleLabel')} required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth label="المحتوى" required multiline minRows={5} value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.portal.content.circulars.contentLabel')} required multiline minRows={5} value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField select fullWidth label="الفئة" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
+            <TextField select fullWidth label={t('redsea.portal.content.circulars.categoryLabel')} value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
               {CATEGORIES.map((c) => <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>)}
             </TextField>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField select fullWidth label="الأولوية" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}>
+            <TextField select fullWidth label={t('redsea.portal.content.circulars.priorityLabel')} value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}>
               {Object.entries(PRIORITY_META).map(([k, m]) => <MenuItem key={k} value={k}>{m.label}</MenuItem>)}
             </TextField>
           </Grid>
           <Grid item xs={12} sm={4}>
-            {role === 'approver' ? (<TextField select fullWidth label="الحالة" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as ContentStatus }))}>
+            {role === 'approver' ? (<TextField select fullWidth label={t('redsea.portal.content.circulars.statusLabel')} value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as ContentStatus }))}>
               {Object.entries(STATUS_META).map(([k, m]) => <MenuItem key={k} value={k}>{m.label}</MenuItem>)}
-            </TextField>) : (<TextField fullWidth label="الحالة" value={form.status ? STATUS_META[form.status] : STATUS_META.DRAFT?.label ?? form.status} InputProps={{ readOnly: true }} />)}
+            </TextField>) : (<TextField fullWidth label={t('redsea.portal.content.circulars.statusLabel')} value={form.status ? STATUS_META[form.status] : STATUS_META.DRAFT?.label ?? form.status} InputProps={{ readOnly: true }} />)}
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth label="الرقم المرجعي" value={form.reference_number} onChange={(e) => setForm((f) => ({ ...f, reference_number: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.portal.content.circulars.refNumberLabel')} value={form.reference_number} onChange={(e) => setForm((f) => ({ ...f, reference_number: e.target.value }))} />
           </Grid>
         </Grid>
       </FormDialog>
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="حذف التعميم"
-        message={`هل أنت متأكد من حذف "${deleting?.title}"؟`}
-        confirmLabel="حذف"
+        title={t('redsea.portal.content.circulars.deleteDocTitle')}
+        message={t('redsea.portal.content.circulars.confirmDeleteMsg', { title: deleting?.title })}
+        confirmLabel={t('redsea.portal.content.circulars.deleteAction')}
         onConfirm={() => {
           if (!deleting) return;
           deleteCmsCircular(deleting.id).then(() => {

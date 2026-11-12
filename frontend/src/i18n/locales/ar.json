@@ -395,6 +395,29 @@
             "guide": "أدلة",
             "other": "أخرى"
           }
+        },
+        "circulars": {
+          "titleLabel": "العنوان",
+          "categoryLabel": "الفئة",
+          "priorityLabel": "الأولوية",
+          "statusLabel": "الحالة",
+          "panelTitle": "التعاميم الرسمية",
+          "panelSubtitle": "نشر التعاميم والتنبيهات الرسمية للقطاع",
+          "addDoc": "إضافة تعميم",
+          "editAction": "تعديل",
+          "deleteAction": "حذف",
+          "editDocTitle": "تعديل تعميم",
+          "contentLabel": "المحتوى",
+          "refNumberLabel": "الرقم المرجعي",
+          "deleteDocTitle": "حذف التعميم",
+          "confirmDeleteMsg": "هل أنت متأكد من حذف \"{{title}}\"؟",
+          "category": {
+            "official": "رسمي",
+            "health": "صحي",
+            "admin": "إداري",
+            "travel": "سفر",
+            "other": "أخرى"
+          }
         }
       },
       "it": {

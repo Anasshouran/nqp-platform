@@ -395,6 +395,29 @@
             "guide": "Guides",
             "other": "Other"
           }
+        },
+        "circulars": {
+          "titleLabel": "Title",
+          "categoryLabel": "Category",
+          "priorityLabel": "Priority",
+          "statusLabel": "Status",
+          "panelTitle": "Official Circulars",
+          "panelSubtitle": "Publish official circulars and notices for the sector",
+          "addDoc": "Add circular",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit circular",
+          "contentLabel": "Content",
+          "refNumberLabel": "Reference number",
+          "deleteDocTitle": "Delete circular",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "category": {
+            "official": "Official",
+            "health": "Health",
+            "admin": "Administrative",
+            "travel": "Travel",
+            "other": "Other"
+          }
         }
       },
       "it": {
