@@ -352,6 +352,24 @@
           "emptyState": "No media yet.",
           "confirmDeleteTitle": "Delete media",
           "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        },
+        "pages": {
+          "titleLabel": "Title",
+          "statusLabel": "Status",
+          "published": "Published",
+          "draft": "Draft",
+          "pageTitle": "Static Pages",
+          "pageSubtitle": "Edit public site content for the sector",
+          "addPage": "New page",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editPageTitle": "Edit page",
+          "addPageTitle": "Add page",
+          "slugLabel": "Slug (URL)",
+          "contentLabel": "Content",
+          "deletePageTitle": "Delete page",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{slug}}\"?",
+          "confirmDeleteAction": "Delete"
         }
       },
       "it": {

@@ -352,6 +352,24 @@
           "emptyState": "لا توجد وسائط بعد.",
           "confirmDeleteTitle": "حذف الوسيط",
           "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{title}}\"؟"
+        },
+        "pages": {
+          "titleLabel": "العنوان",
+          "statusLabel": "الحالة",
+          "published": "منشور",
+          "draft": "مسودة",
+          "pageTitle": "الصفحات الثابتة",
+          "pageSubtitle": "تحرير محتوى صفحات الموقع العام للقطاع",
+          "addPage": "صفحة جديدة",
+          "editAction": "تعديل",
+          "deleteAction": "حذف",
+          "editPageTitle": "تعديل الصفحة",
+          "addPageTitle": "إضافة صفحة",
+          "slugLabel": "الرابط (slug)",
+          "contentLabel": "المحتوى",
+          "deletePageTitle": "حذف الصفحة",
+          "confirmDeleteMessage": "هل أنت متأكد من حذف \"{{slug}}\"؟",
+          "confirmDeleteAction": "حذف"
         }
       },
       "it": {
