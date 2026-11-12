@@ -10378,7 +10378,8 @@
       },
       "banner": {
         "scoped": "You are viewing a scoped subset of the registry (state/sector)."
-      }
+      },
+      "virtual_root": "You are viewing: {{name}}"
     },
     "nodes": {
       "create": {
@@ -10446,6 +10447,10 @@
       "tree_position": {
         "empty": "Facility not linked to tree"
       }
+    },
+    "common": {
+      "load_more": "Load more",
+      "showing_n_of_m": "{{shown}} of {{total}}"
     }
   }
 }

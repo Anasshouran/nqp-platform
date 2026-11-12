@@ -50,6 +50,15 @@ const unwrapList = <T,>(r: AxiosResponse): T[] => {
   return [];
 };
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+const LIST_PAGE_SIZE = 50;
+
 const LIST_PARAMS = { page_size: 500 };
 
 // --- Tree & Nodes ---
@@ -145,6 +154,16 @@ export const listFacilityOwnerships = (facilityId?: string): Promise<FacilityOwn
       params: { ...LIST_PARAMS, ...(facilityId ? { facility: facilityId } : {}) },
     })
     .then((r) => unwrapList<FacilityOwnership>(r));
+
+export const listFacilityOwnershipsPaginated = (
+  facilityId: string,
+  page: number = 1,
+): Promise<PaginatedResponse<FacilityOwnership>> =>
+  axios
+    .get(`${BASE}/facility-ownerships/`, {
+      params: { facility: facilityId, page, page_size: LIST_PAGE_SIZE },
+    })
+    .then((r) => unwrap<PaginatedResponse<FacilityOwnership>>(r));
 
 export const createFacilityOwnership = (data: Partial<FacilityOwnership>): Promise<FacilityOwnership> =>
   axios.post(`${BASE}/facility-ownerships/`, data).then((r) => unwrap<FacilityOwnership>(r));
