@@ -114,6 +114,14 @@ export default function RegistryTreePage() {
         </Alert>
       )}
 
+      {!hasFederalRoot && nodes.length > 0 && (
+        <Paper sx={{ p: 1.5, mb: 2, bgcolor: 'action.hover' }}>
+          <Typography variant="caption" color="text.secondary">
+            {t('registry.tree.virtual_root', { name: nodes[0]?.name_ar ?? '' })}
+          </Typography>
+        </Paper>
+      )}
+
       <Paper sx={{ p: 2, mb: 2 }}>
         <RegistryRootPicker roots={nodes} value={selectedRootId} onChange={setSelectedRootId} />
       </Paper>
