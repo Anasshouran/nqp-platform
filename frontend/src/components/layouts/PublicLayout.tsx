@@ -223,23 +223,16 @@ const PublicLayout = () => {
     () => sessionStorage.getItem('nqp_banner_dismissed') !== '1'
   );
   const [urgentNotice, setUrgentNotice] = useState<HealthNotice | null>(null);
-  const [lang, setLang] = useState<'ar' | 'en'>(() =>
-    i18n.language === 'en' ? 'en' : 'ar',
-  );
   const tt = (label?: string) => (label && label.startsWith('public.') ? t(label) : (label ?? ''));
   const location = useLocation();
   const navigationType = useNavigationType();
   const scrolled = useScrollTrigger({ disableHysteresis: true, threshold: 24 });
 
   useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  }, [lang]);
-
-  useEffect(() => {
-    const l = i18n.language === 'ar' ? 'ar' : 'en';
-    if (l !== lang) setLang(l);
-  }, [i18n.language, lang]);
+    const htmlLang: 'ar' | 'en' = i18n.language === 'ar' ? 'ar' : 'en';
+    document.documentElement.lang = htmlLang;
+    document.documentElement.dir = htmlLang === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   const pathSlug = location.pathname.match(/^\/sector\/([^/]+)(?:\/|$)/)?.[1] ?? null;
   const cmsSlug = isCmsSector(pathSlug ?? undefined) ? pathSlug : null;
@@ -563,10 +556,7 @@ const PublicLayout = () => {
             >
               <CampaignIcon sx={{ fontSize: 20, flexShrink: 0 }} />
 <Typography variant="body2" sx={{ fontWeight: 700, flex: 1 }}>
-                  {urgentNotice?.title ??
-                    (lang === 'ar'
-                      ? t('public.layout.body.preregMandatory')
-                      : 'Pre-registration is mandatory for travelers arriving through all entry ports')}
+                  {urgentNotice?.title ?? t('public.layout.body.preregMandatory')}
                 </Typography>
               <Button
                 component={Link}
