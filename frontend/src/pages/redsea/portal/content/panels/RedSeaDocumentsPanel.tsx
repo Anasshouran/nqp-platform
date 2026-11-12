@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -20,12 +21,15 @@ import { getCmsDocuments, createCmsDocument, updateCmsDocument, deleteCmsDocumen
 import type { CmsDocument } from '../../../../../api/endpoints/cms';
 import { safeExternalUrl } from '../../../../../utils/safeUrl';
 
-const CATEGORIES = ['REGULATION', 'CIRCULAR', 'FORM', 'GUIDE', 'OTHER'].map((v) => ({
-  value: v,
-  label: v === 'REGULATION' ? 'أنظمة ولوائح' : v === 'CIRCULAR' ? 'تعاميم' : v === 'FORM' ? 'نماذج' : v === 'GUIDE' ? 'أدلة' : 'أخرى',
-}));
-
 const RedSeaDocumentsPanel = () => {
+  const { t } = useTranslation();
+  const CATEGORIES = [
+    { value: 'REGULATION', label: t('redsea.portal.content.documents.category.regulation') },
+    { value: 'CIRCULAR', label: t('redsea.portal.content.documents.category.circular') },
+    { value: 'FORM', label: t('redsea.portal.content.documents.category.form') },
+    { value: 'GUIDE', label: t('redsea.portal.content.documents.category.guide') },
+    { value: 'OTHER', label: t('redsea.portal.content.documents.category.other') },
+  ];
   const [rows, setRows] = useState<CmsDocument[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -97,7 +101,7 @@ const RedSeaDocumentsPanel = () => {
   const columns: DataTableColumn<CmsDocument>[] = [
     {
       key: 'title',
-      label: 'المستند',
+      label: t('redsea.portal.content.documents.docLabel'),
       render: (r) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <PictureAsPdfIcon color="error" />
@@ -111,7 +115,7 @@ const RedSeaDocumentsPanel = () => {
     },
     {
       key: 'category',
-      label: 'الفئة',
+      label: t('redsea.portal.content.documents.categoryLabel'),
       render: (r) => CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category,
     },
     {
@@ -119,7 +123,7 @@ const RedSeaDocumentsPanel = () => {
       label: '',
       render: (r) => (
         <Button size="small" startIcon={<DownloadIcon />} component="a" href={safeExternalUrl(r.file)} target="_blank" rel="noreferrer" disabled={!safeExternalUrl(r.file)}>
-          تحميل
+          {t('redsea.portal.content.documents.downloadAction')}
         </Button>
       ),
     },
@@ -127,11 +131,11 @@ const RedSeaDocumentsPanel = () => {
 
   return (
     <SectionCard
-      title="الوثائق"
-      subtitle="رفع وإدارة الوثائق المرفقات العام للقطاع"
+      title={t('redsea.portal.content.documents.panelTitle')}
+      subtitle={t('redsea.portal.content.documents.panelSubtitle')}
       action={
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-          رفع مستند
+          {t('redsea.portal.content.documents.uploadDoc')}
         </Button>
       }
     >
@@ -146,15 +150,15 @@ const RedSeaDocumentsPanel = () => {
         hidePagination
         actions={(r) => (
           <>
-            <IconButton aria-label="تعديل" onClick={() => openEdit(r)} color="primary"><EditIcon /></IconButton>
-            <IconButton aria-label="حذف" onClick={() => setDeleting(r)} color="error"><DeleteIcon /></IconButton>
+            <IconButton aria-label={t('redsea.portal.content.documents.editAction')} onClick={() => openEdit(r)} color="primary"><EditIcon /></IconButton>
+            <IconButton aria-label={t('redsea.portal.content.documents.deleteAction')} onClick={() => setDeleting(r)} color="error"><DeleteIcon /></IconButton>
           </>
         )}
       />
 
       <FormDialog
         open={opened}
-        title={editing ? 'تعديل المستند' : 'رفع مستند'}
+        title={editing ? t('redsea.portal.content.documents.editDocTitle') : t('redsea.portal.content.documents.uploadDoc')}
         maxWidth="sm"
         onClose={() => setOpened(false)}
         onSubmit={save}
@@ -162,13 +166,13 @@ const RedSeaDocumentsPanel = () => {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TextField fullWidth label="العنوان" required value={title} onChange={(e) => setTitle(e.target.value)} />
+            <TextField fullWidth label={t('redsea.portal.content.documents.titleLabel')} required value={title} onChange={(e) => setTitle(e.target.value)} />
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth label="الوصف" multiline minRows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+            <TextField fullWidth label={t('redsea.portal.content.documents.descLabel')} multiline minRows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Grid>
           <Grid item xs={12}>
-            <TextField select fullWidth label="الفئة" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <TextField select fullWidth label={t('redsea.portal.content.documents.categoryLabel')} value={category} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => (
                 <MenuItem key={c.value} value={c.value}>
                   <ListItemIcon>{c.value === 'FORM' ? '📋' : ''}</ListItemIcon>
@@ -180,7 +184,7 @@ const RedSeaDocumentsPanel = () => {
           <Grid item xs={12}>
             <input ref={fileInput} type="file" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             <Button variant="outlined" component="span" onClick={() => fileInput.current?.click()} startIcon={<AddIcon />}>
-              {file ? file.name : editing ? 'اختيار ملف جديد (اختياري)' : 'اختيار ملف'}
+              {file ? file.name : editing ? t('redsea.portal.content.documents.filePickerNew') : t('redsea.portal.content.documents.filePicker')}
             </Button>
           </Grid>
         </Grid>
@@ -188,9 +192,9 @@ const RedSeaDocumentsPanel = () => {
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="حذف المستند"
-        message={`هل أنت متأكد من حذف "${deleting?.title}"؟`}
-        confirmLabel="حذف"
+        title={t('redsea.portal.content.documents.deleteDocTitle')}
+        message={t('redsea.portal.content.documents.confirmDeleteMsg', { title: deleting?.title })}
+        confirmLabel={t('redsea.portal.content.documents.deleteAction')}
         onConfirm={() => {
           if (!deleting) return;
           deleteCmsDocument(deleting.id).then(() => {

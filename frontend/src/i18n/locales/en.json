@@ -352,6 +352,84 @@
           "emptyState": "No media yet.",
           "confirmDeleteTitle": "Delete media",
           "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        },
+        "pages": {
+          "titleLabel": "Title",
+          "statusLabel": "Status",
+          "published": "Published",
+          "draft": "Draft",
+          "pageTitle": "Static Pages",
+          "pageSubtitle": "Edit public site content for the sector",
+          "addPage": "New page",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editPageTitle": "Edit page",
+          "addPageTitle": "Add page",
+          "slugLabel": "Slug (URL)",
+          "contentLabel": "Content",
+          "deletePageTitle": "Delete page",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{slug}}\"?",
+          "confirmDeleteAction": "Delete"
+        },
+        "documents": {
+          "docLabel": "Document",
+          "categoryLabel": "Category",
+          "downloadAction": "Download",
+          "panelTitle": "Documents",
+          "panelSubtitle": "Upload and manage documents attached to the sector",
+          "uploadDoc": "Upload document",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit document",
+          "titleLabel": "Title",
+          "descLabel": "Description",
+          "filePickerNew": "Choose new file (optional)",
+          "filePicker": "Choose file",
+          "deleteDocTitle": "Delete document",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "confirmDeleteAction": "Delete",
+          "category": {
+            "regulation": "Regulations",
+            "circular": "Circulars",
+            "form": "Forms",
+            "guide": "Guides",
+            "other": "Other"
+          }
+        },
+        "circulars": {
+          "titleLabel": "Title",
+          "categoryLabel": "Category",
+          "priorityLabel": "Priority",
+          "statusLabel": "Status",
+          "panelTitle": "Official Circulars",
+          "panelSubtitle": "Publish official circulars and notices for the sector",
+          "addDoc": "Add circular",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit circular",
+          "contentLabel": "Content",
+          "refNumberLabel": "Reference number",
+          "deleteDocTitle": "Delete circular",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "category": {
+            "official": "Official",
+            "health": "Health",
+            "admin": "Administrative",
+            "travel": "Travel",
+            "other": "Other"
+          },
+          "status": {
+            "published": "Published",
+            "approved": "Approved",
+            "draft": "Draft",
+            "review": "Review",
+            "archived": "Archived"
+          },
+          "priority": {
+            "urgent": "Urgent",
+            "important": "Important",
+            "normal": "Normal"
+          }
         }
       },
       "it": {
