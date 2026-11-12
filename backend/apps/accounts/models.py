@@ -9,6 +9,9 @@ from core.utils.authorization import resolve_permission_codes
 
 class ScopeType(models.TextChoices):
     GLOBAL = 'GLOBAL', 'عام'
+    STATE = 'STATE', 'ولاية'  # M4-1: regional admin scope
+    LOCALITY = 'LOCALITY', 'محلية'  # M5-C-L: locality-level admin scope
+    FACILITY = 'FACILITY', 'منشأة صحية'  # M5-C-F: facility-level admin scope
     POINT = 'POINT', 'نقطة حدودية'
     PORT = 'PORT', 'ميناء'
     REGION = 'REGION', 'منطقة'

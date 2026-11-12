@@ -53,6 +53,7 @@ urlpatterns = [
     path('api/v1/who/', include('apps.who.urls')),
     path('api/v1/vaccination/', include('apps.vaccination.urls')),
     path('api/v1/hr/', include('apps.hr.urls')),
+    path('api/v1/registry/', include('apps.registry.urls')),
     # مساحة API الجوال (AFYATNA) — عقد المرحلة M1 (docs/afyatna/mobile/phase-16).
     # لا يُلمس أي مسار قائم؛ التوجيه الجديد فقط.
     path('api/v1/mobile/', include('apps.mobile_api.urls')),

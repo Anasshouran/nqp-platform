@@ -6,8 +6,20 @@ interface ScopeUser {
     role?: string;
     scope_type?: string;
     scope_id?: string | null;
+    is_active?: boolean;
   }>;
 }
+
+/**
+ * هل للمستخدم نطاق GLOBAL نشط؟ يُستخدم لإظهار إجراءات الكتابة في السجل
+ * التنظيمي (الأزرار تظهر للمالك العام فقط — التحقق الحقيقي في الـ backend).
+ */
+export const hasGlobalScope = (user?: ScopeUser | null): boolean => {
+  if (!user) return false;
+  return (user.role_assignments ?? []).some(
+    (a) => a.scope_type === 'GLOBAL' && a.is_active !== false,
+  );
+};
 
 /** اشتقاق كود القطاع (مثل RED_SEA) من المستخدم: عبر حقل sector إن وُجد،
  *  أو من أول RoleAssignment ذي نطاق SECTOR. */

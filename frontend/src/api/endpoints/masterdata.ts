@@ -6,6 +6,7 @@ import type {
   MasterSection,
   MasterSector,
   MasterState,
+  MasterHealthFacility,
   MasterStation,
   MasterTerminal,
   TreeSector,
@@ -105,3 +106,11 @@ export const updateMasterMember = (id: string, data: Partial<MasterMember>) =>
 
 export const deleteMasterMember = (id: string) =>
   apiClient.delete(`/master-data/members/${id}/`);
+
+/* المنشآت الصحية (health facilities) */
+export const getMasterHealthFacilities = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<MasterHealthFacility>>>('/master-data/health-facilities/', { params });
+
+export const getMasterHealthFacility = (id: string) =>
+  apiClient.get<ApiResponse<MasterHealthFacility>>(`/master-data/health-facilities/${id}/`);
+

@@ -52,6 +52,16 @@ class Sector(BaseModel):
     order = models.PositiveSmallIntegerField(default=0, verbose_name='الترتيب')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
 
+    # M6: الولايات التي يغطيها القطاع — تُستخدم لاشتقاق نطاق STATE
+    # للمنشآت (LabEquipment, QCRecord, VectorUnit, ...) التي لا تحمل
+    # entry_point FK. M2M (additive, nullable) — fail-safe: فارغ ⇒ deny-all.
+    state_ids = models.ManyToManyField(
+        'masterdata.State',
+        blank=True,
+        related_name='sectors',
+        verbose_name='الولايات المغطّاة',
+    )
+
     class Meta:
         ordering = ['order', 'name_ar']
         verbose_name = 'قطاع إداري'
@@ -110,6 +120,14 @@ class Department(BaseModel):
     manager_position = models.ForeignKey(
         OrgPosition, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='managed_departments', verbose_name='المنصب المسؤول',
+    )
+    # M1-addon: ربط اختياري بين الإدارة والمنشأة الصحية
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='departments',
+        verbose_name='المنشأة الصحية',
     )
     description = models.TextField(blank=True, verbose_name='الوصف')
     order = models.PositiveSmallIntegerField(default=0, verbose_name='الترتيب')
