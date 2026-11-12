@@ -79,6 +79,9 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Guard — test deps
+        working-directory: .
+        run: bash scripts/check-test-deps.sh
       - name: Test (vitest)
         run: npm run test
       - name: Build (tsc + vite)
