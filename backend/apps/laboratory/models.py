@@ -306,6 +306,15 @@ class LabSample(BaseModel):
         blank=True,
         verbose_name='نقطة الدخول',
     )
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.SET_NULL,
+        related_name='lab_samples',
+        null=True,
+        blank=True,
+        verbose_name='المنشأة الصحية',
+        help_text='المنشأة المرتبطة بالعينة (M6-bis، D-M5-C-F-3)',
+    )
     collector = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

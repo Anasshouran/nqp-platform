@@ -200,6 +200,7 @@ class LabSampleViewSet(SectorFieldScopedMixin, viewsets.ModelViewSet):
     sector_field = 'sector'
     state_path = 'entry_point__state_id'  # M5-B-1: STATE branch (union, not replace)
     locality_path = 'entry_point__locality_id'  # M5-C-L: LOCALITY branch
+    facility_path = 'facility_id'  # M6-bis: FACILITY branch (D-M5-C-F-3)
     queryset = LabSample.objects.select_related(
         'collector', 'section', 'sector', 'entry_point', 'lab_request',
         'visit__traveler', 'visit__referral__port',

@@ -197,6 +197,11 @@ class OrgAssignment(BaseModel):
         'masterdata.EntryPoint', on_delete=models.PROTECT, null=True, blank=True,
         related_name='org_assignments', verbose_name='نقطة الدخول',
     )
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='org_assignments', verbose_name='المنشأة الصحية',
+        help_text='المنشأة المرتبطة بالتعيين (M6-bis، D-M5-C-F-1)',
+    )
     is_primary = models.BooleanField(default=False, verbose_name='التعيين الرئيسي')
     start_date = models.DateField(null=True, blank=True, verbose_name='تاريخ البداية')
     end_date = models.DateField(null=True, blank=True, verbose_name='تاريخ النهاية')

@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -66,13 +67,13 @@ class ScreeningViewSet(viewsets.ModelViewSet):
 
     def _entry_point_ids_for(self, user):
         """يرجع معرفات منافذ الدخول المتاحة لنطاقات المستخدم (فشل آمن = قائمة فارغة)."""
-        from core.utils.scoping import has_active_global_scope, locality_scope_enabled
+        from core.utils.scoping import facility_scope_enabled, has_active_global_scope, locality_scope_enabled
 
         # GLOBAL scope (مدير/جهة وطنية) → كل السجلات؛ لا نُقيّد إلا بالنطاق الفعلي.
         if user.is_superuser or has_active_global_scope(user):
             return None
         scopes = user.active_scopes('screening')
-        from apps.masterdata.models import EntryPoint
+        from apps.masterdata.models import EntryPoint, HealthFacility
 
         port_ids = [
             s['scope_id']
@@ -102,6 +103,20 @@ class ScreeningViewSet(viewsets.ModelViewSet):
                 EntryPoint.objects.filter(is_active=True, locality_id__in=locality_ids)
                 .values_list('id', flat=True)
             )
+        # M6-bis (D-M5-C-F-2): نطاق المنشأة → منفذ المنشأة عبر
+        # `HealthFacility.entry_point` — اتحاد مع بقية القنوات.
+        # بوابة الإنتاج: نفس بوابة LOCALITY/FACILITY (fail-safe عند الإغلاق).
+        facility_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.FACILITY and s['scope_id'] is not None
+        ]
+        if facility_ids and facility_scope_enabled():
+            port_ids += list(
+                HealthFacility.objects
+                .filter(is_active=True, id__in=facility_ids, entry_point__isnull=False)
+                .values_list('entry_point_id', flat=True)
+            )
         # اتحاد يبقى مع القطاع (نطاق SECTOR) والقطاع المنزلي `user.sector_id`
         # (قرار H1′ — M3/M5-A: home-sector grant بالبقية).
         sector_scope_ids = [
@@ -121,19 +136,41 @@ class ScreeningViewSet(viewsets.ModelViewSet):
             )
         if port_ids:
             return list(dict.fromkeys(port_ids))
-        logger.warning(
-            'screening: no resolvable entry-point scope for %s — DENYING access', user
-        )
+        # منشأة بلا منفذ ليست خطأ: القناة المباشرة (facility) قد تفتح الصفوف
+        # في `get_queryset`. لا نطلق تحذير الحجب إلا عند غياب كل قناة.
+        if not (facility_ids and facility_scope_enabled()):
+            logger.warning(
+                'screening: no resolvable entry-point scope for %s — DENYING access', user
+            )
         return []
+
+    def _facility_ids_for(self, user):
+        """معرّفات المنشآت المتاحة لنطاق FACILITY (M6-bis).
+
+        `None` = GLOBAL (لا تقييد). `set()` = لا نطاق FACILITY أو البوابة مغلقة.
+        """
+        from core.utils.scoping import get_user_facility_ids
+
+        return get_user_facility_ids(user)
 
     def get_queryset(self):
         qs = super().get_queryset()
         if not self.request.user or self.request.user.is_anonymous:
             return qs.none()
         port_ids = self._entry_point_ids_for(self.request.user)
-        if port_ids is None:
+        facility_ids = self._facility_ids_for(self.request.user)
+        if port_ids is None or facility_ids is None:
             return qs
-        return qs.filter(port_id__in=port_ids) if port_ids else qs.none()
+        # M6-bis: اتحاد قناتين — المعبر (port) والمنشأة المباشرة (facility).
+        # الفشل الآمن يبقى: بلا أي قناة ⇒ لا صفوف.
+        if not port_ids and not facility_ids:
+            return qs.none()
+        scope_q = Q()
+        if port_ids:
+            scope_q |= Q(port_id__in=port_ids)
+        if facility_ids:
+            scope_q |= Q(facility_id__in=facility_ids)
+        return qs.filter(scope_q).distinct()
 
     def _assert_port_in_scope(self, port):
         """منع إنشاء فحص خارج نطاق صاحب الصلاحية (لا بوابات جانبية عبر create)."""

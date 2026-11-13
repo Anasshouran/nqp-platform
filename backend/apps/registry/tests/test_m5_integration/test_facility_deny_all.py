@@ -1,12 +1,15 @@
-"""M5-C-F — deny-all policy for screening / HR / laboratory (D-F-1/2/3).
+"""M5-C-F — FACILITY scope policy for screening / HR / laboratory (D-F-1/2/3).
 
-القرارات المعتمدة:
-  - D-F-1 = B ⇒ screening: deny-all (دلالة المنفذ ≠ دلالة المنشأة) → D-M5-C-F-2.
-  - D-F-2 = D-M5-C-F-1 ⇒ HR: deny-all (لا `OrgAssignment.facility` FK) → M6.
-  - D-F-3 = A ⇒ laboratory/vector: deny-all (لا حقل منشأة على النماذج) → D-M5-C-F-3.
+تاريخيًا (M5-C-F) كانت التطبيقات الثلاثة deny-all لقناة FACILITY.
+**M6-bis أغلق هذا الدين**: أُضيف `facility` FK (nullable) للنماذج الثلاثة
+وأصبحت القناة مفعّلة (خلف بوابة `PROD_SCOPING_ENABLED`).
 
-هذه التطبيقات تبقى **بلا فروع FACILITY**: وجود `HealthFacility.entry_point`
-لا يوسّعها، لأن كل تطبيق يملك مسار نطاقه الخاص ولا يقرأ scope_type=FACILITY.
+ما يبقى مُختبَرًا هنا هو **الفشل الآمن للسجلات غير المرتبطة**:
+سجل بلا `facility` FK لا يُفتح لمستخدم FACILITY عبر أي جسر ضمني.
+  - screening: الفحص يُربط بالمنشأة عبر منفذها (`HealthFacility.entry_point`)
+    — اتحاد مقصود مع قناة المنشأة المباشرة (M6-bis، D-M5-C-F-2).
+  - HR: `OrgAssignment.facility` NULL ⇒ غير مرئي (D-M5-C-F-1).
+  - laboratory: `LabSample.facility` NULL ⇒ غير مرئي (D-M5-C-F-3).
 """
 import uuid
 
@@ -72,26 +75,26 @@ def _employee(world):
 
 
 @pytest.mark.django_db
-class TestFacilityDenyAll:
+class TestFacilityUnlinkedRecordsDenyAll:
 
-    def test_screening_deny_all(self, settings):
-        """D-M5-C-F-2: FACILITY لا يرى فحوصات حتى في منفذ منشأته."""
+    def test_screening_facility_resolves_via_entry_point(self, settings):
+        """M6-bis (D-M5-C-F-2): منشأة → منفذها (`HealthFacility.entry_point`) — مرئي."""
         settings.DEBUG = True
         settings.PROD_SCOPING_ENABLED = False
         world = _build_world('X')
         user = _make_facility_user(world['facility'], with_perm=('screening',))
-        _screening(world['entry_point'], user)
+        screening = _screening(world['entry_point'], user)
 
         client = api_client()
         client.force_authenticate(user=user)
         resp = client.get('/api/v1/screening/')
         assert resp.status_code == 200
-        assert list_items(resp) == [], (
-            'D-M5-C-F-2 violated — FACILITY scope leaked into screening'
+        assert [row['id'] for row in list_items(resp)] == [str(screening.id)], (
+            'M6-bis — جسر المنشأة→المنفذ يجب أن يفتح فحوصات منشأة المستخدم'
         )
 
-    def test_hr_deny_all(self, settings):
-        """D-M5-C-F-1: FACILITY لا يرى موظفي منفذ منشأته (لا facility FK)."""
+    def test_hr_unlinked_assignment_stays_invisible(self, settings):
+        """D-M5-C-F-1: تعيين بلا `facility` FK لا يُفتح لمستخدم FACILITY."""
         settings.DEBUG = True
         settings.PROD_SCOPING_ENABLED = False
         world = _build_world('X')
@@ -103,11 +106,11 @@ class TestFacilityDenyAll:
         resp = client.get('/api/v1/hr/employees/')
         assert resp.status_code == 200
         assert list_items(resp) == [], (
-            'D-M5-C-F-1 violated — FACILITY scope leaked into HR'
+            'D-M5-C-F-1 violated — تعيين بلا facility تسرّب إلى FACILITY user'
         )
 
-    def test_laboratory_deny_all(self, settings):
-        """D-M5-C-F-3: FACILITY لا يرى عينات منفذ منشأته (لا facility FK)."""
+    def test_laboratory_unlinked_sample_stays_invisible(self, settings):
+        """D-M5-C-F-3: عينة بلا `facility` FK لا تُفتح لمستخدم FACILITY."""
         settings.DEBUG = True
         settings.PROD_SCOPING_ENABLED = False
         world = _build_world('X')
@@ -119,5 +122,5 @@ class TestFacilityDenyAll:
         resp = client.get('/api/v1/laboratory/samples/')
         assert resp.status_code == 200
         assert list_items(resp) == [], (
-            'D-M5-C-F-3 violated — FACILITY scope leaked into laboratory'
+            'D-M5-C-F-3 violated — عينة بلا facility تسرّبت إلى FACILITY user'
         )

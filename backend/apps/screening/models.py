@@ -17,6 +17,15 @@ class HealthScreening(BaseModel):
         related_name='screenings',
         verbose_name='المنفذ',
     )
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='screenings',
+        verbose_name='المنشأة الصحية',
+        help_text='المنشأة المرتبطة بالفحص (M6-bis، D-M5-C-F-2)',
+    )
     officer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

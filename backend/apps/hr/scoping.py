@@ -20,7 +20,7 @@ import logging
 from django.core.exceptions import FieldError
 
 from core.utils.authorization import active_assignments, has_active_global_scope
-from core.utils.scoping import locality_scope_enabled
+from core.utils.scoping import facility_scope_enabled, locality_scope_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +71,10 @@ SCOPE_LOOKUPS = {
     # `masterdata.EntryPoint.locality`. لا migration — المسار موجود فعلاً.
     # تخضع لبوابة الإنتاج `PROD_SCOPING_ENABLED` (انظر `resolve_hr_scope_keys`).
     'LOCALITY': ('entry_point__locality_id',),
+    # M6-bis (D-M5-C-F-1): FACILITY — الحقل الجديد `OrgAssignment.facility`
+    # (nullable، D-M5-C-F-1). قبل M6-bis كان FACILITY مُحجباً في HR لغياب
+    # مسار قابل للتقييم. تخضع لنفس بوابة الإنتاج (انظر `resolve_hr_scope_keys`).
+    'FACILITY': ('facility_id',),
 }
 
 
@@ -108,6 +112,10 @@ def resolve_hr_scope_keys(user):
     # (تتحمل الاثنين: مفاتيح الأدوار المعلنة صراحةً والمشتقة من OrgAssignment).
     if not locality_scope_enabled():
         keys = {k for k in keys if k[0] != 'LOCALITY'}
+    # M6-bis gate: نفس البوابة لـ FACILITY (D-F-5) — في الإنتاج بلا
+    # `PROD_SCOPING_ENABLED` تُسقَط المفاتيح ⇒ حجب كامل بدل توسيع نطاق بلا بيانات.
+    if not facility_scope_enabled():
+        keys = {k for k in keys if k[0] != 'FACILITY'}
     return keys
 
 
@@ -130,6 +138,10 @@ def resolve_own_org_scope_keys(user):
             keys.add(('DEPARTMENT', a.department_id))
         if a.station_id:
             keys.add(('STATION', a.station_id))
+        # M6-bis (D-M5-C-F-1): المنشأة المرتبطة بالتعيين (nullable).
+        # لا اشتقاق من `entry_point` تلقائياً — الربط الصريح فقط.
+        if a.facility_id:
+            keys.add(('FACILITY', a.facility_id))
         if a.entry_point_id:
             keys.add(('POINT', a.entry_point_id))
             # M5-B-3: اشتقاق الولاية من `entry_point.state` (nullable) — يُضاف

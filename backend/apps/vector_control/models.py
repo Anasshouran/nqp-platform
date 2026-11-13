@@ -124,6 +124,15 @@ class VectorUnit(BaseModel):
         related_name='vector_units',
         verbose_name='القطاع',
     )
+    facility = models.ForeignKey(
+        'masterdata.HealthFacility',
+        on_delete=models.SET_NULL,
+        related_name='vector_units',
+        null=True,
+        blank=True,
+        verbose_name='المنشأة الصحية',
+        help_text='المنشأة المرتبطة بالوحدة (M6-bis، D-M5-C-F-3)',
+    )
     description = models.TextField(blank=True, verbose_name='الوصف')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
 

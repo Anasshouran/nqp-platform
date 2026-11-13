@@ -230,6 +230,7 @@ class VectorUnitViewSet(VectorPermissionMixin, SectorFieldScopedMixin, viewsets.
     search_fields = ['name_ar', 'code']
     sector_field = 'sector'
     state_path = 'sector__state_ids'  # M6
+    facility_path = 'facility_id'  # M6-bis: FACILITY branch (D-M5-C-F-3)
 
 
 class VectorSiteViewSet(VectorPermissionMixin, SectorScopedMixin, AuditedCreateMixin, viewsets.ModelViewSet):
