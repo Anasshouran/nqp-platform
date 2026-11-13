@@ -37,48 +37,72 @@
 
 ---
 
-## D-M5-C-F-1: HR / FACILITY — deny-all (→ M6)
+## D-M5-C-F-1: HR / FACILITY — deny-all (→ M6-bis ✅ CLOSED)
 
-**الوضع:** `OrgAssignment` لا يملك FK إلى منشأة، لذا لا يوجد جسر
+**الوضع السابق:** `OrgAssignment` لا يملك FK إلى منشأة، لذا لا يوجد جسر
 FACILITY → موظفين. `SCOPE_LOOKUPS` بلا مفتاح FACILITY ⇒ HR deny-all لمستخدم
 FACILITY مهما كان دوره.
 
-**الخطر:** حجب كامل (لا تسريب). المستخدم يرى 0 موظفين.
+**الخطر السابق:** حجب كامل (لا تسريب). المستخدم يرى 0 موظفين.
 
-**الحل (M6):** إضافة `OrgAssignment.facility` FK (schema migration + backfill) أو
-قرار بديل (الاعتماد على `entry_point` فقط مع وسم صريح).
+**✅ CLOSED in M6-bis (PR #182, commit `1d07b86`)**
+- Migration: `organization/0010_orgassignment_facility` — `facility` FK
+  (`null=True, blank=True, on_delete=SET_NULL`, `related_name='org_assignments'`).
+- Backfill: `backfill_org_assignment_facility` (`--dry-run`/`--limit`;
+  الحالات غير الحصرية تبقى NULL وتُحتسب `ambiguous`).
+- Scoping: `SCOPE_LOOKUPS['FACILITY'] = ('facility_id',)` +
+  `resolve_own_org_scope_keys` + بوابة `PROD_SCOPING_ENABLED`.
+- `PROD_SCOPING_ENABLED=False` → backfill في prod ثم التفعيل بعد Q7.
 
-**الاختبار الموثِّق:** `test_facility_deny_all.py::test_hr_deny_all`.
+**الاختبار الموثِّق:** `test_facility_deny_all.py::test_hr_unlinked_assignment_stays_invisible`
+(السجلات بلا `facility` تبقى محجوبة) + `hr/tests/test_facility_scope.py`.
 
 ---
 
-## D-M5-C-F-2: screening / FACILITY — deny-all (→ M6)
+## D-M5-C-F-2: screening / FACILITY — deny-all (→ M6-bis ✅ CLOSED)
 
-**الوضع:** `_entry_point_ids_for` تفرّع على STATE/LOCALITY فقط. دلالة الفحص
-مرتبطة بالمنفذ (port) وليس بالمنشأة، لذا لا يوجد تحويل مشروع
+**الوضع السابق:** `_entry_point_ids_for` تفرّع على STATE/LOCALITY فقط. دلالة
+الفحص مرتبطة بالمنفذ (port) وليس بالمنشأة، لذا لا يوجد تحويل مشروع
 FACILITY → فحوصات.
 
-**الخطر:** حجب كامل. الفحوصات المنفَّذة في منفذ المنشأة غير مرئية لمستخدم FACILITY.
+**الخطر السابق:** حجب كامل. الفحوصات المنفَّذة في منفذ المنشأة غير مرئية لمستخدم FACILITY.
 
-**الحل (M6):** `HealthScreening.facility` FK (مخطط) أو قرار سياسة يحدد
-كيف تُنسب الفحوصات إلى المنشأة.
+**✅ CLOSED in M6-bis (PR #182, commit `1d07b86`)**
+- Migration: `screening/0003_healthscreening_facility` — `facility` FK
+  (`null=True, blank=True, on_delete=SET_NULL`, `related_name='screenings'`).
+- Backfill: `backfill_healthscreening_facility` (`--dry-run`/`--limit`;
+  ambiguous → NULL).
+- Scoping: اتحاد قناتين — منفذ المنشأة عبر `HealthFacility.entry_point`
+  + `HealthScreening.facility` مباشرةً (`Q(port_id__in=…) | Q(facility_id__in=…)`)،
+  خلف بوابة `PROD_SCOPING_ENABLED`. منشأة بلا منفذ تعمل عبر القناة المباشرة.
+- `PROD_SCOPING_ENABLED=False` → backfill في prod ثم التفعيل بعد Q7.
 
-**الاختبار الموثِّق:** `test_facility_deny_all.py::test_screening_deny_all`.
+**الاختبار الموثِّق:** `test_facility_deny_all.py::test_screening_facility_resolves_via_entry_point`
++ `screening/tests/test_facility_scope.py`.
 
 ---
 
-## D-M5-C-F-3: laboratory + vector_control / FACILITY — deny-all (→ M6)
+## D-M5-C-F-3: laboratory + vector_control / FACILITY — deny-all (→ M6-bis ✅ CLOSED)
 
-**الوضع:** النماذج لا تحمل حقل منشأة، و`SectorFieldScopedMixin` لا يملك
+**الوضع السابق:** النماذج لا تحمل حقل منشأة، و`SectorFieldScopedMixin` لا يملك
 `facility_path` (قرار المرحلة: لا حقل جديد بلا viewset يستهلكه). `VectorUnit`
 sector-only (D-M5-B-1 قائم).
 
-**الخطر:** حجب كامل. عينات المختبر في منفذ المنشأة غير مرئية لمستخدم FACILITY.
+**الخطر السابق:** حجب كامل. عينات المختبر في منفذ المنشأة غير مرئية لمستخدم FACILITY.
 
-**الحل (M6):** حقول منشأة على النماذج ذات الصلة + `facility_path` على المزيج،
-بعد مراجعة أثر D-M5-B-1.
+**✅ CLOSED in M6-bis (PR #182, commit `1d07b86`)**
+- Migrations:
+  - `laboratory/0006_labsample_facility` — `LabSample.facility` (SET_NULL).
+  - `vector_control/0002_vectorunit_facility` — `VectorUnit.facility` (SET_NULL).
+- Backfill: `backfill_labsample_facility` (entry_point→facility) و
+  `backfill_vectorunit_facility` (sector→facility) — كلاهما `--dry-run`/`--limit`،
+  ambiguous → NULL.
+- Scoping: `SectorFieldScopedMixin.facility_path = 'facility_id'` على
+  `LabSampleViewSet` و`VectorUnitViewSet` (اتحاد مع sector/state/locality).
+- `PROD_SCOPING_ENABLED=False` → backfill في prod ثم التفعيل بعد Q7.
 
-**الاختبار الموثِّق:** `test_facility_deny_all.py::test_laboratory_deny_all`.
+**الاختبار الموثِّق:** `test_facility_deny_all.py::test_laboratory_unlinked_sample_stays_invisible`
++ `laboratory/tests/test_facility_scope.py` + `vector_control/tests/test_facility_scope.py`.
 
 ---
 
@@ -117,11 +141,11 @@ sector-only (D-M5-B-1 قائم).
 | البند | النوع | الحالة |
 |---|---|---|
 | `D-M5-C-F-4` | توثيق UX (لا أمان) | مسجَّل — لا إصلاح |
-| `D-M5-C-F-1` | حجب كامل (HR) | M6 |
-| `D-M5-C-F-2` | حجب كامل (screening) | M6 |
-| `D-M5-C-F-3` | حجب كامل (lab/vector) | M6 |
-| `D-M5-C-ACT-1` | تفعيل إنتاج | بانتظار COUNT |
+| `D-M5-C-F-1` | حجب كامل (HR) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
+| `D-M5-C-F-2` | حجب كامل (screening) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
+| `D-M5-C-F-3` | حجب كامل (lab/vector) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
+| `D-M5-C-ACT-1` | تفعيل إنتاج | بانتظار COUNT (Q7) |
 | `D-M5-C-L-FE-1` | UX اختياري | عند الطلب |
-| `D-M5-B-1` | حجب كامل (VectorUnit) | M6 (قائم من M5-B) |
+| `D-M5-B-1` | حجب كامل (VectorUnit) | ✅ مغلق — M6 |
 
 **لا دَين أمني مفتوح في M5-C.** كل البنود إما حجب مقصود أو توثيق.
