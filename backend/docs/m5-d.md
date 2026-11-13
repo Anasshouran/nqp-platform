@@ -47,7 +47,6 @@ Scoped to `src/pages/registry/**`, `src/components/registry/**`. Thresholds: lin
 
 - i18n initialized globally in setup.ts so pre-existing tests (Arabic labels) pass.
 - Registry tests mock `react-i18next` per-file (returning keys) for isolation.
-EOF
 ---
 
 ## Correction — D-M4-3-1

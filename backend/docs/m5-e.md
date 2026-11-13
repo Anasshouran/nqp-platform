@@ -63,5 +63,3 @@ Added keys:
 - `facility_id` enrichment on `/nodes/` endpoint for full breadcrumb clickability
 - D-M4-4-C-5 initial-50-limit test (deferred per M5-E Fix Prompt Fix 3)
 - Playwright e2e (M7)
-EOF
-echo "created"
