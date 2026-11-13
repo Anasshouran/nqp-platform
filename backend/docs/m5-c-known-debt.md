@@ -8,15 +8,19 @@
 
 ---
 
-## D-M5-C-F-4: FACILITY مُتجاهَل على port_health/shipping (مستخدم هجين) — 🟡 مفتوح (UX فقط)
+## D-M5-C-F-4: port_health / shipping — FACILITY مُتجاهَل للمستخدم الهجين
 
-**الوضع:** مستخدم بـ **FACILITY + COMPANY** على `port_health`/`shipping`:
+**الحالة:** 🟡 **DEFERRED إلى M7+** — متطلبات مسبقة صريحة (2026-11-13)
 
-- `asserts_geographic_scope` لا يحتوي FACILITY (D-F-3 fail-closed).
-- بُعد COMPANY يعمل.
-- **النتيجة:** يرى الموانئ المرتبطة بـ COMPANY فقط، وFACILITY مُتجاهَل.
+**الوضع الحالي:**
+- `asserts_geographic_scope` لا يحتوي `FACILITY` — قرار **Q8** (فصل النطاقات).
+- مستخدم `FACILITY + COMPANY` على `port_health`/`shipping` → يرى **COMPANY فقط**،
+  و FACILITY مُتجاهَل.
+- `PROD_SCOPING_ENABLED=False` ⇒ FACILITY deny-all في الإنتاج ⇒ **غير مرئي اليوم**.
+- M6-bis (2026-11-13) لم يمسّ `port_health`/`shipping`: أضاف `facility` FK على 4
+  نماذج (HR/Screening/Lab/Vector) فقط، وأبقى `asserts_geographic_scope` FACILITY-free.
 
-**قائمة النطاقات التي يقرأها `asserts_geographic_scope` فعليًا**
+**النطاقات التي يقرأها `asserts_geographic_scope` فعليًا**
 (`core/utils/scoping.py`، الدالة عند السطر 464):
 
 | المصدر | النطاقات |
@@ -27,37 +31,53 @@
 | `_has_entry_point_assignment(user)` | تعيين مباشر على نقطة دخول |
 | **FACILITY** | ❌ **غائب عمدًا** — قرار **Q8** |
 
-**مرجع القرار:** **Q8** — نطاق الميناء ≠ نطاق المنشأة؛ إضافة FACILITY إلى
-`asserts_geographic_scope` كانت ستفتح ports على أساس منشأة، وهو widening غير مبرَّر.
-
 **التقييم:** سلوك صحيح (fail-safe):
 
 | الجانب | التقييم |
 |---|---|
 | الأمان | ✅ لا widening — FACILITY لا يفتح ports |
-| المنطق | ✅ port_health/shipping domain = ports/companies، لا facilities |
-| الاتساق | ✅ مطابق لـ D-F-3 (deny-all) |
-| الشفافية | ⚠️ المستخدم يرى COMPANY فقط، لا FACILITY — يحتاج UX note |
+| المنطق | ✅ domain الموانئ = ports/companies، لا facilities |
+| الاتساق | ✅ مطابق لـ D-F-3 |
+| الشفافية | ⚠️ المستخدم يرى COMPANY فقط — UX note |
 
-**الأثر:** UX note — إذا أراد المستخدم ports، يحتاج COMPANY/PORT role صريحاً.
+**القرار:** لا يُنفَّذ الآن. توسيع `asserts_geographic_scope` لـ FACILITY يعيد فتح
+**Q8**، ويحتاج مبررًا **منتجيًا** لا تقنيًا. **التصنيف:** دَين UX — **ليس** دَين أمان.
 
-**القرار:** توثيق، لا إصلاح. **التصنيف:** دَين توثيق UX — **ليس** دَين أمان.
+### المتطلبات المسبقة (كلها إلزامية قبل B)
 
-**حالة M6-bis (2026-11-13):** لم يُلمس `port_health`/`shipping`. M6-bis أضاف
-`facility` FK على 4 نماذج (HR/Screening/Lab/Vector) فقط؛ `asserts_geographic_scope`
-بقي FACILITY-free كما هو. أي حل هنا مؤجَّل إلى **M7+**.
+1. **Q7** — backfill counts على staging/prod (D-M5-C-ACT-1).
+   **حاليًا محجوب:** لا وصول شبكي إلى الـ VPS من بيئة التطوير (SSH ⇒ `No route to host`).
+2. **طلب منتج صريح** — «نحتاج مستخدم FACILITY يرى port_health»، لا «لأننا نستطيع».
+3. **مراجعة Q8** — قرار بنيوي (port ≠ facility) يجب نقضه صراحةً ومكتوبًا.
+4. **fixtures جديدة في dev** — `HealthFacility` مع `entry_point`
+   (**0/12 اليوم**، متحقَّق 2026-11-13) ⇒ بدونه اختبارات B سطحية.
 
-**الحل المقترح (M7+، إن طلبه صاحب المنتج):**
+### سيناريو B عند التنفيذ (للمرجع فقط)
 
-1. إضافة FACILITY إلى `asserts_geographic_scope` **مع** اختبار widening صريح
-   (STATE+SECTOR+FACILITY union) — يتطلب قرارًا معماريًا لأن الدالة تُستخدم عبر
-   تطبيقات متعددة، وتعديلها يوسّع كل التطبيقات التي تستدعيها.
-2. أو اشتقاق ports من facility عبر `HealthFacility.entry_point` (اشتقاق موضعي في
-   `port_health`/`shipping` فقط، بلا مساس بالدالة المشتركة) — لكنه يحتاج قرارًا
-   حول ما إذا كان وجود منفذ على المنشأة يعني مسؤولية تشغيلية على ذلك المنفذ.
-3. أو رفض الطلب: إبقاء FACILITY بلا أثر على نطاق الموانئ (الوضع الحالي).
+- `asserts_geographic_scope` += `'FACILITY'` (إضافة `'FACILITY'` إلى شرط
+  `scope_type__in`، سطر 476–478).
+- helper مقترح `_facility_port_ids(facility_ids)` عبر `HealthFacility.entry_point`.
+- `CompanyPortScopedMixin.get_queryset` (سطر 569) += `Q(entry_point_id__in=...)`.
+- 6–8 اختبارات: 4 scopes × 2 حراس widening.
+- **اختبار widening حرج:** «منشأة قرب ميناء لا ترى سفن الميناء» يجب أن ينجح.
+- التقدير: 3–4 ساعات + CI ~20 دقيقة.
 
-**التوثيق المرافق:** `m5-c-f.md §2.1` · `m5-c-l-closure.md` (بنية النطاقات).
+**المخاطر في B:**
+
+- **Widening** — منشأة لها `entry_point` (عيادة قرب معبر) → ترى سفن الميناء.
+- **فجوة بيانات dev** — 0/12 facilities مع `entry_point` ⇒ الاختبارات لا تُثبت
+  الاشتقاق فعليًا.
+- **عكس Q8** يحتاج تبريرًا مكتوبًا، وإلا يصبح سابقة لتوسيع النطاقات بلا ضابط.
+
+**البديل الآمن اليوم:**
+
+- مستخدم FACILITY يرى `registry` (tree + facility detail) — **يعمل**.
+- `port_health`/`shipping` تبقى COMPANY/SECTOR/POINT/PORT — **صحيح**.
+- الهجين → COMPANY يعمل — **مقبول**.
+
+**التوثيق المرافق:** `m5-a-audit.md §9` · `m5-c-f.md §2.1` · `m5-c-l-closure.md`.
+**مرجع الكود:** `core/utils/scoping.py:297/300/464/476-478/569` ·
+`apps/port_health/views.py:308/326` · `apps/shipping/views.py:337/472`.
 
 ---
 
@@ -213,7 +233,7 @@ Redis في `deploy/docker-compose.yml` اسمها **`redis`** (وتعمل بـ `
 
 | البند | النوع | الحالة |
 |---|---|---|
-| `D-M5-C-F-4` | دَين UX (port_health hybrid) | 🟡 **مفتوح — موثَّق، مؤجَّل M7+** |
+| `D-M5-C-F-4` | port_health hybrid | 🟡 **DEFERRED M7+** — prerequisites موثَّقة |
 | `D-M5-C-F-1` | حجب كامل (HR) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
 | `D-M5-C-F-2` | حجب كامل (screening) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
 | `D-M5-C-F-3` | حجب كامل (lab/vector) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
