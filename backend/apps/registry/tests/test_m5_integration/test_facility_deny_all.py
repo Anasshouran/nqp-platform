@@ -46,8 +46,10 @@ def _make_facility_user(facility, *, with_perm):
 
 def _screening(ep, officer):
     uid = _uid()
-    country = Country.objects.create(
-        code=f'S{uid[:2]}'[:3], name=f'بلد {uid[:6]}', name_ar=f'بلد {uid[:6]}',
+    # كود ثابت عبر get_or_create — راجع test_h3_no_widening.py (تصادم 1/256).
+    country, _ = Country.objects.get_or_create(
+        code='TST',
+        defaults={'name': 'Test Country', 'name_ar': 'بلد اختبار'},
     )
     traveler = Traveler.objects.create(
         passport_number=f'P{uid}', first_name='أول', last_name='الاسم',

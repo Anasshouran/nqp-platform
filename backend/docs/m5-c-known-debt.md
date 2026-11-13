@@ -136,6 +136,33 @@ sector-only (D-M5-B-1 قائم).
 
 ---
 
+## D-M5-C-ACT-2: تصادم `Country.code` في اختبارات M5-A (عوم اختبار — مُغلق)
+
+**الوضع السابق:** مولّدات `_screening()` في `apps/registry/tests/test_m5_integration/`
+كانت تنشئ الدولة بكود `f'S{uid[:2]}'[:3]` = `S` + حرفان hex ⇒ **256 قيمة ممكنة**
+فقط، بينما `Country.code` هو `unique=True, max_length=3`.
+
+**الأثر:** كل اختبار ينشئ **دولتين** في نفس المعاملة (world A + world B) كان
+يتصادم باحتمال **1/256 ≈ 0.39%**. المعدل الكلي ≈ **1.95% لكل تشغيل Backend**
+(4 أزواج في `test_h3_deltas` + زوج في `test_h3_no_widening`).
+
+**الدليل:** فشل CI #183 (docs-only) في
+`test_h3_no_widening.py::TestH3NoWidening::test_state_plus_sector_union`
+بـ `UniqueViolation: Key (code)=(S2d) already exists` — بينما نجح نفس الاختبار
+في CI #182 ومحليًا 3/3. الكود المُدان من `f31d605` (2026-11-10، M5-C-L).
+
+**الحل (fix/flaky-country-code):**
+`Country.objects.get_or_create(code='TST', defaults={...})` في **6 ملفات**
+(`test_h3_no_widening` · `test_screening_h3` · `test_h3_deltas` ·
+`test_h1prime_consistency` · `test_locality_consistency` · `test_facility_deny_all`).
+لا اختبار يعتمد على اختلاف الجنسية بين world A و world B — التحقق: كل إشارات
+`country` هي `nationality=country` فقط، و`_build_world` لا ينشئ `Country`.
+
+**التحقق:** 10 تشغيلات متتالية لـ `test_h3_no_widening` + `test_h3_deltas`
+⇒ **10× `8 passed`** (0 تصادم)؛ والحزمة الكاملة للمجلد ⇒ **107 passed**.
+
+---
+
 ## ملخّص التصنيف
 
 | البند | النوع | الحالة |
@@ -145,6 +172,7 @@ sector-only (D-M5-B-1 قائم).
 | `D-M5-C-F-2` | حجب كامل (screening) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
 | `D-M5-C-F-3` | حجب كامل (lab/vector) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
 | `D-M5-C-ACT-1` | تفعيل إنتاج | بانتظار COUNT (Q7) |
+| `D-M5-C-ACT-2` | عوم اختبار (`Country.code`) | ✅ **مغلق — `fix/flaky-country-code` (`#184`)** |
 | `D-M5-C-L-FE-1` | UX اختياري | عند الطلب |
 | `D-M5-B-1` | حجب كامل (VectorUnit) | ✅ مغلق — M6 |
 
