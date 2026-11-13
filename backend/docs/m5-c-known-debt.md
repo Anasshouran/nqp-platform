@@ -163,6 +163,28 @@ sector-only (D-M5-B-1 قائم).
 
 ---
 
+## D-M5-C-ACT-3: `.env` المحلي يوجّه Celery إلى `127.0.0.1` (توثيق — مُغلق)
+
+**الوضع السابق:** `backend/.env` المحلي (غير متتبَّع) يثبّت
+`REDIS_HOST=127.0.0.1` و`CELERY_BROKER_URL=redis://127.0.0.1:6379/0`، بينما خدمة
+Redis في `deploy/docker-compose.yml` اسمها **`redis`** (وتعمل بـ `--requirepass`).
+النتيجة: `pytest apps/` داخل حاوية التطوير يفشل في كل اختبار يلمس Celery
+(8 failed + 12 errors في تشغيل M6-bis المحلي)، بينما CI يمر لأن الـ runner
+يستخدم اسم الخدمة `redis`.
+
+**الإصلاح (chore 2أ، PR #185):**
+- `backend/.env.example`: `REDIS_HOST=redis` (اسم خدمة Compose) + تعليق صريح
+  بأن التشغيل على المضيف يستخدم `REDIS_HOST=127.0.0.1`، وأن
+  `CELERY_BROKER_URL`/`CELERY_RESULT_BACKEND` يُشتقّان من `REDIS_*`، وأن
+  **DB 1 هو كاش الـ throttle المشترك** — لا يُستخدم كنتيجة Celery.
+- `README.md`: قسم «Redis / Celery (local)» بسطرين.
+- `backend/.env` المحلي **لم يُمسّ**، و`.env` مُستثنى في `.gitignore` (تحقق).
+
+**ملاحظة دائمة:** التوثيق يذكر أن `REDIS_PASSWORD` يجب أن يطابق قيمة
+`deploy/.env` لأن Compose يشغّل redis بـ `--requirepass`.
+
+---
+
 ## ملخّص التصنيف
 
 | البند | النوع | الحالة |
@@ -173,6 +195,7 @@ sector-only (D-M5-B-1 قائم).
 | `D-M5-C-F-3` | حجب كامل (lab/vector) | ✅ **مغلق — M6-bis (\#182, `1d07b86`)** |
 | `D-M5-C-ACT-1` | تفعيل إنتاج | بانتظار COUNT (Q7) |
 | `D-M5-C-ACT-2` | عوم اختبار (`Country.code`) | ✅ **مغلق — `fix/flaky-country-code` (`#184`)** |
+| `D-M5-C-ACT-3` | `.env`/Celery توثيق | ✅ **مغلق — chore 2أ (`#185`)** |
 | `D-M5-C-L-FE-1` | UX اختياري | عند الطلب |
 | `D-M5-B-1` | حجب كامل (VectorUnit) | ✅ مغلق — M6 |
 
