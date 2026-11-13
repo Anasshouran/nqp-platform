@@ -682,6 +682,11 @@ class SectorFieldScopedMixin:
             غير قابلة للاشتقاق → LOCALITY يُحجب (فشل آمن).
             تخضع لبوابة الإنتاج (`PROD_SCOPING_ENABLED` / `DEBUG`) — في
             الإنتاج بلا تفعيل تُعيد `get_user_locality_ids` مجموعة فارغة.
+        facility_path: المسار العلائقي من النموذج إلى `masterdata.HealthFacility.id`
+            (مثال: `facility_id`). الافتراضي `None` = المنشأة غير قابلة
+            للاشتقاق → FACILITY يُحجب (فشل آمن). M6-bis (D-M5-C-F-3).
+            تخضع لنفس بوابة الإنتاج — في الإنتاج بلا تفعيل تُعيد
+            `get_user_facility_ids` مجموعة فارغة.
 
     يعيد الكل للوطني (superuser / GLOBAL scope / NATIONAL_LAB_ADMIN) — وهي
     تغطية عامة *مُتحقَّق منها* لا غياب نطاق.
@@ -692,6 +697,7 @@ class SectorFieldScopedMixin:
     sector_field = 'sector'
     state_path = None
     locality_path = None  # ← M5-C-L
+    facility_path = None  # ← M6-bis
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -746,15 +752,34 @@ class SectorFieldScopedMixin:
                     user, self.locality_path,
                 )
                 locality_ids = set()
-        if not sectors and not state_ids and not locality_ids:
+        # M6-bis (D-M5-C-F-3): FACILITY grant (اتحاد — لا استبدال).
+        # يُفعَّل فقط عندما يضبط الـ viewset `facility_path` صراحةً.
+        # البوابة داخل `get_user_facility_ids`: prod بلا `PROD_SCOPING_ENABLED`
+        # ⇒ `set()` ⇒ الحجب (fail-safe). `None` تعني GLOBAL لكن المسار
+        # الوطني عولج أعلاه؛ نحمي هنا أيضاً بـ `or set()`.
+        facility_ids = set()
+        if self.facility_path:
+            try:
+                resolved = get_user_facility_ids(user)
+                if resolved:
+                    facility_ids = set(resolved)
+            except (FieldError, ValueError):
+                logger.exception(
+                    'SectorFieldScopedMixin: failed to resolve FACILITY for %s '
+                    '(facility_path=%s) - DENYING facility branch',
+                    user, self.facility_path,
+                )
+                facility_ids = set()
+        if not sectors and not state_ids and not locality_ids and not facility_ids:
             # لا قطاع/ولاية قابل للحل ≠ تغطية عامة. الافتراضي حجب كامل؛ الاستثناء
             # الوحيد تصريح صريح عبر `scope_optional` (انظر SCOPE_OPT_OUT_ATTR).
             if scope_is_optional(self):
                 return qs
             logger.warning(
-                'SectorFieldScopedMixin: user %s has no resolvable sector/state/locality scope on %s '
-                '(sector_field=%s, state_path=%s, locality_path=%s) - DENYING all rows',
-                user, self.__class__.__name__, self.sector_field, self.state_path, self.locality_path,
+                'SectorFieldScopedMixin: user %s has no resolvable sector/state/locality/facility scope on %s '
+                '(sector_field=%s, state_path=%s, locality_path=%s, facility_path=%s) - DENYING all rows',
+                user, self.__class__.__name__, self.sector_field, self.state_path,
+                self.locality_path, self.facility_path,
             )
             return qs.none()
         try:
@@ -765,6 +790,8 @@ class SectorFieldScopedMixin:
                 scope_q |= Q(**{f'{self.state_path}__in': list(state_ids)})
             if locality_ids and self.locality_path:
                 scope_q |= Q(**{f'{self.locality_path}__in': list(locality_ids)})
+            if facility_ids and self.facility_path:
+                scope_q |= Q(**{f'{self.facility_path}__in': list(facility_ids)})
             filtered = qs.filter(scope_q)
             if requested and requested in allowed_codes:
                 filtered = filtered.filter(**{f'{self.sector_field}__code': requested})
@@ -774,7 +801,8 @@ class SectorFieldScopedMixin:
         except (FieldError, ValueError):
             logger.exception(
                 'SectorFieldScopedMixin failed to scope queryset for %s '
-                '(sector_field=%s, state_path=%s, locality_path=%s) - DENYING access',
+                '(sector_field=%s, state_path=%s, locality_path=%s, facility_path=%s) - DENYING access',
                 user, self.sector_field, self.state_path, self.locality_path,
+                self.facility_path,
             )
             return qs.none()
