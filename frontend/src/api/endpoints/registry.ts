@@ -165,6 +165,36 @@ export const listFacilityOwnershipsPaginated = (
     })
     .then((r) => unwrap<PaginatedResponse<FacilityOwnership>>(r));
 
+export const listTechnicalSupervisionsPaginated = (
+  facilityId: string,
+  page: number = 1,
+): Promise<PaginatedResponse<TechnicalSupervision>> =>
+  axios
+    .get(`${BASE}/technical-supervisions/`, {
+      params: { facility: facilityId, page, page_size: LIST_PAGE_SIZE },
+    })
+    .then((r) => unwrap<PaginatedResponse<TechnicalSupervision>>(r));
+
+export const listServiceAvailabilityPaginated = (
+  facilityId: string,
+  page: number = 1,
+): Promise<PaginatedResponse<ServiceAvailability>> =>
+  axios
+    .get(`${BASE}/service-availability/`, {
+      params: { facility: facilityId, page, page_size: LIST_PAGE_SIZE },
+    })
+    .then((r) => unwrap<PaginatedResponse<ServiceAvailability>>(r));
+
+export const listDepartmentAssignmentsPaginated = (
+  facilityId: string,
+  page: number = 1,
+): Promise<PaginatedResponse<DepartmentNodeAssignment>> =>
+  axios
+    .get(`${BASE}/department-assignments/`, {
+      params: { department__facility: facilityId, page, page_size: LIST_PAGE_SIZE },
+    })
+    .then((r) => unwrap<PaginatedResponse<DepartmentNodeAssignment>>(r));
+
 export const createFacilityOwnership = (data: Partial<FacilityOwnership>): Promise<FacilityOwnership> =>
   axios.post(`${BASE}/facility-ownerships/`, data).then((r) => unwrap<FacilityOwnership>(r));
 
