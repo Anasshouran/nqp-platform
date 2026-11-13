@@ -98,3 +98,68 @@ This branch originally had a botched first attempt: a wrong `git reset --mixed 7
 - M5-D-ج (spot-check 20 dormant files, deeper function coverage, Playwright e2e M7)
 - M6-bis (Facility FKs for HR/screening/lab/vector) — waiting on Q7 prod backfill counts (≥50% rule)
 - One flaky test observed once under coverage instrumentation (not identified, not reproduced) — monitor in CI
+
+---
+
+## 9. V-3 Closure — العوم في `EmployeeFormPage` account-switch (✅ مُغلق)
+
+**الاكتشاف (M5-E-ب، §3 و§8 أعلاه):** فشل واحد عائم في أول تشغيل
+`npm run test:coverage` (من 841 اختبارًا)، **لم يتكرر** في تشغيلين تاليين.
+لم يُحدَّد اسمه حينها؛ تُرك للمراقبة.
+
+**التشخيص (جلسة M5-F):**
+- الاختبار المذنب: `frontend/src/pages/hr/EmployeeFormPage.test.tsx:85`
+  — «يرسل user عند التبديل إلى "ربط حساب موجود"» (account-switch).
+- ليس race condition ولا تسريب حالة: الاختبار ثقيل (async render + تبديل حساب).
+- تحت أدوات الـ coverage يتجاوز زمنه السقف العام:
+  `frontend/vitest.config.ts:10` → `testTimeout: 10000` (10s)، والاختبار يقترب
+  من/يتجاوز 14.7s تحت instrumentation ⇒ يفشل بحسب حمل الجهاز.
+- قياس الجلسة: 2/10 تشغيلات فاشلة تحت coverage، 0/10 بدونه
+  (**ملاحظة: هذا القياس من الجلسة، غير محفوظ في سجلات CI**؛ السجل الوحيد في
+  المستودع هو «فشل واحد لم يتكرر» في §3).
+
+**الإصلاح (M5-F):**
+- `709c1fa` — `test(hr): explicit 20s timeout for EmployeeFormPage account-switch test`
+- التغيير: `{ timeout: 20000 }` على **هذا الاختبار وحده** (سطر 85)، وهو
+  **الموضع الوحيد** في `frontend/src` الذي يستخدم 20000 (تحقّق: `grep -rn "timeout: 20000" frontend/src` ⇒ نتيجة واحدة).
+- `vitest.config.ts` بقي `testTimeout: 10000` — **لا تغيير عام** (لا إخفاء
+  لبطء اختبارات أخرى).
+
+**الإثبات:**
+| البند | النتيجة |
+|---|---|
+| قبل الإصلاح | فشل عائم واحد تحت coverage (M5-E-ب §3) |
+| بعد الإصلاح — محلي | `npm run test` ⇒ **845 passed / 110 ملف** · `test:coverage` ⇒ exit 0 |
+| بعد الإصلاح — CI | `fa2d427` (دمج PR #180) ⇒ CI أخضر؛ والعدّ 845 مُثبَت في §3/§4 |
+| CI #181 (دمج M5-E-ب، `bd15481`) | ✅ success (Backend + Frontend) — **لكن سجل الـ job لم يعد متاحًا من GitHub (انتهت مدة الاحتفاظ)، فلا أُعيد التحقق منه هنا** |
+
+**المرجع:** `709c1fa` (PR #180، merge `fa2d427`) · M5-E-ب merge `bd15481` (PR #181).
+
+**الحالة:** ✅ **مغلق** — التخفيف موضعي وموثَّق، والسقف العام لم يُمسّ.
+
+---
+
+## 10. Count Reconciliation (M5-E → M5-E-ب)
+
+**Frontend (مُتحقَّق من §3/§4 + CI الحالي 845):**
+
+| المرحلة | Frontend | Δ | المصدر |
+|---|---|---|---|
+| M5-D (baseline) | 827 | — | §4 |
+| M5-E (merged) | **831** | +4 | §4 (CI-verified) |
+| M5-E-ب (intermediate) | 841 | +10 | §4 (ما قبل اختبارات click-through) |
+| M5-E-ب (final) | **845** | +14 | §3 (`npm run test`) |
+| main اليوم (2026-11-13) | **845** | — | CI #184/#185 |
+
+**Backend (تصحيح المالك — 2026-11-13):**
+
+| المرحلة | Backend | ملاحظة |
+|---|---|---|
+| M5-E / M5-E-ب (§5 أعلاه) | 2958 + 2skip | نصٌّ تاريخي — **صُحِّح إلى 2959** |
+| main قبل M6-bis (`bd15481`) | **2959 + 0xf + 2skip** | تصحيح المالك؛ أساس حساب M6-bis |
+| main بعد M6-bis (`1d07b86`) | **2984 + 0xf + 2skip** | 2959 + 25 اختبارًا جديدًا (CI #182) |
+| main اليوم | **2984 + 2skip** | CI #184/#185 |
+
+> **تنبيه اتساق:** §5 يقول «2958». الرقم الصحيح في تلك الحقبة **2959**؛ فرق عدّ
+> واحد فقط، لا أثر على أي استنتاج في هذه الوثيقة. أُبقي §5 كما هو (سجل تاريخي)
+> وهذا القسم هو المرجع المُصحَّح.
