@@ -20,6 +20,7 @@ from apps.surveillance.views import (
     WeeklyReportViewSet,
 )
 from apps.surveillance.views.gis import GISViewSet
+from apps.surveillance.views.reports import SurveillanceByStateReportViewSet
 
 app_name = 'surveillance'
 
@@ -51,6 +52,11 @@ urlpatterns = [
         'dashboard/timeline/',
         SurveillanceDashboardViewSet.as_view({'get': 'timeline'}),
         name='dashboard-timeline',
+    ),
+    path(
+        'reports/by-state/',
+        SurveillanceByStateReportViewSet.as_view({'get': 'list'}),
+        name='report-by-state',
     ),
     path('', include(router.urls)),
 ]

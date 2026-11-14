@@ -10198,7 +10198,28 @@
       "emptyTitle": "No reports",
       "emptyDescription": "Submit the weekly report for your facility",
       "weeklyTitle": "Weekly Report",
-      "weeklySubtitle": "Health facility or entry point"
+      "weeklySubtitle": "Health facility or entry point",
+      "byState": {
+        "title": "Surveillance by State",
+        "subtitle": "Cases aggregated through the reporting tree (facility → locality → state)",
+        "refresh": "Refresh",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "apply": "Apply",
+        "state": "State",
+        "count": "Cases",
+        "total": "Total",
+        "matched": "Matched",
+        "nodeNoState": "Node without state",
+        "unassignedNode": "Unassigned (node)",
+        "unassignedFacility": "Unassigned (facility)",
+        "reconciliationOk": "Reconciliation OK",
+        "reconciliationBroken": "Reconciliation broken",
+        "noData": "No cases",
+        "noDataDescription": "No cases in the selected range",
+        "loadError": "Failed to load the report",
+        "scoped": "Scoped view"
+      }
     },
     "pageHeader": {
       "title": "Health Surveillance",
