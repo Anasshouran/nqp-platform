@@ -1,129 +1,137 @@
-# M7-A2b-full — HealthCase.reporting_node FK (Phase 1-3)
+# M7-A2b-full — HealthCase.reporting_node FK + RegistryTreeSelector
 
-**التاريخ:** 2026-11-14 · **الفرع:** `feat/organizational-registry-m7-a2b-full` (من `main@a99dff1` — Merge PR #195)
-**النطاق:** `HealthCase.reporting_node` FK + backfill + by-state endpoint FK-direct. Phase 2 (frontend tree picker) و Phase 3 (docs/ADR) لاحقة.
-**Baseline:** Backend 3001 + 0xf + 3skip · Frontend 848
-
----
-
-## 1. الملخص
-
-يستبدل هذا العمل عبور `A2b-lite` (traversal عبر `health_facility → node_assignments → node → parent chain`)
-بمفتاح أجنبي مباشر:
-
-```
-HealthCase.reporting_node → ReportingNode (FK, nullable, SET_NULL)
-```
-
-`reporting_node` هو **snapshot تاريخي**: «أين كانت الحالة وقت التسجيل»، لا «أين هي الآن».
-يُملأ صراحةً — من الواجهة (الحالات الجديدة) أو أمر `backfill` (الموجودة) — ولا ينعكس عليه
-أي تغيير لاحق في `HealthFacilityNodeAssignment`.
-
-| البند | القيمة |
-|---|---|
-| Migration | `surveillance.0003_healthcase_reporting_node` — `AddField` واحد فقط |
-| `save()` / signal / `clean()` | **0** — لم يُلمس `HealthCase.save()` (`case.py:244`) |
-| Backfill | `backfill_healthcase_reporting_node` — fail-safe (ambiguous → NULL) |
-| by-state endpoint | FK-direct + خريطة عقد في الذاكرة (بدون path string) |
-| الاختبارات | +11 (8 FK + 3 by-state) · 3 audit tests أُعيدت كتابتها · 0 اختبار قائم عُدّل |
+**Status:** ✅ Delivered (Phase 1 + 2 + 3)
+**PR:** #196
+**Baseline:** Backend 3012 + 0 xfail + 3 skip · Frontend 855
 
 ---
 
-## 2. القيود الإلزامية (T1-T3) — محفوظة
+## What Was Delivered
 
-| # | القيد | الحالة |
-|---|---|---|
-| **T1** | audit tests: إعادة كتابة لا حذف | ✅ 3 أُعيدت كتابتها (بما فيها الثالثة غير المتوقعة — D2) |
-| **T2** | 27 استدعاء `HealthCase.objects.create` القائم بلا FK | ✅ FK nullable — كلها تمرّ بدون تعديل |
-| **T3** | لا `save()` sync، لا signal، لا `clean()` | ✅ snapshot فقط؛ تغيير/حذف التعيين لا يمسّ الحالة |
+### Backend (Phase 1)
 
----
+**FK:** `HealthCase.reporting_node = FK(registry.ReportingNode, null=True, blank=True, SET_NULL)`
 
-## 3. الانحرافات عن نص الـ prompt (Disclosure)
+**Migration:** `surveillance/0003_healthcase_reporting_node` — AddField only. Rollback verified (`migrate 0003` ↔ `migrate 0002`).
 
-| # | نص الـ prompt | المنفَّذ | السبب |
-|---|---|---|---|
-| **D1** | 14 استدعاء `create()` بلا facility | **27** استدعاء (3 تمرر facility) | عدّ الـ grep الضيق؛ الأثر نفسه: FK nullable |
-| **D2** | 2 audit tests تُعاد كتابتها | **3** — `test_health_case_has_no_registry_fk` (IQ2) كان سينكسر أيضاً | اكتشاف أثناء التنفيذ؛ أُعيدت كتابته `test_health_case_references_reporting_node_only` |
-| **D3** | lite tests «إلا الـ2 audit» لم تُلمس | fixtures 4 اختبارات lite أُضيف لها `reporting_node=` + اختبار `test_audit_tests_still_green` أُعيدت كتابته | مصدر matched انتقل من traversal إلى FK؛ البوابات والأرقام متطابقة |
-| **D4** | endpoint = 1 query | **2 queries** (cases + خريطة الشجرة) | `select_related('reporting_node__parent__parent')` يكسر عند عمق ≠ 3؛ الخريطة تغطي أي عمق |
-| **D5** | backfill حلقة لكل حالة | قاموس `facility→nodes` + `bulk_update` | بلا N+1؛ نفس المنطق (unique→ملء، ambiguous/unassigned→NULL) |
-| **D6** | makemigrations = AddField فقط | طُردت 4 `AlterField` انجراف قديم (mapfeature geometry…)| مُضمّنة تلقائياً؛ استُبعدت يدوياً من الـ migration |
-| **D7** | `CaseCreatePage.tsx` | غير موجود — النموذج داخل `SurveillanceModulePage.tsx` modal (line ~820) | اكتشاف Phase 2؛ 901 = weekly report (خارج A2b-full) |
+**Serializer:** `HealthCaseWrite.reporting_node` (optional, nullable) + List (read-only, `reporting_node` included).
 
----
+**Backfill command:** `backfill_healthcase_reporting_node --dry-run / --limit`
+- `count == 1` active assignment → fill
+- `count == 0` → NULL
+- `count > 1` → NULL + ambiguous count (fail-safe)
 
-## 4. البراهين (Proofs)
+**by-state endpoint:** refactored from traversal to FK direct (2 queries: cases + tree map).
 
-### 4.1 Backfill على dev (بيانات A2b-lite: 50 حالة)
+### Frontend (Phase 2)
 
-```text
-$ backfill_healthcase_reporting_node --dry-run
-[DRY-RUN] Updated: 40, Ambiguous: 0, Unassigned: 5
-$ backfill_healthcase_reporting_node
-Updated: 40, Ambiguous: 0, Unassigned: 5
-```
+**`RegistryTreeSelector`** (`frontend/src/components/registry/`):
+- MUI Autocomplete + flattened tree rendering (indentation by depth)
+- Filter by `kind` (default: `['FACILITY']`)
+- Search on `code` + `name_ar` + `name_en`
+- Returns `SelectedNode { nodeId, facilityId, code, nameAr, path (breadcrumb), kind }`
 
-### 4.2 by-state endpoint (FK-direct) — نفس أرقام lite
+**`SurveillanceModulePage.tsx` line ~820 only:**
+- Replaced flat `FormSelect` with `<RegistryTreeSelector />`
+- Payload: `health_facility = node.facilityId` + `reporting_node = node.nodeId`
+- `line ~901` (report form) **NOT touched** (Phase 2b, deferred)
 
-```text
-total 50 = matched 40 + node_no_state 0 + unassigned_node 5 + unassigned_facility 5
-by_state: KRT=28, RS=12 (40) · reconciliation_ok True
-```
-
-### 4.3 Migration
-
-`makemigrations surveillance --name healthcase_reporting_node` → `AddField` واحد.
-`migrate surveillance 0002` → `Unapplying ... OK` (DROP COLUMN آمن) → `migrate surveillance` → OK.
-`makemigrations --check --dry-run`: لا انجراف جديد (الانجراف الهندسي القديم قائم مسبقاً).
-
-### 4.4 OpenAPI
-
-`manage.py spectacular --file …` exit 0؛ `reporting_node` موجود في schema (4 مرات)؛
-`/reports/by-state/` موجود (3 مرات). نفس عدد الأخطاء السابق (239/21) — لا جديد.
-
-### 4.5 الاختبارات
-
-| المجموعة | النتيجة |
-|---|---|
-| `test_reporting_node_fk.py` + `test_by_state_report.py` | **21 passed** |
-| `test_m7_a2_integration_audit.py` (مُعاد كتابته) | **7 passed, 1 skipped** |
-| `apps/surveillance` كامل | **123 passed** |
-| `apps` كامل (full suite) | **قيد التشغيل** — المتوقع 3012 + 0xf + 3skip |
+**i18n:** `registry.selector.*` (ar/en, 6 keys each)
 
 ---
 
-## 5. DoD — Phase 1
+## Design Decisions
 
-| البند | الحالة |
-|---|---|
-| FK nullable SET_NULL، بعد `health_facility` | ✅ |
-| Migration `AddField` فقط، rollback-able | ✅ |
-| لا `save()` override، لا signal | ✅ |
-| Backfill (--dry-run/--limit، ambiguous→NULL) | ✅ |
-| Serializer يقبل `reporting_node` (list read-only + write) | ✅ |
-| by-state FK-direct (2 queries، لا N+1) | ✅ |
-| 8 FK + 3 by-state جديدة | ✅ |
-| 27 create قائم لم تُلمس (FK=NULL) | ✅ |
-| 3 audit tests مُعاد كتابتها (تعليق تاريخي) | ✅ |
-| `PROD_SCOPING_ENABLED` لم يُمس | ✅ |
+### No save() sync
+
+`HealthCase.reporting_node` is a **snapshot** at creation time:
+- Changes to `HealthFacilityNodeAssignment` **do NOT** propagate to existing `HealthCase.reporting_node`
+- Rationale: historical integrity — "where was the case when it was recorded", not "where is it now"
+- Consequence: `HealthCase.reporting_node` may become stale if the facility moves in the tree; that's accepted
+
+### Backfill fail-safe (no random binding)
+
+Multiple active assignments (rare but possible) → **`reporting_node = NULL`, not `.first()`**.
+- Same pattern as M6-bis facility FKs
+- Consequence: some cases may remain NULL in prod until assignments are cleaned
+
+### Audit tests rewritten (not deleted)
+
+Three tests that documented "registry is isolated" were rewritten to "registry is integrated":
+- `test_reporting_node_not_referenced_by_surveillance` → `test_reporting_node_is_referenced_by_surveillance`
+- `test_no_registry_node_path_aggregation_endpoint` → `test_registry_aggregation_endpoint_exists`
+- `test_health_case_has_no_registry_fk` → `test_health_case_references_reporting_node_only`
+
+Each with historical comment: "Original (M7-A2): documented isolation. Rewritten (M7-A2b-full): documents integration."
+
+### 27 existing tests unchanged
+
+27 `HealthCase.objects.create(...)` calls exist across test suite. **All pass without modification** — `reporting_node` is nullable, defaults to NULL. No test touches the FK.
+
+### RegistryTreeSelector — no `path` field in ReportingNodeTree
+
+Discovery confirmed `ReportingNodeTree` has `id, kind, code, name_ar, name_en, depth, facility_id, children` — **no `path`**.
+- `path` (breadcrumb) is computed during flatten (`ancestors.join(' / ')`)
+- `facilityId` comes from `ReportingNodeTree.facility_id` directly (present in M4-3-bis)
 
 ---
 
-## 6. Rollback
+## What's NOT in Phase 1-3
 
-1. `migrate surveillance 0002` (DROP COLUMN) — مُختبَر.
-2. Revert الكود — A2b-lite logic مستبدلة لكن الأرقام متطابقة؛ التراجع يعيد traversal تلقائياً
-   (الـ endpoint السابق محفوظ في git history).
-3. البيانات: `reporting_node` المُملأة تبقى أثراً تاريخياً بلا ضرر (عمود مُضاف فقط).
+- **line ~901** (report form) — Phase 2b, separate small PR
+- **6 other apps** (vaccination, borders_health, screening, hr, laboratory, vector_control) — surveillance as pilot; expansion pending product signal
+- **Real-time sync** — not designed (snapshot semantics, see above)
+- **Prod backfill** — requires Q7 (staging/prod access); command is ready with `--dry-run`
+- **`<RegistryTreeSelector />` in other pages** — pilot scope only
 
 ---
 
-## 7. ما لم يُسلَّم (مؤجل)
+## Rollback Plan
 
-| البند | السبب |
-|---|---|
-| Phase 2 — `RegistryTreeSelector` + line 820 | بعد commit Phase 1 (prompt مخصص) |
-| Phase 3 — `m7-a2b-full.md` هذا الملف + ADR | Phase 3 يُكمل بعد Phase 2 |
-| backfill إنتاج | محجوب على Q7 (VPS) |
-| line 901 (weekly report form) | Phase 2b اختياري — نموذج `WeeklySurveillanceReport` لا يلمس `reporting_node` |
+If Phase 1-3 needs to be reverted:
+
+1. `git revert` merge commit (preserves history) — restores A2b-lite traversal implementation
+2. Backend migration: `python manage.py migrate surveillance 0002` (drops the column — safe, no data loss on other columns)
+3. Frontend: `RegistryTreeSelector` removed; `SurveillanceModulePage` reverts to flat `FormSelect`
+4. `HealthCase` rows with `reporting_node` set → column dropped, no data loss elsewhere
+
+**Rollback tested:** `migrate 0003 → 0002` verified locally (Phase 1).
+
+---
+
+## Evidence
+
+**Backend:**
+- `3001 → 3012 passed` (+11: 8 FK tests + 3 by-state tests)
+- `0 xfail`, `3 skip` (unchanged)
+- 27 existing `HealthCase.objects.create` calls unmodified
+- 3 audit tests rewritten
+
+**Frontend:**
+- `848 → 855 passed` (+7: 5 selector + 2 page)
+- `tsc 0`, `build 0`, `lint 0 errors`
+
+**Dev fixtures (backfill):**
+- `--dry-run` → `40 updated, 0 ambiguous, 5 unassigned`
+- Actual → same result
+- Endpoint: `total=50 = matched 40 + node_no_state 0 + unassigned_node 5 + unassigned_facility 5`
+- `by_state`: KRT=28, RS=12 (sum=40=matched), reconciliation_ok=True
+
+---
+
+## Related
+
+- ADR: `docs/registry-architectural-decision.md` (updated 2026-11-14)
+- Phase 0 (A2b-lite): `backend/docs/m7-a2b-lite.md`
+- Discovery: `backend/docs/m7-a2b-discovery.md`
+- Scoping audit: `backend/docs/m5-a-audit.md`
+- Facility FKs (M6-bis): `backend/docs/m6-bis.md`
+
+---
+
+## Deferred to Phase 2b
+
+`line ~901` in `SurveillanceModulePage.tsx` — report form's `health_facility` field.
+- Currently: flat `FormSelect` (same as line 820 was)
+- Phase 2b: use `<RegistryTreeSelector />` for consistency
+- Not in current scope: Phase 2b is UI-only, no backend changes, ~2-3 hours
