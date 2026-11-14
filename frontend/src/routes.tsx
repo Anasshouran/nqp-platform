@@ -239,6 +239,7 @@ const InspectorDashboardPage = lazy(() => import('./pages/inspector/InspectorDas
 const QuarantineInspectorPage = lazy(() => import('./pages/quarantine/QuarantineInspectorPage'));
 const EpidemicDashboardPage = lazy(() => import('./pages/emergency/EpidemicDashboardPage'));
 const SurveillanceModulePage = lazy(() => import('./pages/surveillance/SurveillanceModulePage'));
+const ReportsByStatePage = lazy(() => import('./pages/surveillance/ReportsByStatePage'));
 const FoodSurveillancePage = lazy(() => import('./pages/foodsurveillance/FoodSurveillancePage'));
 const FoodDirectorPage = lazy(() => import('./pages/fooddirector/FoodDirectorPage'));
 const AirportDirectorPage = lazy(() => import('./pages/airportdirector/AirportDirectorPage'));
@@ -464,6 +465,7 @@ const AppRoutes = () => (
         <Route path="/app/emergency" element={withSuspense(<EmergencyPage />)} />
         <Route path="/app/epidemic-dashboard" element={withSuspense(<EpidemicDashboardPage />)} />
         <Route path="/app/surveillance" element={withSuspense(<SurveillanceModulePage />)} />
+        <Route path="/app/surveillance/reports/by-state" element={withSuspense(<ReportsByStatePage />)} />
         <Route path="/app/food-surveillance" element={withSuspense(<FoodSurveillancePage />)} />
         {/* `FlightViewSet` مقيّد بـ`flights:view`، والصفحة مفتوحة فقط
             لأصحاب الصلاحية، وتقسم الصفحة نفسها إلى تبويبات. */}

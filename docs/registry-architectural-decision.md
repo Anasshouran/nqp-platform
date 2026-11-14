@@ -1,7 +1,7 @@
 # Registry — Architectural Decision Record
 
 **Date:** 2026-11-13
-**Status:** Accepted — Infrastructure for future adoption
+**Status:** Accepted — Infrastructure for future adoption → **Phase 0 integration (A2b-lite) delivered, evidence pending (2026-11-14)**
 **Supersedes:** None
 **Related:** M1-M6-bis, M7-A2 audit
 
@@ -29,6 +29,28 @@ M7-A2 integration audit (2026-11-13) established this with evidence:
 - Integration score: **~4%**
 
 **We accept this state without further investment.** No M7-A2b (deep integration), no M7-A2c (surface integration), no C1 (public API expansion for unused registry), no B2 (analytics on empty data).
+
+> **Update 2026-11-14 — M7-A2b-lite (PR #195), owner decision.**
+>
+> The owner decided to proceed with a **narrow, reversible** integration despite no external
+> product signal — a deliberate evidence-gathering investment rather than an assumption of demand.
+>
+> **Phase 0 delivered (A2b-lite):**
+> - `GET /api/v1/surveillance/reports/by-state/` — aggregate cases by state via
+>   `health_facility → HealthFacilityNodeAssignment (active) → ReportingNode → STATE ancestor`
+> - Frontend: `/app/surveillance/reports/by-state` with a reconciliation bar
+> - **0 migrations, 0 FK, 0 `save()` sync** — read-time traversal only, reversible by deleting one URL
+> - Adoption metric: endpoint usage + page visits, to be measured in staging/prod **after Q7**
+>
+> **Phase 1-3 deferred (A2b-full):**
+> - `reporting_node` FK on `HealthCase` — **only if Phase 0 proves value**; note it would break two
+>   audit tests that assert the field's absence (`test_reporting_node_not_referenced_by_surveillance`,
+>   `test_no_registry_node_path_aggregation_endpoint`) — they must be superseded, not silently dropped
+> - `<RegistryTreeSelector />` — only if Phase 0 proves value
+> - `save()` sync — **never as designed**; assignment change/delete would rewrite or erase case history
+>
+> **Status:** A2b-lite = deliberate investment, evidence pending.
+> Evidence and deviations: `backend/docs/m7-a2b-lite.md`.
 
 ---
 
@@ -98,6 +120,8 @@ Infrastructure without an adoption signal is a **bet on future use**. The bet is
 ## References
 
 - `backend/docs/m7-a2-integration-audit.md` — audit evidence
+- `backend/docs/m7-a2b-lite.md` — Phase 0 delivery, deviations, reconciliation proof
+- `backend/docs/m7-a2b-discovery.md` — integration discovery (Q1-Q6) + errata
 - `backend/docs/m5-c-known-debt.md` — Q7 command, debt register
 - `backend/docs/m6-bis.md` — facility FKs
 - `backend/docs/git-safety.md` — process safety

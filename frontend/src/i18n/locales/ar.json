@@ -10198,7 +10198,28 @@
       "emptyTitle": "لا توجد بلاغات",
       "emptyDescription": "سجّل البلاغ الأسبوعي لمنشأتك",
       "weeklyTitle": "بلاغ أسبوعي",
-      "weeklySubtitle": "منشأة صحية أو نقطة دخول"
+      "weeklySubtitle": "منشأة صحية أو نقطة دخول",
+      "byState": {
+        "title": "تقرير الترصد حسب الولاية",
+        "subtitle": "تجميع الحالات عبر شجرة التبليغ (منشأة ← محلية ← ولاية)",
+        "refresh": "تحديث",
+        "dateFrom": "من تاريخ",
+        "dateTo": "إلى تاريخ",
+        "apply": "تطبيق",
+        "state": "الولاية",
+        "count": "عدد الحالات",
+        "total": "الإجمالي",
+        "matched": "مطابق",
+        "nodeNoState": "عقدة بلا ولاية",
+        "unassignedNode": "غير معيَّن (عقدة)",
+        "unassignedFacility": "غير معيَّن (منشأة)",
+        "reconciliationOk": "المصالحة سليمة",
+        "reconciliationBroken": "خلل في المصالحة",
+        "noData": "لا توجد حالات",
+        "noDataDescription": "لا توجد حالات ضمن النطاق المحدد",
+        "loadError": "تعذّر تحميل التقرير",
+        "scoped": "نطاق مقيَّد"
+      }
     },
     "pageHeader": {
       "title": "الترصد الصحي",

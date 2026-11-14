@@ -82,3 +82,31 @@ export const createWeeklyReport = (payload: WeeklySurveillanceReportWrite) =>
 
 export const reviewWeeklyReport = (id: string, is_on_time?: boolean) =>
   apiClient.post<ApiResponse<WeeklySurveillanceReport>>(`${BASE}/weekly-reports/${id}/review/`, { is_on_time });
+
+// ---------------------------------------------------------------------------
+// M7-A2b-lite — by-state report (Phase 0). لا FK ولا migration.
+// ---------------------------------------------------------------------------
+
+export interface ByStateBucket {
+  state_id: string;
+  state_code: string;
+  state_name_ar: string;
+  state_name_en: string;
+  count: number;
+}
+
+export interface ByStateReport {
+  total: number;
+  matched: number;
+  node_no_state: number;
+  unassigned_node: number;
+  unassigned_facility: number;
+  by_state: ByStateBucket[];
+  scoped: boolean;
+  reconciliation_ok: boolean;
+  note: string;
+}
+
+/** تقرير الترصد المجمَّع حسب الولاية عبر شجرة السجل (قراءة فقط). */
+export const getSurveillanceByState = (params?: { date_from?: string; date_to?: string }) =>
+  apiClient.get<ApiResponse<ByStateReport>>(`${BASE}/reports/by-state/`, { params });
