@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -9,7 +9,7 @@ import authReducer from '../../store/slices/authSlice';
 import arLocale from '../../i18n/locales/ar.json';
 import enLocale from '../../i18n/locales/en.json';
 import SurveillanceModulePage from './SurveillanceModulePage';
-import { createCase } from '../../api/endpoints/surveillance';
+import { createCase, createWeeklyReport } from '../../api/endpoints/surveillance';
 
 i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
@@ -208,5 +208,47 @@ describe('SurveillanceModulePage — create case tree selector (M7-A2b-full)', (
         person_name: 'مريض تكامل',
       }),
     );
+  });
+});
+
+describe('SurveillanceModulePage — report form tree selector (Phase 2b)', () => {
+  it('report form uses RegistryTreeSelector for health_facility', async () => {
+    await i18n.changeLanguage('ar');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('tab', { name: /البلاغات الأسبوعية/ }));
+    await user.click(screen.getByRole('button', { name: /بلاغ أسبوعي/ }));
+
+    const input = await screen.findByLabelText(/الوحدة الصحية/);
+    await user.click(input);
+
+    expect(await screen.findByRole('option', { name: /منشأة أ/ })).toBeInTheDocument();
+  });
+
+  it('report submit sends health_facility only — never reporting_node', async () => {
+    await i18n.changeLanguage('ar');
+    const user = userEvent.setup();
+    const createWeeklyReportMock = vi.mocked(createWeeklyReport);
+    createWeeklyReportMock.mockClear();
+
+    renderPage();
+
+    await user.click(screen.getByRole('tab', { name: /البلاغات الأسبوعية/ }));
+    await user.click(screen.getByRole('button', { name: /بلاغ أسبوعي/ }));
+
+    fireEvent.change(await screen.findByLabelText(/بداية الفترة/), { target: { value: '2026-01-01' } });
+    fireEvent.change(await screen.findByLabelText(/نهاية الفترة/), { target: { value: '2026-01-07' } });
+
+    const input = await screen.findByLabelText(/الوحدة الصحية/);
+    await user.click(input);
+    await user.click(await screen.findByRole('option', { name: /منشأة أ/ }));
+
+    await user.click(screen.getByRole('button', { name: /حفظ/ }));
+
+    await waitFor(() => expect(createWeeklyReportMock).toHaveBeenCalledTimes(1));
+    const payload = createWeeklyReportMock.mock.calls[0][0];
+    expect(payload).toEqual(expect.objectContaining({ health_facility: 'hf-1' }));
+    expect(payload).not.toHaveProperty('reporting_node');
   });
 });
