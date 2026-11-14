@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,6 +9,7 @@ import authReducer from '../../store/slices/authSlice';
 import arLocale from '../../i18n/locales/ar.json';
 import enLocale from '../../i18n/locales/en.json';
 import SurveillanceModulePage from './SurveillanceModulePage';
+import { createCase } from '../../api/endpoints/surveillance';
 
 i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
@@ -81,6 +83,27 @@ vi.mock('../../api/endpoints/surveillance', () => ({
   transitionCase: vi.fn().mockResolvedValue({}),
 }));
 
+vi.mock('../../api/endpoints/registry', () => ({
+  getRegistryTree: vi.fn().mockResolvedValue([
+    {
+      id: 'fed-1', kind: 'FEDERAL', code: 'FMOH', name_ar: 'وزارة الصحة', name_en: 'MoH', depth: 0, facility_id: null,
+      children: [
+        {
+          id: 'st-1', kind: 'STATE', code: 'KRT', name_ar: 'الخرطوم', name_en: 'Khartoum', depth: 1, facility_id: null,
+          children: [
+            {
+              id: 'loc-1', kind: 'LOCALITY', code: 'KRT_C', name_ar: 'محلية الخرطوم', name_en: 'Khartoum Central', depth: 2, facility_id: null,
+              children: [
+                { id: 'fac-1', kind: 'FACILITY', code: 'FAC_A', name_ar: 'منشأة أ', name_en: 'Facility A', depth: 3, facility_id: 'hf-1', children: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ]),
+}));
+
 vi.mock('../../api/endpoints/masterdata', () => ({
   getMasterEntryPoints: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
 }));
@@ -141,5 +164,49 @@ describe('SurveillanceModulePage — i18n smoke + reactivity', () => {
     await waitFor(() => {
       expect(screen.queryByText('Health Surveillance')).toBeTruthy();
     });
+  });
+});
+
+describe('SurveillanceModulePage — create case tree selector (M7-A2b-full)', () => {
+  it('loads registry tree and shows FACILITY options in create dialog', async () => {
+    await i18n.changeLanguage('ar');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('tab', { name: /الحالات/ }));
+    await user.click(screen.getByRole('button', { name: /حالة جديدة/ }));
+
+    const input = await screen.findByLabelText(/الوحدة الصحية/);
+    await user.click(input);
+
+    expect(await screen.findByRole('option', { name: /منشأة أ/ })).toBeInTheDocument();
+  });
+
+  it('submits reporting_node + health_facility when facility selected from tree', async () => {
+    await i18n.changeLanguage('ar');
+    const user = userEvent.setup();
+    const createCaseMock = vi.mocked(createCase);
+    createCaseMock.mockClear();
+
+    renderPage();
+
+    await user.click(screen.getByRole('tab', { name: /الحالات/ }));
+    await user.click(screen.getByRole('button', { name: /حالة جديدة/ }));
+    await user.type(await screen.findByLabelText(/اسم الشخص/), 'مريض تكامل');
+
+    const input = await screen.findByLabelText(/الوحدة الصحية/);
+    await user.click(input);
+    await user.click(await screen.findByRole('option', { name: /منشأة أ/ }));
+
+    await user.click(screen.getByRole('button', { name: /حفظ/ }));
+
+    await waitFor(() => expect(createCaseMock).toHaveBeenCalledTimes(1));
+    expect(createCaseMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reporting_node: 'fac-1',
+        health_facility: 'hf-1',
+        person_name: 'مريض تكامل',
+      }),
+    );
   });
 });

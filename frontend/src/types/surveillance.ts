@@ -84,6 +84,7 @@ export interface HealthCaseWrite {
   sector?: string | null;
   locality?: string | null;
   health_facility?: string | null;
+  reporting_node?: string | null;
   event?: string | null;
   lab_result?: string | null;
   case_definition?: string | null;

@@ -126,3 +126,45 @@ Infrastructure without an adoption signal is a **bet on future use**. The bet is
 - `backend/docs/m6-bis.md` — facility FKs
 - `backend/docs/git-safety.md` — process safety
 - `backend/docs/m5-a-audit.md` — scoping audit
+
+---
+
+## Update 2026-11-14 (A2b-full, PR #196)
+
+**Owner decision:** Proceed with A2b-full after A2b-lite Phase 0 demonstrated value (endpoint works, reconciliation correct, no production code impact).
+
+### Phase 1-3 Delivered
+
+- `HealthCase.reporting_node` FK (nullable, SET_NULL, no save sync)
+- Migration `surveillance/0003` (AddField only, rollback verified)
+- Backfill command (`--dry-run / --limit`, ambiguous → NULL fail-safe)
+- `RegistryTreeSelector` component
+- `SurveillanceModulePage.tsx` line ~820 uses tree picker
+- `by-state` endpoint refactored to FK direct (2 queries)
+- 3 audit tests rewritten (with historical comments)
+- 8 FK tests + 3 by-state tests + 5 selector tests + 2 page tests
+
+### Design Decisions
+
+- **Snapshot semantics:** `HealthCase.reporting_node` does not sync with assignment changes — preserves historical integrity
+- **Pilot scope:** surveillance only; 6 other apps pending product signal
+- **line ~901 not touched:** report form's facility field remains flat `FormSelect` (Phase 2b deferred)
+- **No production activation:** `PROD_SCOPING_ENABLED=False` unchanged; backfill in prod requires Q7
+
+### Adoption Metrics (TBD after Q7)
+
+- `HealthCase.reporting_node` fill rate (% of cases with FK set)
+- by-state endpoint usage (requests per week from MOH / State surveillance)
+- `<RegistryTreeSelector />` usage in create form (all new cases)
+
+### Status
+
+**M7-A2b-full: DELIVERED.** Integration is now real (not just infrastructure).
+- Backend: 3012 + 0 xfail + 3 skip
+- Frontend: 855
+- 0 migrations on other tables
+- `PROD_SCOPING_ENABLED=False`
+
+**Blocked gate:** Q7 — staging/prod backfill + activation remains blocked on VPS access.
+
+**Next decision:** Evaluate adoption metrics after Q7. If positive → consider expanding to other apps (Phase 1-3 pattern). If not → this pilot remains a single-app integration; ADR §Lessons applies.

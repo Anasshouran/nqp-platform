@@ -10480,6 +10480,14 @@
       },
       "virtual_root": "You are viewing: {{name}}"
     },
+    "selector": {
+      "label": "Health facility",
+      "placeholder": "Search by code or name",
+      "no_options": "No matching facilities",
+      "loading": "Loading...",
+      "clear": "Clear selection",
+      "error": "Failed to load registry tree"
+    },
     "nodes": {
       "create": {
         "button": "Add Node",

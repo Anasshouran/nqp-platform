@@ -157,6 +157,18 @@ class HealthCase(BaseModel):
         related_name='surveillance_cases',
         verbose_name=_('الوحدة الصحية'),
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='surveillance_cases',
+        verbose_name=_('العقدة التنظيمية'),
+        help_text=_(
+            'M7-A2b-full: عقدة السجل وقت تسجيل الحالة (snapshot تاريخي). '
+            'يُملأ صراحةً من الواجهة أو أمر backfill. لا sync عبر save()/signal.'
+        ),
+    )
 
     # بيانات وبائية
     event = models.ForeignKey(

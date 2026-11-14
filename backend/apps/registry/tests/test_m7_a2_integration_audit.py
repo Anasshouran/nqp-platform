@@ -88,19 +88,27 @@ class TestHealthCaseDirectFKs:
         locality_fk = HealthCase._meta.get_field('locality')
         assert locality_fk.remote_field.model.__name__ == 'Locality'
 
-    def test_health_case_has_no_registry_fk(self):
-        """IQ2 — HealthCase لا يشير إلى ReportingNode أو أي نموذج سجل."""
+    def test_health_case_references_reporting_node_only(self):
+        """IQ2 — HealthCase يشير إلى reporting_node فقط — لا حقول سجل أخرى.
+
+        الأصل (M7-A2): 'no registry fields at all' — وثّق عزلة السجل.
+        أُعيدت كتابته (M7-A2b-full): reporting_node مُضاف كـ FK snapshot تاريخي
+        (nullable، بلا save()/signal) — الاختبار الأصلي تعارض مع التكامل المعتمد،
+        لكن يبقى HealthCase خالياً من أي حقل سجل آخر.
+        المرجع: backend/docs/m7-a2b-full.md
+        """
         from apps.surveillance.models import HealthCase
 
         fields = {f.name for f in HealthCase._meta.fields}
         registry_fields = {
-            'reporting_node', 'reportingnode', 'node', 'reporting_node_id',
+            'reportingnode', 'node',
             'healthfacilitynodeassignment', 'statenodeassignment',
             'localitynodeassignment', 'facilityownership',
             'technicalsupervision', 'serviceavailability',
         }
         found = fields & registry_fields
         assert not found, f'HealthCase يحتوي على حقول سجل غير متوقعة: {found}'
+        assert 'reporting_node' in fields, 'reporting_node يجب أن يكون موجوداً (M7-A2b-full)'
 
 
 @pytest.mark.django_db
@@ -137,14 +145,21 @@ class TestRegistryTraversalGap:
         assert node is not None
         assert node.kind in (ReportingNode.Kind.FACILITY, ReportingNode.Kind.LOCALITY)
 
-    def test_reporting_node_not_referenced_by_surveillance(self):
-        """IQ2 — لا نموذج ترصد يشير إلى ReportingNode مباشرة."""
+    def test_reporting_node_is_referenced_by_surveillance(self):
+        """IQ2 — HealthCase يشير إلى reporting_node (M7-A2b-full). HealthEvent لا.
+
+        الأصل (M7-A2): 'reporting_node not in fields' — وثّق العزلة.
+        أُعيدت كتابته: M7-A2b-full أضاف FK snapshot تاريخي على HealthCase
+        (يرفض save()/signal) — الاختبار الأصلي أصبح يتعارض مع التكامل المعتمد.
+        المرجع: backend/docs/m7-a2b-full.md
+        """
         from apps.surveillance.models import HealthCase, HealthEvent
 
-        for model in (HealthCase, HealthEvent):
-            fields = {f.name for f in model._meta.fields}
-            assert 'reporting_node' not in fields, f'{model.__name__} يشير إلى reporting_node'
-            assert 'reportingnode' not in fields, f'{model.__name__} يشير إلى reportingnode'
+        case_fields = {f.name for f in HealthCase._meta.fields}
+        assert 'reporting_node' in case_fields, 'HealthCase يجب أن يحوي reporting_node'
+
+        event_fields = {f.name for f in HealthEvent._meta.fields}
+        assert 'reporting_node' not in event_fields, 'HealthEvent يبقى بلا حقول سجل'
 
 
 @pytest.mark.django_db
@@ -174,16 +189,24 @@ class TestAggregationUsesDirectFK:
         # التحقق من أن التجميع ينفّذ مباشرة على sector، لا على عقدة سجل
         assert any(r['sector__name_ar'] == setup['locality'].sector.name_ar for r in by_sector)
 
-    def test_no_registry_node_path_aggregation_endpoint(self):
-        """IQ4 — لا يوجد تجميع عبر node.path في الاستعلامات الموثقة (ثبات الضبط).
-        
-        هذا اختبار“हندسي” يضمن أن التجميع الحالي لا يستخدم path.
+    def test_registry_aggregation_endpoint_exists(self):
+        """IQ4 — endpoint التجميع عبر السجل موجود (M7-A2b-full).
+
+        الأصل (M7-A2): أكد غياب تجميع عبر node.path (لا FK على HealthCase).
+        أُعيدت كتابته: M7-A2b-lite ثم M7-A2b-full أضافا
+        /api/v1/surveillance/reports/by-state/ (تجميع عبر سلف STATE من FK snapshot،
+        لا عبر node.path string — walk-up ممنوع التطلع لـ path).
+        المرجع: backend/docs/m7-a2b-full.md
         """
-        # HealthCase لا يحوي حقل node/path — التجميع عبر FKs مباشرة
+        from django.urls import reverse
+
+        url = reverse('surveillance:report-by-state')
+        assert url.startswith('/api/v1/surveillance/reports/by-state'), url
+
         from apps.surveillance.models import HealthCase
         fields = {f.name for f in HealthCase._meta.fields}
-        assert 'node_path' not in fields
-        assert 'reporting_node_id' not in fields
+        assert 'reporting_node' in fields
+        assert 'node_path' not in fields, 'node_path string aggregation يبقى مرفوضاً'
 
 
 @pytest.mark.django_db

@@ -71,6 +71,7 @@ import {
   runEwars,
   transitionCase,
 } from '../../api/endpoints/surveillance';
+import { RegistryTreeSelector, type SelectedNode } from '../../components/registry/RegistryTreeSelector';
 import type {
   ContactTraceWrite,
   HealthCase,
@@ -213,6 +214,7 @@ const SurveillanceModulePage = () => {
   const [openCreateReport, setOpenCreateReport] = useState(false);
 
   const [caseForm, setCaseForm] = useState<HealthCaseWrite>(blankCase);
+  const [selectedFacilityNode, setSelectedFacilityNode] = useState<SelectedNode | null>(null);
   const [contactForm, setContactForm] = useState<ContactTraceWrite>(blankContact);
   const [investigationForm, setInvestigationForm] = useState<InvestigationWrite>(blankInvestigation);
   const [reportForm, setReportForm] = useState<WeeklySurveillanceReportWrite>(blankReport);
@@ -336,6 +338,7 @@ const SurveillanceModulePage = () => {
       notifySuccess(t('surveillance.messages.caseRegistered'));
       setOpenCreateCase(false);
       setCaseForm(blankCase);
+      setSelectedFacilityNode(null);
       refresh();
     } catch {
       notifyError(t('surveillance.messages.caseRegisterError'));
@@ -815,11 +818,19 @@ const SurveillanceModulePage = () => {
               onChange={(v) => setCaseForm((p) => ({ ...p, port: v || null }))}
               options={[{ value: '', label: '—' }, ...entryPoints.map((e) => ({ value: e.id, label: e.name_ar }))]}
             />
-            <FormSelect
+            <RegistryTreeSelector
               label={t('surveillance.forms.healthFacility')}
-              value={caseForm.health_facility ?? ''}
-              onChange={(v) => setCaseForm((p) => ({ ...p, health_facility: v || null }))}
-              options={[{ value: '', label: '—' }, ...healthFacilities.map((h) => ({ value: h.id, label: h.name_ar }))]}
+              value={selectedFacilityNode}
+              onChange={(node) => {
+                setSelectedFacilityNode(node);
+                setCaseForm((p) => ({
+                  ...p,
+                  health_facility: node?.facilityId ?? null,
+                  reporting_node: node?.nodeId ?? null,
+                }));
+              }}
+              kindFilter={['FACILITY']}
+              size="small"
             />
           </Stack>
           <FormTextField label={t('surveillance.forms.notes')} value={caseForm.notes ?? ''} onChange={updateCaseField('notes')} multiline rows={2} />
