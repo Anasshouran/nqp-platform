@@ -1,19 +1,22 @@
-"""تقرير الترصد حسب الولاية — M7-A2b-lite (Phase 0).
+"""تقرير الترصد حسب الولاية — M7-A2b-full (FK-direct، بدل A2b-lite traversal).
 
-**لا FK، لا migration، لا `save()` sync.** العبور:
-``HealthCase.health_facility → node_assignments (النشط) → node → سلف STATE``.
+**لا save() sync، لا signal.** `reporting_node` snapshot تاريخي يُملأ صراحةً
+(UI للجديدة / أمر backfill للموجودة) ولا ينعكس عليه تغيير التعيينات اللاحق.
 
-قرارات مُعتمدة من المالك (2026-11-14):
-- **Option B (scoping):** يُستخدم `_surveillance_scope_q` القائم مع
-  `entry_links=['health_facility__entry_point']` حتى لا تُسقَط الحالات التي
-  تُسند عبر المنفذ أو القطاع أو المنشأة (شرط المصالحة).
-- **walk-up لا `path.split()`:** سلسلة `parent` هي المرجع القانوني، ولا تعتمد
-  على صيغة `path`. تعمل بوجود جذر FEDERAL أو بغيابه.
-- **كل حالة في فئة واحدة بالضبط:** matched / node_no_state / unassigned_node /
-  unassigned_facility. لا إسقاط ولا ازدواج.
+العبور:
+``HealthCase.reporting_node (FK) → سلف STATE``
+
+قرارات معتمدة (A2b-lite 2026-11-14 + A2b-full prompt):
+- **Option B (scoping):** `_surveillance_scope_q` القائم مع
+  `entry_links=['health_facility__entry_point']` حتى لا تُسقَط حالة (شرط المصالحة).
+- **الفئات (A2b-full):**
+  - matched: reporting_node NOT NULL + سلف STATE موجود
+  - node_no_state: reporting_node NOT NULL + بلا سلف STATE
+  - unassigned_facility: health_facility IS NULL
+  - unassigned_node: health_facility NOT NULL + reporting_node IS NULL
+  كل حالة في فئة واحدة بالضبط.
 """
 
-from django.db.models import Prefetch
 from django.utils.dateparse import parse_date
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
@@ -22,35 +25,45 @@ from rest_framework.response import Response
 from core.permissions import PermissionAction
 from core.utils.response import success_response
 
-from apps.registry.models import HealthFacilityNodeAssignment, ReportingNode
+from apps.registry.models import ReportingNode
 from apps.surveillance.models import HealthCase
 from apps.surveillance.serializers.reports import ByStateReportSerializer
 
 REPORT_NOTE = (
     'unassigned_facility: لا منشأة صحية للحالة. '
-    'unassigned_node: المنشأة بلا تعيين عقدة نشط. '
+    'unassigned_node: reporting_node فارغ (snapshot لم يُملأ). '
     'node_no_state: العقدة موجودة لكن بلا سلف STATE. '
     'كل حالة تُحسب في فئة واحدة بالضبط (matched + الثلاث = total).'
 )
 
 
-def _state_ancestor(node):
-    """ي ascends من العقدة حتى أول سلف من نوع STATE، أو None."""
+def _node_map():
+    """كل عقدة الشجرة في ذاكرة — استعلام واحد مهما كان عدد الحالات."""
+    return {
+        row['id']: row
+        for row in ReportingNode.objects.values(
+            'id', 'parent_id', 'kind', 'code', 'name_ar', 'name_en'
+        )
+    }
+
+
+def _state_ancestor(node_id, nodes):
+    """يصعد من العقدة حتى أول سلف STATE (أو None) من الخريطة — بلا استعلامات."""
+    current = node_id
     visited = set()
-    current = node
-    while current is not None and current.id not in visited:
-        visited.add(current.id)
-        if current.kind == ReportingNode.Kind.STATE:
-            return current
-        current = current.parent
+    while current is not None and current not in visited:
+        visited.add(current)
+        row = nodes.get(current)
+        if row is None:
+            return None
+        if row['kind'] == ReportingNode.Kind.STATE:
+            return row
+        current = row['parent_id']
     return None
 
 
 def build_by_state_report(*, user, date_from=None, date_to=None):
-    """يبني مخرجات التقرير كقاموس جاهز للتسلسل.
-
-    دالة نقية (لا HTTP) حتى تُختبر المصالحة وعدد الاستعلامات مباشرة.
-    """
+    """يبني مخرجات التقرير كقاموس جاهز للتسلسل (دالة نقية، بلا HTTP)."""
     queryset = HealthCase.objects.all()
     if date_from is not None:
         queryset = queryset.filter(reported_date__gte=date_from)
@@ -64,46 +77,35 @@ def build_by_state_report(*, user, date_from=None, date_to=None):
     if scope_q is not None:
         queryset = queryset.filter(scope_q)
 
-    active_assignments = HealthFacilityNodeAssignment.objects.filter(
-        valid_to__isnull=True
-    ).select_related('node__parent__parent')
-
-    rows = queryset.select_related('health_facility').prefetch_related(
-        Prefetch(
-            'health_facility__node_assignments',
-            queryset=active_assignments,
-            to_attr='_active_node_assignments',
-        )
-    )
+    rows = queryset.select_related('health_facility', 'reporting_node')
+    nodes = _node_map()
 
     total = matched = node_no_state = unassigned_node = unassigned_facility = 0
     buckets = {}
 
     for case in rows:
         total += 1
-        facility = case.health_facility
-        if facility is None:
-            unassigned_facility += 1
+        node_id = case.reporting_node_id
+        if node_id is None:
+            if case.health_facility_id is None:
+                unassigned_facility += 1
+            else:
+                unassigned_node += 1
             continue
 
-        assignments = getattr(facility, '_active_node_assignments', None) or []
-        if not assignments:
-            unassigned_node += 1
-            continue
-
-        state = _state_ancestor(assignments[0].node)
+        state = _state_ancestor(node_id, nodes)
         if state is None:
             node_no_state += 1
             continue
 
         matched += 1
-        bucket = buckets.get(state.id)
+        bucket = buckets.get(state['id'])
         if bucket is None:
-            bucket = buckets[state.id] = {
-                'state_id': state.id,
-                'state_code': state.code,
-                'state_name_ar': state.name_ar,
-                'state_name_en': state.name_en,
+            bucket = buckets[state['id']] = {
+                'state_id': state['id'],
+                'state_code': state['code'],
+                'state_name_ar': state['name_ar'],
+                'state_name_en': state['name_en'],
                 'count': 0,
             }
         bucket['count'] += 1

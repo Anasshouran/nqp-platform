@@ -1,13 +1,11 @@
-"""M7-A2b-lite — تقرير الترصد حسب الولاية (Phase 0).
+"""M7-A2b-full — تقرير الترصد حسب الولاية (FK-direct، خلف لـ Phase 0 lite).
 
-يثبت هذا الملف الضوابط الأربعة المعتمدة:
-1. بيانات عرض واقعية (fixtures هنا، والأمر seed_surveillance_testcases للـ dev).
-2. تجميع بـ ancestry (walk-up) لا يعتمد على وجود جذر FEDERAL.
+يثبت هذا الملف الضوابط المعتمدة:
+1. بيانات واقعية (fixtures هنا، والأمر seed_surveillance_testcases للـ dev).
+2. تجميع عبر `reporting_node` FK + سلف STATE (walk-up من خريطة، بلا path string).
 3. المصالحة: كل حالة في فئة واحدة بالضبط.
 4. لا N+1: عدد الاستعلامات ثابت مهما كان عدد الحالات.
-
-**لا FK ولا migration:** اختبار الانحدار الأخير يثبت أن HealthCase ما زال بلا
-`reporting_node` (حالة M7-A2 محفوظة).
+5. snapshot تاريخي: FK يُملأ صراحةً، لا save()/signal sync.
 """
 
 import datetime
@@ -79,13 +77,14 @@ def _facility_without_assignment(tag):
     return HealthFacility.objects.create(code=f'FAC_NA_{tag}_{uid}', name_ar=f'منشأة بلا تعيين {tag}')
 
 
-def _case(*, facility=None, port=None, reported_date=None, tag='C'):
+def _case(*, facility=None, port=None, reported_date=None, tag='C', reporting_node=None):
     uid = _uid()
     return HealthCase.objects.create(
         case_number=f'CASE_{tag}_{uid}',
         health_facility=facility,
         port=port,
         reported_date=reported_date or timezone.localdate(),
+        reporting_node=reporting_node,
     )
 
 
@@ -123,7 +122,8 @@ def _scoped_user(state, resource='surveillance'):
 def test_matched_count():
     world = _world('A')
     for _ in range(3):
-        _case(facility=world['facility'], port=world['entry_point'])
+        _case(facility=world['facility'], port=world['entry_point'],
+              reporting_node=world['facility_node'])
 
     report = build_by_state_report(user=_superuser())
 
@@ -139,7 +139,8 @@ def test_matched_count():
 
 def test_reconciliation_equality():
     world = _world('A')
-    matched = _case(facility=world['facility'], port=world['entry_point'])
+    matched = _case(facility=world['facility'], port=world['entry_point'],
+                    reporting_node=world['facility_node'])
     _case(facility=None)
     _case(facility=_facility_without_assignment('A'))
 
@@ -153,12 +154,13 @@ def test_reconciliation_equality():
         facility=orphan_facility, node=orphan_locality,
         valid_from=datetime.date(2020, 1, 1), is_primary=True,
     )
-    _case(facility=orphan_facility)
+    _case(facility=orphan_facility, reporting_node=orphan_locality)
 
     # حالة خارج نطاق التاريخ — يجب ألا تُحسب.
     _case(
         facility=world['facility'],
         reported_date=timezone.localdate() - datetime.timedelta(days=400),
+        reporting_node=world['facility_node'],
     )
 
     report = build_by_state_report(
@@ -218,9 +220,12 @@ def test_unassigned_node():
 def test_by_state_grouping():
     world_a = _world('A')
     world_b = _world('B')
-    _case(facility=world_a['facility'], port=world_a['entry_point'])
-    _case(facility=world_a['facility'], port=world_a['entry_point'])
-    _case(facility=world_b['facility'], port=world_b['entry_point'])
+    _case(facility=world_a['facility'], port=world_a['entry_point'],
+          reporting_node=world_a['facility_node'])
+    _case(facility=world_a['facility'], port=world_a['entry_point'],
+          reporting_node=world_a['facility_node'])
+    _case(facility=world_b['facility'], port=world_b['entry_point'],
+          reporting_node=world_b['facility_node'])
 
     report = build_by_state_report(user=_superuser())
 
@@ -242,14 +247,16 @@ def test_no_n_plus_1(django_assert_num_queries):
 
     world = _world('A')
     user = _superuser()
-    _case(facility=world['facility'], port=world['entry_point'])
+    _case(facility=world['facility'], port=world['entry_point'],
+          reporting_node=world['facility_node'])
 
     with CaptureQueriesContext(connection) as one_case:
         build_by_state_report(user=user)
     one_case_queries = len(one_case)
 
     for _ in range(49):
-        _case(facility=world['facility'], port=world['entry_point'])
+        _case(facility=world['facility'], port=world['entry_point'],
+              reporting_node=world['facility_node'])
 
     with django_assert_num_queries(one_case_queries):
         report = build_by_state_report(user=user)
@@ -265,9 +272,11 @@ def test_no_n_plus_1(django_assert_num_queries):
 def test_scoped_user_sees_subset():
     world_a = _world('A')
     world_b = _world('B')
-    _case(facility=world_a['facility'], port=world_a['entry_point'])   # matched عبر المنشأة
+    _case(facility=world_a['facility'], port=world_a['entry_point'],
+          reporting_node=world_a['facility_node'])                  # matched عبر الـ FK
     _case(facility=None, port=world_a['entry_point'])                  # بلا منشأة، لكن منفذها في النطاق
-    _case(facility=world_b['facility'], port=world_b['entry_point'])   # ولاية أخرى — مستبعدة
+    _case(facility=world_b['facility'], port=world_b['entry_point'],
+          reporting_node=world_b['facility_node'])   # ولاية أخرى — مستبعدة
 
     report = build_by_state_report(user=_scoped_user(world_a['state']))
 
@@ -285,8 +294,10 @@ def test_scoped_user_sees_subset():
 def test_global_user_sees_all():
     world_a = _world('A')
     world_b = _world('B')
-    _case(facility=world_a['facility'], port=world_a['entry_point'])
-    _case(facility=world_b['facility'], port=world_b['entry_point'])
+    _case(facility=world_a['facility'], port=world_a['entry_point'],
+          reporting_node=world_a['facility_node'])
+    _case(facility=world_b['facility'], port=world_b['entry_point'],
+          reporting_node=world_b['facility_node'])
 
     report = build_by_state_report(user=_superuser())
 
@@ -311,14 +322,72 @@ def test_empty_report():
 
 
 # ==============================================================================
-# 10) انحدار M7-A2 — الحقل الغائب يبقى غائباً (لا FK، لا migration)
+# 10) انحدار — التكامل موجود (M7-A2b-full) مع بقاء node_path مرفوضاً
 # ==============================================================================
 
-def test_audit_tests_still_green():
+def test_health_case_references_reporting_node():
     from apps.surveillance.models import HealthEvent
 
-    for model in (HealthCase, HealthEvent):
-        fields = {f.name for f in model._meta.fields}
-        assert 'reporting_node' not in fields
-        assert 'reporting_node_id' not in fields
-        assert 'node_path' not in fields
+    case_fields = {f.name for f in HealthCase._meta.fields}
+    assert 'reporting_node' in case_fields
+
+    event_fields = {f.name for f in HealthEvent._meta.fields}
+    assert 'reporting_node' not in event_fields
+
+    assert 'node_path' not in case_fields
+
+
+# ==============================================================================
+# 11) matched يتطلب reporting_node — الـ FK هو مصدر الحقيقة (لا التعيين)
+# ==============================================================================
+
+def test_fk_set_counts_in_matched():
+    world = _world('A')
+
+    _case(facility=world['facility'], port=world['entry_point'],
+          reporting_node=world['facility_node'])
+
+    report = build_by_state_report(user=_superuser())
+
+    assert report['total'] == 1
+    assert report['matched'] == 1
+    assert report['unassigned_node'] == 0
+    assert report['by_state'][0]['state_code'] == world['state_node'].code
+
+
+# ==============================================================================
+# 12) reporting_node=NULL مع منشأة → unassigned_node (snapshot لم يُملأ)
+# ==============================================================================
+
+def test_fk_null_with_facility_falls_to_unassigned_node():
+    world = _world('A')
+
+    _case(facility=world['facility'], port=world['entry_point'])   # FK=NULL عمداً
+
+    report = build_by_state_report(user=_superuser())
+
+    assert report['total'] == 1
+    assert report['matched'] == 0
+    assert report['unassigned_node'] == 1
+    assert report['unassigned_facility'] == 0
+
+
+# ==============================================================================
+# 13) FK direct، لا assignment traversal — حذف التعيين لا يُسقط الحالة من matched
+# ==============================================================================
+
+def test_endpoint_uses_fk_not_traversal():
+    world = _world('A')
+
+    _case(facility=world['facility'], port=world['entry_point'],
+          reporting_node=world['facility_node'])
+
+    # احذف التعيين النشط — مع traversal كانت الحالة ستسقط إلى unassigned_node
+    world['facility'].node_assignments.filter(valid_to__isnull=True).delete()
+
+    report = build_by_state_report(user=_superuser())
+
+    assert report['total'] == 1
+    assert report['matched'] == 1, 'FK هو المصدر — حذف التعيين لا ينعكس'
+    assert report['unassigned_node'] == 0
+    assert report['reconciliation_ok'] is True
