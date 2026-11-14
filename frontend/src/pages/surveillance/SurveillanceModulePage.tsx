@@ -99,16 +99,6 @@ interface Locality {
   sector: string;
 }
 
-interface HealthFacility {
-  id: string;
-  code: string;
-  name_ar: string;
-  name_en: string;
-  kind: string;
-  locality: string | null;
-  sector: string | null;
-}
-
 interface ContactRow {
   id: string;
   contact_number: string;
@@ -143,8 +133,6 @@ const listSectors = getSectors;
 const listEntryPoints = (params?: Record<string, unknown>) => getMasterEntryPoints(params);
 const listLocalities = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<Locality>>>('/organization/localities/', { params });
-const listHealthFacilities = (params?: Record<string, unknown>) =>
-  apiClient.get<ApiResponse<PaginatedResponse<HealthFacility>>>('/master-data/health-facilities/', { params });
 
 const todayArabic = () =>
   new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -206,7 +194,6 @@ const SurveillanceModulePage = () => {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [localities, setLocalities] = useState<Locality[]>([]);
   const [entryPoints, setEntryPoints] = useState<MasterEntryPoint[]>([]);
-  const [healthFacilities, setHealthFacilities] = useState<HealthFacility[]>([]);
 
   const [openCreateCase, setOpenCreateCase] = useState(false);
   const [openCreateContact, setOpenCreateContact] = useState(false);
@@ -215,6 +202,7 @@ const SurveillanceModulePage = () => {
 
   const [caseForm, setCaseForm] = useState<HealthCaseWrite>(blankCase);
   const [selectedFacilityNode, setSelectedFacilityNode] = useState<SelectedNode | null>(null);
+  const [selectedReportFacilityNode, setSelectedReportFacilityNode] = useState<SelectedNode | null>(null);
   const [contactForm, setContactForm] = useState<ContactTraceWrite>(blankContact);
   const [investigationForm, setInvestigationForm] = useState<InvestigationWrite>(blankInvestigation);
   const [reportForm, setReportForm] = useState<WeeklySurveillanceReportWrite>(blankReport);
@@ -250,12 +238,11 @@ const SurveillanceModulePage = () => {
 
   useEffect(() => {
     refresh();
-    Promise.all([listSectors(), listLocalities(), listEntryPoints(), listHealthFacilities()])
-      .then(([s, l, e, h]) => {
+    Promise.all([listSectors(), listLocalities(), listEntryPoints()])
+      .then(([s, l, e]) => {
         setSectors(s.data.data.results);
         setLocalities(l.data.data.results);
         setEntryPoints(e.data.data.results);
-        setHealthFacilities(h.data.data.results);
       })
       .catch(() => undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -400,6 +387,7 @@ const SurveillanceModulePage = () => {
       notifySuccess(t('surveillance.messages.weeklyReportSubmitted'));
       setOpenCreateReport(false);
       setReportForm(blankReport);
+      setSelectedReportFacilityNode(null);
       refresh();
     } catch {
       notifyError(t('surveillance.messages.weeklyReportSubmitError'));
@@ -894,7 +882,10 @@ const SurveillanceModulePage = () => {
         open={openCreateReport}
         title={t('surveillance.reports.weeklyTitle')}
         subtitle={t('surveillance.reports.weeklySubtitle')}
-        onClose={() => setOpenCreateReport(false)}
+        onClose={() => {
+          setOpenCreateReport(false);
+          setSelectedReportFacilityNode(null);
+        }}
         onSubmit={onCreateReport}
         loading={submitting}
         maxWidth="md"
@@ -905,11 +896,18 @@ const SurveillanceModulePage = () => {
             <FormTextField label={t('surveillance.forms.periodEnd')} type="date" required value={reportForm.period_end} onChange={(e) => setReportForm((p) => ({ ...p, period_end: e.target.value }))} />
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormSelect
+            <RegistryTreeSelector
               label={t('surveillance.forms.healthFacility')}
-              value={reportForm.health_facility ?? ''}
-              onChange={(v) => setReportForm((p) => ({ ...p, health_facility: v || null }))}
-              options={[{ value: '', label: '—' }, ...healthFacilities.map((h) => ({ value: h.id, label: h.name_ar }))]}
+              value={selectedReportFacilityNode}
+              onChange={(node) => {
+                setSelectedReportFacilityNode(node);
+                setReportForm((p) => ({
+                  ...p,
+                  health_facility: node?.facilityId ?? null,
+                }));
+              }}
+              kindFilter={['FACILITY']}
+              size="small"
             />
             <FormSelect
               label={t('surveillance.forms.entryPoint')}
