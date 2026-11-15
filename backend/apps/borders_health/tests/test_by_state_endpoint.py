@@ -53,7 +53,7 @@ def _build_hierarchy():
     StateNodeAssignment.objects.create(
         state=ep.state, node=state_node, valid_from=timezone.now().date(), valid_to=None,
     )
-    return {'state': state, 'state_node': state_node, 'node': state_node, 'facility': fac, 'ep': ep}
+    return {'state': state, 'state_node': state_node, 'node': state_node, 'crossing': crossing, 'facility': fac, 'ep': ep}
 
 
 @pytest.mark.django_db
