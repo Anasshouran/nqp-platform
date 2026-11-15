@@ -168,3 +168,29 @@ Infrastructure without an adoption signal is a **bet on future use**. The bet is
 **Blocked gate:** Q7 — staging/prod backfill + activation remains blocked on VPS access.
 
 **Next decision:** Evaluate adoption metrics after Q7. If positive → consider expanding to other apps (Phase 1-3 pattern). If not → this pilot remains a single-app integration; ADR §Lessons applies.
+
+---
+
+## Update 2026-11-14 (A2c Discovery, PR #198)
+
+**Owner decision:** Defer A2c (6-app expansion) until Q7 shows surveillance adoption signal.
+
+### A2c Discovery — Read-Only Audit of 6 Apps
+
+- `laboratory`, `vector_control`, `hr`, `borders_health`, `screening`, `vaccination`
+- **Result: all 6 have 0 dev rows** — no adoption signal in dev environment
+- `surveillance` (baseline): 50 dev rows (A2b-full pilot)
+- Audit tests affected: **0** across all 6 apps
+
+### Recommendation
+
+**Skip A2c entirely until Q7.** The decisive criterion (dev rows > 0 AND frontend routes > 0) is not met by any of the 6 apps.
+- `laboratory` + `vector_control`: viable FK path (M6-bis `facility`) but 0 dev rows → defer
+- `hr` + `borders_health`: design needed (entry_point only / complex model) + 0 dev rows → defer
+- `screening` + `vaccination`: incompatible / low value + 0 dev rows → skip
+
+Full status: `docs/architecture-status.md`.
+
+### Status
+
+**M7-A2c: CLOSED (deferred pending Q7).** No further A2c investment without a surveillance adoption signal.
