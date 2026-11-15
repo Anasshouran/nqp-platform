@@ -156,7 +156,7 @@ class TestLabSampleReportingNodeFK:
             code=f'FAC_NODE2_LS_{_uid()}', name_ar='عقدة ثانية', kind='FACILITY', parent=ctx['state_node'],
         )
         HealthFacilityNodeAssignment.objects.create(
-            facility=ctx['facility'], node=node2, valid_from=timezone.now() + timedelta(seconds=1), valid_to=None,
+            facility=ctx['facility'], node=node2, valid_from=timezone.now().date() + timedelta(days=1), valid_to=None,
         )
         sample = LabSample.objects.create(
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
