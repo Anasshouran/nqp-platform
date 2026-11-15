@@ -42,9 +42,7 @@ def _build_hierarchy():
     fac = HealthFacility.objects.create(
         code=f'FAC_HR_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc, entry_point=ep,
     )
-    root = ReportingNode.objects.create(
-        code=f'ROOT_HR_{_uid()}', name_ar='جذر', kind='FEDERAL',
-    )
+    root = _get_root_node()
     state_node = ReportingNode.objects.create(
         code=f'STATE_HR_{_uid()}', name_ar='ولاية اختبار', kind='STATE', parent=root,
     )
