@@ -27,7 +27,7 @@ def _build_hierarchy():
     """ybni state→locality→entry_point→health_facility للاختبار."""
     md = MasterdataSector.objects.create(code=f'MD_OA_{_uid()}', name_ar='قطاع')
     org = OrgSector.objects.create(code=f'ORG_OA_{_uid()}', name_ar='قطاع إداري')
-    state = State.objects.create(code=f'ST_OA_{_uid()}', name_ar=f'ولاية {_uid()}', sector=org)
+    state = State.objects.create(code=f'ST_OA_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
     loc = Locality.objects.create(code=f'LOC_OA_{_uid()}', name_ar=f'محلية {_uid()}', sector=org)
     ep = EntryPoint.objects.create(
         code=f'EP_OA_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
