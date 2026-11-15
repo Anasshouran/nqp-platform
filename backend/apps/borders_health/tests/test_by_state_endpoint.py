@@ -34,10 +34,10 @@ def _build_hierarchy():
         code=f'EP_BS_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
     )
     crossing = BorderCrossing.objects.create(
-        code=f'BC_BS_{_uid()}', name_ar=f'معبر {_uid()}', entry_point=ep,
+        entry_point=ep,
     )
     fac = HealthFacility.objects.create(
-        code=f'FAC_BS_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc, entry_point=ep,
+        code=f'FAC_BS_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc,
     )
     root = ReportingNode.objects.create(
         code=f'ROOT_BS_{_uid()}', name_ar='جذر', kind='FEDERAL',
