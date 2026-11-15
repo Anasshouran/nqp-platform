@@ -43,7 +43,7 @@ class VectorUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VectorUnit
-        fields = ['id', 'code', 'name_ar', 'kind', 'kind_display', 'sector', 'sector_name', 'description', 'is_active']
+        fields = ['id', 'code', 'name_ar', 'kind', 'kind_display', 'sector', 'sector_name', 'description', 'is_active', 'facility', 'reporting_node']
         read_only_fields = ['id']
 
 

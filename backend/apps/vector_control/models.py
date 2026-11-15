@@ -133,6 +133,15 @@ class VectorUnit(BaseModel):
         verbose_name='المنشأة الصحية',
         help_text='المنشأة المرتبطة بالوحدة (M6-bis، D-M5-C-F-3)',
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vector_units',
+        verbose_name='عقدة الإبلاغ',
+        help_text='اللحظة التنظيمية عند التسجيل (لحظة). لا مزامنة.',
+    )
     description = models.TextField(blank=True, verbose_name='الوصف')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
 
