@@ -194,3 +194,29 @@ Full status: `docs/architecture-status.md`.
 ### Status
 
 **M7-A2c: CLOSED (deferred pending Q7).** No further A2c investment without a surveillance adoption signal.
+
+---
+
+## Update 2026-11-15 (A2c-1, PR #201)
+
+**Owner decision:** Extend registry integration to laboratory + vector_control (deliberate override of A2c Discovery skip recommendation).
+
+### Delivered
+
+- `LabSample.reporting_node` FK (nullable, SET_NULL, no save sync)
+- `VectorUnit.reporting_node` FK (nullable, SET_NULL, no save sync)
+- 2 migrations (AddField only, rollback verified)
+- Serializers: `reporting_node` in List + Write (E3 fix)
+- 2 backfill commands (`--dry-run`, `--limit`, ambiguous → NULL)
+- `GET /api/v1/laboratory/reports/by-state/` + `GET /api/v1/vector-control/reports/by-state/`
+- Reconciliation: `total == matched + node_no_state + unassigned_facility + unassigned_node`
+- 26 new tests (20 FK/backfill + 6 endpoint)
+
+### Adoption Measurement
+
+Deferred to Q7 — both apps have 0 dev rows, no UI forms, no usage signal.
+
+### Value
+
+0 until Q7 shows demand. Rollback safe (DROP COLUMN on both migrations).
+

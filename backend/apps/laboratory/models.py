@@ -315,6 +315,15 @@ class LabSample(BaseModel):
         verbose_name='المنشأة الصحية',
         help_text='المنشأة المرتبطة بالعينة (M6-bis، D-M5-C-F-3)',
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='lab_samples',
+        verbose_name='عقدة الإبلاغ',
+        help_text='اللحظة التنظيمية عند التسجيل (لحظة). لا مزامنة.',
+    )
     collector = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
