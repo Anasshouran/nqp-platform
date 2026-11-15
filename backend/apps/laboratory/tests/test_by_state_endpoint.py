@@ -19,7 +19,7 @@ def _uid():
 
 def _make_user():
     User = get_user_model()
-    return User.objects.create_user(
+    return User.objects.create_superuser(
         username=f'test_{_uid()}', email=f'test_{_uid()}@example.com', password='testpass'
     )
 

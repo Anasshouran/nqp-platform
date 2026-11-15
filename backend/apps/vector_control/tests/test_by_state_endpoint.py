@@ -18,7 +18,7 @@ def _uid():
 
 def _make_user():
     User = get_user_model()
-    return User.objects.create_user(
+    return User.objects.create_superuser(
         username=f'test_{_uid()}', email=f'test_{_uid()}@example.com', password='testpass'
     )
 
@@ -31,17 +31,17 @@ def _get_root_node():
 
 
 def _build_hierarchy():
-    root = _get_root_node()
-    md = MasterdataSector.objects.create(code=f'MD_BS_VU_{_uid()}', name_ar='قطاع')
-    org = OrgSector.objects.create(code=f'ORG_BS_VU_{_uid()}', name_ar='قطاع إداري')
-    state = State.objects.create(code=f'ST_BS_VU_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
-    loc = Locality.objects.create(code=f'LOC_BS_VU_{_uid()}', name_ar=f'محلية {_uid()}', sector=org)
+    md_sector = MasterdataSector.objects.create(code=f'MD_BS_VU_{_uid()}', name_ar='قطاع')
+    org_sector = OrgSector.objects.create(code=f'ORG_BS_VU_{_uid()}', name_ar='قطاع إداري')
+    state = State.objects.create(code=f'ST_BS_VU_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md_sector)
+    loc = Locality.objects.create(code=f'LOC_BS_VU_{_uid()}', name_ar=f'محلية {_uid()}', sector=org_sector)
     ep = EntryPoint.objects.create(
-        code=f'EP_BS_VU_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
+        code=f'EP_BS_VU_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org_sector, locality=loc,
     )
     fac = HealthFacility.objects.create(
-        code=f'FAC_BS_VU_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc, entry_point=ep,
+        code=f'FAC_BS_VU_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org_sector, locality=loc, entry_point=ep,
     )
+    root = _get_root_node()
     state_node = ReportingNode.objects.create(
         code=f'STATE_BS_VU_{_uid()}', name_ar='ولاية اختبار', kind='STATE', parent=root,
     )
@@ -51,7 +51,7 @@ def _build_hierarchy():
     HealthFacilityNodeAssignment.objects.create(
         facility=fac, node=node, valid_from=timezone.now(), valid_to=None,
     )
-    return {'state': state, 'state_node': state_node, 'node': node, 'facility': fac, 'ep': ep, 'sector': md}
+    return {'state': state, 'state_node': state_node, 'node': node, 'facility': fac, 'ep': ep, 'sector': org_sector}
 
 
 @pytest.mark.django_db

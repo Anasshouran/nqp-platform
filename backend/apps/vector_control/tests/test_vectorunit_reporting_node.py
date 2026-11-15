@@ -17,15 +17,15 @@ def _uid():
 
 def _build_hierarchy():
     """ybni state→locality→entry_point→health_facility للاختبار."""
-    md = MasterdataSector.objects.create(code=f'MD_VU_{_uid()}', name_ar='قطاع')
-    org = OrgSector.objects.create(code=f'ORG_VU_{_uid()}', name_ar='قطاع إداري')
-    state = State.objects.create(code=f'ST_VU_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
-    loc = Locality.objects.create(code=f'LOC_VU_{_uid()}', name_ar=f'محلية {_uid()}', sector=org)
+    md_sector = MasterdataSector.objects.create(code=f'MD_VU_{_uid()}', name_ar='قطاع')
+    org_sector = OrgSector.objects.create(code=f'ORG_VU_{_uid()}', name_ar='قطاع إداري')
+    state = State.objects.create(code=f'ST_VU_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md_sector)
+    loc = Locality.objects.create(code=f'LOC_VU_{_uid()}', name_ar=f'محلية {_uid()}', sector=org_sector)
     ep = EntryPoint.objects.create(
-        code=f'EP_VU_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
+        code=f'EP_VU_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org_sector, locality=loc,
     )
     fac = HealthFacility.objects.create(
-        code=f'FAC_VU_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc, entry_point=ep,
+        code=f'FAC_VU_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org_sector, locality=loc, entry_point=ep,
     )
     root = ReportingNode.objects.create(
         code=f'ROOT_VU_{_uid()}', name_ar='جذر اختبار', kind='FEDERAL',
@@ -39,7 +39,7 @@ def _build_hierarchy():
     HealthFacilityNodeAssignment.objects.create(
         facility=fac, node=node, valid_from=timezone.now(), valid_to=None,
     )
-    return {'facility': fac, 'node': node, 'state_node': state_node, 'sector': md}
+    return {'facility': fac, 'node': node, 'state_node': state_node, 'sector': org_sector}
 
 
 @pytest.mark.django_db
@@ -50,7 +50,6 @@ class TestVectorUnitReportingNodeFK:
         """IQ1 — reporting_node nullable، الافتراضي NULL."""
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
-            sector=ctx['sector'],
         )
         assert unit.reporting_node is None
 
