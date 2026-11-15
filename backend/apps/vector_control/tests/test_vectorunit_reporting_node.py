@@ -48,8 +48,10 @@ class TestVectorUnitReportingNodeFK:
 
     def test_reporting_node_nullable_default(self):
         """IQ1 — reporting_node nullable، الافتراضي NULL."""
+        ctx = _build_hierarchy()
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
+            sector=ctx['sector'],
         )
         assert unit.reporting_node is None
 
@@ -78,7 +80,7 @@ class TestVectorUnitReportingNodeFK:
         assert unit.reporting_node_id == ctx['node'].id
 
     def test_set_null_on_facility_delete(self):
-        """IQ4 — SET_NULL عند حذف المنشأة."""
+        """IQ4 — SET_NULL عند حذف المنشأة (facility_id يُNull، reporting_node مستقل)."""
         ctx = _build_hierarchy()
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
@@ -87,7 +89,8 @@ class TestVectorUnitReportingNodeFK:
         )
         ctx['facility'].delete()
         unit.refresh_from_db()
-        assert unit.reporting_node_id is None
+        assert unit.facility_id is None  # SET_NULL on facility
+        assert unit.reporting_node_id == ctx['node'].id  # reporting_node غير متأثر (مستقل)
 
     def test_serializer_includes_reporting_node(self):
         """IQ5 — السيالير يتضمن reporting_node (قراءة + كتابة)."""
@@ -99,7 +102,7 @@ class TestVectorUnitReportingNodeFK:
             sector=ctx['sector'],
         )
         data = VectorUnitSerializer(unit).data
-        assert data['reporting_node'] == str(ctx['node'].id)
+        assert data['reporting_node'] == ctx['node'].id  # UUID object, not string
 
     def test_backfill_dry_run_no_change(self):
         """IQ6 — dry-run لا يغير أي شيء."""
@@ -150,6 +153,7 @@ class TestVectorUnitReportingNodeFK:
 
     def test_backfill_unassigned_null(self):
         """IQ9 — لا تعيين → NULL."""
+        ctx = _build_hierarchy()
         fac_no_assign = HealthFacility.objects.create(
             code=f'FAC_NO_VU_{_uid()}', name_ar='منشأة بلا تعيين', sector=None, locality=None, entry_point=None,
         )
