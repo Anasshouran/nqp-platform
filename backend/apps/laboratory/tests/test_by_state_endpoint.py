@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.test import override_settings
 from rest_framework.test import APIClient
 
@@ -13,6 +14,11 @@ from apps.masterdata.models import State
 
 def _uid():
     return uuid.uuid4().hex[:8]
+
+
+def _make_user():
+    User = get_user_model()
+    return User.objects.create_user(username=f'test_{_uid()}', password='testpass')
 
 
 def _build_hierarchy():
@@ -48,6 +54,7 @@ class TestLabSampleByStateEndpoint:
     def test_empty_report(self):
         """IQ1 — تقرير فارغ: total=0، by_state=[]."""
         client = APIClient()
+        client.force_authenticate(user=_make_user())
         resp = client.get('/api/v1/laboratory/reports/by-state/')
         assert resp.status_code == 200
         data = resp.data['data']
@@ -58,6 +65,7 @@ class TestLabSampleByStateEndpoint:
     def test_matched_grouping_two_states(self):
         """IQ2 — تجميع عينات بوليتين."""
         client = APIClient()
+        client.force_authenticate(user=_make_user())
         ctx1 = _build_hierarchy()
         ctx2 = _build_hierarchy()
         # عينتان في الولاية الأولى
@@ -95,6 +103,7 @@ class TestLabSampleByStateEndpoint:
     def test_reconciliation(self):
         """IQ3 — التوفيق: total == matched + node_no_state + unassigned_facility + unassigned_node."""
         client = APIClient()
+        client.force_authenticate(user=_make_user())
         ctx = _build_hierarchy()
         # عينتان مبلغة
         LabSample.objects.create(
