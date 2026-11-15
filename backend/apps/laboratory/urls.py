@@ -18,6 +18,7 @@ from .views import (
     SampleTestViewSet,
     StorageLocationViewSet,
 )
+from .reports import LabSampleByStateReportView
 
 router = DefaultRouter()
 router.register('samples', LabSampleViewSet, basename='sample')
@@ -37,5 +38,6 @@ router.register('diseases', DiseaseViewSet, basename='disease')
 router.register('users', LabUserViewSet, basename='lab-user')
 
 urlpatterns = [
+    path('reports/by-state/', LabSampleByStateReportView.as_view(), name='labsample-by-state'),
     path('', include(router.urls)),
 ]

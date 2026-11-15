@@ -24,6 +24,7 @@ from .views import (
     VectorTeamViewSet,
     VectorUnitViewSet,
 )
+from .reports import VectorUnitByStateReportView
 
 router = DefaultRouter()
 router.register('units', VectorUnitViewSet, basename='vector-unit')
@@ -49,5 +50,6 @@ router.register('audit-logs', VectorAuditLogViewSet, basename='vector-audit-log'
 router.register('dashboard', VectorControlDashboardViewSet, basename='vector-dashboard')
 
 urlpatterns = [
+    path('reports/by-state/', VectorUnitByStateReportView.as_view(), name='vectorunit-by-state'),
     path('', include(router.urls)),
 ]
