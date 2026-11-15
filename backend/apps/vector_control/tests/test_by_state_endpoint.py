@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 
 from apps.vector_control.models import VectorUnit
 from apps.registry.models import ReportingNode, HealthFacilityNodeAssignment
+from django.utils import timezone
 from apps.masterdata.models import EntryPoint, HealthFacility, Sector as MasterdataSector
 from apps.organization.models import Sector as OrgSector, Locality
 from apps.masterdata.models import State
@@ -43,7 +44,7 @@ def _build_hierarchy():
         code=f'FAC_NODE_BS_VU_{_uid()}', name_ar='عقدة منشأة', kind='FACILITY', parent=state_node,
     )
     HealthFacilityNodeAssignment.objects.create(
-        facility=fac, node=node, valid_from=None, valid_to=None,
+        facility=fac, node=node, valid_from=timezone.now(), valid_to=None,
     )
     return {'state': state, 'state_node': state_node, 'node': node, 'facility': fac, 'ep': ep}
 

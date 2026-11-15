@@ -6,6 +6,7 @@ from django.db import models
 
 from apps.laboratory.models import LabSample
 from apps.registry.models import ReportingNode, HealthFacilityNodeAssignment
+from django.utils import timezone
 from apps.masterdata.models import EntryPoint, HealthFacility, Sector as MasterdataSector
 from apps.organization.models import Sector as OrgSector, Locality
 from apps.masterdata.models import State
@@ -44,7 +45,7 @@ def _build_hierarchy():
         code=f'FAC_NODE_LS_{_uid()}', name_ar='عقدة منشأة اختبار', kind='FACILITY', parent=state_node,
     )
     HealthFacilityNodeAssignment.objects.create(
-        facility=fac, node=node, valid_from=None, valid_to=None,
+        facility=fac, node=node, valid_from=timezone.now(), valid_to=None,
     )
     return {'facility': fac, 'node': node, 'state_node': state_node}
 
@@ -153,7 +154,7 @@ class TestLabSampleReportingNodeFK:
             code=f'FAC_NODE2_LS_{_uid()}', name_ar='عقدة ثانية', kind='FACILITY', parent=ctx['state_node'],
         )
         HealthFacilityNodeAssignment.objects.create(
-            facility=ctx['facility'], node=node2, valid_from=None, valid_to=None,
+            facility=ctx['facility'], node=node2, valid_from=timezone.now(), valid_to=None,
         )
         sample = LabSample.objects.create(
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
