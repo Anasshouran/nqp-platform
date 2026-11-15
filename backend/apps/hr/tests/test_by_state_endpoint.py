@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 
 from apps.organization.models import OrgAssignment
 from apps.registry.models import ReportingNode, HealthFacilityNodeAssignment
-from apps.masterdata.models import HealthFacility, Sector as MasterdataSector
+from apps.masterdata.models import EntryPoint, HealthFacility, Sector as MasterdataSector
 from apps.organization.models import Sector as OrgSector, Locality
 from apps.masterdata.models import State
 
@@ -25,9 +25,9 @@ def _make_user():
 def _build_hierarchy():
     md = MasterdataSector.objects.create(code=f'MD_HR_{_uid()}', name_ar='قطاع')
     org = OrgSector.objects.create(code=f'ORG_HR_{_uid()}', name_ar='قطاع إداري')
-    state = State.objects.create(code=f'ST_HR_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
+    state = State.objects.create(code=f'ST_HR_{_uid()}', name_ar=f'ولاية {_uid()}', sector=org)
     loc = Locality.objects.create(code=f'LOC_HR_{_uid()}', name_ar=f'محلية {_uid()}', sector=org)
-    ep = State.objects.create(
+    ep = EntryPoint.objects.create(
         code=f'EP_HR_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
     )
     fac = HealthFacility.objects.create(
