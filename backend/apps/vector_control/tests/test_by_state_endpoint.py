@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 
 from apps.vector_control.models import VectorUnit
 from apps.registry.models import ReportingNode, HealthFacilityNodeAssignment
-from apps.masterdata.models import HealthFacility, Sector as MasterdataSector
+from apps.masterdata.models import EntryPoint, HealthFacility, Sector as MasterdataSector
 from apps.organization.models import Sector as OrgSector, Locality
 from apps.masterdata.models import State
 
@@ -27,7 +27,7 @@ def _build_hierarchy():
     org = OrgSector.objects.create(code=f'ORG_BS_VU_{_uid()}', name_ar='قطاع إداري')
     state = State.objects.create(code=f'ST_BS_VU_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
     loc = Locality.objects.create(code=f'LOC_BS_VU_{_uid()}', name_ar=f'محلية {_uid()}', sector=org)
-    ep = HealthFacility.objects.create(
+    ep = EntryPoint.objects.create(
         code=f'EP_BS_VU_{_uid()}', name_ar=f'منفذ {_uid()}', state=state, sector=org, locality=loc,
     )
     fac = HealthFacility.objects.create(
