@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from apps.laboratory.models import LabSample
@@ -12,6 +13,13 @@ from apps.masterdata.models import State
 
 def _uid():
     return uuid.uuid4().hex[:8]
+
+
+def _make_collector():
+    User = get_user_model()
+    return User.objects.create_user(
+        username=f'collector_{_uid()}', email=f'collector_{_uid()}@example.com', password='testpass'
+    )
 
 
 def _build_hierarchy():
@@ -50,6 +58,7 @@ class TestLabSampleReportingNodeFK:
         sample = LabSample.objects.create(
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
+            collector=_make_collector(),
         )
         assert sample.reporting_node is None
 
@@ -60,6 +69,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         assert sample.reporting_node_id == ctx['node'].id
 
@@ -70,6 +80,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         # تغيير التعيين في HealthFacilityNodeAssignment لا يجب أن يؤثر على sample मौجد
         HealthFacilityNodeAssignment.objects.filter(
@@ -85,6 +96,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         ctx['facility'].delete()
         sample.refresh_from_db()
@@ -98,6 +110,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         data = LabSampleSerializer(sample).data
         assert data['reporting_node'] == str(ctx['node'].id)
@@ -109,6 +122,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'],
+            collector=_make_collector(),
         )
         from django.core.management import call_command
         from io import StringIO
@@ -124,6 +138,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'],
+            collector=_make_collector(),
         )
         from django.core.management import call_command
         call_command('backfill_labsample_reporting_node')
@@ -144,6 +159,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'],
+            collector=_make_collector(),
         )
         from django.core.management import call_command
         call_command('backfill_labsample_reporting_node')
@@ -159,6 +175,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=fac_no_assign,
+            collector=_make_collector(),
         )
         from django.core.management import call_command
         call_command('backfill_labsample_reporting_node')
@@ -175,6 +192,7 @@ class TestLabSampleReportingNodeFK:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=other_node,
+            collector=_make_collector(),
         )
         from django.core.management import call_command
         call_command('backfill_labsample_reporting_node')

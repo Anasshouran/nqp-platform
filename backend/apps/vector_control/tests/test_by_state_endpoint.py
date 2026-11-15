@@ -17,7 +17,9 @@ def _uid():
 
 def _make_user():
     User = get_user_model()
-    return User.objects.create_user(username=f'test_{_uid()}', password='testpass')
+    return User.objects.create_user(
+        username=f'test_{_uid()}', email=f'test_{_uid()}@example.com', password='testpass'
+    )
 
 
 def _build_hierarchy():

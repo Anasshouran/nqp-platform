@@ -37,7 +37,7 @@ def _build_hierarchy():
     HealthFacilityNodeAssignment.objects.create(
         facility=fac, node=node, valid_from=None, valid_to=None,
     )
-    return {'facility': fac, 'node': node, 'state_node': state_node}
+    return {'facility': fac, 'node': node, 'state_node': state_node, 'sector': md}
 
 
 @pytest.mark.django_db
@@ -48,6 +48,7 @@ class TestVectorUnitReportingNodeFK:
         """IQ1 — reporting_node nullable، الافتراضي NULL."""
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
+            sector=ctx['sector'],
         )
         assert unit.reporting_node is None
 
@@ -57,6 +58,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         assert unit.reporting_node_id == ctx['node'].id
 
@@ -66,6 +68,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         HealthFacilityNodeAssignment.objects.filter(
             facility=ctx['facility'], valid_to__isnull=True
@@ -79,6 +82,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         ctx['facility'].delete()
         unit.refresh_from_db()
@@ -91,6 +95,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         data = VectorUnitSerializer(unit).data
         assert data['reporting_node'] == str(ctx['node'].id)
@@ -101,6 +106,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'],
+            sector=ctx['sector'],
         )
         from django.core.management import call_command
         from io import StringIO
@@ -115,6 +121,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'],
+            sector=ctx['sector'],
         )
         from django.core.management import call_command
         call_command('backfill_vectorunit_reporting_node')
@@ -133,6 +140,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'],
+            sector=ctx['sector'],
         )
         from django.core.management import call_command
         call_command('backfill_vectorunit_reporting_node')
@@ -147,6 +155,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=fac_no_assign,
+            sector=ctx['sector'],
         )
         from django.core.management import call_command
         call_command('backfill_vectorunit_reporting_node')
@@ -162,6 +171,7 @@ class TestVectorUnitReportingNodeFK:
         unit = VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=other_node,
+            sector=ctx['sector'],
         )
         from django.core.management import call_command
         call_command('backfill_vectorunit_reporting_node')
