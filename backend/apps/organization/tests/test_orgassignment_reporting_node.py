@@ -23,8 +23,16 @@ def _make_user():
     )
 
 
+def _get_root_node():
+    root = ReportingNode.objects.filter(kind='FEDERAL', parent__isnull=True).first()
+    if root is None:
+        root = ReportingNode.objects.create(code=f'ROOT_{_uid()}', name_ar='جذر', kind='FEDERAL')
+    return root
+
+
 def _build_hierarchy():
     """ybni state→locality→entry_point→health_facility للاختبار."""
+    root = _get_root_node()
     md = MasterdataSector.objects.create(code=f'MD_OA_{_uid()}', name_ar='قطاع')
     org = OrgSector.objects.create(code=f'ORG_OA_{_uid()}', name_ar='قطاع إداري')
     state = State.objects.create(code=f'ST_OA_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
@@ -34,9 +42,6 @@ def _build_hierarchy():
     )
     fac = HealthFacility.objects.create(
         code=f'FAC_OA_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc, entry_point=ep,
-    )
-    root = ReportingNode.objects.create(
-        code=f'ROOT_OA_{_uid()}', name_ar='جذر اختبار', kind='FEDERAL',
     )
     state_node = ReportingNode.objects.create(
         code=f'STATE_OA_{_uid()}', name_ar='ولاية اختبار', kind='STATE', parent=root,
