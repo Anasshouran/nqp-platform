@@ -220,3 +220,27 @@ Deferred to Q7 — both apps have 0 dev rows, no UI forms, no usage signal.
 
 0 until Q7 shows demand. Rollback safe (DROP COLUMN on both migrations).
 
+---
+
+## Update 2026-11-15 (A2c-2-hr, PR #202)
+
+**Owner decision:** Extend registry integration to hr (laboratory + vector_control done in PR #201).
+
+### Delivered
+
+- `OrgAssignment.reporting_node` FK (nullable, SET_NULL, no save sync) — facility FK already existed (M6-bis, D-M5-C-F-1)
+- Migration `organization/0011` (AddField only, rollback verified)
+- Serializer: `reporting_node` in List + Write
+- Backfill command (`--dry-run / --limit`, ambiguous → NULL fail-safe)
+- `GET /api/v1/hr/reports/assignments-by-state/` — reconciliation + scoping + select_related
+- 14 new tests (10 FK/backfill + 4 endpoint)
+
+### Adoption Measurement
+
+Deferred to Q7 — OrgAssignment has 0 dev rows, no UI forms, no usage signal.
+
+### Value
+
+0 until Q7 shows demand. Rollback safe (DROP COLUMN).
+
+

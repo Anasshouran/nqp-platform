@@ -202,6 +202,15 @@ class OrgAssignment(BaseModel):
         related_name='org_assignments', verbose_name='المنشأة الصحية',
         help_text='المنشأة المرتبطة بالتعيين (M6-bis، D-M5-C-F-1)',
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='org_assignments',
+        verbose_name='عقدة الإبلاغ',
+        help_text='اللحظة التنظيمية عند التعيين (لحظة). لا مزامنة.',
+    )
     is_primary = models.BooleanField(default=False, verbose_name='التعيين الرئيسي')
     start_date = models.DateField(null=True, blank=True, verbose_name='تاريخ البداية')
     end_date = models.DateField(null=True, blank=True, verbose_name='تاريخ النهاية')
