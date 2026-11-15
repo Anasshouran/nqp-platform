@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from apps.masterdata.models import EntryPoint
+from apps.registry.models import ReportingNode
 
 from .models import Department, Locality, OrgAssignment, OrgPosition, Sector, Station
 
@@ -166,6 +167,7 @@ class OrgAssignmentSerializer(serializers.ModelSerializer):
             'id', 'user', 'user_email', 'user_name', 'position', 'position_name',
             'sector', 'sector_name', 'department', 'department_name',
             'station', 'station_name', 'entry_point', 'entry_point_name',
+            'reporting_node',
             'is_primary', 'start_date', 'end_date', 'is_active',
             'created_at', 'updated_at',
         ]
@@ -192,12 +194,15 @@ class OrgAssignmentWriteSerializer(serializers.ModelSerializer):
     entry_point = serializers.PrimaryKeyRelatedField(
         queryset=EntryPoint.objects.all(), required=False, allow_null=True
     )
+    reporting_node = serializers.PrimaryKeyRelatedField(
+        queryset=ReportingNode.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = OrgAssignment
         fields = [
             'id', 'user', 'position', 'sector', 'department', 'station',
-            'entry_point', 'is_primary', 'start_date', 'end_date', 'is_active',
+            'entry_point', 'reporting_node', 'is_primary', 'start_date', 'end_date', 'is_active',
         ]
 
     def validate(self, attrs):
