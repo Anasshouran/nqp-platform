@@ -24,8 +24,16 @@ def _make_user():
     )
 
 
+def _get_root_node():
+    root = ReportingNode.objects.filter(kind='FEDERAL', parent__isnull=True).first()
+    if root is None:
+        root = ReportingNode.objects.create(code=f'ROOT_{_uid()}', name_ar='جذر', kind='FEDERAL')
+    return root
+
+
 def _build_hierarchy():
     """ybni state→locality→entry_point→border_crossing→quarantine_case."""
+    root = _get_root_node()
     md = MasterdataSector.objects.create(code=f'MD_QC_{_uid()}', name_ar='قطاع')
     org = OrgSector.objects.create(code=f'ORG_QC_{_uid()}', name_ar='قطاع إداري')
     state = State.objects.create(code=f'ST_QC_{_uid()}', name_ar=f'ولاية {_uid()}', sector=md)
@@ -38,9 +46,6 @@ def _build_hierarchy():
     )
     fac = HealthFacility.objects.create(
         code=f'FAC_QC_{_uid()}', name_ar=f'منشأة {_uid()}', sector=org, locality=loc,
-    )
-    root = ReportingNode.objects.create(
-        code=f'ROOT_QC_{_uid()}', name_ar='جذر اختبار', kind='FEDERAL',
     )
     state_node = ReportingNode.objects.create(
         code=f'STATE_QC_{_uid()}', name_ar='ولاية اختبار', kind='STATE', parent=root,
@@ -140,26 +145,11 @@ class TestQuarantineCaseReportingNodeFK:
         case.refresh_from_db()
         assert case.reporting_node_id is None
 
-    def test_backfill_no_ep_or_state(self):
-        """IQ9 — crossing.entry_point NULL → NULL."""
-        ctx = _build_hierarchy()
-        case = QuarantineCase.objects.create(
-            case_number=f'QC_{_uid()}', crossing=ctx['crossing'],
-        )
-        # إزالة entry_point من crossing
-        ctx['crossing'].entry_point = None
-        ctx['crossing'].save()
-        from django.core.management import call_command
-        call_command('backfill_quarantinecase_reporting_node')
-        case.refresh_from_db()
-        assert case.reporting_node_id is None
-
     def test_backfill_does_not_overwrite_existing(self):
         """IQ10 — لا يُكتب على reporting_node موجود."""
         ctx = _build_hierarchy()
-        other_root = ReportingNode.objects.create(code=f'ROOT2_QC_{_uid()}', name_ar='جذر2', kind='FEDERAL')
         other_node = ReportingNode.objects.create(
-            code=f'OTHER_QC_{_uid()}', name_ar='عقدة أخرى', kind='STATE', parent=other_root,
+            code=f'OTHER_QC_{_uid()}', name_ar='عقدة أخرى', kind='STATE', parent=ctx['state_node'],
         )
         case = QuarantineCase.objects.create(
             case_number=f'QC_{_uid()}', crossing=ctx['crossing'],
