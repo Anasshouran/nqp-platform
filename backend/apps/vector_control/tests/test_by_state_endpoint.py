@@ -73,18 +73,22 @@ class TestVectorUnitByStateEndpoint:
         VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار 1', kind='SURVEILLANCE',
             facility=ctx1['facility'], reporting_node=ctx1['node'],
+            sector=ctx1['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU2_{_uid()}', name_ar='وحدة اختبار 2', kind='MOSQUITO',
             facility=ctx1['facility'], reporting_node=ctx1['node'],
+            sector=ctx1['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU3_{_uid()}', name_ar='وحدة اختبار 3', kind='FLY',
             facility=ctx2['facility'], reporting_node=ctx2['node'],
+            sector=ctx2['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU4_{_uid()}', name_ar='وحدة اختبار 4', kind='RODENT',
             facility=ctx2['facility'], reporting_node=ctx2['node'],
+            sector=ctx2['sector'],
         )
 
         resp = client.get('/api/v1/vector-control/reports/by-state/')
@@ -104,16 +108,20 @@ class TestVectorUnitByStateEndpoint:
         VectorUnit.objects.create(
             code=f'VU_{_uid()}', name_ar='وحدة اختبار 1', kind='SURVEILLANCE',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU2_{_uid()}', name_ar='وحدة اختبار 2', kind='MOSQUITO',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            sector=ctx['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU3_{_uid()}', name_ar='وحدة اختبار 3', kind='FLY',
+            sector=ctx['sector'],
         )
         VectorUnit.objects.create(
             code=f'VU4_{_uid()}', name_ar='وحدة اختبار 4', kind='RODENT',
+            sector=ctx['sector'],
         )
 
         resp = client.get('/api/v1/vector-control/reports/by-state/')

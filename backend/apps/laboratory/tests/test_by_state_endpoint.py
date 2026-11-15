@@ -76,22 +76,26 @@ class TestLabSampleByStateEndpoint:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx1['facility'], reporting_node=ctx1['node'],
+            collector=_make_collector(),
         )
         LabSample.objects.create(
             sample_number=f'LS2_{_uid()}', sample_barcode=f'BC2_{_uid()}', sample_type='SWAB',
             source='CLINIC', status='REGISTERED',
             facility=ctx1['facility'], reporting_node=ctx1['node'],
+            collector=_make_collector(),
         )
         # عينتان في الولاية الثانية
         LabSample.objects.create(
             sample_number=f'LS3_{_uid()}', sample_barcode=f'BC3_{_uid()}', sample_type='URINE',
             source='CLINIC', status='REGISTERED',
             facility=ctx2['facility'], reporting_node=ctx2['node'],
+            collector=_make_collector(),
         )
         LabSample.objects.create(
             sample_number=f'LS4_{_uid()}', sample_barcode=f'BC4_{_uid()}', sample_type='STOOL',
             source='CLINIC', status='REGISTERED',
             facility=ctx2['facility'], reporting_node=ctx2['node'],
+            collector=_make_collector(),
         )
 
         resp = client.get('/api/v1/laboratory/reports/by-state/')
@@ -113,20 +117,24 @@ class TestLabSampleByStateEndpoint:
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         LabSample.objects.create(
             sample_number=f'LS2_{_uid()}', sample_barcode=f'BC2_{_uid()}', sample_type='SWAB',
             source='CLINIC', status='REGISTERED',
             facility=ctx['facility'], reporting_node=ctx['node'],
+            collector=_make_collector(),
         )
         # عينتان بلا منشأة (unassigned_facility)
         LabSample.objects.create(
             sample_number=f'LS3_{_uid()}', sample_barcode=f'BC3_{_uid()}', sample_type='URINE',
             source='CLINIC', status='REGISTERED',
+            collector=_make_collector(),
         )
         LabSample.objects.create(
             sample_number=f'LS4_{_uid()}', sample_barcode=f'BC4_{_uid()}', sample_type='STOOL',
             source='CLINIC', status='REGISTERED',
+            collector=_make_collector(),
         )
 
         resp = client.get('/api/v1/laboratory/reports/by-state/')

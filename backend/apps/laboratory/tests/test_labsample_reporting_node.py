@@ -91,7 +91,7 @@ class TestLabSampleReportingNodeFK:
         assert sample.reporting_node_id == ctx['node'].id
 
     def test_set_null_on_facility_delete(self):
-        """IQ4 — SET_NULL عند حذف المنشأة."""
+        """IQ4 — SET_NULL عند حذف المنشأة (facility_id يُNull، reporting_node مستقل)."""
         ctx = _build_hierarchy()
         sample = LabSample.objects.create(
             sample_number=f'LS_{_uid()}', sample_barcode=f'BC_{_uid()}', sample_type='BLOOD',
@@ -101,7 +101,8 @@ class TestLabSampleReportingNodeFK:
         )
         ctx['facility'].delete()
         sample.refresh_from_db()
-        assert sample.reporting_node_id is None
+        assert sample.facility_id is None  # SET_NULL on facility
+        assert sample.reporting_node_id == ctx['node'].id  # reporting_node غير متأثر (مستقل)
 
     def test_serializer_includes_reporting_node(self):
         """IQ5 — السيالير يتضمن reporting_node (قراءة + كتابة)."""
@@ -114,7 +115,7 @@ class TestLabSampleReportingNodeFK:
             collector=_make_collector(),
         )
         data = LabSampleSerializer(sample).data
-        assert data['reporting_node'] == str(ctx['node'].id)
+        assert data['reporting_node'] == ctx['node'].id  # UUID object, not string
 
     def test_backfill_dry_run_no_change(self):
         """IQ6 — dry-run لا يغير أي شيء."""
