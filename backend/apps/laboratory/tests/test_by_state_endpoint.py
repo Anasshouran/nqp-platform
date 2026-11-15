@@ -24,6 +24,13 @@ def _make_user():
     )
 
 
+def _make_collector():
+    User = get_user_model()
+    return User.objects.create_user(
+        username=f'collector_{_uid()}', email=f'collector_{_uid()}@example.com', password='testpass'
+    )
+
+
 def _build_hierarchy():
     md = MasterdataSector.objects.create(code=f'MD_BS_LS_{_uid()}', name_ar='قطاع')
     org = OrgSector.objects.create(code=f'ORG_BS_LS_{_uid()}', name_ar='قطاع إداري')

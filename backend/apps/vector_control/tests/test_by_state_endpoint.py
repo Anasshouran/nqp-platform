@@ -46,7 +46,7 @@ def _build_hierarchy():
     HealthFacilityNodeAssignment.objects.create(
         facility=fac, node=node, valid_from=timezone.now(), valid_to=None,
     )
-    return {'state': state, 'state_node': state_node, 'node': node, 'facility': fac, 'ep': ep}
+    return {'state': state, 'state_node': state_node, 'node': node, 'facility': fac, 'ep': ep, 'sector': md}
 
 
 @pytest.mark.django_db
