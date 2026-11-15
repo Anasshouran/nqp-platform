@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from django.utils import timezone
+from django.utils.timezone import timedelta
 
 from apps.borders_health.models import QuarantineCase
 from apps.registry.models import ReportingNode, StateNodeAssignment, HealthFacilityNodeAssignment
