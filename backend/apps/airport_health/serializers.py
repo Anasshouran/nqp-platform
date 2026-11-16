@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.carriers.models import Flight
 from apps.masterdata.models import EntryPoint as Port
+from apps.registry.models import ReportingNode
 from apps.travelers.models import Traveler
 
 from .models import (
@@ -73,6 +74,11 @@ class AirportScreeningSerializer(serializers.ModelSerializer):
     screening_point = serializers.SlugRelatedField(slug_field='point_code', queryset=ScreeningPoint.objects.all())
     flight = serializers.SlugRelatedField(slug_field='flight_number', queryset=Flight.objects.all(), required=False, allow_null=True)
     screened_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    reporting_node = serializers.PrimaryKeyRelatedField(
+        queryset=ReportingNode.objects.all(),
+        required=False,
+        allow_null=True,
+    )
     traveler_name = serializers.CharField(source='traveler.full_name', read_only=True)
     point_name = serializers.CharField(source='screening_point.point_code', read_only=True)
     flight_number = serializers.CharField(source='flight.flight_number', read_only=True, default=None)
@@ -84,7 +90,8 @@ class AirportScreeningSerializer(serializers.ModelSerializer):
             'id', 'traveler', 'traveler_name', 'screening_point', 'point_name',
             'flight', 'flight_number', 'screening_type',
             'body_temperature', 'oxygen_saturation', 'symptoms',
-            'risk_level', 'status', 'screened_by', 'screened_by_name', 'screened_at',
+            'risk_level', 'status', 'screened_by', 'screened_by_name',
+            'reporting_node', 'screened_at',
         ]
         read_only_fields = ['id', 'risk_level', 'status', 'screened_at']
 

@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from django.db.models import Count
 from django.utils import timezone
@@ -612,5 +614,91 @@ class AirportDashboardViewSet(viewsets.ViewSet):
                 ],
             })
         )
+
+
+class AirportScreeningByStateReportView(APIView):
+    """تقارير فحوصات المسافرين في المطارات حسب الولاية (STATE-only).
+
+    السلسلة: AirportScreening → ScreeningPoint → AirportTerminal → EntryPoint →
+    State → StateNodeAssignment → ReportingNode (kind=STATE).
+
+    لا LOCALITY/FACILITY: لا يوجد FK إلى HealthFacility في airport_health،
+    و`AirportTerminal.port` هو المرسى الجغرافي الوحيد (EntryPoint).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = AirportScreening.objects.select_related('reporting_node')
+        scoped = False
+
+        if not user.is_superuser:
+            # نطاق الموديول: SectorScopedMixin → resolve_user_port_ids.
+            # None = نطاق وطني/عام (بلا تقييد)، [] = بلا نطاق (حجب كامل).
+            port_ids = resolve_user_port_ids(user)
+            if port_ids is None:
+                scoped = False
+            elif not port_ids:
+                return Response({'status': 'success', 'data': self._empty()})
+            else:
+                qs = qs.filter(
+                    screening_point__terminal__port_id__in=port_ids,
+                )
+                scoped = True
+
+        total = qs.count()
+        matched = 0
+        node_no_state = 0
+        by_state = {}
+
+        for screening in qs.iterator():
+            node = screening.reporting_node
+            if node is None:
+                continue
+            # دفاعياً: الـ backfill يضع STATE فقط، لكن نتحقق قبل التجميع.
+            if node.kind != 'STATE':
+                node_no_state += 1
+                continue
+            matched += 1
+            key = str(node.id)
+            if key not in by_state:
+                by_state[key] = {
+                    'state_id': str(node.id),
+                    'state_name_ar': node.name_ar,
+                    'count': 0,
+                }
+            by_state[key]['count'] += 1
+
+        unassigned = total - matched - node_no_state
+
+        assert total == matched + node_no_state + unassigned, (
+            f'Reconciliation failed: {total} != {matched} + {node_no_state} + {unassigned}'
+        )
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'total': total,
+                'matched': matched,
+                'node_no_state': node_no_state,
+                'unassigned': unassigned,
+                'by_state': sorted(
+                    by_state.values(), key=lambda x: -x['count'],
+                ),
+                'scoped': scoped,
+                'note': (
+                    'STATE-only. unassigned = no active primary StateNodeAssignment '
+                    'or ambiguous (>1 primary, policy ii → NULL).'
+                ),
+            },
+        })
+
+    def _empty(self):
+        return {
+            'total': 0, 'matched': 0, 'node_no_state': 0, 'unassigned': 0,
+            'by_state': [], 'scoped': True,
+            'note': 'STATE-only. No screenings in scope.',
+        }
 
 
