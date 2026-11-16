@@ -819,6 +819,19 @@ class QuarantineCase(BaseModel):
         BorderFacility, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='quarantine_cases', verbose_name='مرفق الحجر',
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='quarantine_cases',
+        verbose_name='عقدة الإبلاغ',
+        help_text=(
+            'STATE-only snapshot via crossing.entry_point.state_id → StateNodeAssignment. '
+            'لا مزامنة — 유지 histórica. '
+            'LOCALITY/FACILITY مؤجل (يتطلب مصدر بيانات).'
+        ),
+    )
     entry_at = models.DateTimeField(
         auto_now_add=True, verbose_name='وقت الدخول للحجر',
     )

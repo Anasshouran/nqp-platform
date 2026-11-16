@@ -21,6 +21,7 @@ from .views import (
     ContactViewSet,
     HealthDeclarationViewSet,
     IsolationCaseViewSet,
+    QuarantineCaseByStateReportView,
     QuarantineCaseViewSet,
     TravelerHealthRecordViewSet,
     VehicleInspectionViewSet,
@@ -52,5 +53,10 @@ router.register('notifications', BorderNotificationViewSet, basename='border-not
 router.register('daily-statistics', BorderDailyStatisticsViewSet, basename='border-daily-statistic')
 
 urlpatterns = [
+    path(
+        'reports/quarantine-cases/by-state/',
+        QuarantineCaseByStateReportView.as_view(),
+        name='border-quarantine-cases-by-state',
+    ),
     path('', include(router.urls)),
 ]

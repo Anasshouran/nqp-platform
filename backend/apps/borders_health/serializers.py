@@ -5,6 +5,8 @@
 """
 from rest_framework import serializers
 
+from apps.registry.models import ReportingNode
+
 from .models import (
     BorderCertificate,
     BorderCrossing,
@@ -253,12 +255,18 @@ class BorderSampleSerializer(serializers.ModelSerializer):
 class QuarantineCaseSerializer(serializers.ModelSerializer):
     crossing_name = serializers.CharField(source='crossing.entry_point.name_ar', read_only=True)
     person_name = serializers.CharField(source='traveler.full_name', read_only=True, default=None)
+    reporting_node = serializers.PrimaryKeyRelatedField(
+        queryset=ReportingNode.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = QuarantineCase
         fields = [
             'id', 'case_number', 'crossing', 'crossing_name', 'traveler',
             'person_name', 'health_case', 'disease', 'clinic', 'facility',
+            'reporting_node',
             'entry_at', 'required_days', 'expected_end_date', 'actual_end_date',
             'phase', 'status', 'follow_up_notes',
         ]

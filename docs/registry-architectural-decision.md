@@ -243,4 +243,35 @@ Deferred to Q7 — OrgAssignment has 0 dev rows, no UI forms, no usage signal.
 
 0 until Q7 shows demand. Rollback safe (DROP COLUMN).
 
+---
+
+## Update 2026-11-15 (A2c-2-borders Option 2, PR #204)
+
+**Owner decision:** Extend registry integration to borders_health via STATE-only derivation.
+
+### Delivered
+
+- `QuarantineCase.reporting_node` FK (nullable, SET_NULL, no save sync)
+- Migration `borders_health/0008` (AddField only, rollback verified)
+- Serializer: `reporting_node` in List + Write
+- Backfill command: `crossing.entry_point.state_id → StateNodeAssignment → STATE node`
+- `GET /api/v1/borders-health/reports/quarantine-cases/by-state/` — reconciliation + scoping + select_related
+- 14 new tests (10 FK/backfill + 4 endpoint)
+
+### Limitation — STATE-only
+
+`QuarantineCase.reporting_node` = STATE node فقط.
+- لا LOCALITY/FACILITY — لا يوجد `HealthFacility` FK على `BorderCrossing`/`QuarantineCase`
+- Phase 0 (PR #203) أثبت: `BorderFacility.health_facility` غير موجود، لا مصدر بيانات للربط
+- Option 4-full = 9-10 أيام بلا قيمة بدون مصدر بيانات خارجي
+
+### Value
+
+تقرير "كم حالة حجر في ولاية X" — فعال فوراً عند توفر بيانات.
+
+### Rollback
+
+Safe (DROP COLUMN on migration 0008).
+
+
 
