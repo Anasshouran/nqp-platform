@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.masterdata.models import EntryPoint as Port
+from apps.registry.models import ReportingNode
 from apps.travelers.models import Traveler
 
 from .models import HealthScreening
@@ -12,13 +13,18 @@ class HealthScreeningSerializer(serializers.ModelSerializer):
     officer = serializers.HiddenField(default=serializers.CurrentUserDefault())
     traveler_name = serializers.CharField(source='traveler.full_name', read_only=True)
     passport_number = serializers.CharField(source='traveler.passport_number', read_only=True)
+    reporting_node = serializers.PrimaryKeyRelatedField(
+        queryset=ReportingNode.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = HealthScreening
         fields = [
             'id', 'traveler', 'traveler_name', 'passport_number', 'port', 'officer',
             'body_temperature', 'oxygen_saturation', 'systolic_bp', 'diastolic_bp',
-            'observed_symptoms', 'officer_notes', 'screened_at',
+            'observed_symptoms', 'officer_notes', 'reporting_node', 'screened_at',
         ]
         read_only_fields = ['id', 'screened_at']
 
