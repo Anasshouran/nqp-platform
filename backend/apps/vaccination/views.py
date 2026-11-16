@@ -9,16 +9,21 @@ from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from apps.registry.models import ReportingNode
 from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
 from core.permissions import ActionPermissionMixin, PermissionAction
 from core.utils.response import error_response, success_response
-from core.utils.scoping import SectorScopedMixin, resolve_user_port_ids
+from core.utils.scoping import (
+    SectorScopedMixin,
+    resolve_authorized_entry_points,
+    resolve_user_port_ids,
+)
 
 from .models import (
     CertificateVerification,
@@ -647,3 +652,116 @@ class PublicVaccinationLookupView(APIView):
                 }
             )
         )
+
+
+# ---------------------------------------------------------------------------
+# M7-A2c-vaccination — تقرير سجلات التطعيم حسب الولاية (STATE-only)
+# ---------------------------------------------------------------------------
+
+REPORT_NOTE = (
+    'STATE-only. unassigned: بلا reporting_node (site=NULL أو site بلا منفذ/ولاية). '
+    'node_no_state: reporting_node موجود لكنه بلا سلف STATE. '
+    'كل سجل يُحسب في فئة واحدة بالضبط (matched + node_no_state + unassigned = total).'
+)
+
+
+def _node_map():
+    """كل عقد الشجرة في ذاكرة — استعلام واحد مهما كان عدد السجلات."""
+    return {
+        row['id']: row
+        for row in ReportingNode.objects.values(
+            'id', 'parent_id', 'kind', 'code', 'name_ar', 'name_en'
+        )
+    }
+
+
+def _state_ancestor(node_id, nodes):
+    """يصعد من العقدة حتى أول سلف STATE (أو None) من الخريطة — بلا استعلامات."""
+    current = node_id
+    visited = set()
+    while current is not None and current not in visited:
+        visited.add(current)
+        row = nodes.get(current)
+        if row is None:
+            return None
+        if row['kind'] == ReportingNode.Kind.STATE:
+            return row
+        current = row['parent_id']
+    return None
+
+
+class VaccinationRecordByStateReportView(APIView):
+    """`GET /api/v1/vaccination/reports/records/by-state/` — STATE-only.
+
+    السلسلة (snapshot): ``VaccinationRecord.reporting_node → سلف STATE``.
+    النطاق عبر ``site__entry_point_id__in`` (المنفذ FK اختياري على الموقع).
+    السجلات بلا موقع/منفذ تبقى قابلة للتصنيف كـ unassigned للمستخدم العام،
+    وتُستبعد فشل-آمن للمستخدم المقيَّد (نمط ``VaccinationRecordViewSet``).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = VaccinationRecord.objects.select_related('reporting_node')
+
+        port_ids = resolve_authorized_entry_points(user)
+        if port_ids is None:
+            scoped = False
+        elif not port_ids:
+            return Response({'status': 'success', 'data': self._empty()})
+        else:
+            qs = qs.filter(site__entry_point_id__in=port_ids)
+            scoped = True
+
+        total = qs.count()
+        nodes = _node_map()
+
+        matched = 0
+        node_no_state = 0
+        by_state = {}
+
+        for record in qs.iterator():
+            node_id = record.reporting_node_id
+            if node_id is None:
+                continue
+            state = _state_ancestor(node_id, nodes)
+            if state is None:
+                node_no_state += 1
+                continue
+            matched += 1
+            key = str(state['id'])
+            if key not in by_state:
+                by_state[key] = {
+                    'state_id': str(state['id']),
+                    'state_name_ar': state['name_ar'],
+                    'count': 0,
+                }
+            by_state[key]['count'] += 1
+
+        unassigned = total - matched - node_no_state
+
+        assert total == matched + node_no_state + unassigned, (
+            f'Reconciliation failed: {total} != '
+            f'{matched} + {node_no_state} + {unassigned}'
+        )
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'total': total,
+                'matched': matched,
+                'node_no_state': node_no_state,
+                'unassigned': unassigned,
+                'by_state': sorted(by_state.values(), key=lambda x: -x['count']),
+                'scoped': scoped,
+                'note': REPORT_NOTE,
+            },
+        })
+
+    def _empty(self):
+        return {
+            'total': 0, 'matched': 0, 'node_no_state': 0, 'unassigned': 0,
+            'by_state': [], 'scoped': True,
+            'note': 'STATE-only. No records in scope.',
+        }

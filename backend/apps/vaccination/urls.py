@@ -7,6 +7,7 @@ from .views import (
     PublicVaccinationVerifyView,
     VaccinationCertificateViewSet,
     VaccinationDashboardViewSet,
+    VaccinationRecordByStateReportView,
     VaccinationRecordViewSet,
     VaccinationRuleViewSet,
     VaccinationSiteViewSet,
@@ -27,6 +28,11 @@ router.register('verifications', CertificateVerificationViewSet, basename='vacci
 router.register('dashboard', VaccinationDashboardViewSet, basename='vaccination-dashboard')
 
 urlpatterns = [
+    path(
+        'reports/records/by-state/',
+        VaccinationRecordByStateReportView.as_view(),
+        name='vaccination-records-by-state',
+    ),
     path('', include(router.urls)),
     path(
         'public/verify/<str:code>/',

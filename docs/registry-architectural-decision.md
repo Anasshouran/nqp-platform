@@ -352,14 +352,46 @@ if Q7 shows no usage, the code is dormant and rollback is safe.
 
 ---
 
+## Update 2026-11-16 (A2c-vaccination, STATE-only, PR #209)
+
+**Owner decision:** implement vaccination (last A2c app) after Discovery confirmed
+no `facility` FK anywhere in the app — only `VaccinationSite.entry_point`.
+
+### Delivered
+
+- `VaccinationRecord.reporting_node` FK (nullable, `SET_NULL`, no save sync)
+- Migration `vaccination/0004` (AddField only, rollback `migrate vaccination 0003`)
+- Serializer: `reporting_node` writable; `VaccinationSite` **0 diff**
+- Backfill: `site.entry_point.state_id → StateNodeAssignment(valid_to=NULL, is_primary=True) → STATE`
+  - **Policy (ii) strict:** `count == 1` else NULL (no `.first()` on ambiguous)
+  - **Bulk map** (`state_id → [node_ids]`, one query) — no N+1
+- `GET /api/v1/vaccination/reports/records/by-state/`
+  - **3 buckets + walk-up** (`matched` / `node_no_state` / `unassigned`):
+    `reporting_node` is writable, so a non-STATE node must not crash reconciliation
+  - `_node_map` + `_state_ancestor` in memory — no N+1
+- Scoping: `resolve_authorized_entry_points` → `site__entry_point_id__in`
+- 15 new tests (10 FK/backfill + 5 endpoint)
+
+### Limitation — STATE-only
+
+- No LOCALITY/FACILITY (chain ends at `EntryPoint.state`)
+- `site` and `site.entry_point` nullable → path-less records stay `unassigned`
+  (and are fail-safe invisible to scoped users, matching `VaccinationRecordViewSet`)
+
+### Rollback
+
+Safe (DROP COLUMN on migration 0004).
+
+---
+
 ## A2c closure (2026-11-16)
 
-**7 apps integrated:** surveillance (A2b-full), laboratory, vector_control (A2c-1),
+**8 apps integrated:** surveillance (A2b-full), laboratory, vector_control (A2c-1),
 hr (A2c-2-hr), borders_health (A2c-2-borders, STATE-only), airport_health
-(A2c-2-airport, STATE-only), screening (A2c-3-screening, A2b-full).
+(A2c-2-airport, STATE-only), screening (A2c-3-screening, A2b-full),
+vaccination (A2c-vaccination, STATE-only).
 
-**Deferred / skipped:** vaccination (STATE-only design ready, deferred until Q7),
-borders-full (no data source).
+**Skipped:** borders-full (no data source).
 
 
 **Q7 remains the only gate:** staging/prod backfill (4 facility FKs + 4 `reporting_node`
