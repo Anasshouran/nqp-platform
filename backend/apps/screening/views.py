@@ -6,9 +6,12 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.models import RoleAssignment
+from apps.registry.models import ReportingNode
 from apps.risk_engine.models import RiskAssessment
 from apps.risk_engine.serializers import RiskAssessmentSerializer
 from apps.risk_engine.services import RiskEngineService
@@ -16,6 +19,7 @@ from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
 from core.permissions import PermissionAction, ScopeFilter
 from core.utils.response import success_response
+from core.utils.scoping import resolve_authorized_entry_points
 
 from .models import HealthScreening
 from .serializers import HealthScreeningSerializer
@@ -299,3 +303,115 @@ class ScreeningViewSet(viewsets.ModelViewSet):
                 reported_by=self.request.user,
             )
             raise_single_event(case)
+
+
+# ---------------------------------------------------------------------------
+# M7-A2c-3 (A2b-full) — تقرير الفحوص حسب الولاية
+# ---------------------------------------------------------------------------
+
+REPORT_NOTE = (
+    'FACILITY-level reporting_node → walks up to STATE ancestor. '
+    'unassigned_node: بلا reporting_node (facility=NULL أو بلا تعيين منشأة). '
+    'كل فحص يُحسب في فئة واحدة بالضبط (matched + node_no_state + unassigned_node = total).'
+)
+
+
+def _node_map():
+    """كل عقد الشجرة في ذاكرة — استعلام واحد مهما كان عدد الفحوص."""
+    return {
+        row['id']: row
+        for row in ReportingNode.objects.values(
+            'id', 'parent_id', 'kind', 'code', 'name_ar', 'name_en'
+        )
+    }
+
+
+def _state_ancestor(node_id, nodes):
+    """يصعد من العقدة حتى أول سلف STATE (أو None) من الخريطة — بلا استعلامات."""
+    current = node_id
+    visited = set()
+    while current is not None and current not in visited:
+        visited.add(current)
+        row = nodes.get(current)
+        if row is None:
+            return None
+        if row['kind'] == ReportingNode.Kind.STATE:
+            return row
+        current = row['parent_id']
+    return None
+
+
+class HealthScreeningByStateReportView(APIView):
+    """`GET /api/v1/screening/reports/screenings/by-state/` — تجميع حسب الولاية.
+
+    A2b-full: ``HealthScreening.reporting_node (FACILITY) → سلف STATE``.
+    النطاق عبر ``port_id__in`` (المنفذ FK غير nullable) باستخدام
+    :func:`resolve_authorized_entry_points`. الـ backfill عبر ``facility`` فقط.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = HealthScreening.objects.select_related('reporting_node')
+
+        port_ids = resolve_authorized_entry_points(user)
+        if port_ids is None:
+            scoped = False
+        elif not port_ids:
+            return Response({'status': 'success', 'data': self._empty()})
+        else:
+            qs = qs.filter(port_id__in=port_ids)
+            scoped = True
+
+        total = qs.count()
+        nodes = _node_map()
+
+        matched = 0
+        node_no_state = 0
+        by_state = {}
+
+        for screening in qs.iterator():
+            node_id = screening.reporting_node_id
+            if node_id is None:
+                continue
+            state = _state_ancestor(node_id, nodes)
+            if state is None:
+                node_no_state += 1
+                continue
+            matched += 1
+            key = str(state['id'])
+            if key not in by_state:
+                by_state[key] = {
+                    'state_id': str(state['id']),
+                    'state_name_ar': state['name_ar'],
+                    'count': 0,
+                }
+            by_state[key]['count'] += 1
+
+        unassigned_node = total - matched - node_no_state
+
+        assert total == matched + node_no_state + unassigned_node, (
+            f'Reconciliation failed: {total} != '
+            f'{matched} + {node_no_state} + {unassigned_node}'
+        )
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'total': total,
+                'matched': matched,
+                'node_no_state': node_no_state,
+                'unassigned_node': unassigned_node,
+                'by_state': sorted(by_state.values(), key=lambda x: -x['count']),
+                'scoped': scoped,
+                'note': REPORT_NOTE,
+            },
+        })
+
+    def _empty(self):
+        return {
+            'total': 0, 'matched': 0, 'node_no_state': 0, 'unassigned_node': 0,
+            'by_state': [], 'scoped': True,
+            'note': 'A2b-full. No screenings in scope.',
+        }

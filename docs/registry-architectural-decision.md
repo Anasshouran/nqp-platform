@@ -318,13 +318,49 @@ Safe (DROP COLUMN on migration 0008).
 
 ---
 
+## Update 2026-11-16 (A2c-3-screening, A2b-full, PR #208)
+
+**Owner decision:** implement screening now despite 0 dev rows (deliberate override of the
+Discovery (PR #207) defer recommendation). Documented risk: 4–5 days, 0 measured value
+pre-Q7, rollback via DROP COLUMN.
+
+### Delivered
+
+- `HealthScreening.reporting_node` FK (nullable, `SET_NULL`, no save sync)
+- Migration `screening/0004` (AddField only, rollback `migrate screening 0003`)
+- Serializer: `reporting_node` writable (model `facility` FK untouched, not exposed)
+- Backfill: `facility → HealthFacilityNodeAssignment(valid_to=NULL) → node`
+  - **Policy (ii) strict:** `count == 1` else NULL (no `.first()` on ambiguous)
+  - **No `port` fallback** — `facility=NULL` stays NULL (A2b-full parity with surveillance)
+- `GET /api/v1/screening/reports/screenings/by-state/` — FACILITY-level `reporting_node`
+  walked up to STATE in memory (`_node_map` + `_state_ancestor`, no N+1)
+- Scoping: `resolve_authorized_entry_points` → `port_id__in`
+- 3 buckets: `matched` / `node_no_state` / `unassigned_node` (reconciliation assert)
+- 15 new tests (10 FK/backfill + 5 endpoint)
+
+### Correction of A2c Discovery wording
+
+`m7-a2c-discovery.md` said "screening, vaccination (no geographic FK)" in the closure
+summary. That was imprecise: `HealthScreening.facility` has existed since M6-bis
+(`0003_healthscreening_facility`). "no facility FK" applied to **vaccination only**.
+The original skip rationale was 0 dev rows + Q7, not a missing FK.
+
+### Value / risk
+
+Report available immediately on data availability. Pre-Q7 there is no adoption signal;
+if Q7 shows no usage, the code is dormant and rollback is safe.
+
+---
+
 ## A2c closure (2026-11-16)
 
-**6 apps integrated:** surveillance (A2b-full), laboratory, vector_control (A2c-1),
+**7 apps integrated:** surveillance (A2b-full), laboratory, vector_control (A2c-1),
 hr (A2c-2-hr), borders_health (A2c-2-borders, STATE-only), airport_health
-(A2c-2-airport, STATE-only).
+(A2c-2-airport, STATE-only), screening (A2c-3-screening, A2b-full).
 
-**3 skipped:** screening, vaccination (no geographic FK), borders-full (no data source).
+**Deferred / skipped:** vaccination (STATE-only design ready, deferred until Q7),
+borders-full (no data source).
+
 
 **Q7 remains the only gate:** staging/prod backfill (4 facility FKs + 4 `reporting_node`
 backfills) then `PROD_SCOPING_ENABLED=True`, staging → prod.
