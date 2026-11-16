@@ -273,5 +273,61 @@ Deferred to Q7 — OrgAssignment has 0 dev rows, no UI forms, no usage signal.
 
 Safe (DROP COLUMN on migration 0008).
 
+---
+
+## Update 2026-11-16 (A2c-2-airport Scope A, PR #206)
+
+**Discovery correction:** PR #205 (closed) claimed `airport_health` had no FK to any geographic
+entity. Wrong: `AirportTerminal.port = FK('masterdata.EntryPoint')` — the field is named `port`
+and uses a string reference, so a name-targeted grep missed it. A2c-2-airport was therefore
+un-skipped and implemented as STATE-only.
+
+### Delivered
+
+- `AirportScreening.reporting_node` FK (nullable, `SET_NULL`, no save sync)
+- Migration `airport_health/0008` (AddField only, rollback verified)
+- Serializer: `reporting_node` writable in `AirportScreeningSerializer`
+- Backfill: `screening_point.terminal.port.state_id → StateNodeAssignment(is_primary=True, valid_to=NULL) → STATE node`
+  - **Policy (ii) strict:** `count == 1` else NULL (no `.first()` on ambiguous)
+- `GET /api/v1/airport/reports/screenings/by-state/` — reconciliation + scoping + `select_related`
+- Scoping: `resolve_user_port_ids` (airport convention, not `resolve_authorized_entry_points` directly)
+- 15 new tests (10 FK/backfill + 5 endpoint)
+
+### Limitation — STATE-only
+
+- No LOCALITY (chain ends at `EntryPoint.state`)
+- No FACILITY (`airport_health` has no `HealthFacility` FK)
+
+### Scope B/C deferred
+
+`AircraftInspection` and `CrewHealthRecord` can derive via `flight.destination_port` (2-level chain)
+— deferred (Scope B). `AirportStaff` / `AirportActivityLog` rejected (Scope C).
+
+### Policy delta (`D-M7-A2c-2-policy-delta`)
+
+airport uses strict `count == 1`; borders (PR #203) uses `.first()` on `valid_to IS NULL`.
+Backport to borders is out of scope pending explicit owner instruction.
+
+### Value
+
+STATE-level report available immediately on data availability.
+
+### Rollback
+
+Safe (DROP COLUMN on migration 0008).
+
+---
+
+## A2c closure (2026-11-16)
+
+**6 apps integrated:** surveillance (A2b-full), laboratory, vector_control (A2c-1),
+hr (A2c-2-hr), borders_health (A2c-2-borders, STATE-only), airport_health
+(A2c-2-airport, STATE-only).
+
+**3 skipped:** screening, vaccination (no geographic FK), borders-full (no data source).
+
+**Q7 remains the only gate:** staging/prod backfill (4 facility FKs + 4 `reporting_node`
+backfills) then `PROD_SCOPING_ENABLED=True`, staging → prod.
+
 
 

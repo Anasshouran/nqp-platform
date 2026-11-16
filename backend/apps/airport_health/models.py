@@ -74,6 +74,19 @@ class AirportScreening(BaseModel):
     screening_point = models.ForeignKey(
         ScreeningPoint, on_delete=models.PROTECT, related_name='screenings', verbose_name='نقطة الفحص'
     )
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='airport_screenings',
+        verbose_name='عقدة الإبلاغ',
+        help_text=(
+            'STATE-only snapshot via screening_point.terminal.port.state_id '
+            '→ StateNodeAssignment. No sync — historical integrity. '
+            'AircraftInspection/CrewHealthRecord deferred (Scope B).'
+        ),
+    )
     flight = models.ForeignKey(
         'carriers.Flight', on_delete=models.SET_NULL, null=True, blank=True, related_name='airport_screenings', verbose_name='الرحلة'
     )
