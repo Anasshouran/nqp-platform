@@ -1,8 +1,8 @@
 # AFYATNA — Architecture Status
 
-**Last updated:** 2026-11-14
+**Last updated:** 2026-11-16
 **Milestone:** v1.0.0-m6-bis (tag `753e676`) + M7 extensions
-**Main:** `a2a9bcc` (#198)
+**Main:** `a85419d` (#203)
 
 ---
 
@@ -62,6 +62,11 @@ National health platform for Sudan — organizational registry, surveillance, va
 - **M7-A2b-lite:** `GET /surveillance/reports/by-state/` (traversal, PR #195)
 - **M7-A2b-full:** `HealthCase.reporting_node` FK + `RegistryTreeSelector` (both case + report forms, PR #196)
 - **M7-A2c Discovery:** 6-app audit → 0 dev rows → **deferred until Q7** (PR #198)
+- **M7-A2c-1:** `LabSample` + `VectorUnit` `reporting_node` FK + by-state endpoints (PR #201)
+- **M7-A2c-2-hr:** `OrgAssignment.reporting_node` FK + by-state endpoint (PR #202)
+- **M7-A2c-2-borders:** `QuarantineCase.reporting_node` FK (STATE-only) + by-state endpoint (PR #203)
+- **M7-A2c-3:** screening + vaccination — **skipped** (incompatible, no facility FK)
+- **A2c-2-borders full:** `BorderFacility.health_facility` — **skipped** (no data source, Phase 0 PR #203)
 
 ---
 
@@ -118,7 +123,7 @@ National health platform for Sudan — organizational registry, surveillance, va
 
 ✅ 11 scopes enforced across 11 apps
 ✅ Registry UI (tree, detail, edit/create, pagination, scope pickers)
-✅ Backend 3012 + 0 xfail + 3 skip; Frontend 857 passed (total 3869)
+✅ Backend 3066 + 0 xfail + 3 skip; Frontend 857 passed (total 3923)
 ✅ CI guard prevents silent test failures
 ✅ git-safety.md (post-incident)
 ✅ Conservative backfill (ambiguous → NULL, fail-safe)
@@ -132,10 +137,11 @@ National health platform for Sudan — organizational registry, surveillance, va
 - Staging/prod pre-backfill counts require VPS session
 - Command ready (documented in `backend/docs/m5-c-known-debt.md`)
 
-### A2c — 6-App Expansion (DEFERRED)
-- All 6 apps: 0 dev rows
-- No adoption signal → skip until Q7 shows surveillance usage
-- See `backend/docs/m7-a2c-discovery.md`
+### A2c — 6-App Expansion (PARTIAL)
+- **Integrated (5):** surveillance, laboratory, vector_control, hr, borders_health (STATE-only)
+- **Skipped (2):** screening, vaccination (incompatible — no facility FK)
+- **Skipped:** borders-full (`BorderFacility.health_facility` — no data source, PR #203)
+- See `backend/docs/m7-a2c-discovery.md`, `m7-a2c-2-borders-mapping.md`
 
 ### Registry Adoption (4%)
 - Pre-A2b-full: 0/7 business apps reference any registry model
@@ -207,12 +213,16 @@ National health platform for Sudan — organizational registry, surveillance, va
 ## 11. Current State (One-Pager)
 
 ```
-Main:                a2a9bcc (#198)
-PRs:                 26 (#172–#198)
-Backend:             3012 + 0xf + 3skip
+Main:                a85419d (#203)
+PRs:                 30 (#172–#203)
+Backend:             3066 + 0xf + 3skip
 Frontend:            857
 Tags:                v1.0.0-m6-bis (753e676)
 PROD_SCOPING_ENABLED: False
+
+A2c:                 5 apps integrated (surveillance, lab, vector, hr, borders)
+                     2 skipped (screening, vaccination — incompatible)
+                     borders-full skipped (no data source)
 
 STATUS: Production-ready (prod gate closed pending Q7)
         Registry complete; adoption is organizational

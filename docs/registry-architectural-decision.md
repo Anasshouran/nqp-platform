@@ -245,7 +245,7 @@ Deferred to Q7 — OrgAssignment has 0 dev rows, no UI forms, no usage signal.
 
 ---
 
-## Update 2026-11-15 (A2c-2-borders Option 2, PR #204)
+## Update 2026-11-15 (A2c-2-borders Option 2, PR #203)
 
 **Owner decision:** Extend registry integration to borders_health via STATE-only derivation.
 
