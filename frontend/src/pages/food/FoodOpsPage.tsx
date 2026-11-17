@@ -203,7 +203,7 @@ const ClerkPanel = () => {
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <KpiCard label={t('food.ops.kpi.totalRequests')} value={shipments.length} icon={<Inventory2Icon />} />
         <Button variant="contained" startIcon={<AddCircleIcon />} onClick={() => setOpen(true)}>
-          t('food.ops.clerk.newRequest')
+          {t('food.ops.clerk.newRequest')}
         </Button>
       </Stack>
 
@@ -273,7 +273,7 @@ const ClerkPanel = () => {
         </Grid>
 
         <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 3, mb: 1 }}>
-          t('food.ops.clerk.items')
+          {t('food.ops.clerk.items')}
         </Typography>
         <Stack spacing={1}>
           {items.map((item, idx) => (
@@ -288,8 +288,8 @@ const ClerkPanel = () => {
             </Stack>
           ))}
           <Stack direction="row" spacing={2} alignItems="center">
-            <Button size="small" variant="text" onClick={() => setItems((prev) => [...prev, emptyItem()])}>+ t('food.ops.clerk.addItem')</Button>
-            <Typography variant="body2" color="text.secondary">t('food.ops.clerk.totalWeight'){formatNumber(totalWeight)} كغ</Typography>
+            <Button size="small" variant="text" onClick={() => setItems((prev) => [...prev, emptyItem()])}>+ {t('food.ops.clerk.addItem')}</Button>
+            <Typography variant="body2" color="text.secondary">{t('food.ops.clerk.totalWeight')}{formatNumber(totalWeight)} كغ</Typography>
           </Stack>
         </Stack>
 
@@ -398,7 +398,7 @@ const AccountantPanel = () => {
                 ))}
               </Stack>
             ) : (
-              <Typography color="text.secondary">t('food.ops.empty.noMovement')</Typography>
+              <Typography color="text.secondary">{t('food.ops.empty.noMovement')}</Typography>
             )}
           </CardContent>
         </Card>
@@ -504,13 +504,13 @@ const InspectorPanel = () => {
     { key: 'actions', label: '', render: (r: FoodShipment) => (
       <Stack direction="row" spacing={1}>
         <Button size="small" variant="outlined" startIcon={<FactCheckIcon />} onClick={() => { setSel(r); setInspectOpen(true); }}>
-          t('food.ops.inspector.inspect')
+          {t('food.ops.inspector.inspect')}
         </Button>
         <Button size="small" variant="contained" color="info" startIcon={<BiotechIcon />} onClick={() => { setSel(r); setSampleOpen(true); }}>
-          t('food.ops.inspector.sample')
+          {t('food.ops.inspector.sample')}
         </Button>
         <Button size="small" variant="text" color="primary" startIcon={<PersonSearchIcon />} onClick={() => { setSel(r); handleAssign(r.id); }}>
-          t('food.ops.inspector.assign')
+          {t('food.ops.inspector.assign')}
         </Button>
       </Stack>
     ) },
@@ -649,11 +649,11 @@ const ManagerPanel = () => {
     { key: 'actions', label: '', render: (r: FoodShipment) => (
       <Stack direction="row" spacing={1}>
         <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={() => { setSel(r); setAssignOpen(true); }}>
-          t('food.ops.manager.assignInspector')
+          {t('food.ops.manager.assignInspector')}
         </Button>
-        <Button size="small" variant="outlined" color="success" onClick={() => handleReview(r.id)}>t('food.ops.manager.review')</Button>
+        <Button size="small" variant="outlined" color="success" onClick={() => handleReview(r.id)}>{t('food.ops.manager.review')}</Button>
         <Button size="small" variant="contained" startIcon={<GavelIcon />} onClick={() => { setSel(r); setDecision(''); setReason(''); setDecideOpen(true); }}>
-          t('food.ops.manager.finalDecision')
+          {t('food.ops.manager.finalDecision')}
         </Button>
       </Stack>
     ) },
@@ -753,7 +753,7 @@ const ExportFormPanel = () => {
     { key: 'status', label: t('food.ops.table.status'), render: (r: FoodShipment) => { const m = statusMeta[r.status]; return m ? <StatusChip label={m.label} tone={m.tone} /> : r.status; } },
     { key: 'actions', label: '', render: (r: FoodShipment) => (
       <Button size="small" variant="contained" startIcon={<AssignmentOutlinedIcon />} onClick={() => handleOpen(r.id)}>
-        t('food.ops.export.openForm')
+        {t('food.ops.export.openForm')}
       </Button>
     ) },
   ];
@@ -786,11 +786,11 @@ const ExportFormPanel = () => {
         onClose={() => setOpen(false)}
       >
         {loadingForm ? (
-          <Box sx={{ py: 6, textAlign: 'center' }}><Typography color="text.secondary">t('food.ops.export.loading')</Typography></Box>
+          <Box sx={{ py: 6, textAlign: 'center' }}><Typography color="text.secondary">{t('food.ops.export.loading')}</Typography></Box>
         ) : form ? (
           <ExportInspectionFormView form={form} />
         ) : (
-          <Box sx={{ py: 6, textAlign: 'center' }}><Typography color="text.secondary">t('food.ops.export.noData')</Typography></Box>
+          <Box sx={{ py: 6, textAlign: 'center' }}><Typography color="text.secondary">{t('food.ops.export.noData')}</Typography></Box>
         )}
       </FormDialog>
     </Box>
