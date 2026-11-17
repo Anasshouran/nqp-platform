@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, StatusChip } from '../../../components/ui';
 import { useServerTable } from '../../../hooks/useServerTable';
 import { getWhoSyncLogs } from '../../../api/endpoints/who';
@@ -26,6 +27,7 @@ const STATUS_TONE: Record<string, 'success' | 'error' | 'warning' | 'neutral' | 
  * يُستخدم في اللوحة كُلوحة سفلية، وفي ``WhoSyncLogsPage`` كصفحة مستقلة.
  */
 const WhoSyncLogsTable = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+  const { t } = useTranslation();
   const table = useServerTable<WhoSyncLog>({ fetchData: getWhoSyncLogs });
   const {
     rows, count, loading, error, searchInput, setSearchInput,
@@ -42,20 +44,20 @@ const WhoSyncLogsTable = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       columns={[
         {
           key: 'operation',
-          label: 'العملية',
+          label: t('integration.who.syncLogs.table.columns.operation'),
           sortable: true,
           render: (l) => <StatusChip label={WHO_SYNC_OPERATION_LABELS[l.operation] ?? l.operation} tone="primary" variant="outlined" />,
         },
         {
           key: 'status',
-          label: 'الحالة',
+          label: t('integration.who.syncLogs.table.columns.status'),
           sortable: true,
           render: (l) => <StatusChip label={WHO_SYNC_STATUS_LABELS[l.status] ?? l.status} tone={STATUS_TONE[l.status] ?? 'neutral'} />,
         },
         { key: 'http_status', label: 'HTTP', render: (l) => (l.http_status ? String(l.http_status) : '—'), hideOnMobile: true },
         {
           key: 'started_at',
-          label: 'الوقت',
+          label: t('integration.who.syncLogs.table.columns.time'),
           sortable: true,
           render: (l) => formatDateTime(l.started_at),
         },
@@ -68,19 +70,19 @@ const WhoSyncLogsTable = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       pageSizeOptions={pageSizeOptions}
       loading={loading}
       error={error}
-      title="سجلات المزامنة"
-      subtitle={`${count} عملية`}
+      title={t('integration.who.syncLogs.table.title')}
+      subtitle={t('integration.who.syncLogs.table.subtitle', { count })}
       searchInput={searchInput}
       onSearchChange={setSearchInput}
-      searchPlaceholder="بحث في السجلات..."
+      searchPlaceholder={t('integration.who.syncLogs.table.searchPlaceholder')}
       sortBy={sortBy}
       sortOrder={sortOrder}
       onSortChange={setSorting}
       onPageChange={setPage}
       onRowsPerPageChange={setRowsPerPage}
       onRefresh={refresh}
-      emptyTitle="لا توجد سجلات مزامنة"
-      emptyDescription="عمليات الاتصال بمنظمة الصحة العالمية تظهر هنا"
+      emptyTitle={t('integration.who.syncLogs.table.emptyTitle')}
+      emptyDescription={t('integration.who.syncLogs.table.emptyDescription')}
     />
   );
 };

@@ -25,6 +25,15 @@ QR_KEY_ID = os.environ.get('QR_KEY_ID', 'v1')
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# M5-C-L: Production scoping gate — LOCALITY scope stays deny-all in production
+# until data verification (COUNT of EntryPoint.locality coverage on staging/prod).
+# Enable ONLY after the checklist in backend/docs/m5-c-l.md is done:
+#   DEBUG=True always allows LOCALITY (dev).
+#   DEBUG=False + PROD_SCOPING_ENABLED=False (default) => LOCALITY deny-all.
+#   DEBUG=False + PROD_SCOPING_ENABLED=True            => LOCALITY works.
+# Gate is enforced in core/utils/scoping.locality_scope_enabled() and every LOCALITY path.
+PROD_SCOPING_ENABLED = os.environ.get('PROD_SCOPING_ENABLED', 'False').lower() in ('true', '1', 'yes')
+
 _IS_TEST_RUN = any(a == 'test' or 'pytest' in a for a in sys.argv)
 _PLACEHOLDER_SECRETS = {
     'dev-secret-key-change-in-production',
@@ -94,6 +103,7 @@ LOCAL_APPS = [
     'apps.borders_health',
     'apps.hr',
     'apps.mobile_api',
+    'apps.registry',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -105,6 +115,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.registry.middleware.CurrentUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

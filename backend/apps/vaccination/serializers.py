@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.registry.models import ReportingNode
 from apps.travelers.models import Traveler
 from .models import (
     CertificateVerification,
@@ -74,6 +75,11 @@ class VaccinationRecordSerializer(serializers.ModelSerializer):
     lot_number = serializers.CharField(source='batch.lot_number', read_only=True, default='')
     vaccinator_name = serializers.SerializerMethodField()
     dose_type_label = serializers.CharField(source='get_dose_type_display', read_only=True)
+    reporting_node = serializers.PrimaryKeyRelatedField(
+        queryset=ReportingNode.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = VaccinationRecord
@@ -81,7 +87,7 @@ class VaccinationRecordSerializer(serializers.ModelSerializer):
             'id', 'traveler', 'traveler_id', 'vaccine', 'vaccine_name_ar', 'vaccine_code',
             'batch', 'lot_number', 'dose_type', 'dose_type_label', 'dose_number',
             'administered_at', 'site', 'site_name', 'vaccinator', 'vaccinator_name',
-            'recorded_by', 'notes', 'status', 'created_at',
+            'recorded_by', 'notes', 'status', 'reporting_node', 'created_at',
         )
         read_only_fields = ['id', 'recorded_by', 'created_at']
 

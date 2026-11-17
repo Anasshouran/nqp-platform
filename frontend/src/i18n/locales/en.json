@@ -1,4 +1,177 @@
 {
+  "clerk": {
+    "pipeline": {
+      "status": {
+        "drafts": "Drafts",
+        "submitted": "Pending Fees",
+        "underReview": "Under Review",
+        "inspection": "Inspection",
+        "rejected": "Rejected"
+      },
+      "pageTitle": "Requests Path",
+      "pageSubtitle": "Distribution of Pending Requests by Stage",
+      "emptyState": "No Pending Requests Currently.",
+      "percent": "%",
+      "weeklyActivity": "Weekly Activity",
+      "recentActivity": "Requests Submitted in the Last 7 Days"
+    },
+    "components": {
+      "dialogs": {
+        "confirmTitle": "Confirm request submission",
+        "confirmDescription": "The statement will be created and sent for fee collection with a notification to the accounts department. After submission you cannot edit the request. Are you sure?",
+        "cancel": "Cancel",
+        "sending": "Sending…",
+        "confirmSend": "Confirm submission",
+        "deleteTitle": "Delete draft",
+        "deleteMessage": "Are you sure you want to delete the draft «{{manifestNumber}}»? This action cannot be undone.",
+        "deleteConfirm": "Delete"
+      },
+      "sidebar": {
+        "notification": {
+          "error": "Error",
+          "warning": "Alert",
+          "success": "Success",
+          "info": "Info"
+        }
+      },
+      "worklist": {
+        "searchPlaceholder": "Search by declaration, customs, policy, vessel, consignee…",
+        "emptyTitle": "No requests",
+        "emptyDescription": "No requests matching these criteria",
+        "sendTitle": "Send to collect fees",
+        "send": "Send",
+        "draftTooltip": "Draft — editable and deletable",
+        "viewTooltip": "View",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+    "views": {
+      "list": {
+        "subtitle": "{{count}} requests"
+      },
+      "search": {
+        "title": "Search for a request",
+        "label": "Request number, customs, bill of lading, importer, exporter, vessel",
+        "recentLabel": "Recent searches:",
+        "resultMeta": "{{count}} items · {{weight}} kg · {{date}}",
+        "noResults": "No matching results for «{{q}}»"
+      },
+      "home": {
+        "title": "All requests",
+        "subtitle": "{{count}} requests",
+        "kpi": {
+          "drafts": {
+            "label": "Drafts",
+            "hint": "Requests not sent"
+          },
+          "submitted": {
+            "label": "Pending fees",
+            "hint": "Sent to the accountant"
+          },
+          "underReview": {
+            "label": "Under review",
+            "hint": "Fees paid — with the section manager"
+          },
+          "inspection": {
+            "label": "Under inspection",
+            "hint": "Field and laboratory inspection"
+          }
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "languageLabel": "Language",
+        "languageArabic": "Arabic",
+        "notificationsLabel": "Request notifications",
+        "notificationsEnabled": "Enabled",
+        "notificationsToggleToast": "Notifications toggled",
+        "numberFormatLabel": "Number format",
+        "numberFormatArabic": "Arabic (ar-EG)",
+        "numberFormatToggleToast": "Number format changed"
+      }
+    }
+  },
+  "portal": {
+    "auditLogs": {
+      "title": "Audit logs",
+      "subtitle": "Track sensitive operations on the portal",
+      "searchPlaceholder": "Search by user or action",
+      "emptyTitle": "No logs",
+      "emptyDescription": "Portal operations will appear here",
+      "columns": {
+        "time": "Time",
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "result": "Result"
+      },
+      "result": {
+        "success": "Succeeded",
+        "failure": "Failed",
+        "blocked": "Blocked"
+      }
+    },
+    "health": {
+      "title": "Health and monitoring",
+      "subtitle": "Documented connectivity check results for each integration",
+      "searchPlaceholder": "Search by integration name or check type",
+      "emptyTitle": "No health records",
+      "emptyDescription": "Check results are recorded here when an integration check runs",
+      "columns": {
+        "integration": "Integration",
+        "checkType": "Check type",
+        "result": "Result",
+        "passed": "Passed",
+        "failed": "Failed",
+        "checkedBy": "Checked by",
+        "detail": "Details",
+        "checkedAt": "Check time"
+      }
+    },
+    "integrationDetail": {
+      "loadError": "Failed to load integration data",
+      "title": "Integration details",
+      "notFound": "Integration not found",
+      "settingsTitle": "Settings",
+      "orgLabel": "Organization",
+      "endpointLabel": "API endpoint",
+      "envLabel": "Environment",
+      "authLabel": "Authentication type",
+      "urlLabel": "URL",
+      "verifiedLabel": "Last verified",
+      "notesLabel": "Notes",
+      "credentialsTitle": "Credentials",
+      "credentialsInfo": "Values are encrypted and not displayed. They can be rotated from the \"Credentials\" screen.",
+      "noCredentials": "No credentials registered.",
+      "healthTitle": "Health records",
+      "noHealth": "No checks recorded yet.",
+      "passed": "Passed",
+      "failed": "Failed",
+      "backToIntegrations": "Back to integrations"
+    },
+    "dataScopes": {
+      "deleteSuccess": "Scope deleted",
+      "deleteError": "Failed to delete scope",
+      "orgColumn": "Organization",
+      "apiPointColumn": "API endpoint",
+      "directionColumn": "Direction",
+      "directionRead": "Read",
+      "directionWrite": "Write",
+      "resourceColumn": "Resource",
+      "grantedByColumn": "Granted by",
+      "grantedAtColumn": "Granted at",
+      "pageTitle": "Data scopes",
+      "pageSubtitle": "What data can be exchanged between organizations (read/write)",
+      "searchPlaceholder": "Search by organization or resource",
+      "emptyTitle": "No scopes",
+      "emptyDescription": "Grant data exchange permission to an organization",
+      "deleteAction": "Delete",
+      "confirmDeleteTitle": "Confirm deletion",
+      "confirmDeleteMessage": "Delete scope \"{{organization}} / {{resource}}\"?",
+      "cancelDeleteLabel": "Cancel"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -11,6 +184,488 @@
     "english": "English",
     "fallback": {
       "doctor": "Doctor"
+    }
+  },
+  "integration": {
+    "portal": {
+      "nav": {
+        "organizations": "Organizations",
+        "integrations": "Integrations",
+        "apiEndpoints": "API Catalog",
+        "dataScopes": "Data Scopes",
+        "credentials": "Credentials",
+        "webhooks": "Webhooks",
+        "health": "Health Records",
+        "auditLogs": "Audit Logs"
+      },
+      "messages": {
+        "errorLoad": "Failed to load portal summary"
+      },
+      "pageHeader": {
+        "title": "Organizations Integration Portal",
+        "subtitle": "Partner organizations, integrations, API catalog, scopes, and credentials"
+      },
+      "empty": {
+        "quickAccess": "Quick Access"
+      }
+    },
+    "who": {
+      "syncLogs": {
+        "title": "Sync Logs",
+        "subtitle": "WHO connectivity operations log: ICD-11 sync, connectivity checks, and IHR events submission",
+        "table": {
+          "title": "Sync Logs",
+          "subtitle": "{{count}} operations",
+          "searchPlaceholder": "Search in logs...",
+          "emptyTitle": "No sync logs",
+          "emptyDescription": "WHO connectivity operations appear here",
+          "columns": {
+            "operation": "Operation",
+            "status": "Status",
+            "time": "Time"
+          }
+        }
+      }
+    }
+  },
+  "sector-cms": {
+    "circular": {
+      "status": {
+        "urgent": "Urgent",
+        "important": "Important",
+        "normal": "Normal"
+      },
+      "pageTitle": "Circular Details",
+      "sectorNotAvailable": "Sector Not Available",
+      "backToSectorCirculars": "Back to Sector Circulars",
+      "circularNotAvailable": "Circular Not Available",
+      "circularNotFound": "Circular Not Found.",
+      "referenceLabel": "Reference",
+      "circular": "Circular",
+      "publishedAtLabel": "Published At",
+      "publishedByLabel": "Published By"
+    },
+    "faq": {
+      "pageTitle": "Frequently Asked Questions",
+      "subtitle": "Answers to the most frequently asked questions about sector services and the platform.",
+      "emptyTitle": "No frequently asked questions",
+      "emptyDescription": "No frequently asked questions are currently published."
+    },
+    "news": {
+      "pageTitle": "News",
+      "subtitle": "Latest news and updates from the media center of the National Quarantine Platform.",
+      "emptyTitle": "No news",
+      "emptyDescription": "No news is currently published.",
+      "details": "News details"
+    },
+    "newsDetail": {
+      "pageTitle": "News Details",
+      "sectorNotAvailable": "Sector not available",
+      "backToNews": "Back to sector news",
+      "notFoundTitle": "News not available",
+      "notFoundDescription": "This news item was not found, or the news is not yet published.",
+      "otherNews": "Other news"
+    },
+    "circulars": {
+      "pageTitle": "Circulars",
+      "subtitle": "Circulars and administrative decisions issued by the Federal Quarantine Administration.",
+      "emptyTitle": "No circulars currently published",
+      "emptyDescription": "Official circulars will be published here as soon as they are issued.",
+      "readCircular": "Read circular",
+      "priority": {
+        "urgent": "Urgent",
+        "important": "Important",
+        "normal": "Normal"
+      }
+    }
+  },
+  "sector-content": {
+    "khartoum": {
+      "sectorName": "Khartoum Sector",
+      "subtitle": "Manage sector news, circulars, announcements, pages, FAQs, documents, slides, media, and contact settings."
+    },
+    "sectorContentPage": {
+      "eyebrow": "Content Management System",
+      "title": "Content Management",
+      "subtitle": "Manage sector news, circulars, pages, FAQs, documents, sliders, media, and contact settings.",
+      "items": {
+        "news": "News",
+        "circulars": "Circulars",
+        "announcements": "Announcements",
+        "pages": "Static Pages",
+        "faq": "FAQs",
+        "documents": "Documents",
+        "sliders": "Promo Sliders",
+        "media": "Media Library",
+        "settings": "Settings"
+      }
+    }
+  },
+  "sector": {
+    "portal": {
+      "news": {
+        "title": "Sector News",
+        "subtitle": "Latest news and updates from {{sectorName}}",
+        "emptyTitle": "No news currently",
+        "defaultSectorName": "Sector",
+        "defaultCategory": "General"
+      },
+      "ports": {
+        "title": "Entry Points",
+        "subtitle": "All entry points belonging to {{sectorName}}",
+        "defaultSectorName": "Sector",
+        "searchPlaceholder": "Search for an entry point by name or code...",
+        "emptyTitle": "No entry points",
+        "emptyDescription": "Entry points will be added soon.",
+        "noMatchTitle": "No matching entry points",
+        "noMatchDescription": "Try another search term.",
+        "portType": {
+          "airport": "Airport entry point",
+          "seaport": "Seaport entry point",
+          "landPort": "Land entry point"
+        },
+        "group": {
+          "airports": "Airports",
+          "seaports": "Seaports",
+          "landPorts": "Land crossings"
+        },
+        "stat": {
+          "airports": "Airports",
+          "seaports": "Seaports",
+          "landPorts": "Land crossings"
+        }
+      }
+    }
+  },
+  "redsea": {
+    "portal": {
+      "content": {
+        "sectorName": "Red Sea Sector",
+        "media": {
+          "pageTitle": "Media library",
+          "pageSubtitle": "Upload and manage the images and files used in content",
+          "titleLabel": "Title",
+          "chooseFile": "Choose file",
+          "uploading": "Uploading...",
+          "upload": "Upload",
+          "deleteAction": "Delete",
+          "emptyState": "No media yet.",
+          "confirmDeleteTitle": "Delete media",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{title}}\"?"
+        },
+        "pages": {
+          "titleLabel": "Title",
+          "statusLabel": "Status",
+          "published": "Published",
+          "draft": "Draft",
+          "pageTitle": "Static Pages",
+          "pageSubtitle": "Edit public site content for the sector",
+          "addPage": "New page",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editPageTitle": "Edit page",
+          "addPageTitle": "Add page",
+          "slugLabel": "Slug (URL)",
+          "contentLabel": "Content",
+          "deletePageTitle": "Delete page",
+          "confirmDeleteMessage": "Are you sure you want to delete \"{{slug}}\"?",
+          "confirmDeleteAction": "Delete"
+        },
+        "documents": {
+          "docLabel": "Document",
+          "categoryLabel": "Category",
+          "downloadAction": "Download",
+          "panelTitle": "Documents",
+          "panelSubtitle": "Upload and manage documents attached to the sector",
+          "uploadDoc": "Upload document",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit document",
+          "titleLabel": "Title",
+          "descLabel": "Description",
+          "filePickerNew": "Choose new file (optional)",
+          "filePicker": "Choose file",
+          "deleteDocTitle": "Delete document",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "confirmDeleteAction": "Delete",
+          "category": {
+            "regulation": "Regulations",
+            "circular": "Circulars",
+            "form": "Forms",
+            "guide": "Guides",
+            "other": "Other"
+          }
+        },
+        "circulars": {
+          "titleLabel": "Title",
+          "categoryLabel": "Category",
+          "priorityLabel": "Priority",
+          "statusLabel": "Status",
+          "panelTitle": "Official Circulars",
+          "panelSubtitle": "Publish official circulars and notices for the sector",
+          "addDoc": "Add circular",
+          "editAction": "Edit",
+          "deleteAction": "Delete",
+          "editDocTitle": "Edit circular",
+          "contentLabel": "Content",
+          "refNumberLabel": "Reference number",
+          "deleteDocTitle": "Delete circular",
+          "confirmDeleteMsg": "Are you sure you want to delete \"{{title}}\"?",
+          "category": {
+            "official": "Official",
+            "health": "Health",
+            "admin": "Administrative",
+            "travel": "Travel",
+            "other": "Other"
+          },
+          "status": {
+            "published": "Published",
+            "approved": "Approved",
+            "draft": "Draft",
+            "review": "Review",
+            "archived": "Archived"
+          },
+          "priority": {
+            "urgent": "Urgent",
+            "important": "Important",
+            "normal": "Normal"
+          }
+        }
+      },
+      "it": {
+        "eyebrow": "Information Technology Department",
+        "title": "Technical Reports",
+        "subtitle": "Comprehensive summary of systems, assets, tickets, and networks status in the sector.",
+        "sectorChip": "Red Sea Sector",
+        "backToDashboard": "IT Dashboard",
+        "kpi": {
+          "totalSystems": "Total systems",
+          "activeAssets": "Active devices",
+          "openTickets": "Open tickets",
+          "connectedPorts": "Connected ports"
+        },
+        "systemsStatusTitle": "Systems status",
+        "warningChip": "Warning: {{count}}",
+        "offlineChip": "Offline: {{count}}",
+        "ticketsTitle": "Tickets by priority",
+        "ticketsSubtitle": "{{total}} tickets · {{critical}} critical open",
+        "ticketCount": "{{count}} tickets",
+        "assetsTitle": "Assets by status",
+        "assetsSubtitle": "Distribution of devices by operational status",
+        "activeLabel": "Active",
+        "maintenanceLabel": "Maintenance / disabled"
+      },
+      "modules": {
+        "staff": {
+          "eyebrow": "Sector Management",
+          "title": "Administrative Structure and Staff — Red Sea Sector",
+          "subtitle": "Departments, their performance, and sector staff within the sector scope.",
+          "kpi": {
+            "staff": {
+              "label": "Total staff"
+            },
+            "departments": {
+              "label": "Departments"
+            },
+            "ports": {
+              "label": "Entry points"
+            }
+          },
+          "departmentsSection": {
+            "title": "Department performance",
+            "subtitle": "Performance scores by department"
+          },
+          "departmentsEmpty": {
+            "title": "No departments",
+            "description": "No departments have been registered in the sector yet."
+          },
+          "staffCount": "{{count}} staff",
+          "staffSection": {
+            "title": "Staff",
+            "subtitle": "Sector staff by department and station"
+          },
+          "staffEmpty": {
+            "title": "No staff",
+            "description": "No staff have been registered in the sector yet."
+          }
+        },
+        "itSystems": {
+          "eyebrow": "Information Technology Department",
+          "title": "Systems status",
+          "subtitle": "Readiness of systems and IT services within the Red Sea sector.",
+          "recheck": "Recheck systems",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Technical systems list",
+          "tableSubtitle": "{{count}} systems within sector scope",
+          "searchPlaceholder": "Search by system name or code...",
+          "emptyTitle": "No systems",
+          "emptyDescription": "No technical systems are registered in this sector.",
+          "columns": {
+            "system": "System",
+            "status": "Status",
+            "requests": "Requests",
+            "lastCheck": "Last check",
+            "lastError": "Last error"
+          }
+        },
+        "itNetworks": {
+          "eyebrow": "Information Technology Department",
+          "title": "Networks and connectivity",
+          "subtitle": "Connection status of each entry point, response time, and last sync.",
+          "syncStatus": "Sync status",
+          "backToDashboard": "IT dashboard",
+          "tableTitle": "Networks status",
+          "tableSubtitle": "{{count}} entry points · {{connected}} connected",
+          "searchPlaceholder": "Search by entry point name...",
+          "emptyTitle": "No networks",
+          "emptyDescription": "No entry points are registered in this sector.",
+          "columns": {
+            "entryPoint": "Entry point",
+            "status": "Status",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "responseTime": "Response time",
+            "lastSync": "Last sync"
+          }
+        },
+        "airportHealth": {
+          "eyebrow": "Operational systems",
+          "title": "Airport health — Red Sea sector",
+          "subtitle": "Terminals, screening points, and travelers at sector airports.",
+          "noFlight": "No flight",
+          "kpi": {
+            "airports": {
+              "label": "Airports"
+            },
+            "terminals": {
+              "label": "Terminals"
+            },
+            "points": {
+              "label": "Screening points"
+            },
+            "screenings": {
+              "label": "Traveler screenings"
+            }
+          },
+          "screeningsSection": {
+            "title": "Recent traveler screenings",
+            "subtitle": "Latest sector airport screenings"
+          },
+          "screeningsEmpty": {
+            "title": "No screenings",
+            "description": "No airport screenings have been registered in the sector yet."
+          },
+          "pointsSection": {
+            "title": "Screening points",
+            "subtitle": "Health screening points inside airports"
+          },
+          "pointsEmpty": {
+            "title": "No screening points",
+            "description": "No screening points have been registered in the sector yet."
+          },
+          "inspectionsSection": {
+            "title": "Aircraft inspections",
+            "subtitle": "Latest inspections"
+          },
+          "inspectionsEmpty": {
+            "title": "No aircraft inspections",
+            "description": "No inspections have been registered in the sector yet."
+          }
+        },
+        "vectorControl": {
+          "eyebrow": "Operational systems",
+          "title": "Vector control — Red Sea sector",
+          "subtitle": "Vector surveys and work orders within sector entry points.",
+          "kpi": {
+            "surveys": {
+              "label": "Surveys this month"
+            },
+            "reports": {
+              "label": "New reports"
+            },
+            "activeOperations": {
+              "label": "Active operations"
+            },
+            "completedOperations": {
+              "label": "Completed operations"
+            }
+          },
+          "surveysSection": {
+            "title": "Recent surveys",
+            "subtitle": "Vector surveys in the sector"
+          },
+          "surveysEmpty": {
+            "title": "No surveys",
+            "description": "No vector surveys have been registered in the sector yet."
+          },
+          "operationsSection": {
+            "title": "Control operations",
+            "subtitle": "Recent control operations"
+          },
+          "operationsEmpty": {
+            "title": "No operations",
+            "description": "No control operations have been registered in the sector yet."
+          }
+        }
+      }
+    },
+    "settings": {
+      "contactInfoTitle": "Official Contact Information",
+      "contactInfoSubtitle": "This information is displayed on the public Contact Us page",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings",
+      "fields": {
+        "officialPhone": "Official Phone Number",
+        "officialEmail": "Official Email Address",
+        "address": "Address",
+        "website": "Website"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Settings"
+      },
+      "note": "Note: Until officially approved, this data is shown on the Contact Us page instead of placeholder text."
+    }
+  },
+  "vectorcontrol": {
+    "alerts": {
+      "autoAlertsTitle": "Automatic Alerts",
+      "autoAlertsSubtitle": "High-risk hotspots, positive results, low stock, and delayed operations",
+      "title": "Alerts",
+      "alertCount": "{{count}} alerts",
+      "searchPlaceholder": "Search by title...",
+      "emptyTitle": "No alerts",
+      "emptyDescription": "Automatic alerts will appear here",
+      "columns": {
+        "severity": "Severity",
+        "type": "Type",
+        "title": "Title",
+        "date": "Date"
+      },
+      "actions": {
+        "markAllRead": "Mark all as read",
+        "markRead": "Done"
+      },
+      "messages": {
+        "actionFailed": "Operation failed"
+      }
+    },
+    "focusMap": {
+      "filterLabel": "Filter:",
+      "noMatchingFoci": "No matching foci (add GPS coordinates to foci to display on the map)",
+      "noGpsCoords": "Registered foci have no GPS coordinates yet"
+    },
+    "casesSection": {
+      "title": "Cases",
+      "sectionSubtitle": "Vector-borne diseases",
+      "caseNumberLabel": "Number",
+      "focusNumberLabel": "Focus",
+      "diseaseLabel": "Disease",
+      "classificationLabel": "Classification",
+      "detectedAtLabel": "Detected at",
+      "casesSubtitle": "Case data from the epidemiological surveillance system",
+      "emptyTitle": "Vector-borne diseases",
+      "emptyDescription": "Recorded cases monitored by the epidemiological surveillance system are displayed here — their link opens from the portal dashboard"
     }
   },
   "vaccination": {
@@ -129,6 +784,176 @@
     "نوع الجرعة": "Dose type"
   },
   "public": {
+    "layout": {
+      "portType": {
+        "airport": "Airports",
+        "seaport": "Seaports",
+        "land": "Land Crossings"
+      },
+      "externalLinks": {
+        "moh": "Federal Ministry of Health",
+        "who": "World Health Organization",
+        "ihr": "International Health Regulations (IHR)",
+        "sectionTitle": "International"
+      },
+      "footer": {
+        "group": {
+          "important": "Important Links",
+          "services": "Services",
+          "knowledge": "Knowledge"
+        },
+        "link": {
+          "home": "Home",
+          "serviceCatalog": "Service Catalog",
+          "travelRequirements": "Travel Requirements",
+          "healthPorts": "Health Ports",
+          "indicators": "Indicators",
+          "platformGateways": "Platform Gateways",
+          "documents": "Documents",
+          "verify": "Certificate Verification",
+          "smartServices": "Smart Services",
+          "travelerPortal": "Traveler Portal",
+          "companiesPortal": "Companies Portal",
+          "preRegister": "Pre-Registration",
+          "healthAlerts": "Health Alerts",
+          "news": "News",
+          "circulars": "Circulars",
+          "diseasesGuidelines": "Diseases & Guidelines",
+          "faq": "FAQ"
+        }
+      },
+      "sectorNav": {
+        "home": "Home",
+        "about": "About the Sector",
+        "aboutUs": "About Us",
+        "director": "Sector Director",
+        "ports": "Ports",
+        "documentsCenter": "Documents Center",
+        "faq": "FAQ",
+        "contact": "Contact Us",
+        "services": "Services",
+        "serviceCatalog": "Service Catalog",
+        "foodSafety": "Food Safety",
+        "vectorControl": "Vector Control",
+        "entryExitRequirements": "Entry & Exit Requirements",
+        "alertsNews": "Alerts & News",
+        "news": "News",
+        "circulars": "Circulars"
+      },
+      "body": {
+        "homepage": "Homepage",
+        "navigationMenu": "Navigation menu",
+        "globalSearch": "Global search",
+        "userAccount": "User account",
+        "openMenu": "Open menu",
+        "closeNotification": "Close notification",
+        "closeMenu": "Close menu",
+        "quickLinks": "Quick links",
+        "skipToContent": "Skip to main content",
+        "emergencyAdmin": "General Directorate of Health Emergencies and Epidemic Control",
+        "signIn": "Sign In",
+        "preregMandatory": "Pre-registration is mandatory for travelers arriving through all entry ports",
+        "alertDetails": "Alert details",
+        "registerNow": "Register now",
+        "nationalPlatform": "Integrated national platform for managing quarantine and epidemic surveillance at all entry points of the Republic of Sudan,",
+        "ihrCompliance": "in accordance with the International Health Regulations (IHR).",
+        "contactUs": "Contact Us",
+        "khartoumSudan": "Khartoum, Republic of Sudan",
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "afyatna": "National Quarantine Platform - AFYATNA",
+        "allRightsReserved": "© {{year}} {{org}}. All rights reserved."
+      },
+      "nav": {
+        "menu": {
+          "entryPoints": {
+            "allPorts": "All Ports",
+            "section": {
+              "portsNetwork": "Ports Network"
+            }
+          },
+          "services": {
+            "catalog": "Service Catalog",
+            "travelers": "Traveler Services",
+            "foodSafety": "Food Safety",
+            "preRegister": "Pre-Registration",
+            "travelerPortal": "Traveler Portal",
+            "companiesPortal": "Companies Portal",
+            "verify": "Certificate Verification",
+            "smartServices": "Smart Services",
+            "assistant": "Smart Assistant",
+            "section": {
+              "actions": "Procedures",
+              "platforms": "Portals",
+              "tools": "Tools"
+            }
+          },
+          "news": {
+            "all": "News",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars"
+          },
+          "diseases": {
+            "guide": "Disease & Guidelines Guide",
+            "healthNotices": "Health Alerts",
+            "circulars": "Circulars",
+            "section": {
+              "knowledge": "Health Knowledge"
+            }
+          },
+          "travelers": {
+            "travelRequirements": "Travel Requirements",
+            "preRegister": "Pre-Registration",
+            "trackApplication": "Track Application",
+            "diseaseGuide": "Disease Guide",
+            "verify": "Certificate Verification",
+            "section": {
+              "preparation": "Preparing to Travel",
+              "knowledge": "Knowledge"
+            }
+          },
+          "about": {
+            "aboutUs": "About Us",
+            "director": "Platform Director",
+            "faq": "FAQ",
+            "contact": "Contact Us",
+            "section": {
+              "platform": "Platform",
+              "support": "Support"
+            }
+          },
+          "gateways": {
+            "traveler": "Traveler Portal",
+            "verify": "Certificate Verification",
+            "sectorsPortal": "Sectors Portal",
+            "portsGateway": "Ports Gateway",
+            "airlines": "Airlines Portal",
+            "shippingCompanies": "Shipping & Port Companies Portal",
+            "clinics": "Clinics Portal",
+            "laboratories": "Laboratories Portal",
+            "surveillance": "Surveillance Portal",
+            "foodControl": "Food Control Portal",
+            "vectorControl": "Vector Control Portal",
+            "vaccination": "International Vaccination Portal",
+            "partners": "Partners Portal",
+            "section": {
+              "forTravelers": "Travelers",
+              "sectorsAndPorts": "Sectors & Ports",
+              "healthAdmin": "Health Administration"
+            }
+          }
+        },
+        "home": "Home",
+        "services": "Services",
+        "travelers": "Travelers",
+        "entryPoints": "Entry Points",
+        "gateways": "Gateways",
+        "news": "News",
+        "documents": "Documents",
+        "diseases": "Diseases & Epidemics",
+        "about": "About"
+      }
+    },
     "آخر الأخبار والتعاميم": "Latest news and circulars",
     "أبرز الأهداف الاستراتيجية للإدارة العامة للحجر الصحي القومي": "Key strategic objectives of the General Directorate of Quarantine",
     "أبرز مؤشرات المنصة لحظياً عبر منافذ الدخول والمسافرين والحالات والشهادات": "Live platform indicators across entry points, travelers, cases and certificates",
@@ -863,7 +1688,12 @@
         "difficultySwallowing": "Difficulty swallowing",
         "bleeding": "Bleeding",
         "contactWithPatient": "Contact with patient",
-        "otherSymptoms": "Other symptoms"
+        "otherSymptoms": "Other symptoms",
+        "intro": "In the last 21 days, have you experienced any of the following symptoms?",
+        "yes": "Yes",
+        "no": "No",
+        "details": "Symptom details",
+        "question": "{index}. {label}?"
       },
       "travelModes": {
         "air": "Air",
@@ -876,10 +1706,10 @@
       },
       "title": "Border Pre-Registration",
       "subtitle": "Please fill in the following information before arriving at the entry point",
-      "eyebrow": "Traveler",
+      "eyebrow": "Traveler Portal",
       "submit": "Submit Request",
       "submitting": "Submitting...",
-      "success": "Request submitted successfully",
+      "success": "Registration Successful",
       "steps": {
         "start": "Start",
         "personal": "Personal Info",
@@ -925,7 +1755,27 @@
         "required": "This field is required",
         "email": "Please enter a valid email",
         "passport": "Invalid passport number (6-20 characters).",
-        "flight": "Invalid flight/vehicle number."
+        "flight": "Invalid flight/vehicle number.",
+        "fullNameTooShort": "Please enter full name.",
+        "dateOfBirthRequired": "Please enter date of birth.",
+        "nationalityRequired": "Please select nationality.",
+        "genderRequired": "Please select gender.",
+        "originCountryRequired": "Please select country of origin.",
+        "portOfEntryRequired": "Please select port of entry.",
+        "transportModeRequired": "Please select transport mode.",
+        "arrivalDateRequired": "Please enter arrival date.",
+        "arrivalDateInvalid": "Please enter valid arrival date.",
+        "purposeRequired": "Please select visit purpose.",
+        "phoneInvalid": "Invalid phone number.",
+        "emailInvalid": "Please enter correct email.",
+        "emergencyPhoneInvalid": "Invalid emergency phone.",
+        "temperatureInvalid": "Invalid temperature (35-42).",
+        "patientNameRequired": "Please enter patient name.",
+        "consentRequired": "Please confirm data accuracy."
+      },
+      "genderOption": {
+        "male": "Male",
+        "female": "Female"
       },
       "pageTitle": "Traveler Pre-Registration",
       "pageSubtitle": "Multi-step electronic form to speed up entry procedures",
@@ -956,7 +1806,24 @@
         "bookingOrFlight": "Booking / Flight No. (optional)",
         "seat": "Seat No. (optional)",
         "flightNumberOrShip": "Flight No. / Ship Name",
-        "flightNumber": "Flight No."
+        "flightNumber": "Flight No.",
+        "fullName": "Full Name",
+        "passportNumber": "Passport Number",
+        "dateOfBirth": "Date of Birth",
+        "nationality": "Nationality",
+        "gender": "Gender",
+        "originCountry": "Country of Origin",
+        "portOfEntry": "Port of Entry",
+        "transportMode": "Transport Mode",
+        "arrivalDate": "Arrival Date",
+        "transitCountries": "Transit Countries (Optional)",
+        "phone": "Phone Number",
+        "whatsapp": "WhatsApp (Optional)",
+        "email": "Email (Optional)",
+        "emergencyPhone": "Emergency Phone (Closest Person)",
+        "temperature": "Temperature (°C)",
+        "patientName": "Patient Name",
+        "trip": "Trip"
       },
       "risk": {
         "initial": "Initial risk assessment:",
@@ -964,13 +1831,43 @@
         "medium": "Medium",
         "high": "High",
         "mediumDesc": "You may need additional screening on arrival.",
-        "highDesc": "Please proceed to medical screening upon arrival."
+        "highDesc": "Please proceed to medical screening upon arrival.",
+        "label": "Risk Assessment"
       },
       "points": "points",
       "date": "Date",
       "noSymptoms": "No symptoms",
       "stepProgress": "Step",
-      "of": "of"
+      "of": "of",
+      "submitError": "An error occurred during registration, please try again.",
+      "languageLabel": "Language",
+      "language": "Language",
+      "languageArabic": "Arabic",
+      "startRegistration": "Start Registration",
+      "dataEncrypted": "All data is encrypted and secure",
+      "portalTitle": "Health Registration Portal",
+      "portalSubtitle": "To expedite your procedures upon arrival, please complete the health form before travel.",
+      "clear": "Clear",
+      "transportMode": {
+        "air": "Airplane",
+        "sea": "Ship",
+        "land": "Land"
+      },
+      "summary": "Data Summary",
+      "consent": "I confirm the data is correct",
+      "save": "Save and Issue Health Pass",
+      "registrationNumber": "Registration Number",
+      "qrAlt": "QR Code",
+      "qrInstruction": "Show this code to the health quarantine officer upon arrival to expedite your procedures.",
+      "qrIssuance": "Your QR code will be issued after document review and request approval.",
+      "symptomsLabel": "Symptoms:",
+      "purposeLabel": "Purpose of Visit",
+      "purposeSpecifyLabel": "Specify purpose",
+      "uploadNow": "Upload documents now",
+      "trackRequest": "Track request status",
+      "dashboard": "Dashboard",
+      "uploadLater": "You can upload documents later from the \"Upload Documents\" page in the Traveler Portal.",
+      "nextReview": "Next: Review and Confirm"
     },
     "requestTracking": {
       "status": {
@@ -1330,29 +2227,7 @@
   },
   "borders": {
     "bordersHealth": {
-      "tabs": {
-        "dashboard": "لوحة القيادة",
-        "crossings": "المعابر",
-        "facilities": "المرافق",
-        "shifts": "الورديات",
-        "staff": "الكادر",
-        "travelers": "المسافرون",
-        "declarations": "الإقرارات الصحية",
-        "screening": "الفحص الصحي",
-        "vehicles": "المركبات",
-        "vehicleInspections": "تفتيش المركبات",
-        "cargo": "تفتيش الشحنات",
-        "samples": "العيّنات",
-        "quarantine": "حالات الحجر",
-        "isolation": "حالات العزل",
-        "tracing": "حالات التتبع",
-        "incidents": "الحوادث الصحية",
-        "emergencies": "حالات الطوارئ",
-        "decisions": "القرارات",
-        "notifications": "الإشعارات",
-        "dailyStats": "الحصيلة اليومية",
-        "certificates": "الشهادات"
-      },
+      "tabs": {},
       "title": "Border Health",
       "subtitle": "Border health management",
       "eyebrow": "Border Command",
@@ -1424,21 +2299,19 @@
         "filterStatus": "Status",
         "emptyTitle": "No crossings",
         "emptyDescription": "Run seed command to create operational files.",
-        "dialogTitle": "Change Crossing Status",
-        "reasonLabel": "Reason for closure/restriction",
-        "newStatus": "New Status",
         "cols": {
           "crossing": "Crossing",
           "neighbor": "Neighboring Country",
           "state": "State",
           "status": "Status",
           "capacity": "Daily Capacity",
-          "lab": "Laboratory"
+          "lab": "Laboratory",
+          "code": "Code"
         },
-        "actions": {
-          "changeStatus": "Change Status"
-        },
-        "exported": "Border crossing data exported"
+        "actions": {},
+        "exported": "Border crossing data exported",
+        "statusUpdateFailed": "Crossing status update failed",
+        "statusUpdated": "Crossing status updated"
       },
       "facilities": {
         "title": "Border Facilities",
@@ -1460,18 +2333,16 @@
         "title": "Shifts",
         "subtitle": "{count} shifts",
         "searchPlaceholder": "Search in notes...",
-        "filterType": "Shift Type",
         "emptyTitle": "No shifts",
         "emptyDescription": "Record daily work shifts for each crossing.",
-        "cols": {
-          "date": "Date",
-          "shift": "Shift",
-          "start": "Start",
-          "end": "End",
-          "crossing": "Crossing",
-          "supervisor": "Supervisor",
-          "staffed": "Staffed"
-        }
+        "cols": {},
+        "colsDate": "Date",
+        "colsEnd": "End",
+        "colsIsStaffed": "Staffed",
+        "colsShiftType": "Shift type",
+        "colsStart": "Start",
+        "colsSupervisor": "Supervisor",
+        "filterShiftType": "Shift type"
       },
       "staff": {
         "title": "Border Staff",
@@ -1479,35 +2350,31 @@
         "searchPlaceholder": "Search by employee name...",
         "emptyTitle": "No staff registered",
         "emptyDescription": "Assign staff to crossings from roles and permissions page.",
-        "cols": {
-          "employee": "Employee",
-          "role": "Role",
-          "crossing": "Crossing",
-          "assignment": "Assignment Type",
-          "starts": "Starts",
-          "ends": "Ends",
-          "status": "Status"
-        }
+        "cols": {},
+        "colsAssignment": "Assignment type",
+        "colsIsActive": "Active",
+        "colsRole": "Role",
+        "colsStarts": "Starts",
+        "colsUser": "Employee"
       },
       "travelers": {
         "title": "Travelers",
         "subtitle": "{count} travelers",
         "searchPlaceholder": "Search by name or passport...",
-        "filterDirection": "Direction",
-        "filterRisk": "Risk",
         "emptyTitle": "No travelers",
         "emptyDescription": "Register travelers from screening page.",
         "cols": {
           "traveler": "Traveler",
           "direction": "Direction",
-          "time": "Time of crossing",
-          "crossing": "Crossing",
           "risk": "Risk",
-          "decision": "Decision",
-          "assessor": "Assessor",
-          "passport": "Passport"
+          "decision": "Decision"
         },
-        "exported": "Exported travelers"
+        "exported": "Exported travelers",
+        "colsAssessedBy": "Assessed by",
+        "colsDecision": "Decision",
+        "colsDirection": "Direction",
+        "colsEntryAt": "Entry date",
+        "colsTraveler": "Traveler"
       },
       "declarations": {
         "title": "Health Declarations",
@@ -1516,48 +2383,37 @@
         "filterStatus": "Status",
         "emptyTitle": "No declarations",
         "emptyDescription": "Health declarations registered via traveler portal or at crossing.",
-        "cols": {
-          "traveler": "Traveler",
-          "departureCountry": "Departure Country",
-          "departureDate": "Departure Date",
-          "symptoms": "Symptoms",
-          "status": "Status",
-          "crossing": "Crossing",
-          "declaredAt": "Declared At"
-        }
+        "cols": {},
+        "colsDeclaredAt": "Declaration date",
+        "colsDepartureCountry": "Departure country",
+        "colsDepartureDate": "Departure date",
+        "colsSymptoms": "Symptoms"
       },
       "screenings": {
         "title": "Health Screenings",
         "subtitle": "{count} screenings",
-        "searchPlaceholder": "Search by name or passport...",
-        "filterDecision": "Decision",
         "emptyTitle": "No screenings",
         "emptyDescription": "Record thermal screening with release decision.",
-        "reassessTitle": "Reassess Screening",
-        "reassessNote": "Rules are re-evaluated based on measurements below: fever ≥ 38 or oxygen < 92 → high risk/quarantine, symptoms → referral, unverified documents → hold.",
         "currentDecision": "Current decision",
-        "tempLabel": "Temperature (°C)",
-        "oxygenLabel": "Oxygen saturation (%)",
         "reassessBtn": "Reassess",
-        "cols": {
-          "traveler": "Traveler",
-          "temp": "Temperature",
-          "oxygen": "Oxygen",
-          "risk": "Risk",
-          "decision": "Decision",
-          "docs": "Documents",
-          "crossing": "Crossing",
-          "time": "Screening Time"
-        },
+        "cols": {},
         "ruleNote": "Rules re-evaluated: fever ≥ 38 or oxygen < 92 → high risk/quarantine, symptoms → referral, unverified docs → hold.",
-        "reassessBtnLabel": "Reassess",
-        "loading": "Loading...",
         "fields": {
           "temp": "Temperature (°C)",
           "oxygen": "Oxygen saturation (%)"
         },
         "reassessed": "Screening reassessed and decision updated",
-        "busy": "Loading..."
+        "busy": "Loading...",
+        "ariaReassess": "Reassess screening",
+        "cancelBtn": "Cancel",
+        "colsBodyTemperature": "Body temperature",
+        "colsDocumentVerified": "Documents verified",
+        "colsOxygenSaturation": "Oxygen saturation",
+        "colsScreenedAt": "Screening time",
+        "dialogTitle": "Reassess screening",
+        "statusIncomplete": "Incomplete",
+        "statusVerified": "Verified",
+        "tooltipReassess": "Reassess with new measurements"
       },
       "vehicles": {
         "title": "Vehicles",
@@ -1566,31 +2422,24 @@
         "filterType": "Vehicle Type",
         "emptyTitle": "No vehicles",
         "emptyDescription": "Register passing vehicles with driver details.",
-        "cols": {
-          "plate": "Plate",
-          "type": "Type",
-          "model": "Model",
-          "driver": "Driver",
-          "status": "Status",
-          "crossing": "Crossing"
-        }
+        "cols": {},
+        "colsDriver": "Driver",
+        "colsMakeModel": "Make/model",
+        "colsPlate": "Plate",
+        "colsType": "Type"
       },
       "vehicleInspections": {
         "title": "Vehicle Inspections",
         "subtitle": "{count} inspections",
         "searchPlaceholder": "Search by plate or notes...",
-        "filterOverall": "Overall",
         "emptyTitle": "No inspections",
         "emptyDescription": "Record vehicle inspection results.",
-        "cols": {
-          "plate": "Plate",
-          "type": "Inspection Type",
-          "cleanliness": "Cleanliness",
-          "pest": "Pest Control",
-          "overall": "Overall",
-          "date": "Date",
-          "inspector": "Inspector"
-        }
+        "cols": {},
+        "colsCleanliness": "Cleanliness",
+        "colsInspectionType": "Inspection type",
+        "colsInspector": "Inspector",
+        "colsOverall": "Overall",
+        "colsPest": "Pests"
       },
       "cargo": {
         "title": "Cargo Inspections",
@@ -1601,77 +2450,51 @@
         "emptyTitle": "No shipments",
         "emptyDescription": "Record general and food cargo inspections.",
         "dialogTitle": "Record Cargo Decision",
-        "dialogNote": "The system computes decision from linked samples. You may override with an explicit decision.",
-        "declaration": "Declaration",
-        "decisionSamples": "Calculate from samples",
-        "cols": {
-          "declaration": "Declaration No.",
-          "scope": "Scope",
-          "product": "Product",
-          "origin": "Origin",
-          "plate": "Plate",
-          "status": "Status",
-          "decision": "Decision"
-        },
+        "cols": {},
         "note": "Decision calculated from linked samples. You may override.",
         "reject": "Reject",
         "hold": "Hold",
         "calcFromSamples": "Calculate from samples",
         "declarationLabel": "Declaration:",
         "recorded": "Cargo decision recorded",
-        "failed": "Failed to record cargo decision"
+        "failed": "Failed to record cargo decision",
+        "colsCountryOfOrigin": "Country of origin",
+        "colsDeclarationNumber": "Declaration number",
+        "colsProductType": "Product type"
       },
       "samples": {
         "title": "Samples",
         "subtitle": "{count} samples",
         "searchPlaceholder": "Search by sample code or type...",
-        "filterStatus": "Status",
         "emptyTitle": "No samples",
         "emptyDescription": "Record food and water cargo samples.",
-        "cols": {
-          "code": "Sample Code",
-          "type": "Sample Type",
-          "status": "Status",
-          "result": "Result",
-          "crossing": "Crossing",
-          "collectedBy": "Collected By",
-          "collectedAt": "Date"
-        }
+        "cols": {},
+        "colsCode": "Sample code",
+        "colsCollectedBy": "Collected by",
+        "colsType": "Sample type"
       },
       "quarantine": {
         "title": "Quarantine Cases",
         "subtitle": "{count} cases",
         "searchPlaceholder": "Search by case number or name...",
-        "filterStatus": "Status",
         "emptyTitle": "No quarantine cases",
         "emptyDescription": "Register quarantine cases with follow-up.",
-        "cols": {
-          "caseNo": "Case No.",
-          "person": "Person",
-          "entryAt": "Entry Date",
-          "duration": "Duration",
-          "expectedEnd": "Expected End",
-          "phase": "Phase",
-          "status": "Status",
-          "crossing": "Crossing"
-        }
+        "cols": {},
+        "colsCaseNumber": "Case number",
+        "colsEntryAt": "Entry date",
+        "colsExpectedEnd": "Expected end date",
+        "colsPhase": "Phase",
+        "colsRequiredDays": "Duration days"
       },
       "isolation": {
         "title": "Isolation Cases",
-        "subtitle": "{count} cases",
         "searchPlaceholder": "Search by name or case number...",
-        "filterStatus": "Status",
         "emptyTitle": "No isolation cases",
         "emptyDescription": "Manage isolation with daily monitoring.",
-        "cols": {
-          "caseNo": "Case No.",
-          "person": "Patient",
-          "diagnosis": "Diagnosis",
-          "admittedAt": "Admitted At",
-          "facility": "Facility",
-          "status": "Status",
-          "endDate": "Expected Discharge"
-        }
+        "cols": {},
+        "colsActualEnd": "Actual end date",
+        "colsNotes": "Notes",
+        "colsStartedBy": "Started by"
       },
       "tracing": {
         "title": "Contact Tracing",
@@ -1679,141 +2502,123 @@
         "searchPlaceholder": "Search by original case...",
         "emptyTitle": "No tracing cases",
         "emptyDescription": "Open tracing from registered violations.",
-        "cols": {
-          "case": "Original Case",
-          "exposed": "Contact",
-          "passport": "Passport",
-          "phone": "Phone",
-          "seat": "Seat/Relation",
-          "transport": "Transport",
-          "followUp": "Follow-up Days",
-          "started": "Started At",
-          "status": "Status",
-          "crossing": "Crossing"
-        }
+        "cols": {},
+        "colsFollowUpDay": "Follow-up day",
+        "colsFollowUpDays": "Follow-up days",
+        "colsFullName": "Full name",
+        "colsIndexCaseName": "Index case",
+        "colsPassportNumber": "Passport number",
+        "colsPhone": "Phone",
+        "colsSeatOrRelation": "Seat / relation",
+        "colsTransportMode": "Transport mode",
+        "emptyDescriptionContacts": "Record contact data for each tracing case.",
+        "emptyTitleContacts": "No contacts",
+        "searchPlaceholderContacts": "Search by name, passport, or phone...",
+        "subtitleContacts": "{count} contacts",
+        "titleContacts": "Contacts",
+        "colsCrossingName": "Crossing name",
+        "colsStartedAt": "Started at",
+        "colsStatus": "Status"
       },
       "emergencies": {
-        "title": "Emergencies",
-        "subtitle": "{count} emergencies",
-        "searchPlaceholder": "Search by title/type...",
-        "filterType": "Type",
-        "filterSeverity": "Severity",
-        "emptyTitle": "No emergencies",
-        "emptyDescription": "Report health emergencies immediately.",
-        "cols": {
-          "title": "Title",
-          "type": "Type",
-          "severity": "Severity",
-          "status": "Status",
-          "reportedAt": "Reported At",
-          "crossing": "Crossing",
-          "actionedBy": "Actioned By"
-        }
+        "cols": {},
+        "colsEmergencyTitle": "Emergency",
+        "colsIncidentTitle": "Incident",
+        "colsReportedAt": "Reported at",
+        "colsRestrictionLevel": "Restriction level",
+        "colsSeverity": "Severity",
+        "emptyDescriptionEmergencies": "Record emergency cases with restriction level and disease.",
+        "emptyDescriptionIncidents": "Report health incidents at the crossing.",
+        "emptyTitleEmergencies": "No emergencies",
+        "emptyTitleIncidents": "No incidents",
+        "searchPlaceholderEmergencies": "Search by title or description...",
+        "searchPlaceholderIncidents": "Search by incident title or description...",
+        "subtitleEmergencies": "{count} cases",
+        "subtitleIncidents": "{count} incidents",
+        "titleEmergencies": "Emergency cases",
+        "titleIncidents": "Health incidents"
       },
       "certificates": {
         "title": "Certificates",
         "subtitle": "{count} certificates",
         "searchPlaceholder": "Search by certificate number or name...",
-        "filterType": "Type",
-        "filterStatus": "Status",
-        "issue": "Issue Certificate",
         "emptyTitle": "No certificates",
         "emptyDescription": "Issue quarantine certificates to travelers or cargo.",
-        "issueDialog": {
-          "title": "Issue Certificate",
-          "type": "Certificate Type",
-          "traveler": "Traveler Name",
-          "passport": "Passport No.",
-          "crossing": "Crossing",
-          "issuedBy": "Issued By",
-          "validDays": "Validity (days)",
-          "reason": "Reason"
-        },
-        "cols": {
-          "number": "Certificate No.",
-          "type": "Type",
-          "holder": "Holder",
-          "passport": "Passport",
-          "issuedAt": "Issued At",
-          "expiresAt": "Expires At",
-          "status": "Status",
-          "crossing": "Crossing"
-        },
+        "issueDialog": {},
+        "cols": {},
         "exported": "Certificates exported",
         "selectCrossing": "Select a crossing first",
         "issued": "Certificate issued {number}",
-        "issueFailed": "Failed to issue certificate"
+        "issueFailed": "Failed to issue certificate",
+        "colsCertificateNumber": "Certificate number",
+        "colsExpiryDate": "Expiry date",
+        "colsIssueDate": "Issue date",
+        "colsIssuedBy": "Issued by"
       },
       "decisions": {
         "title": "Decisions",
         "subtitle": "{count} decisions",
         "searchPlaceholder": "Search by subject/decision...",
-        "filterType": "Type",
         "emptyTitle": "No decisions",
         "emptyDescription": "Quarantine decisions and appeals.",
-        "cols": {
-          "ref": "Reference No.",
-          "subject": "Subject",
-          "type": "Type",
-          "outcome": "Outcome",
-          "decidedAt": "Decided At",
-          "decidedBy": "Decided By",
-          "crossing": "Crossing"
-        },
-        "exported": "Decisions exported"
+        "cols": {},
+        "exported": "Decisions exported",
+        "colsDate": "Decision date",
+        "colsDecidedBy": "Decided by",
+        "colsOutcome": "Outcome",
+        "colsReason": "Reason",
+        "colsSubject": "Subject"
       },
       "notifications": {
         "title": "Notifications",
         "subtitle": "{count} notifications",
         "searchPlaceholder": "Search by title...",
-        "filterType": "Type",
-        "filterStatus": "Status",
         "emptyTitle": "No notifications",
         "emptyDescription": "Emergency and reminder notifications.",
-        "cols": {
-          "title": "Title",
-          "type": "Type",
-          "channel": "Channel",
-          "status": "Status",
-          "sentAt": "Sent At",
-          "recipients": "Recipients"
-        },
-        "exported": "Notifications exported"
+        "cols": {},
+        "exported": "Notifications exported",
+        "colsChannel": "Channel",
+        "colsRecipientContact": "Contact method",
+        "colsRecipientRole": "Recipient",
+        "colsSentAt": "Sent at",
+        "colsStatus": "Delivery status",
+        "colsTitle": "Title"
       },
       "statistics": {
         "title": "Daily Statistics",
         "subtitle": "Daily stats by crossing",
-        "filterDate": "Date",
         "emptyTitle": "No statistics",
         "emptyDescription": "Daily statistics are generated automatically or manually.",
         "refresh": "Refresh Statistics",
-        "cols": {
-          "date": "Date",
-          "crossing": "Crossing",
-          "travelers": "Travelers",
-          "vehicles": "Vehicles",
-          "declarations": "Declarations",
-          "screenings": "Screenings",
-          "suspected": "Suspected",
-          "quarantine": "Quarantine",
-          "isolation": "Isolation",
-          "cargo": "Cargo",
-          "certificates": "Certificates"
-        },
+        "cols": {},
         "refreshing": "Updating...",
-        "emptyRefresh": "Click \"Update today's summary\" to calculate today's numbers from screening and cargo records.",
-        "minutesUnit": "min",
         "refreshed": "Today's summary updated for all crossings",
-        "refreshFailed": "Failed to update statistics - may need dashboard permissions"
+        "refreshFailed": "Failed to update statistics - may need dashboard permissions",
+        "colsAvgProcessing": "Avg processing",
+        "colsQuarantineCases": "Quarantine cases",
+        "colsSamplesCollected": "Samples collected",
+        "colsTravelersInbound": "Travelers inbound",
+        "colsTravelersOutbound": "Travelers outbound",
+        "colsVehiclesInspected": "Vehicles inspected",
+        "minAbbr": "min"
       },
       "statusLabels": {
-        "yes": "Yes",
-        "no": "No",
-        "operational": "Operational",
-        "stopped": "Stopped",
-        "active": "Active",
-        "ended": "Ended",
         "ongoing": "Ongoing"
+      },
+      "common": {
+        "ended": "Stopped",
+        "operational": "Operational",
+        "stopped": "Stopped"
+      },
+      "dialogs": {
+        "certType": "Certificate type",
+        "changeCrossing": "Change crossing",
+        "crossingLabel": "Crossing",
+        "issueBtn": "Issue",
+        "issueCert": "Issue certificate",
+        "newStatus": "New status",
+        "reason": "Reason",
+        "validDays": "Valid days"
       }
     },
     "portHealth": {
@@ -2280,7 +3085,6 @@
       }
     },
     "airportHealth": {
-      "title": "Airport Health & Aviation",
       "header": {
         "back": "Back to Platform",
         "home": "Home",
@@ -2335,93 +3139,23 @@
         "alert": "Alert",
         "hold": "Hold"
       },
-      "offline": {
-        "online": "ONLINE — Connected",
-        "offline": "OFFLINE — Disconnected",
-        "syncing": "SYNCING — Syncing",
-        "synced": "SYNC COMPLETE — Complete"
-      }
+      "offline": {}
     },
-    "common": {
-      "dashboard": "Dashboard",
-      "sections": "Sections",
-      "yes": "Yes",
-      "no": "No",
-      "save": "Save",
-      "cancel": "Cancel",
-      "search": "Search",
-      "export": "Export",
-      "refresh": "Refresh",
-      "all": "All",
-      "active": "Active",
-      "inactive": "Inactive",
-      "status": "Status"
-    },
+    "common": {},
     "actions": {
       "changeStatus": "Change Status",
       "changeBorderStatus": "Change Border Status",
-      "reassess": "Reassess with new measurements",
-      "reassessScreening": "Reassess Screening",
-      "reassessDialog": "Reassess Screening",
-      "recordCargoDecision": "Record Cargo Decision",
-      "issueCertificate": "Issue Certificate"
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "labels": {
-      "border": "Crossing",
-      "crossing": "Crossing",
-      "facility": "Facility",
-      "shift": "Shift",
-      "staff": "Staff",
-      "traveler": "Traveler",
-      "declaration": "Declaration",
-      "screening": "Screening",
-      "vehicle": "Vehicle",
-      "cargo": "Cargo",
-      "sample": "Sample",
-      "quarantine": "Quarantine",
-      "isolation": "Isolation",
-      "emergency": "Emergency",
-      "certificate": "Certificate",
-      "decision": "Decision",
-      "notification": "Notification",
       "yes": "Yes",
       "no": "No",
-      "active": "Active",
-      "continuous": "Ongoing",
-      "all": "All",
-      "search": "Search",
-      "filter": "Filter",
       "export": "Export",
-      "refresh": "Refresh",
-      "add": "Add",
-      "edit": "Edit",
-      "delete": "Delete",
-      "view": "View",
-      "close": "Close",
-      "cancel": "Cancel",
-      "save": "Save",
-      "apply": "Apply",
-      "approve": "Approve",
-      "reject": "Reject",
-      "hold": "Hold",
-      "issue": "Issue",
-      "loading": "Loading...",
-      "none": "—",
       "code": "Code"
     },
-    "dialogs": {
-      "close": "Close",
-      "cancel": "Cancel",
-      "save": "Save",
-      "apply": "Apply",
-      "confirm": "Confirm"
-    },
-    "messages": {
-      "updated": "Updated successfully",
-      "saved": "Saved successfully",
-      "error": "An error occurred",
-      "exported": "Exported successfully"
-    },
+    "dialogs": {},
+    "messages": {},
     "status": {
       "verified": "Verified",
       "incomplete": "Incomplete"
@@ -5812,6 +6546,14 @@
       }
     }
   },
+  "chemistry": {
+    "samples": {
+      "list": {
+        "startAnalysis": "▶️ Start",
+        "viewDetails": "👁️ Details"
+      }
+    }
+  },
   "food": {
     "foodWindow": {
       "pageHeader": {
@@ -6287,9 +7029,11 @@
       "messages": {
         "deleted": "Test deleted"
       },
+      "amountWithCurrency": "{{amount}} SDG",
       "summary": {
         "totalTariff": "Total Tariff",
-        "perTest": "{total} per test"
+        "perTest": "{total} per test",
+        "perTestWithCurrency": "{{total}} SDG per test"
       },
       "table": {
         "title": "Lab Transactions",
@@ -6544,6 +7288,3277 @@
       "alerts": {
         "title": "🚨 National Food Alerts"
       }
+    },
+    "exportInspection": {
+      "title": "Export Food Resources Inspection Form",
+      "subtitle": "Electronic record — data read automatically from request, inspection, lab and decision",
+      "print": "Print / PDF",
+      "section1": "1) Request Information",
+      "section2": "2) Exporter Information",
+      "section3": "3) Food Resources Data",
+      "section4": "4) Inspection",
+      "section5": "5) Samples & Laboratory",
+      "section6": "6) Decision",
+      "section7": "7) Export Certificate",
+      "noSamples": "No samples",
+      "noItems": "No items",
+      "noInspection": "No inspection recorded for this shipment yet.",
+      "noFinalDecision": "No final decision yet.",
+      "noCertificate": "No certificate issued yet.",
+      "bench": {
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "toxicology": "Toxicology",
+        "molecular": "Molecular"
+      },
+      "sampleStatus": {
+        "received": "Received",
+        "underTesting": "Under Testing",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "sentToLab": "Sent to Lab"
+      },
+      "decision": {
+        "needsAnalysis": "Needs Analysis",
+        "nonCompliant": "Non-Compliant",
+        "compliant": "Compliant"
+      },
+      "field": {
+        "manifestNumber": "Request/Manifest No.",
+        "date": "Date",
+        "customsNumber": "Customs No.",
+        "submittedAt": "Submitted At",
+        "messageType": "Message Type",
+        "port": "Port",
+        "exporterName": "Exporter Name",
+        "supplierName": "Company/Supplier",
+        "clearingAgent": "Clearing Agent",
+        "originCountry": "Origin Country",
+        "vesselName": "Vessel/Transport",
+        "loadingPort": "Loading Port",
+        "billOfLading": "Bill of Lading",
+        "certificateNo": "Certificate No.",
+        "totalWeightKg": "Total Weight (kg)",
+        "status": "Status",
+        "inspectionDate": "Inspection Date",
+        "inspector": "Inspector",
+        "result": "Result",
+        "temperature": "Temperature (°C)",
+        "productionDate": "Production Date",
+        "expiryDate": "Expiry Date",
+        "batchNumber": "Batch No.",
+        "containerStatus": "Container Status",
+        "packageCondition": "Package Condition",
+        "damagedSound": "Damaged / Sound",
+        "damagedSoundWeight": "Damaged / Sound Weight (kg)",
+        "notes": "Notes",
+        "inspectionNotes": "Inspection Notes",
+        "finalDecision": "Final Decision",
+        "finalApproval": "Final Approval",
+        "decisionDate": "Decision Date",
+        "decisionReason": "Reason",
+        "certificateNumber": "Certificate No.",
+        "certificateType": "Type",
+        "issuedAt": "Issued At",
+        "damaged": "Damaged Packages",
+        "sound": "Sound Packages",
+        "damagedWeight": "Damaged Weight (kg)",
+        "soundWeight": "Sound Weight (kg)"
+      },
+      "table": {
+        "item": "Item",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packageCount": "Packages",
+        "packageType": "Package Type"
+      },
+      "sampleTable": {
+        "sampleNumber": "Sample No.",
+        "sampleType": "Type",
+        "reason": "Reason",
+        "lab": "Lab",
+        "labBranch": "Lab/Branch",
+        "status": "Status"
+      },
+      "sign": {
+        "inspector": "Inspector",
+        "sectionHead": "Section Head",
+        "foodDirector": "Food Control Director"
+      },
+      "footer": "Electronic document from National Quarantine Platform — Food Control System · {date}"
+    },
+    "ops": {
+      "hero": {
+        "eyebrow": "Food Control",
+        "title": "Food Control Operations",
+        "subtitle": "Register requests, collect fees, inspection & sampling, and issue final decisions",
+        "avatar": "F",
+        "live": "Live"
+      },
+      "sections": {
+        "clerk": "Clerk",
+        "accountant": "Accountant",
+        "inspector": "Inspector",
+        "manager": "Section Manager",
+        "exportForm": "Inspection Form"
+      },
+      "notify": {
+        "requestRegistered": "Request registered and referred for fee collection",
+        "requestRegisterFailed": "Failed to register request",
+        "inspectorAssigned": "Assigned",
+        "assignFailed": "Failed to assign",
+        "selectDecision": "Select decision",
+        "decisionIssued": "Final decision and certificate issued",
+        "formLoadFailed": "Failed to load form",
+        "inspectionRegistered": "Inspection report registered",
+        "inspectionSaveFailed": "Failed to save inspection",
+        "selectSampleType": "Select sample type",
+        "sampleSent": "Sample withdrawn and sent to lab",
+        "sampleRegisterFailed": "Failed to register sample",
+        "reviewApproved": "Approved",
+        "reviewFailed": "Review failed"
+      },
+      "clerk": {
+        "itemName": "Item Name",
+        "brand": "Brand",
+        "origin": "Origin",
+        "weightKg": "Weight (kg)",
+        "packages": "Packages",
+        "packageType": "Package Type",
+        "delete": "Delete",
+        "sections": "Dashboard Sections",
+        "completeFields": "Complete required fields",
+        "newRequest": "New Inbound Request",
+        "title": "Register Inbound Request (Clerk)",
+        "subtitle": "Enter request and item data; samples and fees calculated automatically after save",
+        "manifestNumber": "Manifest No.",
+        "supplierName": "Supplier Name",
+        "originCountry": "Origin Country",
+        "arrivalDate": "Arrival Date",
+        "customsNumber": "Customs No.",
+        "certificateNo": "Certificate No.",
+        "vesselName": "Vessel Name",
+        "clearingAgent": "Clearing Agent",
+        "loadingPort": "Loading Port",
+        "billOfLading": "Bill of Lading",
+        "port": "Port",
+        "messageType": "Message Type",
+        "items": "Items",
+        "addItem": "Add Item",
+        "totalWeight": "Total Weight:",
+        "samplingPolicy": "Sampling Policy:",
+        "samplesAuto": "Sample count will be calculated automatically per policy."
+      },
+      "common": {
+        "none": "None",
+        "noneRequests": "No requests",
+        "noneInspection": "No requests awaiting inspection",
+        "noneMovement": "No movements in this period."
+      },
+      "bench": {
+        "microbiology": "Microbiology",
+        "chemistry": "Chemistry",
+        "toxicology": "Toxicology",
+        "molecular": "Molecular"
+      },
+      "table": {
+        "manifestNumber": "Manifest No.",
+        "supplier": "Supplier",
+        "origin": "Origin",
+        "type": "Type",
+        "message": "Message",
+        "weight": "Weight",
+        "samples": "Samples",
+        "arrival": "Arrival",
+        "status": "Status",
+        "decision": "Decision",
+        "inspector": "Inspector",
+        "feesDue": "Fees Due",
+        "action": "Action"
+      },
+      "kpi": {
+        "totalRequests": "Total Requests",
+        "receiptsToday": "Receipts (Today)",
+        "totalCollected": "Total Collected",
+        "pendingCollection": "Pending Collection"
+      },
+      "manager": {
+        "assignInspector": "Assign Inspector",
+        "review": "Review",
+        "finalDecision": "Final Decision",
+        "pendingTitle": "Requests Awaiting Inspector",
+        "assignTitle": "Assign Inspector (Section Manager)",
+        "inspector": "Inspector",
+        "decisionTitle": "Final Decision (Section Manager)",
+        "decisionSubtitle": "Release / Partial/Temporary Release / Re-export / Transfer / Detention / Destruction",
+        "decisionLabel": "Decision",
+        "decisionReason": "Decision Reason",
+        "section": "Section Manager"
+      },
+      "inspector": {
+        "inspect": "Inspect",
+        "sample": "Sample",
+        "assign": "Assign",
+        "assignInspector": "Inspector to Assign",
+        "selectInspector": "Select Inspector",
+        "pendingTitle": "Requests Awaiting Inspector",
+        "reportsTitle": "Field Inspection Reports",
+        "reportsSubtitle": "Inspection data and result (Compliant / Non-Compliant / Needs Analysis)"
+      },
+      "empty": {
+        "none": "None",
+        "noRequests": "No requests",
+        "registerFirst": "Register first import request",
+        "noMovement": "No movements in this period.",
+        "noInspection": "No requests awaiting inspection"
+      },
+      "report": {
+        "title": "Collection Report",
+        "print": "Print Receipt"
+      },
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "accountant": {
+        "pendingTitle": "Requests Pending Fee Collection",
+        "pendingDesc": "Registered requests move here after referral from clerk",
+        "collect": "Collect & Issue Receipt"
+      },
+      "export": {
+        "title": "Export Shipments — Food Resources Inspection Form",
+        "emptyTitle": "No export shipments",
+        "emptyDesc": "Register an export request from the clerk tab to view the inspection form",
+        "formTitle": "Export Food Resources Inspection Form",
+        "formSubtitle": "Electronic record composed of request, inspection, lab and decision data",
+        "openForm": "Open form",
+        "close": "Close",
+        "loading": "Assembling form data…",
+        "noData": "No form data available."
+      },
+      "inspection": {
+        "productionDate": "Production Date",
+        "expiryDate": "Expiry Date",
+        "temperature": "Temperature (°C)",
+        "batchNumber": "Batch No.",
+        "containerCondition": "Container Condition",
+        "containerStatus": "Container Status",
+        "packageCondition": "Package Condition",
+        "damagedPackages": "Damaged Packages",
+        "soundPackages": "Sound Packages",
+        "damagedWeight": "Damaged Weight",
+        "soundWeight": "Sound Weight",
+        "notes": "Notes"
+      },
+      "sampling": {
+        "title": "Withdraw Sample for Analysis",
+        "subtitle": "Register sample and assign reason and lab bench",
+        "sampleType": "Sample Type",
+        "reason": "Sampling Reason",
+        "bench": "Lab Bench"
+      }
+    },
+    "chemLab": {
+      "sidebar.home.label": "Analyst Dashboard",
+      "sidebar.home.children.0.label": "General Dashboard",
+      "sidebar.samples.label": "My Samples",
+      "sidebar.samples.children.0.label": "New",
+      "sidebar.samples.children.1.label": "In Progress",
+      "sidebar.samples.children.2.label": "For Review",
+      "sidebar.samples.children.3.label": "Returned",
+      "sidebar.samples.children.4.label": "Completed",
+      "sidebar.analysis.label": "Analyses",
+      "sidebar.analysis.children.0.label": "Chemistry Tests",
+      "sidebar.analysis.children.1.label": "My Work Queue",
+      "sidebar.analysis.children.2.label": "Test History",
+      "sidebar.qc.label": "QC Quality",
+      "sidebar.qc.children.0.label": "QC Tasks",
+      "sidebar.qc.children.1.label": "QC Results",
+      "sidebar.equipment.label": "Equipment",
+      "sidebar.equipment.children.0.label": "Available Equipment",
+      "sidebar.reagents.label": "Reagents",
+      "sidebar.reagents.children.0.label": "Reagent Log",
+      "sidebar.specs.label": "Specifications",
+      "sidebar.specs.children.0.label": "Applied Specs",
+      "sidebar.sla.label": "SLA Tracking",
+      "sidebar.sla.children.0.label": "Compliance Index",
+      "sidebar.results.label": "Results",
+      "sidebar.results.children.0.label": "Results Log",
+      "sidebar.alerts.label": "Alerts",
+      "footer.settings.label": "Settings",
+      "footer.help.label": "Help",
+      "settings.allowed.0": "View Only My Assigned Samples",
+      "settings.allowed.1": "Start Analysis, Execute Test, Enter Result",
+      "settings.allowed.2": "Save Draft, Edit Unapproved Result, Submit for Review",
+      "settings.allowed.3": "Log Equipment & Reagent Used During Analysis (Traceability)",
+      "settings.allowed.4": "Execute Permitted QC Tasks, View Applied Specs",
+      "settings.blocked.0": "Final Result Approval or Section Approval — Section Chief/Lab Manager",
+      "settings.blocked.1": "Modify Specification, Reference Range, or Test Price",
+      "settings.blocked.2": "Manually Override Non-Compliant to Compliant",
+      "settings.blocked.3": "Delete Sample, Result, or Modify Audit Trail",
+      "settings.blocked.4": "Manage Users & Permissions",
+      "help.steps.0.title": "1. Start Analysis",
+      "help.steps.0.text": "From My Samples pulse choose 'Start Analysis' — system auto-validates sample, payment, method, equipment, reagent, QC status.",
+      "help.steps.1.title": "2. Execute Test",
+      "help.steps.1.text": "Log equipment & reagent (LOT + expiry) then enter result via numeric, qualitative, or range input with unit.",
+      "help.steps.2.title": "3. Auto Evaluation",
+      "help.steps.2.text": "System calculates compliance against reference range — cannot be changed manually.",
+      "help.steps.3.title": "4. Save or Submit",
+      "help.steps.3.text": "Save as draft to edit, or submit for review to reach Chemistry Section Chief then Lab Manager.",
+      "help.steps.4.title": "5. If Result Returned",
+      "help.steps.4.text": "Appears in 'Returned' with reason from Section Chief — correct and resubmit.",
+      "sections.overview.label": "Overview",
+      "sections.samples.label": "My Samples",
+      "sections.analysis.label": "Analyses",
+      "sections.qc.label": "Quality",
+      "sections.equipment.label": "Equipment",
+      "sections.results.label": "Results",
+      "sections.alerts.label": "Alerts",
+      "subTitles.home": "Overview of tests assigned to you in Chemistry section",
+      "subTitles.samples.new": "Tests awaiting start",
+      "subTitles.samples.progress": "Analyses in progress",
+      "subTitles.samples.review": "Results awaiting Section Chief review",
+      "subTitles.samples.returned": "Results returned to you for correction",
+      "subTitles.samples.completed": "Approved and completed results",
+      "subTitles.analysis.tests": "Available Chemistry test list",
+      "subTitles.analysis.queue": "All your work in progress by priority",
+      "subTitles.analysis.history": "History of results you entered",
+      "subTitles.qc.tasks": "Results requiring QC review",
+      "subTitles.qc.results": "Recorded QC test results",
+      "subTitles.equipment": "Chemistry section equipment readiness",
+      "subTitles.reagents": "Reagents and materials held in results",
+      "subTitles.specs": "Reference specifications for tests (view only)",
+      "subTitles.sla": "Delivery timeline compliance indicator",
+      "subTitles.results": "Final approved results log",
+      "subTitles.alerts": "Important alerts and notifications",
+      "subTitles.settings": "Analyst settings and permissions",
+      "subTitles.help": "Usage guide and analysis steps",
+      "returnReasons.0": "Result non-compliant with specifications",
+      "sections.railLabel": "Lab Sections",
+      "readiness.noSampleData": "Sample data not available",
+      "readiness.sampleRejected": "Sample rejected",
+      "readiness.paymentRequired": "Analysis fees must be paid before starting",
+      "readiness.noMethod": "No approved method for this test",
+      "readiness.testInactive": "Test is currently inactive",
+      "readiness.noEquipment": "No operational equipment available in Chemistry section",
+      "readiness.qcFailed": "QC failed — contact Section Chief",
+      "alerts.overdueSla": "{count} tests exceeded required SLA duration",
+      "alerts.returnedResults": "{count} results returned from Section Chief — correction required",
+      "alerts.qcRequired": "{count} results require QC review before approval",
+      "alerts.urgentTests": "{count} urgent/high priority tests",
+      "alerts.dueToday": "{count} tests due today",
+      "alerts.calibrationDue": "{count} equipment near calibration due date (within 30 days)",
+      "alerts.expiredReagents": "{count} expired reagent entries — verify validity",
+      "alerts.noAlerts": "No current alerts — your work is within indicators",
+      "notify.cannotStart": "Cannot start analysis: {reason}",
+      "notify.started": "Analysis started — timestamp recorded automatically",
+      "notify.startFailed": "Failed to start analysis",
+      "notify.savedDraft": "Result saved as draft",
+      "notify.saveDraftFailed": "Failed to save draft",
+      "notify.qcFailedCannotSubmit": "QC failed — cannot submit result, contact Section Chief",
+      "notify.enterNumericValue": "Enter numeric result value",
+      "notify.submittedForReview": "Result submitted for Chemistry Section Chief review",
+      "notify.submitFailed": "Failed to submit result for review",
+      "notify.qcPassed": "Quality Control passed (QC)",
+      "notify.qcFailed": "Quality Control violation recorded (QC)",
+      "notify.qcError": "Failed to record QC review",
+      "table.columns.sampleNumber": "Sample",
+      "table.columns.sampleType": "Product",
+      "table.columns.parameter": "Test",
+      "table.columns.priority": "Priority",
+      "table.columns.status": "Status",
+      "table.columns.result": "Result",
+      "table.columns.decision": "Decision",
+      "table.columns.enteredAt": "Recorded",
+      "table.columns.deviceUsed": "Device",
+      "dialog.startAnalysis.title": "Start Analysis",
+      "dialog.startAnalysis.submitLabel": "Start Now",
+      "dialog.startAnalysis.description": "Start time will be recorded automatically. Analysis requires strict SOP handling.",
+      "dialog.startAnalysis.cannotStart": "Cannot start analysis: {reason}",
+      "dialog.startAnalysis.ready": "All start conditions met — ready to execute.",
+      "dialog.startAnalysis.parameterLabel": "Test",
+      "dialog.startAnalysis.deviceLabel": "Device",
+      "dialog.startAnalysis.devicePlaceholder": "Select device (optional)",
+      "dialog.result.title": "Enter Test Result",
+      "dialog.result.submitLabel": "Submit Result for Review",
+      "dialog.result.referenceLimit": "Reference limit: {limit}{unit} — method: {method}",
+      "dialog.result.typeLabel": "Result Type",
+      "dialog.result.type.numeric": "Numeric",
+      "dialog.result.type.qualitative": "Qualitative (Negative/Positive)",
+      "dialog.result.type.range": "Range (From - To)",
+      "dialog.result.valueLabel": "Result ({unit})",
+      "dialog.result.qualitativeLabel": "Qualitative Result",
+      "dialog.result.qualitative.negative": "Negative",
+      "dialog.result.qualitative.positive": "Positive",
+      "dialog.result.range.from": "From",
+      "dialog.result.range.to": "To",
+      "dialog.result.deviceLabel": "Device Used",
+      "dialog.result.devicePlaceholder": "Select Device",
+      "dialog.result.lotLabel": "Reagent Lot Number",
+      "dialog.result.expiryLabel": "Reagent Expiry Date",
+      "dialog.result.quantityLabel": "Quantity Used",
+      "dialog.result.notesLabel": "Notes",
+      "dialog.result.autoEvaluation": "Auto-evaluation: {decision} — Analyst cannot override automatic evaluation against specification.",
+      "dialog.result.saveDraft": "Save as Draft",
+      "dialog.qc.title": "Quality Control Review",
+      "dialog.qc.submitLabel": "Approve QC",
+      "dialog.qc.description": "Verify result reading against control reagent before approval.",
+      "dialog.qc.recordedResult": "Recorded Result",
+      "dialog.qc.referenceLimit": "Reference Limit: {limit}",
+      "dialog.qc.decision": "Decision: {decision}",
+      "dialog.qc.decisionLabel": "QC Decision",
+      "dialog.qc.decision.passed": "Compliant — Approved",
+      "dialog.qc.decision.failed": "Non-compliant — Investigation Required",
+      "dialog.qc.notesLabel": "QC Notes",
+      "dialog.sampleDetails.title": "Sample Details",
+      "dialog.sampleDetails.subtitle": "Request: {requestNumber}",
+      "dialog.sampleDetails.close": "Close",
+      "dialog.sampleDetails.fields.sampleNumber": "Sample Number",
+      "dialog.sampleDetails.fields.sampleType": "Sample Type",
+      "dialog.sampleDetails.fields.priority": "Priority",
+      "dialog.sampleDetails.fields.samplingReason": "Sampling Reason",
+      "dialog.sampleDetails.fields.requestingDept": "Requesting Department",
+      "dialog.sampleDetails.fields.source": "Source",
+      "dialog.sampleDetails.fields.sampleStatus": "Sample Status",
+      "dialog.sampleDetails.fields.collectionStatus": "Collection Status",
+      "dialog.sampleDetails.fields.batchNumber": "Batch: {batchNumber}",
+      "dialog.sampleDetails.fields.originCountry": "Country of Origin",
+      "dialog.sampleDetails.fields.brand": "Brand",
+      "dialog.sampleDetails.fields.receivedAt": "Received At",
+      "empty.noTestsInQueue": "No tests near due date",
+      "empty.noNewTests": "No new tests awaiting start",
+      "empty.noInProgress": "No analyses in progress",
+      "empty.noForReview": "No results awaiting Section Chief review",
+      "empty.noReturned": "No results returned for correction",
+      "empty.noCompleted": "No approved results yet",
+      "empty.noTestsInChemistry": "No tests recorded in Chemistry section",
+      "empty.noEquipment": "No equipment recorded",
+      "empty.noReagents": "No reagents recorded in results",
+      "empty.noSpecs": "No reference specifications recorded",
+      "empty.noHistoryResults": "No result history yet",
+      "empty.noQcTasks": "No QC tasks currently",
+      "empty.noQcResults": "No QC results recorded yet",
+      "empty.noSlaHistory": "No results recorded yet",
+      "button.view": "View",
+      "button.start": "Start",
+      "button.edit": "Edit",
+      "button.record": "Record",
+      "button.pendingReview": "Pending Review",
+      "button.correctAndResubmit": "Correct & Resubmit",
+      "button.quickActions": "Quick Actions",
+      "button.startNewTest": "Start New Test",
+      "button.qcTasks": "QC Tasks",
+      "button.slaTracking": "SLA Tracking",
+      "button.equipment": "Equipment",
+      "section.alerts": "Alerts",
+      "section.dueSoon": "Upcoming Due Dates",
+      "section.slaStats.onTime": "On Time",
+      "section.slaStats.dueSoon": "Due Soon",
+      "section.slaStats.overdue": "Overdue",
+      "section.slaStats.dueToday": "Due Today",
+      "section.nearOverdue": "Near/Overdue Tests",
+      "settings.allowedTitle": "Available Preferences",
+      "settings.blockedTitle": "Restricted Permissions on Analyst Screen",
+      "settings.restrictedNote": "These actions are restricted to Section Chief / Lab Manager and applied automatically.",
+      "help.title": "Chemistry Analyst Screen Usage Guide",
+      "help.chemistryLab": "Chemistry Section — Analyst Interface",
+      "status.active": "Active",
+      "status.inactive": "Inactive",
+      "status.referenceLimit": "Reference Limit: {limit}",
+      "status.method": "Method: {method}",
+      "status.unit": "Unit: {unit}",
+      "status.specsNote": "These specifications are approved and for reference only — cannot be modified from Analyst screen.",
+      "status.specsReference": "Approved Reference Limit",
+      "kpi.newTests": "New Tests",
+      "kpi.inProgress": "In Progress",
+      "kpi.submitted": "Awaiting Review",
+      "kpi.overdue": "Overdue (SLA)",
+      "kpi.completed": "Completed",
+      "kpi.qcRequired": "QC Required",
+      "kpi.urgent": "Urgent",
+      "kpi.dueToday": "Due Today",
+      "kpi.returned": "Returned for Correction",
+      "liveStatus": "Live",
+      "connectedStatus": "Connected",
+      "accountLabel": "Account",
+      "avatarFallback": "U",
+      "spec.table.code": "Code: {code}",
+      "equipment.model": "Model: {model}",
+      "equipment.lastCalibrated": "Last Calibrated: {date}",
+      "equipment.nextCalibration": "Next Calibration: {date}",
+      "equipment.calibrationDueSoon": "Calibration due soon — contact responsible",
+      "result.unrecorded": "Unrecorded"
+    },
+    "microbiologyLab": {
+      "alerts": {
+        "activeAnalysts": "Number of active analysts",
+        "activeSpecs": "Active specifications applied",
+        "evaluatedTests": "Evaluations recorded per specification",
+        "noAlerts": "No alerts currently — section performance within indicators",
+        "nonCompliantNotify": "Non-compliant results requiring authority notification",
+        "pendingResults": "Results awaiting review/approval"
+      },
+      "assign": {
+        "testsLabel": "Distributed tests"
+      },
+      "button": {
+        "alerts": "Alerts",
+        "assign": "Distribute",
+        "open": "Open",
+        "review": "Review"
+      },
+      "dashboard": {
+        "summaryTitle": "Operations summary"
+      },
+      "empty": {
+        "noActiveLimits": "No active limits in current version",
+        "noLimits": "No active limits",
+        "noParameters": "No microbiological tests recorded",
+        "noSpecs": "No specifications recorded"
+      },
+      "help": {
+        "title": "Microbiology Section Workflow"
+      },
+      "liveStatus": "Live",
+      "nonCompliance": {
+        "notePrefix": "[Non-compliance] Reasons:"
+      },
+      "reports": {
+        "summaryTitle": "Section reports summary"
+      },
+      "result": {
+        "label": "Result:"
+      },
+      "review": {
+        "actionLabel": "Review action",
+        "approveButton": "Submit for approval",
+        "limitsLabel": "Limits applied per specification",
+        "nonComplianceNote": "These reasons will be attached to the result, and the lab manager will be notified upon submission for final approval to take corrective action",
+        "nonComplianceReasons": "Non-compliance reasons — select one or more",
+        "returnButton": "Return to analyst",
+        "specification": "Specification"
+      },
+      "settings": {
+        "allowedTitle": "Available Section Chief privileges",
+        "blockedTitle": "Outside Section Chief scope"
+      },
+      "sla": {
+        "complianceRate": "SLA compliance rate",
+        "noData": "No sufficient data yet"
+      },
+      "specs": {
+        "currentVersion": "Current version",
+        "reference": "Reference"
+      },
+      "table": {
+        "organism": "Organism",
+        "plan": "Plan",
+        "unit": "Unit"
+      },
+      "str1": "Translation missing str1",
+      "str2": "Translation missing str2",
+      "str3": "Translation missing str3",
+      "str4": "Translation missing str4",
+      "str5": "Translation missing str5",
+      "str6": "Translation missing str6",
+      "str7": "Translation missing str7",
+      "str8": "Translation missing str8",
+      "str9": "Translation missing str9",
+      "str10": "Translation missing str10",
+      "str11": "Translation missing str11",
+      "str12": "Translation missing str12",
+      "str13": "Translation missing str13",
+      "str14": "Translation missing str14",
+      "str15": "Translation missing str15",
+      "str16": "Translation missing str16",
+      "str17": "Translation missing str17",
+      "str18": "Translation missing str18",
+      "str19": "Translation missing str19",
+      "str20": "Translation missing str20",
+      "str21": "Translation missing str21",
+      "str22": "Translation missing str22",
+      "str23": "Translation missing str23",
+      "str24": "Translation missing str24",
+      "str25": "Translation missing str25",
+      "str26": "Translation missing str26",
+      "str27": "Translation missing str27",
+      "str28": "Translation missing str28",
+      "str29": "Translation missing str29",
+      "str30": "Translation missing str30",
+      "str31": "Translation missing str31",
+      "str32": "Translation missing str32",
+      "str33": "Translation missing str33",
+      "str34": "Translation missing str34",
+      "str35": "Translation missing str35",
+      "str36": "Translation missing str36",
+      "str37": "Translation missing str37",
+      "str38": "Translation missing str38",
+      "str39": "Translation missing str39",
+      "str40": "Translation missing str40",
+      "str41": "Translation missing str41",
+      "str42": "Translation missing str42",
+      "str43": "Translation missing str43",
+      "str44": "Translation missing str44",
+      "str45": "Translation missing str45",
+      "str46": "Translation missing str46",
+      "str47": "Translation missing str47",
+      "str48": "Translation missing str48",
+      "str49": "Translation missing str49",
+      "str50": "Translation missing str50",
+      "str51": "Translation missing str51",
+      "str52": "Translation missing str52",
+      "str53": "Translation missing str53",
+      "str54": "Translation missing str54",
+      "str55": "Translation missing str55",
+      "str56": "Translation missing str56",
+      "str57": "Translation missing str57",
+      "str58": "Translation missing str58",
+      "str59": "Translation missing str59",
+      "str60": "Translation missing str60",
+      "str61": "Translation missing str61",
+      "str62": "Translation missing str62",
+      "str63": "Translation missing str63",
+      "str64": "Translation missing str64",
+      "str65": "Translation missing str65",
+      "str66": "Translation missing str66",
+      "str67": "Translation missing str67",
+      "str68": "Translation missing str68",
+      "str69": "Translation missing str69",
+      "str70": "Translation missing str70",
+      "str71": "Translation missing str71",
+      "str72": "Translation missing str72",
+      "str73": "Translation missing str73",
+      "str74": "Translation missing str74",
+      "str75": "Translation missing str75",
+      "str76": "Translation missing str76",
+      "str77": "Translation missing str77",
+      "str126": "Translation missing str126",
+      "str127": "Translation missing str127",
+      "str128": "Translation missing str128",
+      "str129": "Translation missing str129",
+      "str130": "Translation missing str130",
+      "str131": "Translation missing str131",
+      "str135": "Translation missing str135",
+      "str143": "Translation missing str143",
+      "str144": "Translation missing str144",
+      "str145": "Translation missing str145",
+      "str146": "Translation missing str146",
+      "str147": "Translation missing str147",
+      "str148": "Translation missing str148",
+      "str149": "Translation missing str149",
+      "str150": "Translation missing str150",
+      "str151": "Translation missing str151",
+      "str152": "Translation missing str152",
+      "str153": "Translation missing str153",
+      "str154": "Translation missing str154",
+      "str155": "Translation missing str155",
+      "str156": "Translation missing str156",
+      "str157": "Translation missing str157",
+      "str158": "Translation missing str158",
+      "str159": "Translation missing str159",
+      "str160": "Translation missing str160",
+      "str161": "Translation missing str161",
+      "str162": "Translation missing str162",
+      "str163": "Translation missing str163",
+      "str164": "Translation missing str164",
+      "str165": "Translation missing str165",
+      "str166": "Translation missing str166",
+      "str167": "Translation missing str167",
+      "str168": "Translation missing str168",
+      "str169": "Translation missing str169",
+      "str170": "Translation missing str170",
+      "str171": "Translation missing str171",
+      "str172": "Translation missing str172",
+      "str173": "Translation missing str173",
+      "str174": "Translation missing str174",
+      "str175": "Translation missing str175",
+      "str176": "Translation missing str176",
+      "str177": "Translation missing str177",
+      "str178": "Translation missing str178",
+      "str179": "Translation missing str179",
+      "str180": "Translation missing str180",
+      "str181": "Translation missing str181",
+      "str182": "Translation missing str182",
+      "str183": "Translation missing str183",
+      "str185": "Translation missing str185",
+      "str186": "Translation missing str186",
+      "str187": "Translation missing str187",
+      "str188": "Translation missing str188",
+      "str189": "Translation missing str189",
+      "str190": "Translation missing str190",
+      "str191": "Translation missing str191",
+      "str192": "Translation missing str192",
+      "str193": "Translation missing str193",
+      "str194": "Translation missing str194",
+      "str195": "Translation missing str195",
+      "str196": "Translation missing str196",
+      "str197": "Translation missing str197",
+      "str198": "Translation missing str198",
+      "str202": "Translation missing str202",
+      "str215": "Translation missing str215",
+      "str216": "Translation missing str216",
+      "str217": "Translation missing str217",
+      "str258": "Translation missing str258",
+      "str260": "Translation missing str260",
+      "str261": "Translation missing str261"
+    },
+    "receptionLab": {
+      "  ": "  ",
+      "   ": "   ",
+      "   _ ": "   _ ",
+      "   _ _ _ ": "   _ _ _ ",
+      "   _ _ _ _ ": "   _ _ _ _ ",
+      "  200 g": "  200 g",
+      "  6 ": "  6 ",
+      "  _ ": "  _ ",
+      "  _ _ ": "  _ _ ",
+      "  _ _ a": "  _ _ a",
+      "  milk powder": "  milk powder",
+      " _ ": " _ ",
+      " _   ": " _   ",
+      " _   _ ": " _   _ ",
+      " _   _   qr": " _   _   QR",
+      " _   _ _ ": " _   _ _ ",
+      " _   qr _ _ _ ": " _   QR _ _ _ ",
+      " _  _ ": " _  _ ",
+      " _  _ _   _   _ _ _ ": " _  _ _   _   _ _ _ ",
+      " _  _ _ _ _ _ _ _ ": " _  _ _ _ _ _ _ _ ",
+      " _ _ ": " _ _ ",
+      " _ _   ": " _ _   ",
+      " _ _   _ ": " _ _   _ ",
+      " _ _   _ _ ": " _ _   _ _ ",
+      " _ _   _ _ _ _ _ ": " _ _   _ _ _ _ _ ",
+      " _ _   fclis": " _ _   FCLIS",
+      " _ _  _ ": " _ _  _ ",
+      " _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ": " _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ ": " _ _ _ ",
+      " _ _ _   ": " _ _ _   ",
+      " _ _ _   qr _ _ _ _ _ _ ": " _ _ _   QR _ _ _ _ _ _ ",
+      " _ _ _ _ ": " _ _ _ _ ",
+      " _ _ _ _   ": " _ _ _ _   ",
+      " _ _ _ _  catalog ": " _ _ _ _  catalog ",
+      " _ _ _ _ _   ": " _ _ _ _ _   ",
+      " _ _ _ _ _   qr": " _ _ _ _ _   QR",
+      " _ _ _ _ _   qr ": " _ _ _ _ _   QR ",
+      " _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ ": " _ _ _ _ _ _ ",
+      " _ _ _ _ _ _   ": " _ _ _ _ _ _   ",
+      " _ _ _ _ _ _   qr _ _ _ _ _ _ ": " _ _ _ _ _ _   QR _ _ _ _ _ _ ",
+      " _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ": " _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ _ _ _ _ _ _ ": " _ _ _ _ _ _ _ _ _ _ _ ",
+      " _ _ _ _ _ qr   barcode": " _ _ _ _ _ QR   barcode",
+      " barcode   qr": " barcode   QR",
+      " barcode   qr _ _ _ _ _ _ _ _ _ _ _ _ _ _ ": " barcode   QR _ _ _ _ _ _ _ _ _ _ _ _ _ _ ",
+      "alerts": "alerts",
+      "attr29": "attr29",
+      "attr31": "attr31",
+      "attr38": "attr38",
+      "attr40": "attr40",
+      "attr41": "attr41",
+      "attr43": "attr43",
+      "attr44": "attr44",
+      "attr45": "attr45",
+      "attr46": "attr46",
+      "attr47": "attr47",
+      "attr49": "attr49",
+      "attr50": "attr50",
+      "attr51": "attr51",
+      "attr53": "attr53",
+      "attr54": "attr54",
+      "attr56": "attr56",
+      "attr57": "attr57",
+      "attr58": "attr58",
+      "attr59": "attr59",
+      "attr60": "attr60",
+      "attr61": "attr61",
+      "attr62": "attr62",
+      "attr63": "attr63",
+      "attr64": "attr64",
+      "attr65": "attr65",
+      "attr66": "attr66",
+      "attr68": "attr68",
+      "attr69": "attr69",
+      "attr70": "attr70",
+      "attr71": "attr71",
+      "attr72": "attr72",
+      "attr73": "attr73",
+      "attr74": "attr74",
+      "checklist": {
+        "data_match": "checklist data_match",
+        "label": "checklist label",
+        "no_leak": "checklist no_leak",
+        "package_intact": "checklist package_intact",
+        "quantity_ok": "checklist quantity_ok",
+        "seal_match": "checklist seal_match",
+        "stored_ok": "checklist stored_ok"
+      },
+      "classification": {
+        "ANALYSIS": "classification ANALYSIS",
+        "REFERENCE": "classification REFERENCE"
+      },
+      "footer": {
+        "help": "footer help",
+        "settings": "footer settings"
+      },
+      "help_description": "help_description",
+      "help_title": "help_title",
+      "inspector": "inspector",
+      "jsx1": "jsx1",
+      "jsx10": "jsx10",
+      "jsx11": "jsx11",
+      "jsx17": "jsx17",
+      "jsx18": "jsx18",
+      "jsx19": "jsx19",
+      "jsx2": "jsx2",
+      "jsx20": "jsx20",
+      "jsx22": "jsx22",
+      "jsx23": "jsx23",
+      "jsx28": "jsx28",
+      "jsx29": "jsx29",
+      "jsx3": "jsx3",
+      "jsx33": "jsx33",
+      "jsx37": "jsx37",
+      "jsx4": "jsx4",
+      "jsx40": "jsx40",
+      "jsx44": "jsx44",
+      "jsx45": "jsx45",
+      "jsx46": "jsx46",
+      "jsx47": "jsx47",
+      "jsx48": "jsx48",
+      "jsx5": "jsx5",
+      "jsx52": "jsx52",
+      "jsx6": "jsx6",
+      "jsx7": "jsx7",
+      "jsx8": "jsx8",
+      "jsx9": "jsx9",
+      "location": "location",
+      "no_results": "no_results",
+      "not_received": "not_received",
+      "original_sample": "original_sample",
+      "packaging": {
+        "conditions": {
+          "damaged": "packaging conditions damaged",
+          "excellent": "packaging conditions excellent",
+          "intact": "packaging conditions intact",
+          "partially_damaged": "packaging conditions partially_damaged"
+        },
+        "types": {
+          "bags": "packaging types bags",
+          "barrels": "packaging types barrels",
+          "cartons": "packaging types cartons",
+          "glass_bottles": "packaging types glass_bottles",
+          "metal_bottles": "packaging types metal_bottles",
+          "other": "packaging types other"
+        }
+      },
+      "priority": {
+        "HIGH": "priority HIGH",
+        "NORMAL": "priority NORMAL",
+        "URGENT": "priority URGENT"
+      },
+      "quantity": "quantity",
+      "reason": "reason",
+      "received": "received",
+      "received_by": "received_by",
+      "refRetention": {
+        "alternatives_for_review": "refRetention alternatives_for_review",
+        "other": "refRetention other",
+        "re_test_on_appeal": "refRetention re_test_on_appeal"
+      },
+      "rejectReasons": {
+        "data_mismatch": "rejectReasons data_mismatch",
+        "no_analysis_request": "rejectReasons no_analysis_request",
+        "no_sample_definition": "rejectReasons no_sample_definition",
+        "other": "rejectReasons other",
+        "package_damaged": "rejectReasons package_damaged",
+        "quantity_insufficient": "rejectReasons quantity_insufficient",
+        "sample_expired": "rejectReasons sample_expired",
+        "temperature_unsuitable": "rejectReasons temperature_unsuitable"
+      },
+      "rejection_reason": "rejection_reason",
+      "role": "role",
+      "sample_reception_officer": "sample_reception_officer",
+      "seal": "seal",
+      "sections": {
+        "alerts": "sections alerts",
+        "overview": "sections overview",
+        "workflow": "sections workflow"
+      },
+      "sidebar": {
+        "alerts": {
+          "children": {
+            "alerts": "sidebar alerts children alerts"
+          }
+        },
+        "alerts_label": "sidebar alerts_label",
+        "barcode": {
+          "children": {
+            "create": "sidebar barcode children create",
+            "print": "sidebar barcode children print"
+          }
+        },
+        "barcode_label": "sidebar barcode_label",
+        "deliver": {
+          "children": {
+            "log": "sidebar deliver children log",
+            "ready": "sidebar deliver children ready"
+          }
+        },
+        "deliver_label": "sidebar deliver_label",
+        "home": {
+          "children": {
+            "home": "sidebar home children home"
+          }
+        },
+        "home_label": "sidebar home_label",
+        "receive": {
+          "children": {
+            "incoming": "sidebar receive children incoming",
+            "pending": "sidebar receive children pending",
+            "register": "sidebar receive children register"
+          }
+        },
+        "receive_label": "sidebar receive_label",
+        "rejected": {
+          "children": {
+            "rejected": "sidebar rejected children rejected"
+          }
+        },
+        "rejected_label": "sidebar rejected_label",
+        "reports": {
+          "children": {
+            "reports": "sidebar reports children reports"
+          }
+        },
+        "reports_label": "sidebar reports_label",
+        "samples": {
+          "children": {
+            "samples": "sidebar samples children samples"
+          }
+        },
+        "samples_label": "sidebar samples_label",
+        "verify": {
+          "children": {
+            "data": "sidebar verify children data",
+            "request": "sidebar verify children request"
+          }
+        },
+        "verify_label": "sidebar verify_label"
+      },
+      "stations": {
+        "airport": "stations airport",
+        "free_zone": "stations free_zone",
+        "north_port": "stations north_port",
+        "osif_port": "stations osif_port",
+        "osman_diqna_port": "stations osman_diqna_port",
+        "south_port": "stations south_port"
+      },
+      "str51": "str51",
+      "str52": "str52",
+      "str53": "str53",
+      "str54": "str54",
+      "str56": "str56",
+      "str57": "str57",
+      "str58": "str58",
+      "str59": "str59",
+      "str60": "str60",
+      "str61": "str61",
+      "str62": "str62",
+      "str63": "str63",
+      "str64": "str64",
+      "str65": "str65",
+      "str66": "str66",
+      "str67": "str67",
+      "str68": "str68",
+      "str69": "str69",
+      "str70": "str70",
+      "str71": "str71",
+      "str73": "str73",
+      "str74": "str74",
+      "str75": "str75",
+      "str76": "str76",
+      "str77": "str77",
+      "str78": "str78",
+      "str79": "str79",
+      "str80": "str80",
+      "str81": "str81",
+      "str82": "str82",
+      "str83": "str83",
+      "str84": "str84",
+      "str85": "str85",
+      "str87": "str87",
+      "str89": "str89",
+      "str90": "str90",
+      "str91": "str91",
+      "str92": "str92",
+      "str93": "str93",
+      "str94": "str94",
+      "str95": "str95",
+      "str96": "str96",
+      "str97": "str97",
+      "transferred": "transferred",
+      "units": {
+        "count": "units count",
+        "g": "units g",
+        "kg": "units kg",
+        "liter": "units liter",
+        "ml": "units ml"
+      },
+      "workflow_rules": "workflow_rules",
+      "workflow_steps": "workflow_steps"
+    },
+    "foodLab": {
+      "classificationLabels": {
+        "analysis": "For Analysis",
+        "reference": "Reference"
+      },
+      "sections": {
+        "dashboard": "Dashboard",
+        "reception": "Reception & Registration",
+        "custody": "Chain of Custody",
+        "sources": "Sample Sources",
+        "references": "Reference Samples",
+        "certificates": "Certificates"
+      },
+      "custody": {
+        "columns": {
+          "number": "Number",
+          "product": "Product",
+          "classification": "Classification",
+          "source": "Source",
+          "bench": "Bench",
+          "priority": "Priority",
+          "status": "Status",
+          "collection": "Collection",
+          "invoice": "Invoice"
+        },
+        "actions": {
+          "openChain": "Chain of Custody",
+          "delete": "Delete"
+        },
+        "tableTitle": "Sample Lifecycle and Chain of Custody"
+      },
+      "sampleDetail": {
+        "loading": "Loading sample...",
+        "errors": {
+          "loadFailed": "Failed to load sample data",
+          "actionFailed": "Failed to execute operation"
+        },
+        "actions": {
+          "submitForApproval": "Submit for Approval",
+          "approve": "Approve Result",
+          "accept": "Accept Sample",
+          "acceptConditional": "Accept Conditionally",
+          "reject": "Reject Sample",
+          "redistribute": "Redistribute",
+          "setParameters": "Set Tests",
+          "manualTransfer": "Manual Transfer",
+          "printBarcode": "Print Barcode",
+          "issueCertificate": "Issue Certificate",
+          "approveTest": "Approve"
+        },
+        "dialogs": {
+          "coordinate": {
+            "label": "Coordinator",
+            "selectCoordinator": "Select coordinator",
+            "success": "Sample coordinated"
+          },
+          "assignSection": {
+            "label": "Laboratory Bench",
+            "head": "Section Head",
+            "headPlaceholder": "Optional",
+            "success": "Assigned to section"
+          },
+          "assignAnalyst": {
+            "label": "Analyst",
+            "selectAnalyst": "Select coordinator",
+            "success": "Assigned to analyst"
+          },
+          "transfer": {
+            "selectDepartments": "Select transfer departments",
+            "manualSuccess": "Manual transfer recorded",
+            "manual": "Manual Transfer",
+            "manualTitle": "Record Manual Transfer",
+            "subtitle": "Track sample responsibility between departments",
+            "from": "From (Department)",
+            "to": "To (Department)",
+            "condition": "Sample Condition",
+            "seal": "Seal Number",
+            "notes": "Notes"
+          },
+          "setParams": {
+            "title": "Set Required Tests"
+          },
+          "enterResult": {
+            "value": "Result Value",
+            "numericValue": "Numeric value",
+            "device": "Analysis device",
+            "reagentBatch": "Reagent batch",
+            "decision": "Decision",
+            "hint": "Submitting for review passes the result to section head review then lab manager approval.",
+            "defaultMethod": "Default method",
+            "method": "Method used",
+            "reagent": "Reagent batch number"
+          },
+          "enterResultTitle": "Enter Result",
+          "review": {
+            "title": "Section Head Review",
+            "subtitle": "Review result before lab manager approval",
+            "notes": "Review Notes",
+            "submit": "Refer for Approval"
+          },
+          "revise": {
+            "title": "Request Revision of Approved Result",
+            "subtitle": "Current version archived, new version opened",
+            "reason": "Correction Reason",
+            "submit": "Open Correction Request"
+          },
+          "return": {
+            "title": "Return Result for Correction",
+            "subtitle": "Result returned to analyst for correction before resubmission",
+            "placeholder": "Example: device reading error / test method mismatch",
+            "reason": "Return Reason",
+            "submit": "Return Result"
+          },
+          "qc": {
+            "title": "QC Review",
+            "subtitle": "Approve result conformance to specification before final approval",
+            "notes": "QC Notes",
+            "result": "QC Review Result",
+            "submit": "Register Review"
+          },
+          "reception": {},
+          "classify": {
+            "label": "Classification",
+            "save": "Save Classification"
+          }
+        },
+        "reception": {
+          "acceptSuccess": "Sample accepted",
+          "conditionalSuccess": "Sample conditionally accepted",
+          "rejectSuccess": "Sample rejected",
+          "subtitle": "Laboratory reception decision",
+          "submit": "Confirm Decision",
+          "accept": "Accept Sample",
+          "conditional": "Conditional Acceptance",
+          "notes": "Decision Notes",
+          "reject": "Reject Sample",
+          "title": "Reception Decision"
+        },
+        "invoice": {
+          "generateSuccess": "Invoice generated",
+          "paySuccess": "Fees collected",
+          "exemptSuccess": "Fees exempted",
+          "title": "Analysis Fee Invoice",
+          "hint": "Invoice issued from analysis transaction prices set on the sample; auto-exempt if fees are zero.",
+          "previousInvoice": "A previous invoice exists ({number}) — a new invoice will be issued.",
+          "reference": "Payment Reference",
+          "exemptReason": "Exemption Reason",
+          "referencePlaceholder": "Receipt number / payment reference",
+          "exemptPlaceholder": "Approved government exemption",
+          "generateBtn": "Generate Invoice",
+          "payBtn": "Pay",
+          "exemptBtn": "Exempt"
+        },
+        "tests": {
+          "saveDraftSuccess": "Result saved as draft",
+          "submitSuccess": "Result submitted for review",
+          "sectionReviewSuccess": "Section head reviewed",
+          "approveSuccess": "Result approved",
+          "openCorrectionSuccess": "Correction request opened",
+          "returnSuccess": "Result returned for correction",
+          "qcPassed": "QC approved",
+          "qcFailed": "QC violation recorded",
+          "noTests": "No tests assigned. Use \"Set Tests\" to assign.",
+          "specVersion": "Per specification v{version}",
+          "limit": "Limit: {value}",
+          "corrections": "Corrections: {count}",
+          "revision": "Revision v{version}",
+          "tat": "TAT {hours} h",
+          "startTest": "Test started",
+          "start": "Start Test",
+          "enterResult": "Result",
+          "microEval": "Automated microbiological evaluation",
+          "sectionReview": "Section Head Review",
+          "returnForCorrection": "Return for Correction",
+          "qcReview": "QC Review",
+          "requestCorrection": "Request Correction",
+          "analyst": "Analyst: {name}",
+          "due": "Due: {date}",
+          "referenceLimit": "Reference limit: {value}",
+          "saveDraft": "Save Draft",
+          "submit": "Submit for Review"
+        },
+        "dispatch": {
+          "success": "Results sent",
+          "title": "Send Results to Requesting Department",
+          "notes": "Dispatch Notes",
+          "to": "Requesting Department"
+        },
+        "parameters": {
+          "success": "Required tests updated"
+        },
+        "priority": {
+          "success": "Priority updated",
+          "error": "Failed to update priority",
+          "label": "Analysis Priority",
+          "save": "Save Priority"
+        },
+        "classification": {
+          "success": "Classification updated",
+          "error": "Failed to update classification"
+        },
+        "meta": {
+          "source": "Source",
+          "priority": "Priority",
+          "requestingDept": "Requesting Department",
+          "bench": "Bench",
+          "received": "Received",
+          "coordinator": "Coordinator",
+          "sectionHead": "Section Head",
+          "analyst": "Analyst",
+          "approved": "Approval",
+          "receptionDecision": "Reception Decision",
+          "classification": "Classification",
+          "collection": "Collection",
+          "invoice": "Invoice"
+        },
+        "custody": {
+          "ackSuccess": "Receipt confirmed",
+          "noEvents": "No transfers recorded."
+        },
+        "common": {
+          "cancel": "Cancel",
+          "close": "Close"
+        },
+        "sections": {
+          "path": "Sample Path",
+          "coordinatorPanel": "Sample Control (Coordinator)",
+          "actions": "Actions",
+          "tests": "Required Tests & Results",
+          "custody": "Chain of Custody",
+          "coordinate": "Coordination/Assignment",
+          "generalInfo": "General Information",
+          "setParams": "Set Tests"
+        },
+        "certificate": {
+          "success": "Certificate issued",
+          "error": "Failed to issue certificate"
+        },
+        "barcode": {
+          "title": "Print Sample Label — Barcode"
+        }
+      },
+      "workflowActions": {
+        "coordinate": {
+          "label": "Coordinate Sample",
+          "hint": "Assign laboratory sample coordinator"
+        },
+        "assignSection": {
+          "label": "Assign to Section",
+          "hint": "Assign laboratory bench and section head"
+        },
+        "assignAnalyst": {
+          "label": "Assign to Analyst",
+          "hint": "Assign responsible analyst"
+        },
+        "submitForApproval": {
+          "label": "Submit for Approval",
+          "hint": "Submit results to lab manager"
+        },
+        "approve": {
+          "label": "Approve Result",
+          "hint": "Final approval"
+        },
+        "invoice": {
+          "label": "Fee Invoice",
+          "hint": "Issue analysis fee invoice and pay or exempt"
+        },
+        "dispatch": {
+          "label": "Dispatch Results",
+          "hint": "Send result to requesting department"
+        }
+      },
+      "main": {
+        "errors": {
+          "writeSampleType": "Enter sample type/name",
+          "selectSource": "Select sample source",
+          "receiveFailed": "Failed to receive sample",
+          "deleteFailed": "Failed to delete sample"
+        },
+        "success": {
+          "sampleReceived": "Sample {number} received",
+          "sampleDeleted": "Sample deleted"
+        },
+        "hero": {
+          "title": "Laboratory Information System — FCLIS",
+          "subtitle": "Complete sample custody cycle: Reception → Coordination → Sections → Analysis → Approval → Collection → Dispatch",
+          "avatarFallback": "M",
+          "action": "Receive New Sample",
+          "live": "Live"
+        },
+        "nav": {
+          "label": "Dashboard Sections"
+        },
+        "tabs": {
+          "dashboard": "Dashboard",
+          "reception": "Reception & Registration",
+          "custody": "Chain of Custody",
+          "sources": "Sample Sources",
+          "references": "Reference Samples",
+          "certificates": "Certificates"
+        },
+        "reception": {
+          "title": "Receive New Sample",
+          "subtitle": "Register sample upon arrival to laboratory and start custody chain",
+          "source": "Sample Source",
+          "bench": "Laboratory Bench (can be assigned later)",
+          "benchPlaceholder": "None",
+          "productType": "Product / Sample Type",
+          "productPlaceholder": "Example: crushed sugar",
+          "requestingPlaceholder": "General Food Control Administration..."
+        },
+        "delete": {
+          "title": "Confirm Sample Deletion",
+          "message": "Are you sure you want to delete sample «{number}»? Its custody chain will also be deleted.",
+          "confirm": "Delete"
+        }
+      },
+      "dashboard": {
+        "kpi": {
+          "totalSamples": "Total Samples",
+          "received": "Received",
+          "coordinated": "Coordinated",
+          "underTesting": "Under Testing",
+          "readyForApproval": "Ready for Approval",
+          "approvedDispatched": "Approved/Dispatched",
+          "rejected": "Rejected",
+          "receptionPending": "Pending Reception Decision",
+          "receptionCond": "Conditional Acceptance",
+          "unpaid": "Unpaid Fees",
+          "overdue": "Overdue Tests",
+          "slaCompliance": "SLA Compliance",
+          "referenceSamples": "Reference Samples",
+          "custodyEvents": "Custody Events",
+          "certificates": "Certificates"
+        },
+        "panels": {
+          "bySource": "Samples by Source",
+          "byBench": "Samples by Bench",
+          "noData": "No data"
+        }
+      },
+      "reception": {
+        "columns": {
+          "number": "Number",
+          "product": "Product",
+          "source": "Source",
+          "receivedBy": "Receiving Officer",
+          "receivedAt": "Reception Time",
+          "decision": "Reception Decision",
+          "status": "Status",
+          "priority": "Priority"
+        },
+        "actions": {
+          "open": "Open",
+          "receive": "Receive / Register Sample"
+        },
+        "tableTitle": "Latest Received Samples"
+      },
+      "sources": {
+        "notifications": {
+          "deleted": "Deleted",
+          "deleteFailed": "Failed to delete",
+          "writeName": "Enter source name",
+          "updated": "Source updated",
+          "added": "Source added",
+          "saveFailed": "Failed to save"
+        },
+        "buttons": {
+          "new": "New Source",
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "dialogs": {
+          "source": {
+            "title": "New Source",
+            "titleEdit": "Edit Source",
+            "nameAr": "Name in Arabic",
+            "code": "Code",
+            "order": "Order"
+          },
+          "delete": {
+            "title": "Delete Sample Source",
+            "message": "Do you want to delete source «{name}»? This action cannot be undone.",
+            "confirm": "Delete"
+          }
+        }
+      },
+      "references": {
+        "notifications": {
+          "deleted": "Deleted",
+          "deleteFailed": "Failed to delete",
+          "writeName": "Enter material name",
+          "added": "Reference sample registered",
+          "addFailed": "Failed to register reference sample",
+          "returned": "Returned",
+          "discarded": "Discarded",
+          "executeFailed": "Failed to execute"
+        },
+        "statuses": {
+          "stored": "Stored",
+          "retrieved": "Retrieved",
+          "discarded": "Discarded"
+        },
+        "buttons": {
+          "new": "Register Reference Sample",
+          "return": "Return",
+          "discard": "Discard",
+          "delete": "Delete"
+        },
+        "labels": {
+          "location": "Location",
+          "seal": "Seal",
+          "received": "Received"
+        },
+        "dialogs": {
+          "reference": {
+            "title": "Register Reference Sample",
+            "subtitle": "Does not enter the normal analysis cycle — stored for future reference",
+            "source": "Source",
+            "name": "Material / Sample Name",
+            "origin": "Origin / Batch",
+            "storage": "Storage Location",
+            "seal": "Seal Number",
+            "coding": "Coding"
+          },
+          "delete": {
+            "title": "Delete Reference Sample",
+            "message": "Do you want to delete reference sample «{name}» ({ref})? This action cannot be undone.",
+            "confirm": "Delete"
+          }
+        }
+      },
+      "certificates": {
+        "columns": {
+          "number": "Certificate Number",
+          "sample": "Sample Number",
+          "decision": "Decision",
+          "status": "Status",
+          "signer": "Signer",
+          "issuedAt": "Issue Date"
+        },
+        "status": {
+          "issued": "Issued",
+          "draft": "Draft"
+        },
+        "tableTitle": "Analysis Certificates"
+      },
+      "flowStepper": {
+        "rejected": "Rejected"
+      },
+      "custodyEvent": {
+        "labels": {
+          "transfer": "Transfer",
+          "condition": "Condition",
+          "seal": "Seal",
+          "received": "Received",
+          "notes": "Notes",
+          "receivedStatus": "Received"
+        },
+        "actions": {
+          "confirmReceipt": "Confirm Receipt"
+        }
+      },
+      "invoiceSummary": {
+        "noInvoice": "No invoice for this sample — issue one first.",
+        "printReceipt": "Print Receipt",
+        "total": "Total",
+        "receipt": "Receipt",
+        "exemption": "Exemption"
+      }
+    },
+    "dbAdmin": {
+      "dashboardTab": {
+        "empty": {
+          "title": "No data",
+          "desc": "Failed to load database info dashboard"
+        },
+        "metrics": {
+          "memory": "Memory",
+          "cpuBreakdown": "Cache hit ratio",
+          "connections": "Connections"
+        },
+        "kpi": {
+          "databases": "Databases",
+          "connected": "Connected",
+          "backups": "Backups",
+          "alerts": "Critical alerts",
+          "users": "Database users",
+          "roles": "Roles",
+          "replication": "Active replication nodes",
+          "maintenance": "Scheduled maintenance"
+        },
+        "performanceTitle": "Performance indicators",
+        "refresh": "Refresh"
+      },
+      "schemasTab": {
+        "col": {
+          "name": "Schema name",
+          "dbName": "Database",
+          "objectCount": "Objects",
+          "sizeMb": "Size (MB)",
+          "lastAnalyzed": "Last analyzed"
+        },
+        "screenTitle": "Manage schemas",
+        "subtitle": "{count} schemas",
+        "searchPlaceholder": "Search by schema name...",
+        "empty": {
+          "title": "No schemas",
+          "desc": "Schemas, tables, and functions show here"
+        }
+      },
+      "securityTab": {
+        "overview": "Security policies",
+        "col": {
+          "policy": "Policy",
+          "ssl": "SSL encryption",
+          "encryption": "Data encryption",
+          "rls": "RLS",
+          "passwordPolicy": "Password policy",
+          "ipWhitelist": "IP whitelist"
+        },
+        "opt": {
+          "sslEnabledActive": "Enabled",
+          "sslEnabledInactive": "Disabled",
+          "encryptionActive": "Enabled",
+          "encryptionInactive": "Disabled",
+          "rlsOn": "Enabled",
+          "rlsOff": "Disabled"
+        },
+        "screenTitle": "Security management",
+        "subtitle": "{count} policies",
+        "emptyTitle": "No security policies",
+        "emptyDesc": "Security, encryption, and access policies appear here"
+      },
+      "performanceTab": {
+        "col": {
+          "recordedAt": "Recorded at",
+          "dbName": "Database",
+          "cpuUsage": "CPU %",
+          "memoryUsage": "Memory",
+          "connections": "Connections",
+          "cacheHitRatio": "Cache hit ratio",
+          "transactionRate": "Transactions/sec",
+          "deadlocks": "Deadlocks"
+        },
+        "screenTitle": "Performance monitoring",
+        "subtitle": "{count} metrics",
+        "emptyTitle": "No performance metrics",
+        "emptyDesc": "Collected performance metrics appear here"
+      },
+      "storageTab": {
+        "col": {
+          "tableName": "Table",
+          "schema": "Schema",
+          "dbName": "Database",
+          "tableSizeMb": "Table size (MB)",
+          "indexSizeMb": "Index size (MB)",
+          "rowsCount": "Rows",
+          "bloatEstimate": "Bloat estimate (MB)"
+        },
+        "screenTitle": "Storage management",
+        "subtitle": "{count} tables",
+        "emptyTitle": "No storage data",
+        "emptyDesc": "Table sizes, index sizes, and remaining space appear here"
+      },
+      "replicationTab": {
+        "col": {
+          "name": "Node",
+          "dbName": "Database",
+          "nodeType": "Type",
+          "syncMode": "Mode",
+          "status": "Status",
+          "lag": "Lag (sec)",
+          "host": "Host"
+        },
+        "screenTitle": "Replication nodes",
+        "subtitle": "{count} nodes",
+        "searchPlaceholder": "Search by name or host...",
+        "emptyTitle": "No replication nodes",
+        "emptyDesc": "Primary and replica nodes appear here",
+        "filter": {
+          "nodeType": "Type",
+          "status": "Status"
+        }
+      },
+      "databasesTab": {
+        "export": {
+          "headers": [
+            "Name",
+            "Type",
+            "Version",
+            "Host",
+            "Status",
+            "Size (MB)",
+            "Schemas",
+            "Backups"
+          ],
+          "filename": "db-databases-{date}.csv",
+          "message": "Databases exported"
+        },
+        "col": {
+          "name": "Database name",
+          "type": "Type",
+          "version": "Version",
+          "status": "Status",
+          "sizeMb": "Size (MB)",
+          "schemas": "Schemas",
+          "backups": "Backups"
+        },
+        "screenTitle": "Databases",
+        "subtitle": "{count} databases",
+        "searchPlaceholder": "Search by name or host...",
+        "filter": {
+          "status": "Status",
+          "type": "Type"
+        },
+        "emptyTitle": "No databases",
+        "emptyDesc": "Registered databases appear here"
+      },
+      "maintenanceTab": {
+        "toast": {
+          "success": "Task executed successfully",
+          "error": "Failed to execute task"
+        },
+        "col": {
+          "name": "Task",
+          "type": "Type",
+          "frequency": "Frequency",
+          "dbName": "Database",
+          "nextRun": "Next run",
+          "status": "Status"
+        },
+        "screenTitle": "Maintenance schedule",
+        "subtitle": "{count} tasks",
+        "searchPlaceholder": "Search by task name...",
+        "filter": {
+          "type": "Type",
+          "status": "Status"
+        },
+        "action": {
+          "run": "Run now"
+        },
+        "emptyTitle": "No maintenance tasks",
+        "emptyDesc": "Scheduled VACUUM, ANALYZE and REINDEX tasks appear here"
+      },
+      "alertsTab": {
+        "toast": {
+          "ack": "Alert acknowledged",
+          "ackError": "Failed to acknowledge alert",
+          "resolve": "Alert resolved",
+          "resolveError": "Failed to resolve alert"
+        },
+        "col": {
+          "title": "Alert",
+          "type": "Type",
+          "severity": "Severity",
+          "dbName": "Database",
+          "status": "Status",
+          "time": "Time"
+        },
+        "screenTitle": "Alerts center",
+        "subtitle": "{count} alerts",
+        "filter": {
+          "type": "Type",
+          "severity": "Severity",
+          "status": "Status"
+        },
+        "action": {
+          "ack": "Acknowledge",
+          "ackAria": "Acknowledge",
+          "resolve": "Resolve",
+          "resolveAria": "Update"
+        },
+        "emptyTitle": "No alerts",
+        "emptyDesc": "Storage, backup, performance and security alerts appear here"
+      },
+      "auditTab": {
+        "tabs": {
+          "audit": "Audit logs",
+          "activity": "Activity logs"
+        },
+        "audit": {
+          "col": {
+            "action": "Action",
+            "user": "User",
+            "resource": "Resource",
+            "result": "Result",
+            "time": "Time"
+          },
+          "result": {
+            "success": "Success",
+            "fail": "Failed"
+          },
+          "screenTitle": "Audit logs",
+          "subtitle": "{count} logs",
+          "emptyTitle": "No audit logs",
+          "emptyDesc": "Create/delete database operations and permission changes appear here"
+        },
+        "activity": {
+          "col": {
+            "description": "Description",
+            "type": "Type",
+            "user": "User",
+            "time": "Time"
+          },
+          "screenTitle": "Activity logs",
+          "subtitle": "{count} logs",
+          "emptyTitle": "No activity logs",
+          "emptyDesc": "Login, backup and permission change activities appear here"
+        }
+      },
+      "reportingTab": {
+        "plans": {
+          "col": {
+            "name": "Plan",
+            "status": "Status",
+            "rto": "RTO (h)",
+            "rpo": "RPO (h)",
+            "backupSite": "Backup site",
+            "testedAt": "Last test"
+          },
+          "screenTitle": "Disaster recovery plans",
+          "subtitle": "{count} plans",
+          "emptyTitle": "No recovery plans",
+          "emptyDesc": "Disaster recovery plans and emergency procedures appear here"
+        },
+        "settings": {
+          "col": {
+            "key": "Key",
+            "label": "Label",
+            "value": "Value",
+            "group": "Group",
+            "encrypted": "Encrypted"
+          },
+          "value": {
+            "encrypted": "••••••",
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "System settings",
+          "subtitle": "{count} settings",
+          "emptyTitle": "No settings",
+          "emptyDesc": "Backup, security and maintenance settings appear here"
+        }
+      },
+      "queriesTab": {
+        "tabs": {
+          "stats": "Query statistics",
+          "slow": "Slow queries"
+        },
+        "stats": {
+          "col": {
+            "query": "Query",
+            "calls": "Calls",
+            "totalTime": "Total time (ms)",
+            "meanTime": "Mean (ms)",
+            "rows": "Rows",
+            "slow": "Slow",
+            "indexed": "Indexed"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "Query performance analysis",
+          "subtitle": "{count} queries",
+          "emptyTitle": "No queries",
+          "emptyDesc": "Executed query statistics appear here"
+        },
+        "slow": {
+          "col": {
+            "query": "Query",
+            "dbName": "Database",
+            "meanTime": "Mean (ms)",
+            "calls": "Calls",
+            "rows": "Rows",
+            "indexed": "Indexed"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "Not indexed"
+          },
+          "screenTitle": "Slow queries",
+          "subtitle": "Top time-consuming queries",
+          "emptyTitle": "No slow queries",
+          "emptyDesc": "Queries exceeding performance threshold appear here"
+        }
+      },
+      "backupsTab": {
+        "tabs": {
+          "backup": "Backups",
+          "restore": "Restore history"
+        },
+        "backup": {
+          "col": {
+            "dbName": "Database",
+            "type": "Type",
+            "status": "Status",
+            "storage": "Storage",
+            "sizeMb": "Size (MB)",
+            "startedAt": "Started"
+          },
+          "screenTitle": "Backups",
+          "subtitle": "{count} backups",
+          "emptyTitle": "No backups",
+          "emptyDesc": "Full and incremental backups appear here"
+        },
+        "restore": {
+          "col": {
+            "dbName": "Database",
+            "target": "Target",
+            "type": "Backup type",
+            "status": "Status",
+            "startedAt": "Started",
+            "restoredBy": "Restored by"
+          },
+          "screenTitle": "Restore history",
+          "subtitle": "{count} restores",
+          "emptyTitle": "No restore operations",
+          "emptyDesc": "Restore operation logs appear here"
+        }
+      },
+      "usersRolesTab": {
+        "tabs": {
+          "users": "Database users",
+          "roles": "Roles",
+          "perms": "Permissions"
+        },
+        "users": {
+          "col": {
+            "username": "Username",
+            "fullName": "Full name",
+            "role": "Role",
+            "type": "Type",
+            "connLimit": "Connection limit",
+            "lastLogin": "Last login"
+          },
+          "type": {
+            "superuser": "Superuser",
+            "normal": "Normal"
+          },
+          "screenTitle": "Database users",
+          "subtitle": "{count} users",
+          "searchPlaceholder": "Search by username...",
+          "emptyTitle": "No users",
+          "emptyDesc": "Registered PostgreSQL users appear here"
+        },
+        "roles": {
+          "col": {
+            "code": "Code",
+            "name": "Name",
+            "super": "Super",
+            "login": "Login",
+            "users": "Users",
+            "perms": "Permissions"
+          },
+          "value": {
+            "yes": "Yes",
+            "no": "No"
+          },
+          "screenTitle": "Database roles",
+          "subtitle": "{count} roles",
+          "searchPlaceholder": "Search by code or name...",
+          "emptyTitle": "No roles",
+          "emptyDesc": "PostgreSQL roles appear here"
+        },
+        "perms": {
+          "col": {
+            "role": "Role",
+            "db": "Database",
+            "table": "Table",
+            "action": "Action",
+            "status": "Status"
+          },
+          "status": {
+            "granted": "Granted",
+            "denied": "Denied"
+          },
+          "screenTitle": "Database permissions",
+          "subtitle": "{count} permissions",
+          "emptyTitle": "No permissions",
+          "emptyDesc": "Role permissions on tables and schemas appear here"
+        }
+      },
+      "parent": {
+        "tabs": {
+          "overview": "Dashboard",
+          "databases": "Databases",
+          "schemas": "Schemas",
+          "users_roles": "Users & Roles",
+          "security": "Security",
+          "backups": "Backups & Restore",
+          "replication": "Replication",
+          "performance": "Performance",
+          "queries": "Queries",
+          "storage": "Storage",
+          "maintenance": "Maintenance",
+          "alerts": "Alerts",
+          "audit": "Audit",
+          "reporting": "Reporting & Settings"
+        },
+        "sections": {
+          "overview": "Dashboard",
+          "databases": "Databases",
+          "schemas": "Schemas",
+          "users_roles": "Users & Roles",
+          "security": "Security",
+          "backups": "Backups & Restore",
+          "replication": "Replication",
+          "performance": "Performance",
+          "queries": "Queries",
+          "storage": "Storage",
+          "maintenance": "Maintenance",
+          "alerts": "Alerts",
+          "audit": "Audit",
+          "reporting": "Reporting & Settings"
+        },
+        "hero": {
+          "eyebrow": "Infrastructure",
+          "title": "Database administration",
+          "subtitle": "Manage and monitor platform databases: backup, performance, security, replication, and disaster recovery",
+          "live": "Live"
+        },
+        "pageHeader": {
+          "eyebrow": "Infrastructure",
+          "title": "Database administration",
+          "subtitle": "Manage and monitor platform databases: backup, performance, security, replication, and disaster recovery"
+        },
+        "rail": {
+          "label": "Dashboard sections"
+        }
+      }
+    }
+  },
+  "dbAdmin": {
+    "performanceTab": {
+      "col": {
+        "recordedAt": "Recorded at"
+      }
+    }
+  },
+  "performanceTab": {
+    "col": {
+      "dbName": "Database"
+    }
+  },
+  "col": {
+    "cpuUsage": "CPU %"
+  },
+  "memoryUsage": "Memory",
+  "connections": "Connections",
+  "cacheHitRatio": "Cache hit ratio",
+  "transactionRate": "Transactions/sec",
+  "deadlocks": "Deadlocks",
+  "screenTitle": "Performance monitoring",
+  "subtitle": "{count} metrics",
+  "emptyTitle": "No performance metrics",
+  "emptyDesc": "Collected performance metrics appear here",
+  "airporthealth": {
+    "screens": {
+      "clinical": {
+        "suspected": {
+          "title": "Suspected Cases",
+          "subtitle": "Track cases referred for detailed examination and isolation decisions",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Suspected case data is loaded from the command center when available."
+        },
+        "isolation": {
+          "title": "Isolation Management",
+          "subtitle": "Airport health emergency isolation unit — capacity, cases, and medical supervision",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Isolation case data is loaded from the isolation system when available."
+        },
+        "lab": {
+          "title": "Airport Health Laboratory",
+          "subtitle": "Manage test orders, samples, and RT-PCR and rapid antigen results",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Lab order data is loaded from the laboratory system when available."
+        },
+        "contactTracing": {
+          "title": "Contact Tracing",
+          "subtitle": "Index case and flight contacts — tracking nearby seats",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Contact tracing data is loaded from the surveillance system when available."
+        },
+        "emergency": {
+          "title": "Emergency Operations Room",
+          "subtitle": "Managing health emergency response at the airport",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Operations room data is loaded from the emergency management system when available."
+        }
+      },
+      "inspection": {
+        "aircraftInspection": {
+          "title": "Aircraft Inspection",
+          "subtitle": "Environmental hygiene inspection of arriving aircraft — inspector and examiner",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Aircraft inspection data is loaded from the inspection system when available."
+        },
+        "analytics": {
+          "title": "Analytics and Statistics",
+          "subtitle": "Performance indicators for screening, laboratory, and aircraft inspection",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Analytics data is loaded from the reporting platform when available."
+        },
+        "certificates": {
+          "title": "Health Certificates and Clearances",
+          "subtitle": "Issuance of health certificates and aircraft clearances under international health regulations",
+          "emptyTitle": "Under Preparation",
+          "emptyDescription": "Certificate data is loaded from the issuance system when available."
+        }
+      }
+    }
+  },
+  "airportdirector": {
+    "reports": {
+      "screenings_by_flight_title": "Screenings by flight",
+      "no_screenings_today": "No screenings recorded today.",
+      "tab_daily": "📅 Daily",
+      "tab_weekly": "📆 Weekly",
+      "tab_monthly": "📊 Monthly",
+      "daily_report": "Daily Report",
+      "weekly_report": "Weekly Report",
+      "monthly_report": "Monthly Report",
+      "flights": "Flights",
+      "travelers": "Travelers",
+      "screened": "Screened",
+      "referrals": "Referrals",
+      "suspected": "Suspected",
+      "title": "Reports Center",
+      "subtitle": "Flight, screening, lab and revenue reports",
+      "generating_pdf": "Generating PDF...",
+      "generating_excel": "Generating Excel..."
+    },
+    "permissions": {
+      "empty_title": "No permissions available to display for this role.",
+      "empty_description": "Permission services returned no matching airport permissions.",
+      "available": "Available",
+      "excluded": "Excluded",
+      "auto_update": "Automatically updated based on your role permissions."
+    },
+    "resources": {
+      "airport_health": "Airport Health",
+      "airport_staff": "Airport Health Staff",
+      "screening": "Screenings"
+    },
+    "actions": {
+      "view": "View",
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "export": "Export"
+    },
+    "sections": {
+      "overview": "Overview",
+      "alerts": "Alerts",
+      "operations": "Operations",
+      "flights": "Flights",
+      "screening": "Screenings",
+      "inspections": "Inspections",
+      "crew": "Crew",
+      "terminals": "Terminals",
+      "decision": "Decision Support",
+      "reports": "Reports",
+      "staff": "Staff",
+      "permissions": "Permissions"
+    },
+    "recommendations": {
+      "suspected_cases": {
+        "topic": "Suspected Cases",
+        "finding": "{{count}} suspected cases today",
+        "cause": "High initial screening indicators",
+        "recommendation": "Escalate thermal screening and activate contact tracing"
+      },
+      "non_compliant_inspections": {
+        "topic": "Aircraft Inspections",
+        "finding": "{{count}} inspections non-compliant",
+        "cause": "Non-compliant items in latest inspections",
+        "recommendation": "Corrective actions and re-inspection of affected aircraft"
+      },
+      "pending_screenings": {
+        "topic": "Screening Pressure",
+        "finding": "{{count}} pending screenings vs {{screened}} completed",
+        "cause": "Accumulated pending screenings",
+        "recommendation": "Reinforce resources at screening points"
+      }
+    },
+    "hero": {
+      "eyebrow": "Executive Command — Airport Health",
+      "title": "Welcome, {{name}} 👋",
+      "title_fallback": "Airport Quarantine Director",
+      "subtitle": "A comprehensive executive view of airport health: flights, passenger screening, air cargo, laboratory, and revenue",
+      "avatar_fallback": "A"
+    },
+    "period": {
+      "day": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    },
+    "live": "Live",
+    "rail": {
+      "label": "Dashboard Sections"
+    },
+    "kpis": {
+      "flights_today": "Flights Today",
+      "passengers_today": "Passengers Today",
+      "arrivals_today": "Arrival Screenings Today",
+      "departures_today": "Departure Screenings Today",
+      "screened_today": "Screened Today",
+      "pending_screenings": "Pending Screenings",
+      "suspected_cases": "Suspected Cases",
+      "clinic_referrals": "Clinic Referrals",
+      "completed_today": "Completed Today",
+      "inspections_today": "Aircraft Inspections Today",
+      "crew_records_today": "Crew Records Today",
+      "vaccinations": "Vaccinations"
+    },
+    "alerts": {
+      "title": "🚨 Alert Center",
+      "subtitle": "Events requiring immediate attention — flight, crew, cargo",
+      "empty_title": "No alerts",
+      "empty_description": "No alerts are currently recorded."
+    },
+    "operations": {
+      "title": "Operations Indicators",
+      "subtitle": "Arrivals / departures / screening — actual daily indicators"
+    },
+    "flightsBoard": {
+      "title": "✈️ Flights Board",
+      "subtitle": "Arrivals and departures under health screening — live status",
+      "empty_title": "No upcoming flights",
+      "empty_description": "No upcoming flights are currently registered."
+    },
+    "passengerScreening": {
+      "title": "Passenger Screening",
+      "subtitle": "Recent passenger screenings — temperature, risk level, and status",
+      "empty_title": "No screenings",
+      "empty_description": "Passenger screenings will appear here when recorded."
+    },
+    "aircraftInspections": {
+      "title": "✈️ Aircraft Inspections",
+      "subtitle": "Recent aircraft inspections — compliance, certificate, and date",
+      "empty_title": "No inspections",
+      "empty_description": "Aircraft inspections will appear here when recorded."
+    },
+    "crewHealth": {
+      "title": "👨‍✈️ Crew Health",
+      "subtitle": "Recent health screening records for flight crews",
+      "empty_title": "No crew records",
+      "empty_description": "Crew health records will appear here when recorded."
+    },
+    "terminalPerformance": {
+      "title": "Airport Site Performance",
+      "subtitle": "Terminals — number of screening points per terminal",
+      "empty_title": "No terminals",
+      "empty_description": "Airport terminals and screening points will appear here when added."
+    },
+    "decisionSupport": {
+      "title": "💡 Decision Support",
+      "subtitle": "The system recommends — the director decides",
+      "empty_title": "No current recommendations",
+      "empty_description": "Any alert will appear here when indicators rise and escalation is needed.",
+      "probable_cause": "Probable cause: {{cause}}"
+    },
+    "permissionsMatrix": {
+      "title": "Permissions Matrix",
+      "subtitle": "Available for your role / Operationally excluded"
+    },
+    "activityLog": {
+      "title": "📋 Activity Log",
+      "subtitle": "Latest administrative actions",
+      "refresh": "Refresh",
+      "empty_title": "No activity recorded",
+      "empty_description": "Administrative actions will appear here when they occur."
+    },
+    "footer": "Federal Ministry of Health — National Quarantine Platform · Airport Quarantine Management",
+    "risk": {
+      "green": "Green",
+      "yellow": "Yellow",
+      "red": "Red"
+    },
+    "clearance": {
+      "pending": "Pending",
+      "cleared": "Cleared",
+      "quarantined": "Quarantined",
+      "referred": "Referred"
+    },
+    "inspectionStatus": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "conditional": "Conditional"
+    },
+    "crewFitness": {
+      "fit": "Fit",
+      "unfit": "Unfit",
+      "under_observation": "Under Observation"
+    },
+    "columns": {
+      "flight": "Flight",
+      "origin": "Origin",
+      "arrival_time": "Arrival Time",
+      "status": "Status",
+      "traveler": "Traveler",
+      "risk_level": "Risk Level",
+      "screening_time": "Screening Time",
+      "aircraft_registration": "Aircraft Registration",
+      "overall_status": "Overall Status",
+      "certificate": "Certificate",
+      "certificate_issued": "Issued",
+      "certificate_not_issued": "Not Issued",
+      "inspection_date": "Inspection Date",
+      "crew": "Crew",
+      "health_status": "Health Status",
+      "temperature": "Temperature",
+      "next_clearance": "Next Clearance",
+      "terminal": "Terminal",
+      "code": "Code",
+      "screening_points": "Screening Points"
+    },
+    "staff_form": {
+      "full_name": "Full Name",
+      "role": "Role",
+      "email": "Email",
+      "phone": "Phone",
+      "shift": "Shift",
+      "shift_placeholder": "Morning / Evening / Night",
+      "airport": "Airport",
+      "airport_placeholder": "Select airport",
+      "active": "Active"
+    },
+    "staff_notifications": {
+      "added": "Staff member added",
+      "add_error": "Unable to add staff member",
+      "updated": "Staff member updated",
+      "update_error": "Unable to update staff member",
+      "deleted": "Staff member deleted",
+      "delete_error": "Unable to delete staff member"
+    },
+    "staff": {
+      "title": "Airport Staff",
+      "col_name": "Name",
+      "col_role": "Role",
+      "col_email": "Email",
+      "col_phone": "Phone",
+      "col_shift": "Shift",
+      "col_active": "Active",
+      "status_active": "Active",
+      "status_inactive": "Inactive",
+      "edit": "Edit",
+      "delete": "Delete",
+      "subtitle": "Inspectors, lab technicians, data entry clerks — registered staff",
+      "add_staff": "Add Staff",
+      "actions": "Actions",
+      "empty_title": "No staff registered",
+      "empty_description": "Airport staff records will appear here when registered.",
+      "add_dialog_title": "Add Staff",
+      "add_dialog_subtitle": "Register a new staff member at the port airport",
+      "add_submit": "Add",
+      "edit_dialog_title": "Edit Staff Member",
+      "save": "Save",
+      "delete_dialog_title": "Delete Staff Member",
+      "delete_confirm": "Confirm deletion of staff member {{name}}?",
+      "delete_confirm_label": "Delete"
+    }
+  },
+  "reagents": {
+    "tabs": {
+      "dashboard": "Dashboard",
+      "catalog": "Material Catalog",
+      "lots": "Lots & Inventory",
+      "solutions": "Solutions",
+      "issues": "Issues & Consumption",
+      "disposal": "Disposal"
+    },
+    "sections": {
+      "dashboard": "Dashboard",
+      "catalog": "Material Catalog",
+      "lots": "Lots & Inventory",
+      "solutions": "Solutions",
+      "issues": "Issues & Consumption",
+      "disposal": "Disposal"
+    },
+    "materials": {
+      "reagent": "Reagent",
+      "solution": "Solution",
+      "reference_standard": "Reference Standard",
+      "culture_media": "Culture Media",
+      "chemical": "Chemical",
+      "consumable": "Consumable",
+      "crm": "Certified Reference Material (CRM)"
+    },
+    "grades": {
+      "analytical": "Analytical Grade",
+      "hplc": "HPLC",
+      "reagent_grade": "Reagent Grade",
+      "technical": "Technical Grade",
+      "pharmaceutical": "Pharmaceutical Grade",
+      "microbiological": "Microbiological Grade",
+      "other": "Other"
+    },
+    "hazards": {
+      "none": "Non-hazardous",
+      "toxic": "Toxic",
+      "corrosive": "Corrosive",
+      "flammable": "Flammable",
+      "oxidizer": "Oxidizer",
+      "irritant": "Irritant",
+      "other": "Other"
+    },
+    "benches": {
+      "chemistry": "Chemistry",
+      "microbiology": "Microbiology",
+      "physical": "Physical",
+      "toxicology": "Toxicology",
+      "molecular": "Molecular"
+    },
+    "errors": {
+      "saveFailed": "Could not save, please try again"
+    },
+    "columns": {
+      "material": "Material",
+      "type": "Type",
+      "bench": "Department",
+      "stock": "Stock",
+      "lots": "Lots",
+      "hazard": "Hazard",
+      "minStock": "Minimum",
+      "lotNumber": "Lot Number",
+      "batch": "Batch",
+      "qty": "Quantity",
+      "expiry": "Expiry",
+      "storage": "Storage",
+      "status": "Status",
+      "solution": "Solution",
+      "concentration": "Concentration",
+      "prepDate": "Preparation Date",
+      "preparedBy": "Prepared By",
+      "sample": "Sample",
+      "test": "Test",
+      "issuedBy": "Issued By",
+      "when": "Time",
+      "reason": "Reason",
+      "requestedBy": "Requested By"
+    },
+    "actions": {
+      "edit": "Edit",
+      "approve": "Approve",
+      "reject": "Reject",
+      "executeDisposal": "Execute Disposal"
+    },
+    "status": {
+      "lowStock": "Low"
+    },
+    "messages": {
+      "solutionApproved": "Solution approved",
+      "solutionRejected": "Solution rejected",
+      "verifyFailed": "Could not verify the solution",
+      "disposalStatusUpdated": "Disposal request status updated",
+      "disposalUpdateFailed": "Could not update the disposal request",
+      "materialUpdated": "Material updated",
+      "materialRegistered": "Material registered",
+      "lotRegistered": "Lot registered",
+      "solutionRegistered": "Solution registered — pending verification",
+      "issueRecorded": "Material issued and deducted from stock",
+      "disposalRequestCreated": "Disposal request created — pending approval"
+    },
+    "dashboard": {
+      "totalMaterials": "Total Materials",
+      "totalStock": "Total Stock",
+      "expired": "Expired",
+      "expiring30": "Expiring in 30 Days",
+      "lowStock": "Below Minimum",
+      "solutionsPending": "Solutions Pending Verification",
+      "solutionsApproved": "Approved Solutions",
+      "disposalsPending": "Pending Disposal Requests",
+      "alerts": "Alerts",
+      "expiredAlert": "{{count}} expired reagents — use prohibited",
+      "expiring30Alert": "{{count}} reagent(s) expiring within 30 days",
+      "expiring90Alert": "{{count}} reagent(s) expiring within 90 days",
+      "lowStockMaterialsAlert": "{{count}} material(s) below minimum stock",
+      "solutionsPendingAlert": "Solutions pending verification: {{count}}",
+      "noCriticalAlerts": "No critical alerts",
+      "materialTypes": "Material Types",
+      "recentMovements": "Recent Movements",
+      "lotLabel": "Lot {{lot}}",
+      "noMovements": "No issue movements yet"
+    },
+    "catalog": {
+      "subtitle": "Classified material catalog — reagent / solution / standards / media / chemicals / consumables / certified",
+      "registerMaterial": "➕ Register Material",
+      "title": "Material Catalog"
+    },
+    "lots": {
+      "subtitle": "Material lots — each lot with its expiry, quantity, and status. Expired is blocked.",
+      "registerLot": "➕ Register Lot",
+      "title": "Lots & Inventory"
+    },
+    "filters": {
+      "type": "Type",
+      "status": "Status"
+    },
+    "lotStatus": {
+      "valid": "Valid",
+      "expiringSoon": "Expiring Soon",
+      "expired": "Expired",
+      "blocked": "Blocked",
+      "disposed": "Disposed"
+    },
+    "solutionsPage": {
+      "subtitle": "Solutions — preparation → pending verification → approval / rejection (per lab policy).",
+      "prepare": "🧴 Prepare Solution",
+      "title": "Solutions"
+    },
+    "solutionStatus": {
+      "prepared": "Prepared",
+      "pendingVerification": "Pending Verification",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "issuesPage": {
+      "subtitle": "Reagent issuance to analysts — automatically deducted from stock and linked to sample and test for traceability.",
+      "issueMaterial": "📤 Issue Material",
+      "title": "Issues & Consumption"
+    },
+    "disposalPage": {
+      "subtitle": "Material disposal — no direct deletion: request → approval → disposal, with a full record kept.",
+      "requestDisposal": "🗑 Request Disposal",
+      "title": "Disposal Requests"
+    },
+    "page": {
+      "eyebrow": "Reagents & Materials Management",
+      "title": "Reagents & Solutions Management",
+      "subtitle": "Reagents & Solutions Management — direct linkage to sample, test, analyst, method, and instrument",
+      "avatarLabel": "R",
+      "refresh": "🔄 Refresh",
+      "live": "Live",
+      "sectionsLabel": "Material Sections"
+    },
+    "materialDialog": {
+      "editTitle": "Edit Material",
+      "addTitle": "Register New Material",
+      "subtitle": "Material catalog — basic material information",
+      "fields": {
+        "nameAr": "Material Name (Arabic) *",
+        "nameEn": "Name (English)",
+        "type": "Type",
+        "bench": "Department",
+        "manufacturer": "Manufacturer",
+        "grade": "Grade",
+        "unit": "Unit of Measure",
+        "minStock": "Minimum Stock",
+        "reorderLevel": "Reorder Level",
+        "maxStock": "Maximum Stock",
+        "hazardClass": "Hazard Class",
+        "notes": "Notes"
+      }
+    },
+    "lotDialog": {
+      "title": "Register New Lot",
+      "subtitle": "Each package/shipment — its expiry, quantity, and status",
+      "fields": {
+        "material": "Material *",
+        "materialPlaceholder": "Select material",
+        "lotNumber": "Lot Number *",
+        "batchNumber": "Batch Number",
+        "manufacturingDate": "Manufacturing Date",
+        "expiryDate": "Expiry Date",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "storage": "Storage Location",
+        "storagePlaceholder": "Select location",
+        "supplier": "Supplier",
+        "certificateRef": "Certificate of Analysis Reference",
+        "receivedDate": "Received Date",
+        "notes": "Notes"
+      }
+    },
+    "solutionDialog": {
+      "title": "Prepare Solution",
+      "subtitle": "Solution → Pending Verification → Approve/Reject",
+      "fields": {
+        "name": "Solution Name *",
+        "baseMaterial": "Base Material",
+        "selectMaterial": "Select material",
+        "concentration": "Concentration",
+        "solvent": "Solvent",
+        "finalVolume": "Final Volume",
+        "volumeUnit": "Volume Unit",
+        "sourceLot": "Source Material (Lot)",
+        "selectLot": "Select lot",
+        "batchNumber": "Batch Number",
+        "storageLocation": "Storage Location",
+        "preparationDate": "Preparation Date *",
+        "expiryDate": "Expiry Date",
+        "notes": "Notes"
+      }
+    },
+    "issueDialog": {
+      "title": "Issue Material to Analyst",
+      "subtitle": "Deducted from stock and linked to sample/test for traceability",
+      "fields": {
+        "material": "Material *",
+        "selectMaterial": "Select material",
+        "lot": "Lot",
+        "selectValidLot": "Select a valid lot",
+        "quantityUsed": "Quantity Used *",
+        "unit": "Unit",
+        "purpose": "Purpose",
+        "issueType": "Issue Type",
+        "notes": "Notes"
+      },
+      "issueTypes": {
+        "issue": "Issue",
+        "consumption": "Consumption",
+        "return": "Return"
+      }
+    },
+    "disposalDialog": {
+      "title": "Material Disposal Request",
+      "subtitle": "Request → Approval → Disposal — with record kept",
+      "fields": {
+        "material": "Material *",
+        "selectMaterial": "Select material",
+        "lot": "Lot",
+        "selectLot": "Select lot",
+        "quantity": "Quantity *",
+        "unit": "Unit",
+        "reason": "Reason",
+        "selectReason": "Select reason",
+        "detail": "Details"
+      },
+      "reasons": {
+        "expired": "Expired",
+        "damaged": "Damaged",
+        "partiallyUsed": "Partially Used",
+        "contaminated": "Contaminated"
+      }
+    }
+  },
+  "labDirector": {
+    "nav": {
+      "home": "Executive Center — Comprehensive overview of lab performance and critical decisions",
+      "approval": "Results Approval — Final laboratory decision",
+      "approvalQueue": "Approval Queue — Results awaiting the lab director's final decision",
+      "approvalApproved": "Approved Results — Final decisions issued",
+      "approvalRejected": "Rejected Results — Non-compliant samples",
+      "samplesAll": "All Samples — Complete inventory",
+      "samplesToday": "Today's Samples — Newly received",
+      "samplesOverdue": "Overdue Samples — Exceeded time limits",
+      "departmentsMicrobiology": "Microbiology Department — Performance and workload",
+      "departmentsChemistry": "Chemistry Department — Performance and workload",
+      "departmentsPhysical": "Physical Department — Performance and workload",
+      "slaOverview": "SLA Indicators — Compliance with time limits",
+      "slaAtRisk": "Overdue and At-Risk Analyses",
+      "equipmentCalibration": "Equipment Calibration — Readiness and schedules",
+      "equipmentStatus": "Operational Equipment Status",
+      "reagents": "Reagents — Validity and stock",
+      "ncOpen": "Non-Conformity — Open cases",
+      "ncCapa": "CAPA — Corrective and preventive actions",
+      "reports": "Executive Reports — Certificates and results",
+      "notifications": "Alerts and Notifications"
+    },
+    "ncStatus": {
+      "open": "Open",
+      "underInvestigation": "Under Investigation",
+      "awaitingCapa": "Awaiting CAPA",
+      "closed": "Closed"
+    },
+    "sampleStatus": {
+      "registered": "Registered",
+      "processing": "Processing",
+      "completed": "Completed"
+    },
+    "sections": {
+      "overview": "Overview",
+      "approval": "Approval",
+      "sla": "Performance Indicators",
+      "departments": "Departments",
+      "alerts": "Alerts",
+      "quality": "System Quality"
+    },
+    "messages": {
+      "approveSuccess": "Result approved successfully",
+      "approveError": "Failed to approve result"
+    },
+    "columns": {
+      "sampleNumber": "Sample No.",
+      "source": "Source",
+      "type": "Type",
+      "bench": "Department",
+      "status": "Status",
+      "approval": "Approval",
+      "receivedAt": "Received At",
+      "uploadedAt": "Uploaded At",
+      "action": "Action",
+      "equipment": "Equipment",
+      "lastCalibrated": "Last Calibrated",
+      "nextCalibration": "Next Calibration",
+      "reagent": "Reagent",
+      "lotNumber": "Lot No.",
+      "expiryDate": "Expiry Date",
+      "quantity": "Quantity",
+      "number": "No.",
+      "title": "Title",
+      "severity": "Severity",
+      "user": "User",
+      "actionType": "Action",
+      "objectType": "Object",
+      "description": "Description",
+      "time": "Time",
+      "sample": "Sample",
+      "issuedAt": "Issued At"
+    },
+    "actions": {
+      "approve": "Approve",
+      "viewAll": "View All"
+    },
+    "reagentStatus": {
+      "available": "Available",
+      "low": "Low",
+      "expired": "Expired"
+    },
+    "dept": {
+      "totalSamples": "Total Samples",
+      "completed": "Completed",
+      "underTesting": "Under Testing",
+      "awaitingApproval": "Awaiting Approval",
+      "performance": "Department Performance",
+      "tests": "Tests",
+      "sectionTitle": "Department Performance",
+      "microbiology": "Microbiology",
+      "chemistry": "Chemistry",
+      "physical": "Physical"
+    },
+    "kpi": {
+      "totalSamples": "Total Samples",
+      "samplesToday": "Today's Samples",
+      "underTesting": "Under Testing",
+      "awaitingApproval": "Awaiting Approval",
+      "overdue": "Overdue",
+      "approved": "Approved",
+      "openNc": "Open Non-Conformities",
+      "overdueCalibration": "Overdue Calibration",
+      "rejected": "Rejected",
+      "overdueSamples": "Overdue Samples",
+      "avgCompletionTime": "Average Completion Time",
+      "avgCompletionTimeValue": "{{hours}} h"
+    },
+    "approvalQueue": {
+      "title": "Results Approval Queue",
+      "empty": "No results awaiting approval"
+    },
+    "sla": {
+      "title": "SLA Indicators",
+      "compliance": "SLA Compliance",
+      "decisionCompliance": "Decision Compliance Rate",
+      "overdueTests": "Overdue tests: {{count}}",
+      "atRiskTests": "At-risk tests: {{count}}",
+      "avgTatHours": "Average turnaround time: {{hours}} hours",
+      "avgTatNone": "Average turnaround time: —",
+      "indicators": "Performance Indicators",
+      "avgTatHoursUnit": "{{hours}} h"
+    },
+    "alerts": {
+      "title": "Executive Alerts",
+      "overdueTests": "{{count}} test(s) exceeded the time limit",
+      "overdueCalibration": "{{count}} device(s) with overdue calibration",
+      "expiredReagents": "{{count}} expired reagent(s)",
+      "openNc": "{{count}} open non-conformity case(s)",
+      "sectionTitle": "Alerts",
+      "overdueTestsUrgent": "{{count}} test(s) exceeded the time limit — urgent action required",
+      "upcomingCalibration": "{{count}} device(s) calibration due within 30 days",
+      "expiredReagentsWarning": "{{count}} expired reagent(s) — do not use in new tests",
+      "lowReagents": "{{count}} reagent(s) at low level",
+      "capaInProgress": "{{count}} CAPA in progress",
+      "noneCritical": "No critical alerts at the moment"
+    },
+    "quality": {
+      "noneCriticalAlerts": "No critical alerts at the moment",
+      "title": "System Quality",
+      "ncClosure": "Non-Conformity Closure",
+      "auditEventsToday": "Audit Events Today",
+      "totalAudit": "Total Audits",
+      "lowReagents": "Low Reagents",
+      "openCapa": "Open CAPA"
+    },
+    "nc": {
+      "open": "Open Non-Conformity",
+      "closed": "Closed",
+      "openCapa": "Open CAPA",
+      "title": "Non-Conformity"
+    },
+    "certificates": {
+      "title": "Certificates",
+      "sectionTitle": "Analysis Certificates"
+    },
+    "decisions": {
+      "approved": "Approved Samples",
+      "rejected": "Rejected"
+    },
+    "audit": {
+      "title": "Audit Log"
+    },
+    "equipment": {
+      "total": "Total Equipment",
+      "overdueCalibration": "Overdue Calibration",
+      "upcomingCalibration": "Upcoming Calibration",
+      "title": "Equipment & Calibration"
+    },
+    "reagents": {
+      "total": "Total Reagents",
+      "expired": "Expired",
+      "low": "Low",
+      "title": "Reagents"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Laboratory director settings."
+    },
+    "help": {
+      "title": "Help",
+      "description": "Guide for using the laboratory director interface."
+    },
+    "pageHeader": {
+      "eyebrow": "Food Laboratory",
+      "title": "Laboratory Director Dashboard",
+      "subtitle": "Laboratory management and results approval",
+      "refresh": "🔄 Refresh",
+      "live": "Live",
+      "sectionsLabel": "Dashboard Sections",
+      "avatarLabel": "L"
+    }
+  },
+  "surveillance": {
+    "sections": {
+      "dashboard": "Surveillance Dashboard",
+      "cases": "Cases",
+      "alerts": "Alerts",
+      "diseases": "Diseases",
+      "contacts": "Contacts",
+      "investigations": "Investigations",
+      "reports": "Reports"
+    },
+    "messages": {
+      "loadError": "Failed to load surveillance data",
+      "engineRun": "Engine run — {{count}} alert(s) created",
+      "engineRunError": "Failed to run alert engine",
+      "updateFromInterface": "Updated from interface",
+      "statusUpdated": "Status updated",
+      "statusUpdateError": "Failed to update status",
+      "ackError": "Failed to acknowledge",
+      "respondError": "Failed to start response",
+      "closeError": "Failed to close alert",
+      "nameRequired": "Name is required",
+      "caseRegistered": "Case registered",
+      "caseRegisterError": "Failed to register case",
+      "caseIndexAndNameRequired": "Index case and name are required",
+      "contactRegistered": "Contact registered",
+      "contactRegisterError": "Failed to register contact",
+      "titleRequired": "Title is required",
+      "investigationOpened": "Investigation opened",
+      "investigationOpenError": "Failed to open investigation",
+      "periodRequired": "Period is required",
+      "facilityOrEntryPointRequired": "Select a health facility or entry point",
+      "weeklyReportSubmitted": "Weekly report submitted",
+      "weeklyReportSubmitError": "Failed to submit weekly report"
+    },
+    "kpi": {
+      "totalCases": "Total Cases",
+      "casesToday": "Today's Cases",
+      "confirmed": "Confirmed",
+      "deaths": "Deaths",
+      "activeAlerts": "Active Alerts",
+      "openEvents": "Open Events"
+    },
+    "tabs": {
+      "dashboard": "Surveillance Dashboard",
+      "cases": "Cases",
+      "earlyWarnings": "Early Warnings",
+      "diseases": "Diseases",
+      "contacts": "Contacts",
+      "weeklyReports": "Weekly Reports"
+    },
+    "sectionCards": {
+      "responseLevel": "Response Level",
+      "byActiveAlerts": "By number of active alerts",
+      "topDiseases": "Top Reported Diseases",
+      "topPorts": "Top Reporting Ports",
+      "currentCases": "Current Surveillance Cases"
+    },
+    "empty": {
+      "noData": "No data"
+    },
+    "actions": {
+      "newCase": "New Case",
+      "runEngine": "Run Alert Engine"
+    },
+    "columns": {
+      "caseNumber": "Case No.",
+      "disease": "Disease",
+      "type": "Type",
+      "status": "Status",
+      "source": "Source",
+      "port": "Port",
+      "person": "Person",
+      "registeredAt": "Registered At",
+      "actions": "Actions",
+      "alertNumber": "Alert No.",
+      "title": "Title",
+      "level": "Level",
+      "cases": "Cases",
+      "name": "Name",
+      "notificationTimeline": "Notification Timeline",
+      "mode": "Mode",
+      "threshold": "Threshold",
+      "window": "Window",
+      "indexCase": "Index Case",
+      "contactType": "Contact Type",
+      "followUpDays": "Follow-up Days",
+      "case": "Case",
+      "startedAt": "Started At",
+      "period": "Period",
+      "facility": "Facility",
+      "timeliness": "Timeliness",
+      "submittedAt": "Submitted At"
+    },
+    "cases": {
+      "title": "Surveillance Cases",
+      "subtitle": "Suspected, probable, confirmed and ruled-out cases",
+      "emptyTitle": "No cases",
+      "emptyDescription": "Register a new case or run the alert engine",
+      "createTitle": "Register New Case",
+      "createSubtitle": "Manual entry of a surveillance case"
+    },
+    "alerts": {
+      "recentCount": "{{count}} recent alert(s)",
+      "earlyWarningTitle": "Early Warning Alerts",
+      "earlyWarningSubtitle": "Threshold breaches, single events, positive lab results",
+      "emptyTitle": "No alerts",
+      "emptyDescription": "Run the engine or connect data sources"
+    },
+    "tooltips": {
+      "confirm": "Confirm",
+      "close": "Close",
+      "acknowledge": "Acknowledge",
+      "startResponse": "Start Response"
+    },
+    "statuses": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "onTime": "On Time",
+      "late": "Late"
+    },
+    "diseases": {
+      "title": "Notifiable Diseases",
+      "subtitle": "Threshold configuration, notification scopes, and case definitions",
+      "emptyTitle": "No diseases",
+      "emptyDescription": "Add notifiable diseases through settings"
+    },
+    "contacts": {
+      "registerContact": "Register Contact",
+      "title": "Contacts",
+      "subtitle": "Daily tracking of index case contacts",
+      "emptyTitle": "No contacts",
+      "emptyDescription": "Register contacts after confirming a case",
+      "createTitle": "Register Contact",
+      "createSubtitle": "Track contacts of confirmed cases",
+      "indexCase": "Index Case"
+    },
+    "investigations": {
+      "openInvestigation": "Open Investigation",
+      "title": "Field Investigations",
+      "subtitle": "Field investigations linked to cases or events",
+      "emptyTitle": "No investigations",
+      "emptyDescription": "Start a new field investigation",
+      "openTitle": "Open Field Investigation",
+      "openSubtitle": "Investigation linked to a case or event"
+    },
+    "reports": {
+      "weeklyReport": "Weekly Report",
+      "title": "Weekly Reports",
+      "subtitle": "Health facilities and entry points",
+      "emptyTitle": "No reports",
+      "emptyDescription": "Submit the weekly report for your facility",
+      "weeklyTitle": "Weekly Report",
+      "weeklySubtitle": "Health facility or entry point",
+      "byState": {
+        "title": "Surveillance by State",
+        "subtitle": "Cases aggregated through the reporting tree (facility → locality → state)",
+        "refresh": "Refresh",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "apply": "Apply",
+        "state": "State",
+        "count": "Cases",
+        "total": "Total",
+        "matched": "Matched",
+        "nodeNoState": "Node without state",
+        "unassignedNode": "Unassigned (node)",
+        "unassignedFacility": "Unassigned (facility)",
+        "reconciliationOk": "Reconciliation OK",
+        "reconciliationBroken": "Reconciliation broken",
+        "noData": "No cases",
+        "noDataDescription": "No cases in the selected range",
+        "loadError": "Failed to load the report",
+        "scoped": "Scoped view"
+      }
+    },
+    "pageHeader": {
+      "title": "Health Surveillance",
+      "subtitle": "Disease surveillance, early warning, investigations, weekly reports",
+      "avatarLabel": "S",
+      "live": "Live",
+      "sectionsLabel": "Dashboard Sections"
+    },
+    "forms": {
+      "personName": "Person Name",
+      "age": "Age",
+      "sex": "Sex",
+      "male": "Male",
+      "female": "Female",
+      "unspecified": "Unspecified",
+      "disease": "Disease",
+      "caseType": "Case Type",
+      "severity": "Severity",
+      "source": "Source",
+      "sector": "Sector",
+      "locality": "Locality",
+      "port": "Port/Entry Point",
+      "healthFacility": "Health Facility",
+      "notes": "Notes",
+      "name": "Name",
+      "phone": "Phone",
+      "contactType": "Contact Type",
+      "relationship": "Relationship",
+      "location": "Location",
+      "title": "Title",
+      "hypothesis": "Hypothesis",
+      "periodStart": "Period Start",
+      "periodEnd": "Period End",
+      "entryPoint": "Entry Point"
+    }
+  },
+  "finance": {
+    "messages": {
+      "errorOccurred": "An error occurred",
+      "amountMustBePositive": "Amount must be greater than zero.",
+      "amountExceedsRemaining": "Entered amount exceeds remaining balance.",
+      "collectionSuccess": "Collection completed — Receipt {{receipt}}"
+    },
+    "nav": {
+      "home": "Finance Dashboard",
+      "invoices": "Invoices",
+      "collections": "Collections & Receipts",
+      "review": "Financial Review",
+      "reconcile": "Reconciliation",
+      "fees": "Fee Items",
+      "reports": "Financial Reports",
+      "arrears": "Arrears",
+      "audit": "Audit Log"
+    },
+    "pageHeader": {
+      "home": "National Finance Dashboard",
+      "invoices": "Invoices",
+      "collections": "Collections & Receipts",
+      "review": "Financial Review",
+      "fees": "Fee Items (Master Data)",
+      "reports": "Financial Reports",
+      "arrears": "Arrears",
+      "audit": "Financial Audit Log",
+      "default": "Finance Management"
+    },
+    "sidebar": {
+      "title": "Finance Management",
+      "subtitle": "Financial Regulations",
+      "expand": "Expand Sidebar",
+      "collapse": "Collapse Sidebar",
+      "expandSidebar": "Expand Sidebar",
+      "collapseSidebar": "Collapse Sidebar",
+      "openMenu": "Open Menu",
+      "platformTitle": "Finance Management — Platform Financial Regulations",
+      "loading": "Updating…",
+      "dataUpdated": "Data Updated",
+      "refresh": "Refresh",
+      "refreshData": "Refresh Data",
+      "profile": "Profile",
+      "userMenu": "User Menu",
+      "defaultInitial": "M",
+      "unknownInitial": "?",
+      "defaultName": "Finance Manager",
+      "logout": "Logout"
+    },
+    "kpi": {
+      "totalRevenue": "Total Revenue",
+      "paidInvoices": "{{count}} paid invoice(s)",
+      "collectedToday": "Collected Today",
+      "transactions": "{{count}} transaction(s)",
+      "pendingPayment": "Pending Payment",
+      "unpaidInvoices": "Unpaid issued invoices",
+      "overdue": "Overdue",
+      "overdueAmount": "{{amount}} SDG"
+    },
+    "dashboard": {
+      "title": "Finance Dashboard — Summary",
+      "subtitle": "Collection and revenue indicators per regulations",
+      "invoiceCycle": "Invoice Cycle by Status",
+      "recentReceipts": "Recent Receipts"
+    },
+    "columns": {
+      "receiptNumber": "Receipt No.",
+      "invoice": "Invoice",
+      "amount": "Amount",
+      "method": "Method",
+      "time": "Time",
+      "request": "Request",
+      "net": "Net",
+      "collect": "Collect",
+      "actions": "Actions",
+      "order": "Order",
+      "beneficiary": "Beneficiary",
+      "service": "Service",
+      "paidRemaining": "Paid / Remaining",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "daysOverdue": "Days Overdue",
+      "reference": "Reference",
+      "issuedAt": "Issued At",
+      "verificationCode": "Verification Code",
+      "code": "Code",
+      "name": "Name",
+      "year": "Year",
+      "daysOverdueWithCount": "{{count}} days",
+      "item": "Item",
+      "quantity": "Qty"
+    },
+    "actions": {
+      "printReceipt": "Print Receipt",
+      "approveSettlement": "Approve Settlement",
+      "details": "Details",
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "close": "Close",
+      "cancel": "Cancel",
+      "confirmCollection": "Confirm Collection",
+      "save": "Save",
+      "refund": "Refund"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "invoices": {
+      "unifiedTitle": "Unified Invoices",
+      "unifiedSubtitle": "All invoices across sectors and services — no deletions"
+    },
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "service": "Service"
+    },
+    "collections": {
+      "title": "Collections & Receipts",
+      "subtitle": "Payment transactions and electronic receipts log",
+      "payments": "Payments",
+      "receipts": "Electronic Receipts"
+    },
+    "review": {
+      "title": "Financial Review",
+      "subtitle": "Separation of duties: reviewer ≠ collector — a reviewer cannot approve an invoice they collected",
+      "emptyTitle": "No invoices pending review",
+      "emptyDescription": "Paid invoices appear here for approval and settlement"
+    },
+    "arrears": {
+      "title": "Arrears",
+      "subtitle": "Total outstanding unpaid: {{amount}} SDG",
+      "remaining": "Remaining: {{amount}}"
+    },
+    "dialogs": {
+      "net": "Net",
+      "collected": "Collected",
+      "remaining": "Remaining",
+      "total": "Total",
+      "discount": "Discount",
+      "receipts": "Receipts",
+      "reasonRequired": "Reason (required)",
+      "paymentAmount": "Payment Amount (Remaining: {{remaining}} {{currency}})",
+      "paymentMethod": "Payment Method",
+      "gatewayRef": "Gateway Reference (optional)",
+      "collectionNotes": "Collection Notes",
+      "cancelInvoice": "Cancel Invoice {{number}}",
+      "cancelSubtitle": "Record is not deleted; status changed to cancelled with cancellation logged in audit trail.",
+      "approveCancellation": "Approve Cancellation",
+      "refundInvoice": "Refund Invoice {{number}}",
+      "refundSubtitle": "Record and payment are held; status changed to refunded with refund reference.",
+      "approveRefund": "Approve Refund",
+      "collectInvoice": "Collect Invoice {{number}}",
+      "invoiceTitle": "Invoice {{number}}",
+      "orderRef": "Order: {{ref}}",
+      "client": "Client",
+      "lineItems": "Line Items"
+    },
+    "fees": {
+      "title": "Fee Items (Master Data)",
+      "subtitle": "Source of truth — no deletions, deactivation via is_active",
+      "addFee": "Add Fee Item",
+      "nameAr": "Name (Arabic)",
+      "serviceType": "Service Type",
+      "code": "Code",
+      "amountSdg": "Amount (SDG)",
+      "amountUsd": "Amount (USD)",
+      "effectiveFrom": "Effective From",
+      "effectiveTo": "Effective To (optional)",
+      "year": "Year",
+      "approvedBy": "Approved By",
+      "legalReference": "Legal Reference / Publication",
+      "unit": "Unit of Measure",
+      "editFee": "Edit Fee Item"
+    },
+    "empty": {
+      "noDataYet": "No data yet"
+    },
+    "payments": {
+      "extraPayment": "Extra Payment",
+      "collect": "Collect",
+      "confirmed": "Confirmed"
+    }
+  },
+  "carriers": {
+    "flightDetail": {
+      "loadError": "Failed to load flight details",
+      "notFound": "Flight not found",
+      "pageTitle": "Flight details {{flightNumber}}",
+      "companyLabel": "Company",
+      "aircraftLabel": "Aircraft",
+      "flightLabel": "Flight",
+      "originLabel": "From",
+      "destinationLabel": "To",
+      "departureLabel": "Scheduled departure",
+      "arrivalLabel": "Scheduled arrival",
+      "currentStatusLabel": "Current status",
+      "declarationStatusLabel": "Health declaration status",
+      "documentsTitle": "Documents",
+      "noDocuments": "No documents associated with this flight",
+      "documentFallback": "Document",
+      "download": "Download",
+      "timelineTitle": "Flight event log",
+      "noEvents": "No events recorded for this flight",
+      "operationalCategoryLabel": "Operational",
+      "healthAdminCategoryLabel": "Health / Administrative"
+    }
+  },
+  "registry": {
+    "tree": {
+      "title": "Organizational Registry — Tree",
+      "picker": {
+        "label": "Root",
+        "all": "All available roots"
+      },
+      "empty": "No nodes to display",
+      "error": {
+        "load": "Failed to load tree. Please try again."
+      },
+      "banner": {
+        "scoped": "You are viewing a scoped subset of the registry (state/sector)."
+      },
+      "virtual_root": "You are viewing: {{name}}"
+    },
+    "selector": {
+      "label": "Health facility",
+      "placeholder": "Search by code or name",
+      "no_options": "No matching facilities",
+      "loading": "Loading...",
+      "clear": "Clear selection",
+      "error": "Failed to load registry tree"
+    },
+    "nodes": {
+      "create": {
+        "button": "Add Node",
+        "title": "Create Node"
+      },
+      "edit": {
+        "title": "Edit Node"
+      },
+      "deactivate": {
+        "button": "Deactivate",
+        "confirm": "Are you sure you want to deactivate this node? It will disappear from the tree until reactivated."
+      },
+      "field": {
+        "kind": "Kind",
+        "code": "Code",
+        "name_ar": "Name (AR)",
+        "name_en": "Name (EN)",
+        "parent": "Parent"
+      },
+      "error": {
+        "create": "Failed to create node",
+        "edit": "Failed to save node",
+        "deactivate": "Failed to deactivate node"
+      }
+    },
+    "facility": {
+      "title": "Facility Detail",
+      "error": {
+        "missing_id": "Facility id missing",
+        "load": "Failed to load details",
+        "not_found": "Facility not found or not visible"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "ownership": "Ownership",
+        "supervision": "Supervision",
+        "services": "Services",
+        "departments": "Departments",
+        "tree_position": "Tree Position"
+      },
+      "overview": {
+        "name": "Name",
+        "code": "Code",
+        "sector": "Sector",
+        "locality": "Locality",
+        "entry_point": "Entry Point"
+      },
+      "ownership": {
+        "empty": "No ownership records",
+        "error": "Failed to load ownership records"
+      },
+      "supervision": {
+        "empty": "No supervision records",
+        "error": "Failed to load supervision records"
+      },
+      "services": {
+        "empty": "No services registered",
+        "error": "Failed to load services"
+      },
+      "departments": {
+        "empty": "No departments registered",
+        "error": "Failed to load departments"
+      },
+      "tree_position": {
+        "empty": "Facility not linked to tree"
+      }
+    },
+    "common": {
+      "load_more": "Load more",
+      "showing_n_of_m": "{{shown}} of {{total}}"
     }
   }
 }

@@ -9,6 +9,7 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { SectorPageShell, SectorHomeLink, useSectorSite, usePageTitle } from './SectorCmsShared';
 import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
 import { EmptyState } from '../../components/common';
@@ -20,10 +21,11 @@ const formatDate = (value?: string | null) =>
 
 const SectorCmsNews = () => {
   const { sector, slug } = useSectorSite();
+  const { t } = useTranslation();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
-  usePageTitle('الأخبار');
+  usePageTitle(t('sector-cms.news.pageTitle'));
 
   useEffect(() => {
     getNews(sector?.id)
@@ -35,9 +37,9 @@ const SectorCmsNews = () => {
   return (
     <SectorPageShell>
       <SectorHomeLink />
-      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>الأخبار</Typography>
+      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{t('sector-cms.news.pageTitle')}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        آخر الأخبار والتحديثات من المركز الإعلامي لمنصة الحجر الصحي القومي.
+        {t('sector-cms.news.subtitle')}
       </Typography>
 
       {loading ? (
@@ -47,7 +49,7 @@ const SectorCmsNews = () => {
           ))}
         </Grid>
       ) : news.length === 0 ? (
-        <EmptyState title="لا توجد أخبار" description="لا توجد أخبار منشورة حالياً." />
+        <EmptyState title={t('sector-cms.news.emptyTitle')} description={t('sector-cms.news.emptyDescription')} />
       ) : (
         <Grid container spacing={3}>
           {news.map((article) => (
@@ -78,7 +80,7 @@ const SectorCmsNews = () => {
                 </CardContent>
                 <CardActions sx={{ px: 3, pb: 2 }}>
                   <Button component={Link} to={`/sector/${slug}/news/${article.id}`} size="small" color="primary">
-                    تفاصيل الخبر
+                    {t('sector-cms.news.details')}
                   </Button>
                 </CardActions>
               </Card>

@@ -261,7 +261,7 @@ const DashboardTab = () => {
 };
 
 const CrossingsTab = () => {
-  const { t } = useTranslation();
+  const { t: translate } = useTranslation();
   const tt = useServerTable<BorderCrossing>({ fetchData: getCrossings });
   const { exporting, exportAll } = useTableExport(tt.fetchAllRows);
   const [statusTarget, setStatusTarget] = useState<BorderCrossing | null>(null);
@@ -274,12 +274,12 @@ const CrossingsTab = () => {
     setSaving(true);
     try {
       await changeCrossingStatus(statusTarget.id, nextStatus, reason || undefined);
-      notifySuccess(t('borders.labels.success') || 'تم تحديث حالة المعبر');
+      notifySuccess(translate('borders.bordersHealth.crossings.statusUpdated'));
       setStatusTarget(null);
       setReason('');
       tt.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, t('borders.labels.error') || 'تعذر تحديث حالة المعبر'));
+      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.crossings.statusUpdateFailed')));
     } finally {
       setSaving(false);
     }
@@ -289,7 +289,7 @@ const CrossingsTab = () => {
     <>
       <DataTable<BorderCrossing>
         columns={[
-          { key: 'name_ar', label: t('borders.bordersHealth.crossings.cols.crossing'), render: (v) => (
+          { key: 'name_ar', label: translate('borders.bordersHealth.crossings.cols.crossing'), render: (v) => (
             <Stack>
               <Typography sx={{ fontWeight: 700 }}>{v.name_ar}</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
@@ -297,17 +297,17 @@ const CrossingsTab = () => {
               </Typography>
             </Stack>
           ) },
-          { key: 'neighbor_country', label: t('borders.bordersHealth.crossings.cols.neighbor'), hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
-          { key: 'neighbor_state', label: t('borders.bordersHealth.crossings.cols.state'), hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
-          { key: 'operating_status', label: t('borders.bordersHealth.crossings.cols.status'), render: (v) => (
+          { key: 'neighbor_country', label: translate('borders.bordersHealth.crossings.cols.neighbor'), hideOnMobile: true, render: (v) => v.neighbor_country || '—' },
+          { key: 'neighbor_state', label: translate('borders.bordersHealth.crossings.cols.state'), hideOnMobile: true, render: (v) => v.neighbor_state || '—' },
+          { key: 'operating_status', label: translate('borders.bordersHealth.crossings.cols.status'), render: (v) => (
             <StatusChip
               label={borderOperatingStatus[v.operating_status]?.label ?? v.operating_status}
               tone={borderOperatingStatus[v.operating_status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'daily_capacity', label: t('borders.bordersHealth.crossings.cols.capacity'), align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
-          { key: 'has_laboratory', label: t('borders.bordersHealth.crossings.cols.lab'), align: 'center', render: (v) => (
-            <StatusChip label={v.has_laboratory ? t('borders.labels.yes') : t('borders.labels.no')} tone={v.has_laboratory ? 'success' : 'neutral'} />
+          { key: 'daily_capacity', label: translate('borders.bordersHealth.crossings.cols.capacity'), align: 'center', hideOnMobile: true, render: (v) => v.daily_capacity?.toLocaleString('ar') ?? '—' },
+          { key: 'has_laboratory', label: translate('borders.bordersHealth.crossings.cols.lab'), align: 'center', render: (v) => (
+            <StatusChip label={v.has_laboratory ? translate('borders.labels.yes') : translate('borders.labels.no')} tone={v.has_laboratory ? 'success' : 'neutral'} />
           ) },
         ]}
         rows={tt.rows}
@@ -318,15 +318,15 @@ const CrossingsTab = () => {
         pageSizeOptions={tt.pageSizeOptions}
         loading={tt.loading}
         error={tt.error}
-        title={t('borders.bordersHealth.crossings.title')}
-        subtitle={t('borders.bordersHealth.crossings.subtitle').replace('{count}', String(tt.count))}
+        title={translate('borders.bordersHealth.crossings.title')}
+        subtitle={translate('borders.bordersHealth.crossings.subtitle').replace('{count}', String(tt.count))}
         searchInput={tt.searchInput}
         onSearchChange={tt.setSearchInput}
-        searchPlaceholder={t('borders.bordersHealth.crossings.searchPlaceholder')}
+        searchPlaceholder={translate('borders.bordersHealth.crossings.searchPlaceholder')}
         filters={[
           {
             key: 'operating_status',
-            label: t('borders.bordersHealth.crossings.filterStatus'),
+            label: translate('borders.bordersHealth.crossings.filterStatus'),
             options: Object.entries(borderOperatingStatus).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
             onChange: (v) => tt.setFilter('operating_status', v),
@@ -336,18 +336,18 @@ const CrossingsTab = () => {
         onRowsPerPageChange={tt.setRowsPerPage}
         onExport={() => exportAll({
           filename: 'border-crossings',
-          headers: [t('borders.bordersHealth.crossings.cols.code') || t('borders.labels.code'), t('borders.bordersHealth.crossings.cols.crossing'), t('borders.bordersHealth.crossings.cols.neighbor'), t('borders.bordersHealth.crossings.cols.status')],
-          mapRow: (v) => [v.entry_point_code ?? '', v.name_ar ?? '', v.neighbor_country, v.operating_status],
-          message: t('borders.labels.export') || t('borders.bordersHealth.crossings.exported'),
+          headers: [translate('borders.bordersHealth.crossings.cols.code') || translate('borders.labels.code'), translate('borders.bordersHealth.crossings.cols.crossing'), translate('borders.bordersHealth.crossings.cols.neighbor'), translate('borders.bordersHealth.crossings.cols.status')],
+          mapRow: (v: BorderCrossing) => [v.entry_point_code ?? '', v.name_ar ?? '', v.neighbor_country, v.operating_status],
+          message: translate('borders.labels.export') || translate('borders.bordersHealth.crossings.exported'),
         })}
         exporting={exporting}
         onRefresh={tt.refresh}
-        emptyTitle={t('borders.bordersHealth.crossings.emptyTitle')}
-        emptyDescription={t('borders.bordersHealth.crossings.emptyDescription')}
+        emptyTitle={translate('borders.bordersHealth.crossings.emptyTitle')}
+        emptyDescription={translate('borders.bordersHealth.crossings.emptyDescription')}
         actions={(v) => (
-          <Tooltip title={t('borders.actions.changeStatus')}>
+          <Tooltip title={translate('borders.actions.changeStatus')}>
             <IconButton
-              aria-label={t('borders.actions.changeBorderStatus')}
+              aria-label={translate('borders.actions.changeBorderStatus')}
               size="small"
               color="primary"
               onClick={() => { setStatusTarget(v); setNextStatus(v.operating_status); }}
@@ -360,7 +360,7 @@ const CrossingsTab = () => {
       />
 
       <Dialog open={Boolean(statusTarget)} onClose={() => setStatusTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>{t('borders.bordersHealth.dialogs.changeCrossing')}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{translate('borders.bordersHealth.dialogs.changeCrossing')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <Typography variant="body2" color="text.secondary">
@@ -369,7 +369,7 @@ const CrossingsTab = () => {
             <TextField
               select
               fullWidth
-              label={t('borders.bordersHealth.dialogs.newStatus')}
+              label={translate('borders.bordersHealth.dialogs.newStatus')}
               value={nextStatus}
               onChange={(e) => setNextStatus(e.target.value)}
             >
@@ -379,7 +379,7 @@ const CrossingsTab = () => {
             </TextField>
             <TextField
               fullWidth
-              label={t('borders.bordersHealth.dialogs.reason')}
+              label={translate('borders.bordersHealth.dialogs.reason')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               multiline
@@ -388,7 +388,7 @@ const CrossingsTab = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>{t('borders.actions.cancel')}</Button>
+          <Button onClick={() => setStatusTarget(null)} sx={{ fontWeight: 700 }}>{translate('borders.actions.cancel')}</Button>
           <Button
             variant="contained"
             onClick={applyStatus}
@@ -396,7 +396,7 @@ const CrossingsTab = () => {
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ fontWeight: 700 }}
           >
-            {t('borders.actions.save')}
+            {translate('borders.actions.save')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -461,18 +461,18 @@ const ShiftsTab = () => {
   return (
     <DataTable<BorderShift>
       columns={[
-        { key: 'shift_date', label: 'التاريخ', render: (v) => formatDate(v.shift_date) },
-        { key: 'shift_type', label: 'الوردية', render: (v) => (
+        { key: 'shift_date', label: translate('borders.bordersHealth.shifts.colsDate'), render: (v) => formatDate(v.shift_date) },
+        { key: 'shift_type', label: translate('borders.bordersHealth.shifts.colsShiftType'), render: (v) => (
           <StatusChip
             label={borderShiftType[v.shift_type]?.label ?? v.shift_type}
             tone={borderShiftType[v.shift_type]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'started_at', label: 'البداية', align: 'center', render: (v) => v.started_at || '—' },
-        { key: 'ended_at', label: 'النهاية', align: 'center', hideOnMobile: true, render: (v) => v.ended_at || '—' },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'supervisor_name', label: 'المشرف', render: (v) => v.supervisor_name || '—' },
-        { key: 'is_staffed', label: 'مؤمَّنة', render: (v) => (
+        { key: 'started_at', label: translate('borders.bordersHealth.shifts.colsStart'), align: 'center', render: (v) => v.started_at || '—' },
+        { key: 'ended_at', label: translate('borders.bordersHealth.shifts.colsEnd'), align: 'center', hideOnMobile: true, render: (v) => v.ended_at || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'supervisor_name', label: translate('borders.bordersHealth.shifts.colsSupervisor'), render: (v) => v.supervisor_name || '—' },
+        { key: 'is_staffed', label: translate('borders.bordersHealth.shifts.colsIsStaffed'), render: (v) => (
           <StatusChip label={v.is_staffed ? translate('borders.labels.yes') : translate('borders.labels.no')} tone={v.is_staffed ? 'success' : 'warning'} />
         ) },
       ]}
@@ -492,7 +492,7 @@ const ShiftsTab = () => {
       filters={[
         {
           key: 'shift_type',
-          label: 'نوع الوردية',
+          label: translate('borders.bordersHealth.shifts.filterShiftType'),
           options: Object.entries(borderShiftType).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('shift_type', v),
@@ -513,13 +513,13 @@ const StaffTab = () => {
   return (
     <DataTable<BorderStaff>
       columns={[
-        { key: 'user_name', label: 'الموظف', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.user_name}</Typography> },
-        { key: 'role', label: 'الدور', render: (v) => v.role },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'assignment_type', label: 'نوع الإسناد', hideOnMobile: true, render: (v) => v.assignment_type },
-        { key: 'starts_on', label: 'يبدأ', render: (v) => formatDate(v.starts_on) },
-        { key: 'ends_on', label: 'ينتهي', hideOnMobile: true, render: (v) => (v.ends_on ? formatDate(v.ends_on) : translate('borders.bordersHealth.statusLabels.ongoing')) },
-        { key: 'is_active', label: 'نشط', render: (v) => (
+        { key: 'user_name', label: translate('borders.bordersHealth.staff.colsUser'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.user_name}</Typography> },
+        { key: 'role', label: translate('borders.bordersHealth.staff.colsRole'), render: (v) => v.role },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'assignment_type', label: translate('borders.bordersHealth.staff.colsAssignment'), hideOnMobile: true, render: (v) => v.assignment_type },
+        { key: 'starts_on', label: translate('borders.bordersHealth.staff.colsStarts'), render: (v) => formatDate(v.starts_on) },
+        { key: 'ends_on', label: translate('borders.bordersHealth.certificates.colsExpiryDate'), hideOnMobile: true, render: (v) => (v.ends_on ? formatDate(v.ends_on) : translate('borders.bordersHealth.statusLabels.ongoing')) },
+        { key: 'is_active', label: translate('borders.bordersHealth.staff.colsIsActive'), render: (v) => (
           <StatusChip label={v.is_active ? translate('borders.bordersHealth.common.operational') : translate('borders.bordersHealth.common.ended')} tone={v.is_active ? 'success' : 'neutral'} />
         ) },
       ]}
@@ -552,7 +552,7 @@ const TravelersTab = () => {
   return (
     <DataTable<TravelerHealthRecord>
       columns={[
-        { key: 'traveler_name', label: 'المسافر', render: (v) => (
+        { key: 'traveler_name', label: translate('borders.bordersHealth.travelers.colsTraveler'), render: (v) => (
           <Stack>
             <Typography sx={{ fontWeight: 700 }}>{v.traveler_name || '—'}</Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
@@ -560,27 +560,27 @@ const TravelersTab = () => {
             </Typography>
           </Stack>
         ) },
-        { key: 'direction', label: 'الاتجاه', render: (v) => (
+        { key: 'direction', label: translate('borders.bordersHealth.travelers.colsDirection'), render: (v) => (
           <StatusChip
             label={borderTravelDirection[v.direction]?.label ?? v.direction}
             tone={borderTravelDirection[v.direction]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'entry_at', label: 'وقت العبور', render: (v) => formatDateTime(v.entry_at) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'risk_level', label: 'الخطورة', render: (v) => (
+        { key: 'entry_at', label: translate('borders.bordersHealth.travelers.colsEntryAt'), render: (v) => formatDateTime(v.entry_at) },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'risk_level', label: translate('borders.bordersHealth.emergencies.colsSeverity'), render: (v) => (
           <StatusChip
             label={borderRiskLevel[v.risk_level]?.label ?? v.risk_level}
             tone={borderRiskLevel[v.risk_level]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'decision', label: 'القرار', render: (v) => (
+        { key: 'decision', label: translate('borders.bordersHealth.travelers.colsDecision'), render: (v) => (
           <StatusChip
             label={borderTravelerDecision[v.decision]?.label ?? v.decision}
             tone={borderTravelerDecision[v.decision]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'assessed_by_name', label: 'المُقيِّم', hideOnMobile: true, render: (v) => v.assessed_by_name || '—' },
+        { key: 'assessed_by_name', label: translate('borders.bordersHealth.travelers.colsAssessedBy'), hideOnMobile: true, render: (v) => v.assessed_by_name || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -594,18 +594,18 @@ const TravelersTab = () => {
       subtitle={translate('borders.bordersHealth.travelers.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث بالاسم أو رقم الجواز..."
+      searchPlaceholder={translate('borders.bordersHealth.travelers.searchPlaceholder')}
       filters={[
         {
           key: 'direction',
-          label: 'الاتجاه',
+          label: translate('borders.bordersHealth.travelers.colsDirection'),
           options: Object.entries(borderTravelDirection).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('direction', v),
         },
         {
           key: 'risk_level',
-          label: 'الخطورة',
+          label: translate('borders.bordersHealth.emergencies.colsSeverity'),
           options: Object.entries(borderRiskLevel).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('risk_level', v),
@@ -615,9 +615,9 @@ const TravelersTab = () => {
       onRowsPerPageChange={t.setRowsPerPage}
       onExport={() => exportAll({
         filename: 'border-travelers',
-        headers: [translate('borders.bordersHealth.travelers.cols.traveler'), translate('borders.bordersHealth.travelers.cols.traveler') === 'المسافر' ? 'الجواز' : 'Passport', translate('borders.bordersHealth.travelers.cols.direction'), translate('borders.bordersHealth.travelers.cols.risk'), translate('borders.bordersHealth.travelers.cols.decision')],
+        headers: [translate('borders.bordersHealth.travelers.cols.traveler'), translate('borders.bordersHealth.travelers.cols.traveler') === translate('borders.bordersHealth.travelers.colsTraveler') ? translate('borders.bordersHealth.tracing.colsPassportNumber') : 'Passport', translate('borders.bordersHealth.travelers.cols.direction'), translate('borders.bordersHealth.travelers.cols.risk'), translate('borders.bordersHealth.travelers.cols.decision')],
         mapRow: (v) => [v.traveler_name ?? '', v.passport_number ?? '', v.direction, v.risk_level, v.decision],
-        message: translate('borders.bordersHealth.travelers.exported') || 'تم تصدير حركة المسافرين',
+        message: translate('borders.bordersHealth.travelers.exported') || translate('borders.bordersHealth.travelers.exported'),
       })}
       exporting={exporting}
       onRefresh={t.refresh}
@@ -633,18 +633,18 @@ const DeclarationsTab = () => {
   return (
     <DataTable<HealthDeclaration>
       columns={[
-        { key: 'traveler_name', label: 'المسافر', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.traveler_name || '—'}</Typography> },
-        { key: 'departure_country', label: 'بلد المغادرة', hideOnMobile: true, render: (v) => v.departure_country || '—' },
-        { key: 'departure_date', label: 'تاريخ المغادرة', render: (v) => formatDate(v.departure_date) },
-        { key: 'current_symptoms', label: 'الأعراض', render: (v) => v.current_symptoms || translate('borders.labels.none') || 'لا يوجد' },
-        { key: 'status', label: 'الحالة', render: (v) => (
+        { key: 'traveler_name', label: translate('borders.bordersHealth.travelers.colsTraveler'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.traveler_name || '—'}</Typography> },
+        { key: 'departure_country', label: translate('borders.bordersHealth.declarations.colsDepartureCountry'), hideOnMobile: true, render: (v) => v.departure_country || '—' },
+        { key: 'departure_date', label: translate('borders.bordersHealth.declarations.colsDepartureDate'), render: (v) => formatDate(v.departure_date) },
+        { key: 'current_symptoms', label: translate('borders.bordersHealth.declarations.colsSymptoms'), render: (v) => v.current_symptoms || translate("borders.bordersHealth.declarations.colsSymptoms") },
+        { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
           <StatusChip
             label={borderDeclarationStatus[v.status]?.label ?? v.status}
             tone={borderDeclarationStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'declared_at', label: 'تاريخ الإقرار', hideOnMobile: true, render: (v) => formatDateTime(v.declared_at) },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'declared_at', label: translate('borders.bordersHealth.declarations.colsDeclaredAt'), hideOnMobile: true, render: (v) => formatDateTime(v.declared_at) },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -694,7 +694,7 @@ const ScreeningsTab = () => {
       if (temperature !== '') body.body_temperature = Number(temperature);
       if (oxygen !== '') body.oxygen_saturation = Number(oxygen);
       await reassessScreening(target.id, body);
-      notifySuccess(translate('borders.bordersHealth.screenings.reassessed') || 'أُعيد تقييم الفحص وحُدِّث القرار');
+      notifySuccess(translate('borders.bordersHealth.screenings.reassessed') || translate('borders.bordersHealth.screenings.reassessed'));
       setTarget(null);
       t.refresh();
     } catch (e) {
@@ -708,7 +708,7 @@ const ScreeningsTab = () => {
     <>
     <DataTable<BorderScreening>
       columns={[
-        { key: 'traveler_name', label: 'المسافر', render: (v) => (
+        { key: 'traveler_name', label: translate('borders.bordersHealth.travelers.colsTraveler'), render: (v) => (
           <Stack>
             <Typography sx={{ fontWeight: 700 }}>{v.traveler_name || '—'}</Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
@@ -716,29 +716,29 @@ const ScreeningsTab = () => {
             </Typography>
           </Stack>
         ) },
-        { key: 'body_temperature', label: 'الحرارة', align: 'center', render: (v) => (
+        { key: 'body_temperature', label: translate('borders.bordersHealth.screenings.colsBodyTemperature'), align: 'center', render: (v) => (
           v.body_temperature ? `${v.body_temperature}°C` : '—'
         ) },
-        { key: 'oxygen_saturation', label: 'الأكسجين', align: 'center', hideOnMobile: true, render: (v) => (
+        { key: 'oxygen_saturation', label: translate('borders.bordersHealth.screenings.colsOxygenSaturation'), align: 'center', hideOnMobile: true, render: (v) => (
           v.oxygen_saturation ? `${v.oxygen_saturation}%` : '—'
         ) },
-        { key: 'risk_level', label: 'الخطورة', render: (v) => (
+        { key: 'risk_level', label: translate('borders.bordersHealth.emergencies.colsSeverity'), render: (v) => (
           <StatusChip
             label={borderRiskLevel[v.risk_level]?.label ?? v.risk_level}
             tone={borderRiskLevel[v.risk_level]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'decision', label: 'القرار', render: (v) => (
+        { key: 'decision', label: translate('borders.bordersHealth.travelers.colsDecision'), render: (v) => (
           <StatusChip
             label={borderScreeningDecision[v.decision]?.label ?? v.decision}
             tone={borderScreeningDecision[v.decision]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'document_verified', label: 'الوثائق', align: 'center', hideOnMobile: true, render: (v) => (
-          <StatusChip label={v.document_verified ? translate('borders.status.verified') || 'مُتحقَّق' : translate('borders.status.incomplete') || 'ناقصة'} tone={v.document_verified ? 'success' : 'warning'} />
+        { key: 'document_verified', label: translate('borders.bordersHealth.screenings.colsDocumentVerified'), align: 'center', hideOnMobile: true, render: (v) => (
+          <StatusChip label={v.document_verified ? translate('borders.status.verified') || translate('borders.bordersHealth.screenings.statusVerified') : translate('borders.status.incomplete') || translate('borders.bordersHealth.screenings.statusIncomplete')} tone={v.document_verified ? 'success' : 'warning'} />
         ) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'screened_at', label: 'وقت الفحص', hideOnMobile: true, render: (v) => formatDateTime(v.screened_at) },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'screened_at', label: translate('borders.bordersHealth.screenings.colsScreenedAt'), hideOnMobile: true, render: (v) => formatDateTime(v.screened_at) },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -752,11 +752,11 @@ const ScreeningsTab = () => {
       subtitle={translate('borders.bordersHealth.screenings.subtitle').replace('{count}', String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث بالاسم أو رقم الجواز..."
+      searchPlaceholder={translate('borders.bordersHealth.travelers.searchPlaceholder')}
       filters={[
         {
           key: 'decision',
-          label: 'القرار',
+          label: translate('borders.bordersHealth.travelers.colsDecision'),
           options: Object.entries(borderScreeningDecision).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('decision', v),
@@ -765,12 +765,12 @@ const ScreeningsTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد فحوصات"
-      emptyDescription="سجّل الفحص الحراري مع قرار الإفراج."
+      emptyTitle={translate('borders.bordersHealth.screenings.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.screenings.emptyDescription')}
       actions={(v) => (
-        <Tooltip title="إعادة التقييم بقياسات جديدة">
+        <Tooltip title={translate('borders.bordersHealth.screenings.tooltipReassess')}>
           <IconButton
-            aria-label="إعادة تقييم الفحص"
+            aria-label={translate('borders.bordersHealth.screenings.ariaReassess')}
             size="small"
             color="primary"
             onClick={() => {
@@ -787,12 +787,12 @@ const ScreeningsTab = () => {
     />
 
     <Dialog open={Boolean(target)} onClose={() => setTarget(null)} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>إعادة تقييم الفحص</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700 }}>{translate("borders.bordersHealth.screenings.dialogTitle")}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
           <Typography variant="body2" color="text.secondary">
             {translate('borders.bordersHealth.screenings.ruleNote')}
-            ⇒ خطورة حمراء وحجر، أعراض ⇒ إحالة، وثائق غير متحقَّق منها ⇒ حجز.
+            {translate("borders.bordersHealth.screenings.ruleNote")}
           </Typography>
           {target && (
             <Typography variant="body2">
@@ -817,7 +817,7 @@ const ScreeningsTab = () => {
         </Stack>
       </DialogContent>
       <DialogActions sx={{ p: 2, gap: 1 }}>
-        <Button onClick={() => setTarget(null)} sx={{ fontWeight: 700 }}>إلغاء</Button>
+        <Button onClick={() => setTarget(null)} sx={{ fontWeight: 700 }}>{translate("borders.bordersHealth.screenings.cancelBtn")}</Button>
         <Button onClick={reassess} disabled={busy} variant="contained" sx={{ fontWeight: 700 }}>
           {busy ? translate('borders.bordersHealth.screenings.busy') : translate('borders.bordersHealth.screenings.reassessBtn')}
         </Button>
@@ -829,27 +829,28 @@ const ScreeningsTab = () => {
 
 const VehiclesTab = () => {
   const t = useServerTable<Vehicle>({ fetchData: getVehicles });
+  const { t: translate } = useTranslation();
   return (
     <DataTable<Vehicle>
       columns={[
-        { key: 'plate_number', label: 'اللوحة', render: (v) => (
+        { key: 'plate_number', label: translate('borders.bordersHealth.vehicles.colsPlate'), render: (v) => (
           <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, direction: 'ltr' }}>{v.plate_number}</Typography>
         ) },
-        { key: 'vehicle_type', label: 'النوع', render: (v) => (
+        { key: 'vehicle_type', label: translate('borders.bordersHealth.vehicles.colsType'), render: (v) => (
           <StatusChip
             label={borderVehicleType[v.vehicle_type]?.label ?? v.vehicle_type}
             tone={borderVehicleType[v.vehicle_type]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'make_model', label: 'الطراز', hideOnMobile: true, render: (v) => v.make_model || '—' },
-        { key: 'driver_name', label: 'السائق', render: (v) => v.driver_name || '—' },
-        { key: 'status', label: 'الحالة', render: (v) => (
+        { key: 'make_model', label: translate('borders.bordersHealth.vehicles.colsMakeModel'), hideOnMobile: true, render: (v) => v.make_model || '—' },
+        { key: 'driver_name', label: translate('borders.bordersHealth.vehicles.colsDriver'), render: (v) => v.driver_name || '—' },
+        { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
           <StatusChip
             label={borderVehicleStatus[v.status]?.label ?? v.status}
             tone={borderVehicleStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -859,15 +860,15 @@ const VehiclesTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="المركبات"
-      subtitle={`${t.count} مركبة`}
+      title={translate('borders.bordersHealth.vehicles.title')}
+      subtitle={translate("borders.bordersHealth.vehicles.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث باللوحة أو الهيكل أو اسم السائق..."
+      searchPlaceholder={translate('borders.bordersHealth.vehicles.searchPlaceholder')}
       filters={[
         {
           key: 'vehicle_type',
-          label: 'نوع المركبة',
+          label: translate('borders.bordersHealth.vehicles.filterType'),
           options: Object.entries(borderVehicleType).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('vehicle_type', v),
@@ -876,46 +877,48 @@ const VehiclesTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد مركبات"
-      emptyDescription="سجّل المركبات العابرة مع بيانات السائق."
+      emptyTitle={translate('borders.bordersHealth.vehicles.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.vehicles.emptyDescription')}
     />
   );
 };
 
 const VehicleInspectionsTab = () => {
+  const { t: translate } = useTranslation();
+
   const t = useServerTable<VehicleInspection>({ fetchData: getVehicleInspections });
   return (
     <DataTable<VehicleInspection>
       columns={[
-        { key: 'plate_number', label: 'اللوحة', render: (v) => (
+        { key: 'plate_number', label: translate('borders.bordersHealth.vehicles.colsPlate'), render: (v) => (
           <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, direction: 'ltr' }}>{v.plate_number || '—'}</Typography>
         ) },
-        { key: 'inspection_type', label: 'نوع التفتيش', render: (v) => (
+        { key: 'inspection_type', label: translate('borders.bordersHealth.vehicleInspections.colsInspectionType'), render: (v) => (
           <StatusChip
             label={borderInspectionType[v.inspection_type]?.label ?? v.inspection_type}
             tone={borderInspectionType[v.inspection_type]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'cleanliness_status', label: 'النظافة', align: 'center', hideOnMobile: true, render: (v) => (
+        { key: 'cleanliness_status', label: translate('borders.bordersHealth.vehicleInspections.colsCleanliness'), align: 'center', hideOnMobile: true, render: (v) => (
           <StatusChip
             label={borderComplianceStatus[v.cleanliness_status]?.label ?? v.cleanliness_status}
             tone={borderComplianceStatus[v.cleanliness_status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'pest_control_status', label: 'الحشرات', align: 'center', hideOnMobile: true, render: (v) => (
+        { key: 'pest_control_status', label: translate('borders.bordersHealth.vehicleInspections.colsPest'), align: 'center', hideOnMobile: true, render: (v) => (
           <StatusChip
             label={borderComplianceStatus[v.pest_control_status]?.label ?? v.pest_control_status}
             tone={borderComplianceStatus[v.pest_control_status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'overall_status', label: 'الحكم', render: (v) => (
+        { key: 'overall_status', label: translate('borders.bordersHealth.vehicleInspections.colsOverall'), render: (v) => (
           <StatusChip
             label={borderInspectionOverall[v.overall_status]?.label ?? v.overall_status}
             tone={borderInspectionOverall[v.overall_status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'inspection_date', label: 'التاريخ', hideOnMobile: true, render: (v) => formatDateTime(v.inspection_date) },
-        { key: 'inspector_name', label: 'المفتش', hideOnMobile: true, render: (v) => v.inspector_name || '—' },
+        { key: 'inspection_date', label: translate('borders.bordersHealth.shifts.colsDate'), hideOnMobile: true, render: (v) => formatDateTime(v.inspection_date) },
+        { key: 'inspector_name', label: translate('borders.bordersHealth.vehicleInspections.colsInspector'), hideOnMobile: true, render: (v) => v.inspector_name || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -925,15 +928,15 @@ const VehicleInspectionsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="تفتيش المركبات"
-      subtitle={`${t.count} عملية تفتيش`}
+      title={translate('borders.bordersHealth.vehicleInspections.title')}
+      subtitle={translate("borders.bordersHealth.vehicleInspections.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث باللوحة أو الملاحظات..."
+      searchPlaceholder={translate('borders.bordersHealth.vehicleInspections.searchPlaceholder')}
       filters={[
         {
           key: 'overall_status',
-          label: 'الحكم',
+          label: translate('borders.bordersHealth.vehicleInspections.colsOverall'),
           options: Object.entries(borderInspectionOverall).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('overall_status', v),
@@ -942,8 +945,8 @@ const VehicleInspectionsTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد عمليات تفتيش"
-      emptyDescription="سجّل نتائج تفتيش المركبات."
+      emptyTitle={translate('borders.bordersHealth.vehicleInspections.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.vehicleInspections.emptyDescription')}
     />
   );
 };
@@ -958,11 +961,11 @@ const CargoTab = () => {
     setBusy(true);
     try {
       await decideCargoInspection(id, decision);
-      notifySuccess(translate('borders.bordersHealth.cargo.recorded') || 'تم تسجيل قرار الشحنة');
+      notifySuccess(translate('borders.bordersHealth.cargo.recorded') || translate('borders.bordersHealth.cargo.recorded'));
       setTarget(null);
       t.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.cargo.failed') || 'تعذر تسجيل القرار'));
+      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.cargo.failed') || translate('borders.bordersHealth.cargo.failed')));
     } finally {
       setBusy(false);
     }
@@ -972,27 +975,27 @@ const CargoTab = () => {
     <>
       <DataTable<CargoInspection>
         columns={[
-          { key: 'declaration_number', label: 'رقم الإقرار', render: (v) => (
+          { key: 'declaration_number', label: translate('borders.bordersHealth.cargo.colsDeclarationNumber'), render: (v) => (
             <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.declaration_number || '—'}</Typography>
           ) },
-          { key: 'scope', label: 'النطاق', render: (v) => (
+          { key: 'scope', label: translate('borders.bordersHealth.cargo.filterScope'), render: (v) => (
             <StatusChip
               label={borderCargoScope[v.scope]?.label ?? v.scope}
               tone={borderCargoScope[v.scope]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'product_type', label: 'الصنف', render: (v) => v.product_type || '—' },
-          { key: 'country_of_origin', label: 'المنشأ', hideOnMobile: true, render: (v) => v.country_of_origin || '—' },
-          { key: 'plate_number', label: 'اللوحة', hideOnMobile: true, render: (v) => (
+          { key: 'product_type', label: translate('borders.bordersHealth.cargo.colsProductType'), render: (v) => v.product_type || '—' },
+          { key: 'country_of_origin', label: translate('borders.bordersHealth.cargo.colsCountryOfOrigin'), hideOnMobile: true, render: (v) => v.country_of_origin || '—' },
+          { key: 'plate_number', label: translate('borders.bordersHealth.vehicles.colsPlate'), hideOnMobile: true, render: (v) => (
             <Typography sx={{ fontFamily: 'monospace', direction: 'ltr' }}>{v.plate_number || '—'}</Typography>
           ) },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderCargoStatus[v.status]?.label ?? v.status}
               tone={borderCargoStatus[v.status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'decision', label: 'القرار', render: (v) => (
+          { key: 'decision', label: translate('borders.bordersHealth.travelers.colsDecision'), render: (v) => (
             v.decision ? (
               <StatusChip
                 label={borderCargoOutcome[v.decision]?.label ?? v.decision}
@@ -1009,22 +1012,22 @@ const CargoTab = () => {
         pageSizeOptions={t.pageSizeOptions}
         loading={t.loading}
         error={t.error}
-        title="تفتيش الشحنات"
-        subtitle={`${t.count} شحنة`}
+        title={translate('borders.bordersHealth.cargo.title')}
+        subtitle={translate("borders.bordersHealth.cargo.subtitle").replace("{count}", String(t.count))}
         searchInput={t.searchInput}
         onSearchChange={t.setSearchInput}
-        searchPlaceholder="بحث برقم الإقرار أو الصنف أو المنشأ..."
+        searchPlaceholder={translate('borders.bordersHealth.cargo.searchPlaceholder')}
         filters={[
           {
             key: 'scope',
-            label: 'النطاق',
+            label: translate('borders.bordersHealth.cargo.filterStatus'),
             options: Object.entries(borderCargoScope).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
             onChange: (v) => t.setFilter('scope', v),
           },
           {
             key: 'status',
-            label: 'الحالة',
+            label: translate('borders.bordersHealth.tracing.colsStatus'),
             options: Object.entries(borderCargoStatus).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
             onChange: (v) => t.setFilter('status', v),
@@ -1033,8 +1036,8 @@ const CargoTab = () => {
         onPageChange={t.setPage}
         onRowsPerPageChange={t.setRowsPerPage}
         onRefresh={t.refresh}
-        emptyTitle="لا توجد شحنات"
-        emptyDescription="سجّل تفتيش الشحنات العامة والغذائية."
+        emptyTitle={translate('borders.bordersHealth.cargo.emptyTitle')}
+        emptyDescription={translate('borders.bordersHealth.cargo.emptyDescription')}
         actions={(v) => (
           <Tooltip title={translate('borders.bordersHealth.cargo.calcFromSamples')}>
             <IconButton
@@ -1105,24 +1108,26 @@ const CargoTab = () => {
 };
 
 const SamplesTab = () => {
+  const { t: translate } = useTranslation();
+
   const t = useServerTable<BorderSample>({ fetchData: getSamples });
   return (
     <DataTable<BorderSample>
       columns={[
-        { key: 'sample_code', label: 'كود العيّنة', render: (v) => (
+        { key: 'sample_code', label: translate('borders.bordersHealth.samples.colsCode'), render: (v) => (
           <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.sample_code || '—'}</Typography>
         ) },
-        { key: 'sample_type', label: 'نوع العيّنة', render: (v) => v.sample_type },
-        { key: 'status', label: 'الحالة', render: (v) => (
+        { key: 'sample_type', label: translate('borders.bordersHealth.samples.colsType'), render: (v) => v.sample_type },
+        { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
           <StatusChip
             label={borderSampleStatus[v.status]?.label ?? v.status}
             tone={borderSampleStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'result', label: 'النتيجة', render: (v) => v.result || '—' },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'collected_by_name', label: 'المسحوب', hideOnMobile: true, render: (v) => v.collected_by_name || '—' },
-        { key: 'collected_at', label: 'التاريخ', hideOnMobile: true, render: (v) => formatDateTime(v.collected_at) },
+        { key: 'result', label: translate('borders.bordersHealth.decisions.colsOutcome'), render: (v) => v.result || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'collected_by_name', label: translate('borders.bordersHealth.samples.colsCollectedBy'), hideOnMobile: true, render: (v) => v.collected_by_name || '—' },
+        { key: 'collected_at', label: translate('borders.bordersHealth.shifts.colsDate'), hideOnMobile: true, render: (v) => formatDateTime(v.collected_at) },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -1132,15 +1137,15 @@ const SamplesTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="العيّنات"
-      subtitle={`${t.count} عيّنة`}
+      title={translate('borders.bordersHealth.samples.title')}
+      subtitle={translate("borders.bordersHealth.samples.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث بكود العيّنة أو نوعها..."
+      searchPlaceholder={translate('borders.bordersHealth.samples.searchPlaceholder')}
       filters={[
         {
           key: 'status',
-          label: 'الحالة',
+          label: translate('borders.bordersHealth.tracing.colsStatus'),
           options: Object.entries(borderSampleStatus).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('status', v),
@@ -1149,37 +1154,39 @@ const SamplesTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد عيّنات"
-      emptyDescription="سجّل عيّنات الشحنات الغذائية والمياه."
+      emptyTitle={translate('borders.bordersHealth.samples.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.samples.emptyDescription')}
     />
   );
 };
 
 const QuarantineTab = () => {
+  const { t: translate } = useTranslation();
+
   const t = useServerTable<QuarantineCase>({ fetchData: getQuarantineCases });
   return (
     <DataTable<QuarantineCase>
       columns={[
-        { key: 'case_number', label: 'رقم الحالة', render: (v) => (
+        { key: 'case_number', label: translate('borders.bordersHealth.quarantine.colsCaseNumber'), render: (v) => (
           <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.case_number}</Typography>
         ) },
-        { key: 'person_name', label: 'الحالة', render: (v) => v.person_name || '—' },
-        { key: 'entry_at', label: 'تاريخ الدخول', render: (v) => formatDateTime(v.entry_at) },
-        { key: 'required_days', label: 'المدة', align: 'center', hideOnMobile: true, render: (v) => `${v.required_days} يوم` },
-        { key: 'expected_end_date', label: 'النهاية المتوقعة', render: (v) => (v.expected_end_date ? formatDate(v.expected_end_date) : '—') },
-        { key: 'phase', label: 'المرحلة', render: (v) => (
+        { key: 'person_name', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => v.person_name || '—' },
+        { key: 'entry_at', label: translate('borders.bordersHealth.quarantine.colsEntryAt'), render: (v) => formatDateTime(v.entry_at) },
+        { key: 'required_days', label: translate('borders.bordersHealth.quarantine.colsRequiredDays'), align: 'center', hideOnMobile: true, render: (v) => `${v.required_days} ${translate('borders.bordersHealth.quarantine.colsRequiredDays')}` },
+        { key: 'expected_end_date', label: translate('borders.bordersHealth.quarantine.colsExpectedEnd'), render: (v) => (v.expected_end_date ? formatDate(v.expected_end_date) : '—') },
+        { key: 'phase', label: translate('borders.bordersHealth.quarantine.colsPhase'), render: (v) => (
           <StatusChip
             label={borderQuarantinePhase[v.phase]?.label ?? v.phase}
             tone={borderQuarantinePhase[v.phase]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'status', label: 'الحالة', render: (v) => (
+        { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
           <StatusChip
             label={borderQuarantineStatus[v.status]?.label ?? v.status}
             tone={borderQuarantineStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -1189,22 +1196,22 @@ const QuarantineTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="حالات الحجر"
-      subtitle={`${t.count} حالة`}
+      title={translate('borders.bordersHealth.quarantine.title')}
+      subtitle={translate("borders.bordersHealth.quarantine.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث برقم الحالة أو الاسم..."
+      searchPlaceholder={translate('borders.bordersHealth.quarantine.searchPlaceholder')}
       filters={[
         {
           key: 'status',
-          label: 'الحالة',
+          label: translate('borders.bordersHealth.tracing.colsStatus'),
           options: Object.entries(borderQuarantineStatus).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('status', v),
         },
         {
           key: 'phase',
-          label: 'المرحلة',
+          label: translate('borders.bordersHealth.quarantine.colsPhase'),
           options: Object.entries(borderQuarantinePhase).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('phase', v),
@@ -1213,29 +1220,31 @@ const QuarantineTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد حالات حجر"
-      emptyDescription="تُفتح حالة حجر من قرار الفحص أو الإحالة الطبية."
+      emptyTitle={translate('borders.bordersHealth.quarantine.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.quarantine.emptyDescription')}
     />
   );
 };
 
 const IsolationTab = () => {
+  const { t: translate } = useTranslation();
+
   const t = useServerTable<IsolationCase>({ fetchData: getIsolationCases });
   return (
     <DataTable<IsolationCase>
       columns={[
-        { key: 'start_date', label: 'تاريخ البدء', render: (v) => formatDate(v.start_date) },
-        { key: 'expected_end_date', label: 'النهاية المتوقعة', render: (v) => (v.expected_end_date ? formatDate(v.expected_end_date) : '—') },
-        { key: 'end_date', label: 'النهاية الفعلية', hideOnMobile: true, render: (v) => (v.end_date ? formatDate(v.end_date) : 'مستمر') },
-        { key: 'status', label: 'الحالة', render: (v) => (
+        { key: 'start_date', label: translate('borders.bordersHealth.tracing.colsStartedAt'), render: (v) => formatDate(v.start_date) },
+        { key: 'expected_end_date', label: translate('borders.bordersHealth.quarantine.colsExpectedEnd'), render: (v) => (v.expected_end_date ? formatDate(v.expected_end_date) : '—') },
+        { key: 'end_date', label: translate('borders.bordersHealth.isolation.colsActualEnd'), hideOnMobile: true, render: (v) => (v.end_date ? formatDate(v.end_date) : translate('borders.bordersHealth.isolation.colsActualEnd')) },
+        { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
           <StatusChip
             label={borderIsolationStatus[v.status]?.label ?? v.status}
             tone={borderIsolationStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'started_by_name', label: 'بدأها', hideOnMobile: true, render: (v) => v.started_by_name || '—' },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-        { key: 'notes', label: 'ملاحظات', hideOnMobile: true, render: (v) => v.notes || '—' },
+        { key: 'started_by_name', label: translate('borders.bordersHealth.isolation.colsStartedBy'), hideOnMobile: true, render: (v) => v.started_by_name || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'notes', label: translate('borders.bordersHealth.isolation.colsNotes'), hideOnMobile: true, render: (v) => v.notes || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -1245,15 +1254,15 @@ const IsolationTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="حالات العزل"
-      subtitle={`${t.count} حالة`}
+      title={translate('borders.bordersHealth.isolation.title')}
+      subtitle={translate("borders.bordersHealth.quarantine.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث في الملاحظات..."
+      searchPlaceholder={translate('borders.bordersHealth.isolation.searchPlaceholder')}
       filters={[
         {
           key: 'status',
-          label: 'الحالة',
+          label: translate('borders.bordersHealth.tracing.colsStatus'),
           options: Object.entries(borderIsolationStatus).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('status', v),
@@ -1262,13 +1271,15 @@ const IsolationTab = () => {
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
-      emptyTitle="لا توجد حالات عزل"
-      emptyDescription="سجّل العزل للحالات المشتبه بها أو المصابة."
+      emptyTitle={translate('borders.bordersHealth.isolation.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.isolation.emptyDescription')}
     />
   );
 };
 
 const TracingTab = () => {
+  const { t: translate } = useTranslation();
+
   const cases = useServerTable<ContactTracingCase>({ fetchData: getContactTracingCases });
   const contacts = useServerTable<Contact>({ fetchData: getContacts });
 
@@ -1276,17 +1287,17 @@ const TracingTab = () => {
     <Stack spacing={2.5}>
       <DataTable<ContactTracingCase>
         columns={[
-          { key: 'index_case_name', label: 'الحالة الأصل', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.index_case_name || '—'}</Typography> },
-          { key: 'transport_mode', label: 'وسيلة النقل', hideOnMobile: true, render: (v) => v.transport_mode || '—' },
-          { key: 'follow_up_days', label: 'أيام المتابعة', align: 'center', render: (v) => v.follow_up_days || '—' },
-          { key: 'started_at', label: 'تاريخ البدء', render: (v) => formatDateTime(v.started_at) },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'index_case_name', label: translate('borders.bordersHealth.tracing.colsIndexCaseName'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.index_case_name || '—'}</Typography> },
+          { key: 'transport_mode', label: translate('borders.bordersHealth.tracing.colsTransportMode'), hideOnMobile: true, render: (v) => v.transport_mode || '—' },
+          { key: 'follow_up_days', label: translate('borders.bordersHealth.tracing.colsFollowUpDays'), align: 'center', render: (v) => v.follow_up_days || '—' },
+          { key: 'started_at', label: translate('borders.bordersHealth.tracing.colsStartedAt'), render: (v) => formatDateTime(v.started_at) },
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderContactTracingStatus[v.status]?.label ?? v.status}
               tone={borderContactTracingStatus[v.status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+          { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         ]}
         rows={cases.rows}
         rowKey={(v) => v.id}
@@ -1296,30 +1307,30 @@ const TracingTab = () => {
         pageSizeOptions={cases.pageSizeOptions}
         loading={cases.loading}
         error={cases.error}
-        title="حالات التتبع"
-        subtitle={`${cases.count} حالة`}
+        title={translate('borders.bordersHealth.tracing.title')}
+        subtitle={translate("borders.bordersHealth.tracing.subtitle").replace("{count}", String(cases.count))}
         searchInput={cases.searchInput}
         onSearchChange={cases.setSearchInput}
-        searchPlaceholder="بحث باسم الحالة الأصل..."
+        searchPlaceholder={translate('borders.bordersHealth.tracing.searchPlaceholder')}
         onPageChange={cases.setPage}
         onRowsPerPageChange={cases.setRowsPerPage}
         onRefresh={cases.refresh}
-        emptyTitle="لا توجد حالات تتبع"
-        emptyDescription="تُفتح حالة تتبع من تسجيل مخالفي وسيلة نقل وارد."
+        emptyTitle={translate('borders.bordersHealth.tracing.emptyTitle')}
+        emptyDescription={translate('borders.bordersHealth.tracing.emptyDescription')}
       />
 
       <DataTable<Contact>
         columns={[
-          { key: 'full_name', label: 'المخاطَب', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.full_name}</Typography> },
-          { key: 'passport_number', label: 'الجواز', render: (v) => (
+          { key: 'full_name', label: translate('borders.bordersHealth.tracing.colsFullName'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.full_name}</Typography> },
+          { key: 'passport_number', label: translate('borders.bordersHealth.tracing.colsPassportNumber'), render: (v) => (
             <Typography sx={{ fontFamily: 'monospace' }}>{v.passport_number || '—'}</Typography>
           ) },
-          { key: 'phone', label: 'الهاتف', hideOnMobile: true, render: (v) => (
+          { key: 'phone', label: translate('borders.bordersHealth.tracing.colsPhone'), hideOnMobile: true, render: (v) => (
             <Typography sx={{ fontFamily: 'monospace', direction: 'ltr' }}>{v.phone || '—'}</Typography>
           ) },
-          { key: 'seat_or_relation', label: 'المقعد / الصلة', hideOnMobile: true, render: (v) => v.seat_or_relation || '—' },
-          { key: 'follow_up_day', label: 'يوم المتابعة', align: 'center', render: (v) => v.follow_up_day ?? '—' },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'seat_or_relation', label: translate('borders.bordersHealth.tracing.colsSeatOrRelation'), hideOnMobile: true, render: (v) => v.seat_or_relation || '—' },
+          { key: 'follow_up_day', label: translate('borders.bordersHealth.tracing.colsFollowUpDay'), align: 'center', render: (v) => v.follow_up_day ?? '—' },
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderContactStatus[v.status]?.label ?? v.status}
               tone={borderContactStatus[v.status]?.tone ?? 'neutral'}
@@ -1334,22 +1345,24 @@ const TracingTab = () => {
         pageSizeOptions={contacts.pageSizeOptions}
         loading={contacts.loading}
         error={contacts.error}
-        title="المخالطون"
-        subtitle={`${contacts.count} مخاطَب`}
+        title={translate('borders.bordersHealth.tracing.titleContacts')}
+        subtitle={translate("borders.bordersHealth.tracing.subtitleContacts").replace("{count}", String(contacts.count))}
         searchInput={contacts.searchInput}
         onSearchChange={contacts.setSearchInput}
-        searchPlaceholder="بحث بالاسم أو الجواز أو الهاتف..."
+        searchPlaceholder={translate('borders.bordersHealth.tracing.searchPlaceholderContacts')}
         onPageChange={contacts.setPage}
         onRowsPerPageChange={contacts.setRowsPerPage}
         onRefresh={contacts.refresh}
-        emptyTitle="لا يوجد مخالطون"
-        emptyDescription="سجّل بيانات المخالطين لكل حالة تتبع."
+        emptyTitle={translate('borders.bordersHealth.tracing.emptyTitleContacts')}
+        emptyDescription={translate('borders.bordersHealth.tracing.emptyDescriptionContacts')}
       />
     </Stack>
   );
 };
 
 const EmergenciesTab = () => {
+  const { t: translate } = useTranslation();
+
   const incidents = useServerTable<BorderHealthIncident>({ fetchData: getIncidents });
   const emergencies = useServerTable<BorderEmergency>({ fetchData: getEmergencies });
 
@@ -1357,21 +1370,21 @@ const EmergenciesTab = () => {
     <Stack spacing={2.5}>
       <DataTable<BorderHealthIncident>
         columns={[
-          { key: 'title', label: 'الحادثة', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
-          { key: 'severity', label: 'الخطورة', render: (v) => (
+          { key: 'title', label: translate('borders.bordersHealth.emergencies.colsIncidentTitle'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
+          { key: 'severity', label: translate('borders.bordersHealth.emergencies.colsSeverity'), render: (v) => (
             <StatusChip
               label={borderIncidentSeverity[v.severity]?.label ?? v.severity}
               tone={borderIncidentSeverity[v.severity]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderIncidentStatus[v.status]?.label ?? v.status}
               tone={borderIncidentStatus[v.status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'reported_at', label: 'تاريخ البلاغ', render: (v) => formatDateTime(v.reported_at) },
-          { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+          { key: 'reported_at', label: translate('borders.bordersHealth.emergencies.colsReportedAt'), render: (v) => formatDateTime(v.reported_at) },
+          { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         ]}
         rows={incidents.rows}
         rowKey={(v) => v.id}
@@ -1381,15 +1394,15 @@ const EmergenciesTab = () => {
         pageSizeOptions={incidents.pageSizeOptions}
         loading={incidents.loading}
         error={incidents.error}
-        title="الحوادث الصحية"
-        subtitle={`${incidents.count} حادثة`}
+        title={translate('borders.bordersHealth.emergencies.titleIncidents')}
+        subtitle={translate("borders.bordersHealth.emergencies.subtitleIncidents").replace("{count}", String(incidents.count))}
         searchInput={incidents.searchInput}
         onSearchChange={incidents.setSearchInput}
-        searchPlaceholder="بحث بعنوان الحادثة أو الوصف..."
+        searchPlaceholder={translate('borders.bordersHealth.emergencies.searchPlaceholderIncidents')}
         filters={[
           {
             key: 'severity',
-            label: 'الخطورة',
+            label: translate('borders.bordersHealth.emergencies.colsSeverity'),
             options: Object.entries(borderIncidentSeverity).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
             onChange: (v) => incidents.setFilter('severity', v),
@@ -1398,27 +1411,27 @@ const EmergenciesTab = () => {
         onPageChange={incidents.setPage}
         onRowsPerPageChange={incidents.setRowsPerPage}
         onRefresh={incidents.refresh}
-        emptyTitle="لا توجد حوادث"
-        emptyDescription="بلّغ عن الحوادث الصحية عند المعبر."
+        emptyTitle={translate('borders.bordersHealth.emergencies.emptyTitleIncidents')}
+        emptyDescription={translate('borders.bordersHealth.emergencies.emptyDescriptionIncidents')}
       />
 
       <DataTable<BorderEmergency>
         columns={[
-          { key: 'title', label: 'الطوارئ', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
-          { key: 'restriction_level', label: 'مستوى التقييد', render: (v) => (
+          { key: 'title', label: translate('borders.bordersHealth.emergencies.colsEmergencyTitle'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
+          { key: 'restriction_level', label: translate('borders.bordersHealth.emergencies.colsRestrictionLevel'), render: (v) => (
             <StatusChip
               label={borderRestrictionLevel[v.restriction_level]?.label ?? v.restriction_level}
               tone={borderRestrictionLevel[v.restriction_level]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderIncidentStatus[v.status]?.label ?? v.status}
               tone={borderIncidentStatus[v.status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'reported_at', label: 'تاريخ البلاغ', render: (v) => formatDateTime(v.reported_at) },
-          { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+          { key: 'reported_at', label: translate('borders.bordersHealth.emergencies.colsReportedAt'), render: (v) => formatDateTime(v.reported_at) },
+          { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
         ]}
         rows={emergencies.rows}
         rowKey={(v) => v.id}
@@ -1428,16 +1441,16 @@ const EmergenciesTab = () => {
         pageSizeOptions={emergencies.pageSizeOptions}
         loading={emergencies.loading}
         error={emergencies.error}
-        title="حالات الطوارئ"
-        subtitle={`${emergencies.count} حالة`}
+        title={translate('borders.bordersHealth.emergencies.titleEmergencies')}
+        subtitle={translate("borders.bordersHealth.emergencies.subtitleEmergencies").replace("{count}", String(emergencies.count))}
         searchInput={emergencies.searchInput}
         onSearchChange={emergencies.setSearchInput}
-        searchPlaceholder="بحث بالعنوان أو الوصف..."
+        searchPlaceholder={translate('borders.bordersHealth.emergencies.searchPlaceholderEmergencies')}
         onPageChange={emergencies.setPage}
         onRowsPerPageChange={emergencies.setRowsPerPage}
         onRefresh={emergencies.refresh}
-        emptyTitle="لا توجد طوارئ"
-        emptyDescription="سجّل حالات الطوارئ مع مستوى التقييد والمرض."
+        emptyTitle={translate('borders.bordersHealth.emergencies.emptyTitleEmergencies')}
+        emptyDescription={translate('borders.bordersHealth.emergencies.emptyDescriptionEmergencies')}
       />
     </Stack>
   );
@@ -1451,17 +1464,17 @@ const DecisionsTab = () => {
   return (
     <DataTable<BorderDecision>
       columns={[
-        { key: 'decided_at', label: 'تاريخ القرار', render: (v) => formatDateTime(v.decided_at) },
-        { key: 'subject_type', label: 'الموضوع', render: (v) => v.subject_type },
-        { key: 'outcome', label: 'النتيجة', render: (v) => (
+        { key: 'decided_at', label: translate('borders.bordersHealth.decisions.colsDate'), render: (v) => formatDateTime(v.decided_at) },
+        { key: 'subject_type', label: translate('borders.bordersHealth.decisions.colsSubject'), render: (v) => v.subject_type },
+        { key: 'outcome', label: translate('borders.bordersHealth.decisions.colsOutcome'), render: (v) => (
           <StatusChip
             label={borderDecisionOutcome[v.outcome]?.label ?? v.outcome}
             tone={borderDecisionOutcome[v.outcome]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'reason', label: 'السبب', render: (v) => v.reason || '—' },
-        { key: 'decided_by_name', label: 'اتخذ القرار', render: (v) => v.decided_by_name || '—' },
-        { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+        { key: 'reason', label: translate('borders.bordersHealth.decisions.colsReason'), render: (v) => v.reason || '—' },
+        { key: 'decided_by_name', label: translate('borders.bordersHealth.decisions.colsDecidedBy'), render: (v) => v.decided_by_name || '—' },
+        { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -1471,23 +1484,23 @@ const DecisionsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="القرارات"
-      subtitle={`${t.count} قرار`}
+      title={translate('borders.bordersHealth.decisions.title')}
+      subtitle={translate("borders.bordersHealth.decisions.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث في سبب القرار..."
+      searchPlaceholder={translate('borders.bordersHealth.decisions.searchPlaceholder')}
       onPageChange={t.setPage}
       onRowsPerPageChange={t.setRowsPerPage}
       onRefresh={t.refresh}
       onExport={() => exportAll({
         filename: 'border-decisions',
-        headers: ['التاريخ', 'الموضوع', 'النتيجة', 'السبب', 'المعبر'],
+        headers: [translate('borders.bordersHealth.shifts.colsDate'), translate('borders.bordersHealth.decisions.colsSubject'), translate('borders.bordersHealth.decisions.colsOutcome'), translate('borders.bordersHealth.decisions.colsReason'), translate('borders.bordersHealth.tracing.colsCrossingName')],
         mapRow: (v) => [v.decided_at, v.subject_type, v.outcome, v.reason, v.crossing_name ?? ''],
-        message: translate('borders.bordersHealth.decisions.exported') || 'تم تصدير القرارات',
+        message: translate('borders.bordersHealth.decisions.exported') || translate('borders.bordersHealth.decisions.exported'),
       })}
       exporting={exporting}
-      emptyTitle="لا توجد قرارات"
-      emptyDescription="تُسجَّل قرارات الإفراج والتوجيه تلقائياً عند الفحص والتخليص."
+      emptyTitle={translate('borders.bordersHealth.decisions.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.decisions.emptyDescription')}
     />
   );
 };
@@ -1500,22 +1513,22 @@ const NotificationsTab = () => {
   return (
     <DataTable<BorderNotification>
       columns={[
-        { key: 'sent_at', label: 'تاريخ الإرسال', render: (v) => (v.sent_at ? formatDateTime(v.sent_at) : '—') },
-        { key: 'title', label: 'العنوان', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
-        { key: 'channel', label: 'القناة', render: (v) => (
+        { key: 'sent_at', label: translate('borders.bordersHealth.notifications.colsSentAt'), render: (v) => (v.sent_at ? formatDateTime(v.sent_at) : '—') },
+        { key: 'title', label: translate('borders.bordersHealth.notifications.colsTitle'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.title}</Typography> },
+        { key: 'channel', label: translate('borders.bordersHealth.notifications.colsChannel'), render: (v) => (
           <StatusChip
             label={borderNotificationChannel[v.channel]?.label ?? v.channel}
             tone={borderNotificationChannel[v.channel]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'status', label: 'التسليم', render: (v) => (
+        { key: 'status', label: translate('borders.bordersHealth.notifications.colsStatus'), render: (v) => (
           <StatusChip
             label={borderNotificationDeliveryStatus[v.status]?.label ?? v.status}
             tone={borderNotificationDeliveryStatus[v.status]?.tone ?? 'neutral'}
           />
         ) },
-        { key: 'recipient_role', label: 'المستلم', render: (v) => v.recipient_role },
-        { key: 'recipient_contact', label: 'وسيلة التواصل', hideOnMobile: true, render: (v) => v.recipient_contact || '—' },
+        { key: 'recipient_role', label: translate('borders.bordersHealth.notifications.colsRecipientRole'), render: (v) => v.recipient_role },
+        { key: 'recipient_contact', label: translate('borders.bordersHealth.notifications.colsRecipientContact'), hideOnMobile: true, render: (v) => v.recipient_contact || '—' },
       ]}
       rows={t.rows}
       rowKey={(v) => v.id}
@@ -1525,22 +1538,22 @@ const NotificationsTab = () => {
       pageSizeOptions={t.pageSizeOptions}
       loading={t.loading}
       error={t.error}
-      title="الإشعارات"
-      subtitle={`${t.count} إشعار`}
+      title={translate('borders.bordersHealth.notifications.title')}
+      subtitle={translate("borders.bordersHealth.notifications.subtitle").replace("{count}", String(t.count))}
       searchInput={t.searchInput}
       onSearchChange={t.setSearchInput}
-      searchPlaceholder="بحث في العنوان أو النص..."
+      searchPlaceholder={translate('borders.bordersHealth.notifications.searchPlaceholder')}
       filters={[
         {
           key: 'status',
-          label: 'التسليم',
+          label: translate('borders.bordersHealth.notifications.colsStatus'),
           options: Object.entries(borderNotificationDeliveryStatus).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('status', v),
         },
         {
           key: 'channel',
-          label: 'القناة',
+          label: translate('borders.bordersHealth.notifications.colsChannel'),
           options: Object.entries(borderNotificationChannel).map(([value, meta]) => ({ value, label: meta.label })),
           value: '',
           onChange: (v) => t.setFilter('channel', v),
@@ -1551,13 +1564,13 @@ const NotificationsTab = () => {
       onRefresh={t.refresh}
       onExport={() => exportAll({
         filename: 'border-notifications',
-        headers: ['التاريخ', 'العنوان', 'القناة', 'التسليم', 'المستلم'],
+        headers: [translate('borders.bordersHealth.shifts.colsDate'), translate('borders.bordersHealth.notifications.colsTitle'), translate('borders.bordersHealth.notifications.colsChannel'), translate('borders.bordersHealth.notifications.colsStatus'), translate('borders.bordersHealth.notifications.colsRecipientRole')],
         mapRow: (v) => [v.sent_at ?? '', v.title, v.channel, v.status, v.recipient_role],
-        message: translate('borders.bordersHealth.notifications.exported') || 'تم تصدير الإشعارات',
+        message: translate('borders.bordersHealth.notifications.exported') || translate('borders.bordersHealth.notifications.exported'),
       })}
       exporting={exporting}
-      emptyTitle="لا توجد إشعارات"
-      emptyDescription="تُرسل إشعارات تنبيه للكادر عند الطوارئ والقرارات."
+      emptyTitle={translate('borders.bordersHealth.notifications.emptyTitle')}
+      emptyDescription={translate('borders.bordersHealth.notifications.emptyDescription')}
     />
   );
 };
@@ -1571,10 +1584,10 @@ const StatisticsTab = () => {
     setRefreshing(true);
     try {
       await refreshDailyStatistics();
-      notifySuccess(translate('borders.bordersHealth.statistics.refreshed') || 'تم تحديث حصيلة اليوم لكل المعابر');
+      notifySuccess(translate('borders.bordersHealth.statistics.refreshed') || translate('borders.bordersHealth.statistics.refreshed'));
       t.refresh();
     } catch {
-      notifyError(translate('borders.bordersHealth.statistics.refreshFailed') || 'تعذّر تحديث الإحصاءات — قد تحتاج صلاحية لوحة القيادة');
+      notifyError(translate('borders.bordersHealth.statistics.refreshFailed') || translate('borders.bordersHealth.statistics.refreshFailed'));
     } finally {
       setRefreshing(false);
     }
@@ -1593,15 +1606,15 @@ const StatisticsTab = () => {
 
       <DataTable<BorderDailyStatistics>
         columns={[
-          { key: 'stat_date', label: 'التاريخ', render: (v) => formatDate(v.stat_date) },
-          { key: 'crossing_name', label: 'المعبر', render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.crossing_name || '—'}</Typography> },
-          { key: 'travelers_inbound', label: 'داخل', align: 'center', render: (v) => v.travelers_inbound.toLocaleString('ar') },
-          { key: 'travelers_outbound', label: 'خارج', align: 'center', render: (v) => v.travelers_outbound.toLocaleString('ar') },
-          { key: 'vehicles_inspected', label: 'مركبات', align: 'center', hideOnMobile: true, render: (v) => v.vehicles_inspected },
-          { key: 'quarantine_cases', label: 'حجر', align: 'center', render: (v) => v.quarantine_cases },
-          { key: 'samples_collected', label: 'عيّنات', align: 'center', hideOnMobile: true, render: (v) => v.samples_collected },
-          { key: 'average_processing_minutes', label: 'متوسط المعالجة', align: 'center', render: (v) => (
-            v.average_processing_minutes == null ? '—' : `${v.average_processing_minutes} د`
+          { key: 'stat_date', label: translate('borders.bordersHealth.shifts.colsDate'), render: (v) => formatDate(v.stat_date) },
+          { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), render: (v) => <Typography sx={{ fontWeight: 700 }}>{v.crossing_name || '—'}</Typography> },
+          { key: 'travelers_inbound', label: translate('borders.bordersHealth.statistics.colsTravelersInbound'), align: 'center', render: (v) => v.travelers_inbound.toLocaleString('ar') },
+          { key: 'travelers_outbound', label: translate('borders.bordersHealth.statistics.colsTravelersOutbound'), align: 'center', render: (v) => v.travelers_outbound.toLocaleString('ar') },
+          { key: 'vehicles_inspected', label: translate('borders.bordersHealth.statistics.colsVehiclesInspected'), align: 'center', hideOnMobile: true, render: (v) => v.vehicles_inspected },
+          { key: 'quarantine_cases', label: translate('borders.bordersHealth.statistics.colsQuarantineCases'), align: 'center', render: (v) => v.quarantine_cases },
+          { key: 'samples_collected', label: translate('borders.bordersHealth.statistics.colsSamplesCollected'), align: 'center', hideOnMobile: true, render: (v) => v.samples_collected },
+          { key: 'average_processing_minutes', label: translate('borders.bordersHealth.statistics.colsAvgProcessing'), align: 'center', render: (v) => (
+            v.average_processing_minutes == null ? '—' : `translate('borders.bordersHealth.statistics.minAbbr').replace('{count}', String(v.average_processing_minutes))`
           ) },
         ]}
         rows={t.rows}
@@ -1612,13 +1625,13 @@ const StatisticsTab = () => {
         pageSizeOptions={t.pageSizeOptions}
         loading={t.loading}
         error={t.error}
-        title="الحصيلة اليومية"
-        subtitle={`${t.count} سجل`}
+        title={translate('borders.bordersHealth.statistics.title')}
+        subtitle={translate("borders.bordersHealth.statistics.subtitle").replace("{count}", String(t.count))}
         onPageChange={t.setPage}
         onRowsPerPageChange={t.setRowsPerPage}
         onRefresh={t.refresh}
-        emptyTitle="لا توجد حصيلة"
-        emptyDescription="اضغط «تحديث حصيلة اليوم» لحساب أرقام اليوم من سجلات الفحص والشحنات."
+        emptyTitle={translate('borders.bordersHealth.statistics.emptyTitle')}
+        emptyDescription={translate('borders.bordersHealth.statistics.emptyDescription')}
       />
     </Stack>
   );
@@ -1638,7 +1651,7 @@ const CertificatesTab = () => {
 
   const issue = async () => {
     if (!crossingId) {
-      notifyError(translate('borders.bordersHealth.certificates.selectCrossing') || 'اختر المعبر أولاً');
+      notifyError(translate('borders.bordersHealth.certificates.selectCrossing') || translate('borders.bordersHealth.certificates.selectCrossing'));
       return;
     }
     setIssuing(true);
@@ -1648,11 +1661,11 @@ const CertificatesTab = () => {
         certificate_type: certType as BorderCertificate['certificate_type'],
         expiry_days: expiryDays,
       });
-      notifySuccess((translate('borders.bordersHealth.certificates.issued') || 'صدرت الشهادة').replace('{number}', res.data.data.certificate_number));
+      notifySuccess((translate('borders.bordersHealth.certificates.issued') || translate('borders.bordersHealth.certificates.issued')).replace('{number}', res.data.data.certificate_number));
       setIssueOpen(false);
       t.refresh();
     } catch (err) {
-      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.certificates.issueFailed') || 'تعذر إصدار الشهادة'));
+      notifyError(extractErrorMessage(err, translate('borders.bordersHealth.certificates.issueFailed') || translate('borders.bordersHealth.certificates.issueFailed')));
     } finally {
       setIssuing(false);
     }
@@ -1662,25 +1675,25 @@ const CertificatesTab = () => {
     <>
       <DataTable<BorderCertificate>
         columns={[
-          { key: 'certificate_number', label: 'رقم الشهادة', render: (v) => (
+          { key: 'certificate_number', label: translate('borders.bordersHealth.certificates.colsCertificateNumber'), render: (v) => (
             <Typography sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{v.certificate_number}</Typography>
           ) },
-          { key: 'certificate_type', label: 'النوع', render: (v) => (
+          { key: 'certificate_type', label: translate('borders.bordersHealth.vehicles.colsType'), render: (v) => (
             <StatusChip
               label={borderCertificateType[v.certificate_type]?.label ?? v.certificate_type}
               tone={borderCertificateType[v.certificate_type]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'issue_date', label: 'تاريخ الإصدار', render: (v) => formatDate(v.issue_date) },
-          { key: 'expiry_date', label: 'ينتهي', hideOnMobile: true, render: (v) => (v.expiry_date ? formatDate(v.expiry_date) : '—') },
-          { key: 'status', label: 'الحالة', render: (v) => (
+          { key: 'issue_date', label: translate('borders.bordersHealth.certificates.colsIssueDate'), render: (v) => formatDate(v.issue_date) },
+          { key: 'expiry_date', label: translate('borders.bordersHealth.certificates.colsExpiryDate'), hideOnMobile: true, render: (v) => (v.expiry_date ? formatDate(v.expiry_date) : '—') },
+          { key: 'status', label: translate('borders.bordersHealth.tracing.colsStatus'), render: (v) => (
             <StatusChip
               label={borderCertificateStatus[v.status]?.label ?? v.status}
               tone={borderCertificateStatus[v.status]?.tone ?? 'neutral'}
             />
           ) },
-          { key: 'crossing_name', label: 'المعبر', hideOnMobile: true, render: (v) => v.crossing_name || '—' },
-          { key: 'issued_by_name', label: 'أصدرها', hideOnMobile: true, render: (v) => v.issued_by_name || '—' },
+          { key: 'crossing_name', label: translate('borders.bordersHealth.tracing.colsCrossingName'), hideOnMobile: true, render: (v) => v.crossing_name || '—' },
+          { key: 'issued_by_name', label: translate('borders.bordersHealth.certificates.colsIssuedBy'), hideOnMobile: true, render: (v) => v.issued_by_name || '—' },
         ]}
         rows={t.rows}
         rowKey={(v) => v.id}
@@ -1690,15 +1703,15 @@ const CertificatesTab = () => {
         pageSizeOptions={t.pageSizeOptions}
         loading={t.loading}
         error={t.error}
-        title="الشهادات"
-        subtitle={`${t.count} شهادة`}
+        title={translate('borders.bordersHealth.certificates.title')}
+        subtitle={translate("borders.bordersHealth.certificates.subtitle").replace("{count}", String(t.count))}
         searchInput={t.searchInput}
         onSearchChange={t.setSearchInput}
-        searchPlaceholder="بحث برقم الشهادة..."
+        searchPlaceholder={translate('borders.bordersHealth.certificates.searchPlaceholder')}
         filters={[
           {
             key: 'status',
-            label: 'الحالة',
+            label: translate('borders.bordersHealth.tracing.colsStatus'),
             options: Object.entries(borderCertificateStatus).map(([value, meta]) => ({ value, label: meta.label })),
             value: '',
             onChange: (v) => t.setFilter('status', v),
@@ -1708,14 +1721,14 @@ const CertificatesTab = () => {
         onRowsPerPageChange={t.setRowsPerPage}
         onExport={() => exportAll({
           filename: 'border-certificates',
-          headers: ['الرقم', 'النوع', 'الإصدار', 'الانتهاء', 'الحالة'],
+          headers: [translate('borders.bordersHealth.vehicles.colsPlate'), translate('borders.bordersHealth.vehicles.colsType'), translate('borders.bordersHealth.vehicles.colsMakeModel'), translate('borders.bordersHealth.vehicles.colsDriver'), translate('borders.bordersHealth.tracing.colsStatus')],
           mapRow: (v) => [v.certificate_number, v.certificate_type, v.issue_date, v.expiry_date ?? '', v.status],
-          message: translate('borders.bordersHealth.certificates.exported') || 'تم تصدير الشهادات',
+          message: translate('borders.bordersHealth.certificates.exported') || translate('borders.bordersHealth.certificates.exported'),
         })}
         exporting={exporting}
         onRefresh={t.refresh}
-        emptyTitle="لا توجد شهادات"
-        emptyDescription="أصدر شهادة إفراج أو تصريح عبور من زر الإصدار."
+        emptyTitle={translate('borders.bordersHealth.certificates.emptyTitle')}
+        emptyDescription={translate('borders.bordersHealth.certificates.emptyDescription')}
         actions={() => (
           <Tooltip title={translate('borders.bordersHealth.dialogs.issueCert')}>
             <IconButton

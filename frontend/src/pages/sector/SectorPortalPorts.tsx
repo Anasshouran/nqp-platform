@@ -15,22 +15,24 @@ import FlightIcon from '@mui/icons-material/Flight';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from 'react-i18next';
 import { useSectorPortal } from '../../components/sectors/SectorPortalLayout';
 import { EmptyState } from '../../components/common';
 import { getSectorPorts } from '../../api/endpoints/public';
 import type { PublicPort } from '../../api/endpoints/public';
 
-const portTypeLabels: Record<string, string> = { AIRPORT: 'منفذ جوي', SEAPORT: 'منفذ بحري', LAND_PORT: 'منفذ بري' };
+const portTypeLabels: Record<string, string> = { AIRPORT: 'sector.portal.ports.portType.airport', SEAPORT: 'sector.portal.ports.portType.seaport', LAND_PORT: 'sector.portal.ports.portType.landPort' };
 const portTypeIcons: Record<string, React.ReactNode> = { AIRPORT: <FlightIcon />, SEAPORT: <DirectionsBoatIcon />, LAND_PORT: <DirectionsBusIcon /> };
 
 const groups = [
-  { type: 'AIRPORT', label: 'المطارات', icon: <FlightIcon /> },
-  { type: 'SEAPORT', label: 'الموانئ البحرية', icon: <DirectionsBoatIcon /> },
-  { type: 'LAND_PORT', label: 'المعابر البرية', icon: <DirectionsBusIcon /> },
+  { type: 'AIRPORT', labelKey: 'sector.portal.ports.group.airports', icon: <FlightIcon /> },
+  { type: 'SEAPORT', labelKey: 'sector.portal.ports.group.seaports', icon: <DirectionsBoatIcon /> },
+  { type: 'LAND_PORT', labelKey: 'sector.portal.ports.group.landPorts', icon: <DirectionsBusIcon /> },
 ];
 
 const SectorPortalPorts = () => {
   const { sector } = useSectorPortal();
+  const { t } = useTranslation();
   const [ports, setPorts] = useState<PublicPort[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -59,24 +61,24 @@ const SectorPortalPorts = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>نقاط الدخول</Typography>
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('sector.portal.ports.title')}</Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        جميع نقاط الدخول التابعة لـ{sector?.name_ar || 'القطاع'}
+        {t('sector.portal.ports.subtitle', { sectorName: sector?.name_ar || t('sector.portal.ports.defaultSectorName') })}
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'مطارات', value: countBy('AIRPORT'), icon: <FlightIcon /> },
-          { label: 'موانئ بحرية', value: countBy('SEAPORT'), icon: <DirectionsBoatIcon /> },
-          { label: 'معابر برية', value: countBy('LAND_PORT'), icon: <DirectionsBusIcon /> },
+          { labelKey: 'sector.portal.ports.stat.airports', value: countBy('AIRPORT'), icon: <FlightIcon /> },
+          { labelKey: 'sector.portal.ports.stat.seaports', value: countBy('SEAPORT'), icon: <DirectionsBoatIcon /> },
+          { labelKey: 'sector.portal.ports.stat.landPorts', value: countBy('LAND_PORT'), icon: <DirectionsBusIcon /> },
         ].map((k) => (
-          <Grid item xs={12} sm={4} key={k.label}>
+          <Grid item xs={12} sm={4} key={k.labelKey}>
             <Card>
               <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography variant="h5" component="span" sx={{ color: 'primary.main', display: 'flex' }}>{k.icon}</Typography>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>{k.value}</Typography>
-                  <Typography variant="caption" color="text.secondary">{k.label}</Typography>
+                  <Typography variant="caption" color="text.secondary">{t(k.labelKey)}</Typography>
                 </Box>
               </CardContent>
             </Card>
@@ -87,7 +89,7 @@ const SectorPortalPorts = () => {
       <TextField
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="ابحث عن منفذ بالاسم أو الرمز..."
+        placeholder={t('sector.portal.ports.searchPlaceholder')}
         fullWidth
         sx={{ maxWidth: 520, mb: 4 }}
         InputProps={{
@@ -100,9 +102,9 @@ const SectorPortalPorts = () => {
       />
 
       {ports.length === 0 ? (
-        <EmptyState icon={<LocationOnIcon />} title="لا توجد نقاط دخول" description="سيتم إضافة نقاط الدخول قريباً." />
+        <EmptyState icon={<LocationOnIcon />} title={t('sector.portal.ports.emptyTitle')} description={t('sector.portal.ports.emptyDescription')} />
       ) : filtered.length === 0 ? (
-        <EmptyState icon={<SearchIcon />} title="لا توجد منافذ مطابقة" description="جرّب كلمة بحث أخرى." />
+        <EmptyState icon={<SearchIcon />} title={t('sector.portal.ports.noMatchTitle')} description={t('sector.portal.ports.noMatchDescription')} />
       ) : (
         groups.map((g) => {
           const list = byType(g.type);
@@ -112,7 +114,7 @@ const SectorPortalPorts = () => {
                 <Box sx={{ width: 42, height: 42, borderRadius: 2, display: 'grid', placeItems: 'center', color: '#fff', bgcolor: 'primary.main' }}>
                   {g.icon}
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>{g.label}</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>{t(g.labelKey)}</Typography>
                 <Chip label={`${list.length}`} size="small" variant="outlined" />
               </Stack>
               <Grid container spacing={2.5}>
@@ -124,7 +126,7 @@ const SectorPortalPorts = () => {
                           <Box sx={{ width: 44, height: 44, borderRadius: 2.5, display: 'grid', placeItems: 'center', color: '#fff', bgcolor: 'primary.main' }}>
                             {portTypeIcons[port.type] || <LocationOnIcon />}
                           </Box>
-                          <Chip label={portTypeLabels[port.type] || port.type} size="small" variant="outlined" />
+                          <Chip label={t(portTypeLabels[port.type] || port.type)} size="small" variant="outlined" />
                         </Stack>
                         <Typography variant="h6" sx={{ fontWeight: 700, mt: 2 }}>{port.name_ar}</Typography>
                         <Typography variant="body2" color="text.secondary"><En>{port.name_en}</En></Typography>

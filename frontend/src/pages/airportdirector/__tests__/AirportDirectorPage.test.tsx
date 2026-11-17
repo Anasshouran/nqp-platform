@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within, act } from '@testing-librar
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ReactElement } from 'react';
+import i18n from '../../../i18n';
 
 vi.stubGlobal('matchMedia', () => ({
   matches: false,
@@ -645,5 +646,23 @@ describe('AirportDirectorPage', () => {
     });
     expect(getAirportActivityLog).toHaveBeenCalledTimes(3);
     vi.useRealTimers();
+  });
+
+  it('updates UI when language changes ar → en (reactivity)', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('ar');
+    });
+    wrap(<AirportDirectorPage />);
+    expect(await screen.findByText(/مرحباً/)).toBeTruthy();
+    await act(async () => {
+      await i18n.changeLanguage('en');
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(/مرحباً/)).toBeNull();
+      expect(screen.getByText(/Welcome/)).toBeTruthy();
+    });
+    await act(async () => {
+      await i18n.changeLanguage('ar');
+    });
   });
 });

@@ -1,5 +1,6 @@
 // Shipment search: recent queries, loading and error states, results list.
 // Extracted from ClerkDashboardPage without behavioural change.
+import { useTranslation } from 'react-i18next';
 import type { useClerkActions } from '../../hooks/useClerkActions';
 import type { useClerkSearch } from '../../hooks/useClerkSearch';
 import Box from '@mui/material/Box';
@@ -24,17 +25,18 @@ type Props = {
 };
 
 export const ClerkSearchView = ({ actions, search }: Props) => {
+  const { t } = useTranslation();
   const { setDetailView } = actions;
   const { recentSearches, searchError, searchInput, searchLoading, searchResults, setRecentSearches, setSearchInputLocal } = search;
   return (
     <>
                 <Card variant="outlined" sx={{ borderRadius: 3, maxWidth: 720, mb: 3 }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>البحث عن طلب</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>{t('clerk.views.search.title')}</Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      label="رقم الطلب، جمركي، بوليصة، مستورد، مصدر، باخرة"
+                      label={t('clerk.views.search.label')}
                       value={searchInput}
                       onChange={(e) => setSearchInputLocal(e.target.value)}
                       InputProps={{
@@ -47,7 +49,7 @@ export const ClerkSearchView = ({ actions, search }: Props) => {
                     />
                     {recentSearches.length > 0 && (
                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 2 }} alignItems="center">
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>عمليات البحث الأخيرة:</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{t('clerk.views.search.recentLabel')}</Typography>
                         {recentSearches.map((q) => (
                           <Chip key={q} label={q} size="small" variant="outlined" onClick={() => setSearchInputLocal(q)} />
                         ))}
@@ -87,7 +89,7 @@ export const ClerkSearchView = ({ actions, search }: Props) => {
                           <Stack spacing={0.25}>
                             <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{r.manifest_number}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {counterpartyOf(r)} · {r.items.length} أصناف · {Number(r.total_weight_kg || 0).toLocaleString('ar-EG')} كجم · {(r.arrival_date || '—').slice(0, 10)}
+                              {counterpartyOf(r)} · {t('clerk.views.search.resultMeta', { count: r.items.length, weight: Number(r.total_weight_kg || 0).toLocaleString('ar-EG'), date: (r.arrival_date || '—').slice(0, 10) })}
                             </Typography>
                           </Stack>
                           <Stack direction="row" spacing={1} alignItems="center">
@@ -101,7 +103,7 @@ export const ClerkSearchView = ({ actions, search }: Props) => {
                 ) : searchInput.trim() ? (
                   <Box sx={{ maxWidth: 720, p: 3, textAlign: 'center' }}>
                     <Inventory2Icon sx={{ fontSize: 40, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>لا توجد نتائج مطابقة لـ «{searchInput.trim()}»</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{t('clerk.views.search.noResults', { q: searchInput.trim() })}</Typography>
                   </Box>
                 ) : null}
     </>

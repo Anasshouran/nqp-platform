@@ -1,13 +1,17 @@
 import json
 import logging
 
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.models import RoleAssignment
+from apps.registry.models import ReportingNode
 from apps.risk_engine.models import RiskAssessment
 from apps.risk_engine.serializers import RiskAssessmentSerializer
 from apps.risk_engine.services import RiskEngineService
@@ -15,6 +19,7 @@ from apps.travelers.models import Traveler
 from core.filters import ExactFilterBackend
 from core.permissions import PermissionAction, ScopeFilter
 from core.utils.response import success_response
+from core.utils.scoping import resolve_authorized_entry_points
 
 from .models import HealthScreening
 from .serializers import HealthScreeningSerializer
@@ -66,45 +71,110 @@ class ScreeningViewSet(viewsets.ModelViewSet):
 
     def _entry_point_ids_for(self, user):
         """يرجع معرفات منافذ الدخول المتاحة لنطاقات المستخدم (فشل آمن = قائمة فارغة)."""
-        from core.utils.scoping import has_active_global_scope
+        from core.utils.scoping import facility_scope_enabled, has_active_global_scope, locality_scope_enabled
 
         # GLOBAL scope (مدير/جهة وطنية) → كل السجلات؛ لا نُقيّد إلا بالنطاق الفعلي.
         if user.is_superuser or has_active_global_scope(user):
             return None
         scopes = user.active_scopes('screening')
-        from apps.masterdata.models import EntryPoint
+        from apps.masterdata.models import EntryPoint, HealthFacility
 
         port_ids = [
             s['scope_id']
             for s in scopes
             if s['scope_type'] in _ENTRY_POINT_SCOPE_TYPES and s['scope_id'] is not None
         ]
-        if port_ids:
-            return port_ids
-        # نطاق قطاعي → كل منافذ الدخول التابعة للقطاع(ات)
-        sector_ids = [
+        # M5-B-2: نطاق الولاية → كل منافذ الدخول في الولاية(ات) — اتحاد.
+        state_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.STATE and s['scope_id'] is not None
+        ]
+        if state_ids:
+            port_ids += list(
+                EntryPoint.objects.filter(is_active=True, state_id__in=state_ids)
+                .values_list('id', flat=True)
+            )
+        # M5-C-L: نطاق المحلية → كل منافذ الدخول في المحلية(ات) — اتحاد مع الولاية.
+        # بوابة الإنتاج: في DEBUG أو مع PROD_SCOPING_ENABLED فقط؛ وإلا لا شيء (fail-safe).
+        locality_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.LOCALITY and s['scope_id'] is not None
+        ]
+        if locality_ids and locality_scope_enabled():
+            port_ids += list(
+                EntryPoint.objects.filter(is_active=True, locality_id__in=locality_ids)
+                .values_list('id', flat=True)
+            )
+        # M6-bis (D-M5-C-F-2): نطاق المنشأة → منفذ المنشأة عبر
+        # `HealthFacility.entry_point` — اتحاد مع بقية القنوات.
+        # بوابة الإنتاج: نفس بوابة LOCALITY/FACILITY (fail-safe عند الإغلاق).
+        facility_ids = [
+            s['scope_id']
+            for s in scopes
+            if s['scope_type'] == RoleAssignment.ScopeType.FACILITY and s['scope_id'] is not None
+        ]
+        if facility_ids and facility_scope_enabled():
+            port_ids += list(
+                HealthFacility.objects
+                .filter(is_active=True, id__in=facility_ids, entry_point__isnull=False)
+                .values_list('entry_point_id', flat=True)
+            )
+        # اتحاد يبقى مع القطاع (نطاق SECTOR) والقطاع المنزلي `user.sector_id`
+        # (قرار H1′ — M3/M5-A: home-sector grant بالبقية).
+        sector_scope_ids = [
             s['scope_id']
             for s in scopes
             if s['scope_type'] == RoleAssignment.ScopeType.SECTOR and s['scope_id'] is not None
         ]
+        sector_ids = list(sector_scope_ids)
+        home_sector = getattr(user, 'sector_id', None)
+        if home_sector is not None:
+            sector_ids.append(home_sector)
+        sector_ids = list(dict.fromkeys(sector_ids))
         if sector_ids:
-            return list(
+            port_ids += list(
                 EntryPoint.objects.filter(is_active=True, sector_id__in=sector_ids)
                 .values_list('id', flat=True)
             )
-        logger.warning(
-            'screening: no resolvable entry-point scope for %s — DENYING access', user
-        )
+        if port_ids:
+            return list(dict.fromkeys(port_ids))
+        # منشأة بلا منفذ ليست خطأ: القناة المباشرة (facility) قد تفتح الصفوف
+        # في `get_queryset`. لا نطلق تحذير الحجب إلا عند غياب كل قناة.
+        if not (facility_ids and facility_scope_enabled()):
+            logger.warning(
+                'screening: no resolvable entry-point scope for %s — DENYING access', user
+            )
         return []
+
+    def _facility_ids_for(self, user):
+        """معرّفات المنشآت المتاحة لنطاق FACILITY (M6-bis).
+
+        `None` = GLOBAL (لا تقييد). `set()` = لا نطاق FACILITY أو البوابة مغلقة.
+        """
+        from core.utils.scoping import get_user_facility_ids
+
+        return get_user_facility_ids(user)
 
     def get_queryset(self):
         qs = super().get_queryset()
         if not self.request.user or self.request.user.is_anonymous:
             return qs.none()
         port_ids = self._entry_point_ids_for(self.request.user)
-        if port_ids is None:
+        facility_ids = self._facility_ids_for(self.request.user)
+        if port_ids is None or facility_ids is None:
             return qs
-        return qs.filter(port_id__in=port_ids) if port_ids else qs.none()
+        # M6-bis: اتحاد قناتين — المعبر (port) والمنشأة المباشرة (facility).
+        # الفشل الآمن يبقى: بلا أي قناة ⇒ لا صفوف.
+        if not port_ids and not facility_ids:
+            return qs.none()
+        scope_q = Q()
+        if port_ids:
+            scope_q |= Q(port_id__in=port_ids)
+        if facility_ids:
+            scope_q |= Q(facility_id__in=facility_ids)
+        return qs.filter(scope_q).distinct()
 
     def _assert_port_in_scope(self, port):
         """منع إنشاء فحص خارج نطاق صاحب الصلاحية (لا بوابات جانبية عبر create)."""
@@ -233,3 +303,115 @@ class ScreeningViewSet(viewsets.ModelViewSet):
                 reported_by=self.request.user,
             )
             raise_single_event(case)
+
+
+# ---------------------------------------------------------------------------
+# M7-A2c-3 (A2b-full) — تقرير الفحوص حسب الولاية
+# ---------------------------------------------------------------------------
+
+REPORT_NOTE = (
+    'FACILITY-level reporting_node → walks up to STATE ancestor. '
+    'unassigned_node: بلا reporting_node (facility=NULL أو بلا تعيين منشأة). '
+    'كل فحص يُحسب في فئة واحدة بالضبط (matched + node_no_state + unassigned_node = total).'
+)
+
+
+def _node_map():
+    """كل عقد الشجرة في ذاكرة — استعلام واحد مهما كان عدد الفحوص."""
+    return {
+        row['id']: row
+        for row in ReportingNode.objects.values(
+            'id', 'parent_id', 'kind', 'code', 'name_ar', 'name_en'
+        )
+    }
+
+
+def _state_ancestor(node_id, nodes):
+    """يصعد من العقدة حتى أول سلف STATE (أو None) من الخريطة — بلا استعلامات."""
+    current = node_id
+    visited = set()
+    while current is not None and current not in visited:
+        visited.add(current)
+        row = nodes.get(current)
+        if row is None:
+            return None
+        if row['kind'] == ReportingNode.Kind.STATE:
+            return row
+        current = row['parent_id']
+    return None
+
+
+class HealthScreeningByStateReportView(APIView):
+    """`GET /api/v1/screening/reports/screenings/by-state/` — تجميع حسب الولاية.
+
+    A2b-full: ``HealthScreening.reporting_node (FACILITY) → سلف STATE``.
+    النطاق عبر ``port_id__in`` (المنفذ FK غير nullable) باستخدام
+    :func:`resolve_authorized_entry_points`. الـ backfill عبر ``facility`` فقط.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = HealthScreening.objects.select_related('reporting_node')
+
+        port_ids = resolve_authorized_entry_points(user)
+        if port_ids is None:
+            scoped = False
+        elif not port_ids:
+            return Response({'status': 'success', 'data': self._empty()})
+        else:
+            qs = qs.filter(port_id__in=port_ids)
+            scoped = True
+
+        total = qs.count()
+        nodes = _node_map()
+
+        matched = 0
+        node_no_state = 0
+        by_state = {}
+
+        for screening in qs.iterator():
+            node_id = screening.reporting_node_id
+            if node_id is None:
+                continue
+            state = _state_ancestor(node_id, nodes)
+            if state is None:
+                node_no_state += 1
+                continue
+            matched += 1
+            key = str(state['id'])
+            if key not in by_state:
+                by_state[key] = {
+                    'state_id': str(state['id']),
+                    'state_name_ar': state['name_ar'],
+                    'count': 0,
+                }
+            by_state[key]['count'] += 1
+
+        unassigned_node = total - matched - node_no_state
+
+        assert total == matched + node_no_state + unassigned_node, (
+            f'Reconciliation failed: {total} != '
+            f'{matched} + {node_no_state} + {unassigned_node}'
+        )
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'total': total,
+                'matched': matched,
+                'node_no_state': node_no_state,
+                'unassigned_node': unassigned_node,
+                'by_state': sorted(by_state.values(), key=lambda x: -x['count']),
+                'scoped': scoped,
+                'note': REPORT_NOTE,
+            },
+        })
+
+    def _empty(self):
+        return {
+            'total': 0, 'matched': 0, 'node_no_state': 0, 'unassigned_node': 0,
+            'by_state': [], 'scoped': True,
+            'note': 'A2b-full. No screenings in scope.',
+        }

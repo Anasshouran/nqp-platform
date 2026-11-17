@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
+import { useTranslation } from 'react-i18next';
 import { SectorPageShell, useSectorSite, ErrorNotice, usePageTitle } from './SectorCmsShared';
 import { EmptyState, ListSkeleton } from '../../components/common';
 import { NewsCategoryChip } from '../../components/common/NewsCategoryChip';
@@ -20,12 +21,13 @@ const formatDate = (value?: string | null) =>
 
 const SectorCmsNewsDetail = () => {
   const { sector, slug, loading: sectorLoading } = useSectorSite();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [related, setRelated] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
-  usePageTitle('تفاصيل الخبر');
+  usePageTitle(t('sector-cms.newsDetail.pageTitle'));
 
   useEffect(() => {
     if (!id || !sector) return;
@@ -50,7 +52,7 @@ const SectorCmsNewsDetail = () => {
   if (!sector) {
     return (
       <SectorPageShell>
-        <ErrorNotice title="قطاع غير متاح" />
+        <ErrorNotice title={t('sector-cms.newsDetail.sectorNotAvailable')} />
       </SectorPageShell>
     );
   }
@@ -58,7 +60,7 @@ const SectorCmsNewsDetail = () => {
   return (
     <SectorPageShell>
       <Button component={Link} to={`/sector/${slug}/news`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-        العودة إلى أخبار القطاع
+        {t('sector-cms.newsDetail.backToNews')}
       </Button>
 
       {loading ? (
@@ -66,8 +68,8 @@ const SectorCmsNewsDetail = () => {
       ) : !article ? (
         <EmptyState
           icon={<NewspaperIcon />}
-          title="الخبر غير متاح"
-          description="لم يتم العثور على هذا الخبر، أو أن الخبر غير منشور بعد."
+          title={t('sector-cms.newsDetail.notFoundTitle')}
+          description={t('sector-cms.newsDetail.notFoundDescription')}
         />
       ) : (
         <Grid container spacing={4}>
@@ -106,7 +108,7 @@ const SectorCmsNewsDetail = () => {
 
           <Grid item xs={12} md={4}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              أخبار أخرى
+              {t('sector-cms.newsDetail.otherNews')}
             </Typography>
             <Stack spacing={2}>
               {related.map((n) => (

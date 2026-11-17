@@ -70,6 +70,7 @@ class HealthCaseListSerializer(serializers.ModelSerializer):
                   'locality', 'locality_name', 'onset_date', 'reported_date',
                   'confirmation_date', 'assigned_to', 'assigned_to_name',
                   'outbreak', 'outbreak_number', 'event', 'event_number',
+                  'health_facility', 'reporting_node',
                   'created_at', 'updated_at']
         read_only_fields = fields
 
@@ -139,7 +140,7 @@ class HealthCaseWriteSerializer(serializers.ModelSerializer):
             'disease', 'case_type', 'workflow_state', 'status', 'severity', 'source',
             'traveler', 'person_name', 'person_age', 'person_sex', 'nationality',
             'occupation', 'phone', 'passport_number', 'national_id', 'health_file_number',
-            'port', 'sector', 'locality', 'health_facility', 'event', 'outbreak',
+            'port', 'sector', 'locality', 'health_facility', 'reporting_node', 'event', 'outbreak',
             'lab_result', 'case_definition', 'onset_date', 'reported_date',
             'confirmation_date', 'closure_date', 'symptoms', 'risk_factors',
             'exposure_history', 'clinical_notes', 'epidemiological_notes',

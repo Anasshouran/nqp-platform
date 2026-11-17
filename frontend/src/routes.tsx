@@ -180,6 +180,8 @@ const PortalWebhooksPage = lazy(() => import('./pages/integration/portal/PortalW
 const PortalAuditLogsPage = lazy(() => import('./pages/integration/portal/PortalAuditLogsPage'));
 const DbAdminPage = lazy(() => import('./pages/dbadmin/DbAdminPage'));
 const OrgStructurePage = lazy(() => import('./pages/organization/OrgStructurePage'));
+const RegistryTreePage = lazy(() => import('./pages/registry/RegistryTreePage'));
+const FacilityDetailPage = lazy(() => import('./pages/registry/FacilityDetailPage'));
 const PortHealthPage = lazy(() => import('./pages/porthealth/PortHealthPage'));
 const BordersHealthPage = lazy(() => import('./pages/bordershealth/BordersHealthPage'));
 const VectorControlPage = lazy(() => import('./pages/vectorcontrol/VectorControlPage'));
@@ -237,6 +239,7 @@ const InspectorDashboardPage = lazy(() => import('./pages/inspector/InspectorDas
 const QuarantineInspectorPage = lazy(() => import('./pages/quarantine/QuarantineInspectorPage'));
 const EpidemicDashboardPage = lazy(() => import('./pages/emergency/EpidemicDashboardPage'));
 const SurveillanceModulePage = lazy(() => import('./pages/surveillance/SurveillanceModulePage'));
+const ReportsByStatePage = lazy(() => import('./pages/surveillance/ReportsByStatePage'));
 const FoodSurveillancePage = lazy(() => import('./pages/foodsurveillance/FoodSurveillancePage'));
 const FoodDirectorPage = lazy(() => import('./pages/fooddirector/FoodDirectorPage'));
 const AirportDirectorPage = lazy(() => import('./pages/airportdirector/AirportDirectorPage'));
@@ -386,6 +389,8 @@ const AppRoutes = () => (
         <Route path="/app/quarantine-fees" element={withSuspense(<QuarantineFeesPage />)} />
         <Route path="/app/quarantine-inspector" element={withSuspense(<QuarantineInspectorPage />)} />
         <Route path="/app/organization" element={withSuspense(<OrgStructurePage />)} />
+        <Route path="/app/registry/tree" element={withSuspense(<RegistryTreePage />)} />
+        <Route path="/app/registry/facility/:id" element={withSuspense(<FacilityDetailPage />)} />
         <Route path="/app/clinic" element={withSuspense(<ClinicPage />)} />
         <Route path="/app/clinic/dashboard" element={withSuspense(<ClinicDashboardPage />)} />
         <Route path="/app/clinic/register" element={withSuspense(<ClinicRegisterPage />)} />
@@ -460,6 +465,7 @@ const AppRoutes = () => (
         <Route path="/app/emergency" element={withSuspense(<EmergencyPage />)} />
         <Route path="/app/epidemic-dashboard" element={withSuspense(<EpidemicDashboardPage />)} />
         <Route path="/app/surveillance" element={withSuspense(<SurveillanceModulePage />)} />
+        <Route path="/app/surveillance/reports/by-state" element={withSuspense(<ReportsByStatePage />)} />
         <Route path="/app/food-surveillance" element={withSuspense(<FoodSurveillancePage />)} />
         {/* `FlightViewSet` مقيّد بـ`flights:view`، والصفحة مفتوحة فقط
             لأصحاب الصلاحية، وتقسم الصفحة نفسها إلى تبويبات. */}

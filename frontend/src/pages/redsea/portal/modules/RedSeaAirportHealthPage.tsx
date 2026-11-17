@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -29,6 +30,7 @@ const riskTone: Record<string, 'error' | 'warning' | 'success' | 'default'> = {
 };
 
 const RedSeaAirportHealthPage = () => {
+  const { t } = useTranslation();
   const ports = useList(getAirportPorts, { is_active: 'true' });
   const terminals = useList(getAirportTerminals);
   const points = useList<ScreeningPoint>(getScreeningPoints);
@@ -36,18 +38,18 @@ const RedSeaAirportHealthPage = () => {
   const inspections = useList<AircraftInspection>(getAircraftInspections, { page_size: 6 });
 
   const kpis = [
-    { label: 'المطارات', value: ports.count, icon: <FlightTakeoffIcon />, color: 'primary.main' as const },
-    { label: 'الصالات', value: terminals.count, icon: <TravelExploreIcon />, color: 'info.main' as const },
-    { label: 'نقاط الفحص', value: points.count, icon: <HealthAndSafetyIcon />, color: 'success.main' as const },
-    { label: 'فحوصات المسافرين', value: screenings.count, icon: <ScienceIcon />, color: 'warning.main' as const },
+    { label: t('redsea.portal.modules.airportHealth.kpi.airports.label'), value: ports.count, icon: <FlightTakeoffIcon />, color: 'primary.main' as const },
+    { label: t('redsea.portal.modules.airportHealth.kpi.terminals.label'), value: terminals.count, icon: <TravelExploreIcon />, color: 'info.main' as const },
+    { label: t('redsea.portal.modules.airportHealth.kpi.points.label'), value: points.count, icon: <HealthAndSafetyIcon />, color: 'success.main' as const },
+    { label: t('redsea.portal.modules.airportHealth.kpi.screenings.label'), value: screenings.count, icon: <ScienceIcon />, color: 'warning.main' as const },
   ];
 
   return (
     <Box>
       <PageHeader
-        eyebrow="الأنظمة التشغيلية"
-        title="صحة المطارات — قطاع البحر الأحمر"
-        subtitle="صالات ونقاط فحص ومسافرين في مطارات القطاع."
+        eyebrow={t('redsea.portal.modules.airportHealth.eyebrow')}
+        title={t('redsea.portal.modules.airportHealth.title')}
+        subtitle={t('redsea.portal.modules.airportHealth.subtitle')}
       />
 
       <Grid container spacing={2.5} sx={{ mb: 4 }}>
@@ -70,11 +72,11 @@ const RedSeaAirportHealthPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} lg={7}>
-          <SectionCard title="فحوصات المسافرين الأخيرة" subtitle="آخر فحوصات مطارات القطاع">
+          <SectionCard title={t('redsea.portal.modules.airportHealth.screeningsSection.title')} subtitle={t('redsea.portal.modules.airportHealth.screeningsSection.subtitle')}>
             {screenings.loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : screenings.data.length === 0 ? (
-              <EmptyState title="لا توجد فحوصات" description="لم تُسجّل فحوصات مطارات ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.airportHealth.screeningsEmpty.title')} description={t('redsea.portal.modules.airportHealth.screeningsEmpty.description')} />
             ) : (
               <Stack spacing={1.5}>
                 {screenings.data.map((s) => (
@@ -85,7 +87,7 @@ const RedSeaAirportHealthPage = () => {
                         {s.traveler_name || s.traveler}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" noWrap display="block">
-                        {s.point_name || s.screening_point} — {s.flight_number || 'بلا رحلة'}
+                        {s.point_name || s.screening_point} — {s.flight_number || t('redsea.portal.modules.airportHealth.noFlight')}
                       </Typography>
                     </Box>
                     <Chip size="small" label={s.status} variant="outlined" />
@@ -102,9 +104,9 @@ const RedSeaAirportHealthPage = () => {
           </SectionCard>
         </Grid>
         <Grid item xs={12} lg={5}>
-          <SectionCard title="نقاط الفحص" subtitle="نقاط فحص الصحة داخل المطارات">
+          <SectionCard title={t('redsea.portal.modules.airportHealth.pointsSection.title')} subtitle={t('redsea.portal.modules.airportHealth.pointsSection.subtitle')}>
             {points.data.length === 0 ? (
-              <EmptyState title="لا توجد نقاط فحص" description="لم تُسجّل نقاط فحص ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.airportHealth.pointsEmpty.title')} description={t('redsea.portal.modules.airportHealth.pointsEmpty.description')} />
             ) : (
               <Stack spacing={1.5}>
                 {points.data.slice(0, 8).map((p) => (
@@ -119,11 +121,11 @@ const RedSeaAirportHealthPage = () => {
               </Stack>
             )}
           </SectionCard>
-          <SectionCard title="تفتيش الطائرات" subtitle="أحدث التفتيشات" sx={{ mt: 2.5 }}>
+          <SectionCard title={t('redsea.portal.modules.airportHealth.inspectionsSection.title')} subtitle={t('redsea.portal.modules.airportHealth.inspectionsSection.subtitle')} sx={{ mt: 2.5 }}>
             {inspections.loading ? (
               <Skeleton height={60} />
             ) : inspections.data.length === 0 ? (
-              <EmptyState title="لا توجد تفتيشات طائرات" description="لم تُسجّل تفتيشات ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.airportHealth.inspectionsEmpty.title')} description={t('redsea.portal.modules.airportHealth.inspectionsEmpty.description')} />
             ) : (
               <Stack spacing={1.5}>
                 {inspections.data.map((i) => (

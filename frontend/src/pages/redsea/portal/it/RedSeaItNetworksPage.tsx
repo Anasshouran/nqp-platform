@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -14,6 +15,7 @@ const formatDate = (d?: string | null) =>
   d ? new Date(d).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 
 const RedSeaItNetworksPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const table = useServerTable<NetworkStatus>({ fetchData: getItNetworks });
   const { rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder, setSorting, setPage, rowsPerPage, setRowsPerPage, refresh, page, pageSizeOptions } = table;
@@ -31,25 +33,25 @@ const RedSeaItNetworksPage = () => {
   return (
     <Box>
       <PageHeader
-        eyebrow="قسم تقنية المعلومات"
-        title="الشبكات والاتصال"
-        subtitle="حالة اتصال كل نقطة دخول وزمن الاستجابة وآخر مزامنة."
+        eyebrow={t('redsea.portal.modules.itNetworks.eyebrow')}
+        title={t('redsea.portal.modules.itNetworks.title')}
+        subtitle={t('redsea.portal.modules.itNetworks.subtitle')}
         action={
           <AppButton size="small" startIcon={<SyncIcon />} onClick={handleSync} loading={syncing}>
-            مزامنة الحالة
+            {t('redsea.portal.modules.itNetworks.syncStatus')}
           </AppButton>
         }
       />
         <Box sx={{ mb: 2 }}>
           <AppButton startIcon={<ArrowBackIcon />} onClick={() => navigate('/dashboard/sector/red-sea/it')} variant="ghost">
-            لوحة تقنية المعلومات
+            {t('redsea.portal.modules.itNetworks.backToDashboard')}
           </AppButton>
         </Box>
       <DataTable<NetworkStatus>
         columns={[
           {
             key: 'entry_point_name',
-            label: 'نقطة الدخول',
+            label: t('redsea.portal.modules.itNetworks.columns.entryPoint'),
             sortable: true,
             render: (n) => (
               <Stack spacing={0.25}>
@@ -60,21 +62,21 @@ const RedSeaItNetworksPage = () => {
           },
           {
             key: 'connected',
-            label: 'الحالة',
+            label: t('redsea.portal.modules.itNetworks.columns.status'),
             render: (n) => (n.connected
-              ? <StatusChip label="متصل" tone="success" />
-              : <StatusChip label="منقطع" tone="error" />),
+              ? <StatusChip label={t('redsea.portal.modules.itNetworks.columns.connected')} tone="success" />
+              : <StatusChip label={t('redsea.portal.modules.itNetworks.columns.disconnected')} tone="error" />),
           },
           {
             key: 'ping_ms',
-            label: 'زمن الاستجابة',
+            label: t('redsea.portal.modules.itNetworks.columns.responseTime'),
             sortable: true,
             hideOnMobile: true,
             render: (n) => (n.connected ? `${n.ping_ms} ms` : '—'),
           },
           {
             key: 'last_sync',
-            label: 'آخر مزامنة',
+            label: t('redsea.portal.modules.itNetworks.columns.lastSync'),
             sortable: true,
             hideOnMobile: true,
             render: (n) => formatDate(n.last_sync),
@@ -88,19 +90,19 @@ const RedSeaItNetworksPage = () => {
         pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
-        title="حالة الشبكات"
-        subtitle={`${count} نقطة دخول · ${rows.filter((r) => r.connected).length} متصلة`}
+        title={t('redsea.portal.modules.itNetworks.tableTitle')}
+        subtitle={t('redsea.portal.modules.itNetworks.tableSubtitle', { count, connected: rows.filter((r) => r.connected).length })}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="بحث باسم نقطة الدخول..."
+        searchPlaceholder={t('redsea.portal.modules.itNetworks.searchPlaceholder')}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={setSorting}
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
-        emptyTitle="لا توجد شبكات"
-        emptyDescription="لا توجد نقاط دخول مسجلة ضمن هذا القطاع."
+        emptyTitle={t('redsea.portal.modules.itNetworks.emptyTitle')}
+        emptyDescription={t('redsea.portal.modules.itNetworks.emptyDescription')}
       />
     </Box>
   );

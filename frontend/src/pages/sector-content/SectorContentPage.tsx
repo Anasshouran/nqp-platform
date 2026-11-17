@@ -1,4 +1,5 @@
 import ArticleIcon from '@mui/icons-material/Article';
+import { useTranslation } from 'react-i18next';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
@@ -33,15 +34,16 @@ const SectorContentPage = ({ sectorName, sectorSlug, eyebrow, subtitle }: Sector
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const defaultTab = TAB_KEYS.indexOf(tabParam ?? '') >= 0 ? TAB_KEYS.indexOf(tabParam!) : 0;
+  const { t } = useTranslation();
 
   return (
     <SectorContentProvider value={{ sectorName, sectorSlug }}>
       <PageHeader
-        eyebrow={eyebrow ?? 'نظام إدارة المحتوى'}
-        title={`إدارة المحتوى — ${sectorName}`}
+        eyebrow={eyebrow ?? t('sector-content.sectorContentPage.eyebrow')}
+        title={`${t('sector-content.sectorContentPage.title')} — ${sectorName}`}
         subtitle={
           subtitle ??
-          'أدر أخبار القطاع، التعاميم، الصفحات، الأسئلة الشائعة، الوثائق، الشرائح، الوسائط وإعدادات الاتصال.'
+          t('sector-content.sectorContentPage.subtitle')
         }
       />
       <PageTabs
@@ -49,15 +51,15 @@ const SectorContentPage = ({ sectorName, sectorSlug, eyebrow, subtitle }: Sector
         keepMounted
         defaultTab={defaultTab}
         tabs={[
-          { label: 'الأخبار', icon: <ArticleIcon />, panel: <RedSeaNewsPanel /> },
-          { label: 'التعاميم', icon: <CampaignIcon />, panel: <RedSeaCircularsPanel /> },
-          { label: 'الإعلانات', icon: <NotificationsActiveIcon />, panel: <AnnouncementsPanel /> },
-          { label: 'الصفحات الثابتة', icon: <LibraryBooksIcon />, panel: <RedSeaPagesPanel /> },
-          { label: 'الأسئلة الشائعة', icon: <LiveHelpIcon />, panel: <RedSeaFaqPanel /> },
-          { label: 'الوثائق', icon: <DescriptionIcon />, panel: <RedSeaDocumentsPanel /> },
-          { label: 'الشرائح الدعائية', icon: <ViewCarouselIcon />, panel: <RedSeaSlidersPanel /> },
-          { label: 'مكتبة الوسائط', icon: <ImageIcon />, panel: <RedSeaMediaPanel /> },
-          { label: 'الإعدادات', icon: <SettingsIcon />, panel: <RedSeaSettingsPanel /> },
+          { label: t('sector-content.sectorContentPage.items.news'), icon: <ArticleIcon />, panel: <RedSeaNewsPanel /> },
+          { label: t('sector-content.sectorContentPage.items.circulars'), icon: <CampaignIcon />, panel: <RedSeaCircularsPanel /> },
+          { label: t('sector-content.sectorContentPage.items.announcements'), icon: <NotificationsActiveIcon />, panel: <AnnouncementsPanel /> },
+          { label: t('sector-content.sectorContentPage.items.pages'), icon: <LibraryBooksIcon />, panel: <RedSeaPagesPanel /> },
+          { label: t('sector-content.sectorContentPage.items.faq'), icon: <LiveHelpIcon />, panel: <RedSeaFaqPanel /> },
+          { label: t('sector-content.sectorContentPage.items.documents'), icon: <DescriptionIcon />, panel: <RedSeaDocumentsPanel /> },
+          { label: t('sector-content.sectorContentPage.items.sliders'), icon: <ViewCarouselIcon />, panel: <RedSeaSlidersPanel /> },
+          { label: t('sector-content.sectorContentPage.items.media'), icon: <ImageIcon />, panel: <RedSeaMediaPanel /> },
+          { label: t('sector-content.sectorContentPage.items.settings'), icon: <SettingsIcon />, panel: <RedSeaSettingsPanel /> },
         ]}
       />
     </SectorContentProvider>

@@ -122,6 +122,18 @@ class VaccinationRecord(BaseModel):
     dose_number = models.PositiveSmallIntegerField(default=1, verbose_name='رقم الجرعة')
     administered_at = models.DateField(verbose_name='تاريخ التطعيم')
     site = models.ForeignKey(VaccinationSite, on_delete=models.SET_NULL, null=True, blank=True, related_name='records', verbose_name='المكان')
+    reporting_node = models.ForeignKey(
+        'registry.ReportingNode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vaccination_records',
+        verbose_name='عقدة الإبلاغ',
+        help_text=(
+            'STATE-only snapshot via site.entry_point.state_id '
+            '→ StateNodeAssignment. No sync — historical integrity.'
+        ),
+    )
     vaccinator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,6 +28,7 @@ const SYSTEM_TONE: Record<string, 'success' | 'warning' | 'error'> = {
 };
 
 const RedSeaItReportsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [report, setReport] = useState<ItReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,22 +48,22 @@ const RedSeaItReportsPage = () => {
   const connectedPorts = report?.networks.filter((n) => n.connected).length ?? 0;
 
   const summaryCards = [
-    { label: 'الأنظمة الكلية', value: report?.systems.length ?? 0, icon: <MemoryIcon />, tone: 'primary.main' as const },
-    { label: 'الأجهزة النشطة', value: activeAssets, icon: <DnsIcon />, tone: 'success.main' as const },
-    { label: 'تذاكر مفتوحة', value: openTickets, icon: <SupportAgentIcon />, tone: 'warning.main' as const },
-    { label: 'منافذ متصلة', value: connectedPorts, icon: <NetworkCheckIcon />, tone: 'info.main' as const },
+    { label: 'redsea.portal.it.kpi.totalSystems', value: report?.systems.length ?? 0, icon: <MemoryIcon />, tone: 'primary.main' as const },
+    { label: 'redsea.portal.it.kpi.activeAssets', value: activeAssets, icon: <DnsIcon />, tone: 'success.main' as const },
+    { label: 'redsea.portal.it.kpi.openTickets', value: openTickets, icon: <SupportAgentIcon />, tone: 'warning.main' as const },
+    { label: 'redsea.portal.it.kpi.connectedPorts', value: connectedPorts, icon: <NetworkCheckIcon />, tone: 'info.main' as const },
   ];
 
   return (
     <ReportsPageShell
-      eyebrow="قسم تقنية المعلومات"
-      title="التقارير الفنية"
-      subtitle="تجميع شامل لحالة الأنظمة والأصول والتذاكر والشبكات ضمن القطاع."
-      action={<Chip label="قطاع البحر الأحمر" color="primary" variant="outlined" />}
+      eyebrow={t('redsea.portal.it.eyebrow')}
+      title={t('redsea.portal.it.title')}
+      subtitle={t('redsea.portal.it.subtitle')}
+      action={<Chip label={t('redsea.portal.it.sectorChip')} color="primary" variant="outlined" />}
       headerExtra={
         <Box sx={{ mb: 2 }}>
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dashboard/sector/red-sea/it')} color="inherit">
-            لوحة تقنية المعلومات
+            {t('redsea.portal.it.backToDashboard')}
           </Button>
         </Box>
       }
@@ -75,7 +77,7 @@ const RedSeaItReportsPage = () => {
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {loading ? <Skeleton width={40} /> : Number(k.value).toLocaleString('ar-EG')}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{k.label}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{t(k.label)}</Typography>
                   </Box>
                 </Stack>
               </CardContent>
@@ -85,11 +87,11 @@ const RedSeaItReportsPage = () => {
     >
       <Grid item xs={12} lg={6}>
           <SectionCard
-            title="حالة الأنظمة"
+            title={t('redsea.portal.it.systemsStatusTitle')}
             action={
               <Stack direction="row" spacing={1}>
-                <Chip size="small" label={`تحذير: ${report?.systems.filter((s) => s.status === 'WARNING').length ?? 0}`} color="warning" variant="outlined" />
-                <Chip size="small" label={`متوقف: ${report?.systems.filter((s) => s.status === 'OFFLINE').length ?? 0}`} color="error" variant="outlined" />
+                <Chip size="small" label={t('redsea.portal.it.warningChip', { count: report?.systems.filter((s) => s.status === 'WARNING').length ?? 0 })} color="warning" variant="outlined" />
+                <Chip size="small" label={t('redsea.portal.it.offlineChip', { count: report?.systems.filter((s) => s.status === 'OFFLINE').length ?? 0 })} color="error" variant="outlined" />
               </Stack>
             }
           >
@@ -109,7 +111,7 @@ const RedSeaItReportsPage = () => {
         </Grid>
 
         <Grid item xs={12} lg={6}>
-          <SectionCard title="توزيع التذاكر بالأولوية" subtitle={`${totalTickets} تذكرة · ${criticalTickets} حرجة مفتوحة`}>
+          <SectionCard title={t('redsea.portal.it.ticketsTitle')} subtitle={t('redsea.portal.it.ticketsSubtitle', { total: totalTickets, critical: criticalTickets })}>
             {loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : (
@@ -120,7 +122,7 @@ const RedSeaItReportsPage = () => {
                   return (
                     <Stack key={p} direction="row" justifyContent="space-between" alignItems="center">
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{p}</Typography>
-                      <StatusChip label={`${countP} تذكرة`} tone={tone} />
+                      <StatusChip label={t('redsea.portal.it.ticketCount', { count: countP })} tone={tone} />
                     </Stack>
                   );
                 })}
@@ -128,17 +130,17 @@ const RedSeaItReportsPage = () => {
             )}
           </SectionCard>
 
-          <SectionCard title="الأصول بالحالة" subtitle="توزيع الأجهزة حسب الحالة التشغيلية" sx={{ mt: 2 }}>
+          <SectionCard title={t('redsea.portal.it.assetsTitle')} subtitle={t('redsea.portal.it.assetsSubtitle')} sx={{ mt: 2 }}>
             {loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : (
               <Stack divider={<Divider />} spacing={1}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>نشط</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('redsea.portal.it.activeLabel')}</Typography>
                   <StatusChip label={`${activeAssets}`} tone="success" />
                 </Stack>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>قيد الصيانة/مُعطّل</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('redsea.portal.it.maintenanceLabel')}</Typography>
                   <StatusChip label={`${maintenanceAssets}`} tone="warning" />
                 </Stack>
               </Stack>

@@ -99,3 +99,33 @@ class ReportSubmitSerializer(serializers.Serializer):
 
 class ReportApproveSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default='')
+
+# ---------------------------------------------------------------------------
+# M7-A2b-lite — by-state report (Phase 0)
+# ---------------------------------------------------------------------------
+
+class StateBucketSerializer(serializers.Serializer):
+    """صف ولاية واحد في التقرير الهرمي."""
+
+    state_id = serializers.UUIDField()
+    state_code = serializers.CharField()
+    state_name_ar = serializers.CharField()
+    state_name_en = serializers.CharField(allow_blank=True)
+    count = serializers.IntegerField()
+
+
+class ByStateReportSerializer(serializers.Serializer):
+    """مخرجات `GET /api/v1/surveillance/reports/by-state/`.
+
+    `total` يجب أن يساوي مجموع الفئات الأربع دائماً (`reconciliation_ok`).
+    """
+
+    total = serializers.IntegerField()
+    matched = serializers.IntegerField()
+    node_no_state = serializers.IntegerField()
+    unassigned_node = serializers.IntegerField()
+    unassigned_facility = serializers.IntegerField()
+    by_state = StateBucketSerializer(many=True)
+    scoped = serializers.BooleanField()
+    reconciliation_ok = serializers.BooleanField()
+    note = serializers.CharField(allow_blank=True)

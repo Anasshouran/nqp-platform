@@ -1,5 +1,6 @@
 // The submit confirmation and draft-deletion confirmation dialogs.
 // Extracted from ClerkDashboardPage without behavioural change.
+import { useTranslation } from 'react-i18next';
 import type { useClerkActions } from '../hooks/useClerkActions';
 import type { useClerkWizard } from '../hooks/useClerkWizard';
 import Typography from '@mui/material/Typography';
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export const ClerkDialogs = ({ actions, wizard }: Props) =>{
+  const { t } = useTranslation();
   const { deleteTarget, deleting, handleDelete, setDeleteTarget } = actions;
   const { confirmOpen, handleSubmit, requesting, setConfirmOpen } = wizard;
 
@@ -24,24 +26,24 @@ export const ClerkDialogs = ({ actions, wizard }: Props) =>{
     <>
 
         <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
-          <DialogTitle sx={{ fontWeight: 700 }}>تأكيد إرسال الطلب</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 700 }}>{t('clerk.components.dialogs.confirmTitle')}</DialogTitle>
           <DialogContent>
             <Typography variant="body2" color="text.secondary">
-              سيتم إنشاء البيان وإرساله لتحصيل الرسوم مع إشعار قسم الحسابات. بعد الإرسال لن تتمكن من تعديل الطلب. هل أنت متأكد؟
+              {t('clerk.components.dialogs.confirmDescription')}
             </Typography>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setConfirmOpen(false)} disabled={requesting}>إلغاء</Button>
+            <Button onClick={() => setConfirmOpen(false)} disabled={requesting}>{t('clerk.components.dialogs.cancel')}</Button>
             <Button variant="contained" color="success" startIcon={<SendIcon />} disabled={requesting} onClick={handleSubmit}>
-              {requesting ? 'جارٍ الإرسال…' : 'تأكيد الإرسال'}
+              {requesting ? t('clerk.components.dialogs.sending') : t('clerk.components.dialogs.confirmSend')}
             </Button>
           </DialogActions>
         </Dialog>
         <ConfirmDialog
           open={Boolean(deleteTarget)}
-          title="حذف المسودة"
-          message={`هل أنت متأكد من حذف المسودة «${deleteTarget?.manifest_number ?? ''}»؟ لا يمكن التراجع عن هذا الإجراء.`}
-          confirmLabel="حذف"
+          title={t('clerk.components.dialogs.deleteTitle')}
+          message={t('clerk.components.dialogs.deleteMessage', { manifestNumber: deleteTarget?.manifest_number ?? '' })}
+          confirmLabel={t('clerk.components.dialogs.deleteConfirm')}
           loading={deleting}
           onConfirm={handleDelete}
           onClose={() => setDeleteTarget(null)}

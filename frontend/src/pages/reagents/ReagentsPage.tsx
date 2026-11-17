@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -65,42 +66,42 @@ import { notifyError, notifySuccess } from '../../utils/toast';
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 const MATERIAL_TYPES = [
-  { value: 'REAGENT', label: 'كاشف' },
-  { value: 'SOLUTION', label: 'محلول' },
-  { value: 'REFERENCE_STANDARD', label: 'مادة قياسية مرجعية' },
-  { value: 'CULTURE_MEDIA', label: 'وسط زرعي' },
-  { value: 'CHEMICAL', label: 'مادة كيميائية' },
-  { value: 'CONSUMABLE', label: 'مستهلك' },
-  { value: 'CRM', label: 'مادة مرجعية معتمدة' },
-];
+  { value: 'REAGENT', labelKey: 'reagents.materials.reagent' },
+  { value: 'SOLUTION', labelKey: 'reagents.materials.solution' },
+  { value: 'REFERENCE_STANDARD', labelKey: 'reagents.materials.reference_standard' },
+  { value: 'CULTURE_MEDIA', labelKey: 'reagents.materials.culture_media' },
+  { value: 'CHEMICAL', labelKey: 'reagents.materials.chemical' },
+  { value: 'CONSUMABLE', labelKey: 'reagents.materials.consumable' },
+  { value: 'CRM', labelKey: 'reagents.materials.crm' },
+] as const;
 
 const GRADES = [
-  { value: 'ANALYTICAL', label: 'درجة تحليلية' },
-  { value: 'HPLC', label: 'HPLC' },
-  { value: 'REAGENT_GRADE', label: 'درجة كاشف' },
-  { value: 'TECHNICAL', label: 'درجة تقنية' },
-  { value: 'PHARMACEUTICAL', label: 'درجة دوائية' },
-  { value: 'MICROBIOLOGICAL', label: 'درجة ميكروبيولوجية' },
-  { value: 'OTHER', label: 'أخرى' },
-];
+  { value: 'ANALYTICAL', labelKey: 'reagents.grades.analytical' },
+  { value: 'HPLC', labelKey: 'reagents.grades.hplc' },
+  { value: 'REAGENT_GRADE', labelKey: 'reagents.grades.reagent_grade' },
+  { value: 'TECHNICAL', labelKey: 'reagents.grades.technical' },
+  { value: 'PHARMACEUTICAL', labelKey: 'reagents.grades.pharmaceutical' },
+  { value: 'MICROBIOLOGICAL', labelKey: 'reagents.grades.microbiological' },
+  { value: 'OTHER', labelKey: 'reagents.grades.other' },
+] as const;
 
 const HAZARDS = [
-  { value: 'NONE', label: 'غير خطرة' },
-  { value: 'TOXIC', label: 'سامة' },
-  { value: 'CORROSIVE', label: 'آكلة' },
-  { value: 'FLAMMABLE', label: 'قابلة للاشتعال' },
-  { value: 'OXIDIZER', label: 'مؤكسدة' },
-  { value: 'IRRITANT', label: 'مهيجة' },
-  { value: 'OTHER', label: 'أخرى' },
-];
+  { value: 'NONE', labelKey: 'reagents.hazards.none' },
+  { value: 'TOXIC', labelKey: 'reagents.hazards.toxic' },
+  { value: 'CORROSIVE', labelKey: 'reagents.hazards.corrosive' },
+  { value: 'FLAMMABLE', labelKey: 'reagents.hazards.flammable' },
+  { value: 'OXIDIZER', labelKey: 'reagents.hazards.oxidizer' },
+  { value: 'IRRITANT', labelKey: 'reagents.hazards.irritant' },
+  { value: 'OTHER', labelKey: 'reagents.hazards.other' },
+] as const;
 
 const BENCHES = [
-  { value: 'CHEMISTRY', label: 'الكيمياء' },
-  { value: 'MICROBIOLOGY', label: 'الأحياء الدقيقة' },
-  { value: 'PHYSICAL', label: 'الفيزيائية' },
-  { value: 'TOXICOLOGY', label: 'السموم' },
-  { value: 'MOLECULAR', label: 'الجزيئي' },
-];
+  { value: 'CHEMISTRY', labelKey: 'reagents.benches.chemistry' },
+  { value: 'MICROBIOLOGY', labelKey: 'reagents.benches.microbiology' },
+  { value: 'PHYSICAL', labelKey: 'reagents.benches.physical' },
+  { value: 'TOXICOLOGY', labelKey: 'reagents.benches.toxicology' },
+  { value: 'MOLECULAR', labelKey: 'reagents.benches.molecular' },
+] as const;
 
 const LOT_STATUS_TONE: Record<string, 'success' | 'warning' | 'error' | 'primary'> = {
   VALID: 'success',
@@ -129,24 +130,30 @@ const DISPOSAL_STATUS_TONE: Record<string, 'success' | 'warning' | 'error' | 'pr
 type TabKey = 'dashboard' | 'catalog' | 'lots' | 'solutions' | 'issues' | 'disposal';
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: 'dashboard', label: 'لوحة القيادة' },
-  { key: 'catalog', label: 'كتالوج المواد' },
-  { key: 'lots', label: 'التشغيلات والمخزون' },
-  { key: 'solutions', label: 'المحاليل' },
-  { key: 'issues', label: 'الصرف والاستهلاك' },
-  { key: 'disposal', label: 'التخلص' },
+  { key: 'dashboard', label: 'reagents.tabs.dashboard' },
+  { key: 'catalog', label: 'reagents.tabs.catalog' },
+  { key: 'lots', label: 'reagents.tabs.lots' },
+  { key: 'solutions', label: 'reagents.tabs.solutions' },
+  { key: 'issues', label: 'reagents.tabs.issues' },
+  { key: 'disposal', label: 'reagents.tabs.disposal' },
 ];
 
 const SECTIONS = [
-  { id: 'dashboard', label: 'لوحة القيادة', icon: <DashboardIcon fontSize="small" /> },
-  { id: 'catalog', label: 'كتالوج المواد', icon: <Inventory2Icon fontSize="small" /> },
-  { id: 'lots', label: 'التشغيلات والمخزون', icon: <LocalDrinkIcon fontSize="small" /> },
-  { id: 'solutions', label: 'المحاليل', icon: <ScienceIcon fontSize="small" /> },
-  { id: 'issues', label: 'الصرف والاستهلاك', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'disposal', label: 'التخلص', icon: <DeleteSweepIcon fontSize="small" /> },
+  { id: 'dashboard', label: 'reagents.sections.dashboard', icon: <DashboardIcon fontSize="small" /> },
+  { id: 'catalog', label: 'reagents.sections.catalog', icon: <Inventory2Icon fontSize="small" /> },
+  { id: 'lots', label: 'reagents.sections.lots', icon: <LocalDrinkIcon fontSize="small" /> },
+  { id: 'solutions', label: 'reagents.sections.solutions', icon: <ScienceIcon fontSize="small" /> },
+  { id: 'issues', label: 'reagents.sections.issues', icon: <BiotechIcon fontSize="small" /> },
+  { id: 'disposal', label: 'reagents.sections.disposal', icon: <DeleteSweepIcon fontSize="small" /> },
 ] as const;
 
 const ReagentsPage = () => {
+  const { t } = useTranslation();
+  const materialTypeOptions = useMemo(() => MATERIAL_TYPES.map((o) => ({ value: o.value, label: t(o.labelKey) })), [t]);
+  const gradeOptions = useMemo(() => GRADES.map((o) => ({ value: o.value, label: t(o.labelKey) })), [t]);
+  const hazardOptions = useMemo(() => HAZARDS.map((o) => ({ value: o.value, label: t(o.labelKey) })), [t]);
+  const benchOptions = useMemo(() => BENCHES.map((o) => ({ value: o.value, label: t(o.labelKey) })), [t]);
+
   const [tab, setTab] = useState<TabKey>('dashboard');
   const [dash, setDash] = useState<Awaited<ReturnType<typeof getMaterialManagementDashboard>>['data']['data'] | null>(null);
 
@@ -205,7 +212,7 @@ const ReagentsPage = () => {
       refreshAll();
       close();
     } catch {
-      notifyError('تعذر الحفظ، حاول مرة أخرى');
+      notifyError(t('reagents.errors.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -302,93 +309,93 @@ const ReagentsPage = () => {
     h === 'NONE' ? 'success' : h === 'TOXIC' || h === 'CORROSIVE' ? 'error' : 'warning';
 
   const matColumns: DataTableColumn<MaterialCatalog>[] = useMemo(() => [
-    { key: 'name', label: 'المادة', render: (m) => <b>{m.name_ar}</b> },
-    { key: 'type', label: 'النوع', render: (m) => <Chip size="small" label={m.material_type_label} /> },
-    { key: 'bench', label: 'القسم', render: (m) => m.bench_label },
-    { key: 'stock', label: 'المخزون', render: (m) => (
+    { key: 'name', label: t('reagents.columns.material'), render: (m) => <b>{m.name_ar}</b> },
+    { key: 'type', label: t('reagents.columns.type'), render: (m) => <Chip size="small" label={m.material_type_label} /> },
+    { key: 'bench', label: t('reagents.columns.bench'), render: (m) => m.bench_label },
+    { key: 'stock', label: t('reagents.columns.stock'), render: (m) => (
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography fontWeight={800}>{m.total_stock} {m.unit}</Typography>
-        {m.low_stock ? <StatusChip label="منخفض" tone="warning" /> : null}
+        {m.low_stock ? <StatusChip label={t('reagents.status.lowStock')} tone="warning" /> : null}
       </Stack>
     ) },
-    { key: 'lots', label: 'تشغيلات', render: (m) => m.active_lots },
-    { key: 'hazard', label: 'الخطورة', render: (m) => <StatusChip label={m.hazard_label} tone={hazardTone(m.hazard_class)} /> },
-    { key: 'min', label: 'الحد الأدنى', render: (m) => `${m.min_stock} ${m.unit}` },
+    { key: 'lots', label: t('reagents.columns.lots'), render: (m) => m.active_lots },
+    { key: 'hazard', label: t('reagents.columns.hazard'), render: (m) => <StatusChip label={m.hazard_label} tone={hazardTone(m.hazard_class)} /> },
+    { key: 'min', label: t('reagents.columns.minStock'), render: (m) => `${m.min_stock} ${m.unit}` },
     { key: 'actions', label: '', render: (m) => (
-      <AppButton size="small" variant="secondary" onClick={() => openMatDialog(m)}>تعديل</AppButton>
+      <AppButton size="small" variant="secondary" onClick={() => openMatDialog(m)}>{t('reagents.actions.edit')}</AppButton>
     ) },
-  ], [materials.rows]);
+  ], [t, materials.rows]);
 
   const lotColumns: DataTableColumn<MaterialLot>[] = useMemo(() => [
-    { key: 'material', label: 'المادة', render: (l) => <b>{l.material_name}</b> },
-    { key: 'lot', label: 'رقم التشغيلة', render: (l) => <Chip size="small" label={l.lot_number} /> },
-    { key: 'batch', label: 'الدفعة', render: (l) => l.batch_number || '—' },
-    { key: 'qty', label: 'الكمية', render: (l) => `${l.quantity} ${l.unit}` },
-    { key: 'expiry', label: 'الصلاحية', render: (l) => (
+    { key: 'material', label: t('reagents.columns.material'), render: (l) => <b>{l.material_name}</b> },
+    { key: 'lot', label: t('reagents.columns.lotNumber'), render: (l) => <Chip size="small" label={l.lot_number} /> },
+    { key: 'batch', label: t('reagents.columns.batch'), render: (l) => l.batch_number || '—' },
+    { key: 'qty', label: t('reagents.columns.qty'), render: (l) => `${l.quantity} ${l.unit}` },
+    { key: 'expiry', label: t('reagents.columns.expiry'), render: (l) => (
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography>{l.expiry_date ? formatDate(l.expiry_date) : '—'}</Typography>
         {l.days_to_expiry != null && l.days_to_expiry <= 30 && <WarningAmberIcon fontSize="small" color="warning" />}
       </Stack>
     ) },
-    { key: 'storage', label: 'التخزين', render: (l) => l.storage_name || '—' },
-    { key: 'status', label: 'الحالة', render: (l) => <StatusChip label={l.status_label} tone={LOT_STATUS_TONE[l.status]} /> },
-  ], []);
+    { key: 'storage', label: t('reagents.columns.storage'), render: (l) => l.storage_name || '—' },
+    { key: 'status', label: t('reagents.columns.status'), render: (l) => <StatusChip label={l.status_label} tone={LOT_STATUS_TONE[l.status]} /> },
+  ], [t]);
 
   const solColumns: DataTableColumn<Solution>[] = useMemo(() => [
-    { key: 'name', label: 'المحلول', render: (s) => <b>{s.name}</b> },
-    { key: 'conc', label: 'التركيز', render: (s) => s.concentration || '—' },
-    { key: 'batch', label: 'الدفعة', render: (s) => <Chip size="small" label={s.batch_number || '—'} /> },
-    { key: 'prep', label: 'تاريخ التحضير', render: (s) => formatDate(s.preparation_date) },
-    { key: 'expiry', label: 'الصلاحية', render: (s) => (s.expiry_date ? formatDate(s.expiry_date) : '—') },
-    { key: 'prepared_by', label: 'المُحضِّر', render: (s) => s.prepared_by_name || '—' },
-    { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={s.status_label} tone={SOLUTION_STATUS_TONE[s.status]} /> },
+    { key: 'name', label: t('reagents.columns.solution'), render: (s) => <b>{s.name}</b> },
+    { key: 'conc', label: t('reagents.columns.concentration'), render: (s) => s.concentration || '—' },
+    { key: 'batch', label: t('reagents.columns.batch'), render: (s) => <Chip size="small" label={s.batch_number || '—'} /> },
+    { key: 'prep', label: t('reagents.columns.prepDate'), render: (s) => formatDate(s.preparation_date) },
+    { key: 'expiry', label: t('reagents.columns.expiry'), render: (s) => (s.expiry_date ? formatDate(s.expiry_date) : '—') },
+    { key: 'prepared_by', label: t('reagents.columns.preparedBy'), render: (s) => s.prepared_by_name || '—' },
+    { key: 'status', label: t('reagents.columns.status'), render: (s) => <StatusChip label={s.status_label} tone={SOLUTION_STATUS_TONE[s.status]} /> },
     { key: 'actions', label: '', render: (s) => (
       s.status === 'PENDING_VERIFICATION' || s.status === 'PREPARED' ? (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" variant="primary" onClick={() => runVerify(s.id, 'APPROVED')}>اعتماد</AppButton>
-          <AppButton size="small" variant="secondary" onClick={() => runVerify(s.id, 'REJECTED')}>رفض</AppButton>
+          <AppButton size="small" variant="primary" onClick={() => runVerify(s.id, 'APPROVED')}>{t('reagents.actions.approve')}</AppButton>
+          <AppButton size="small" variant="secondary" onClick={() => runVerify(s.id, 'REJECTED')}>{t('reagents.actions.reject')}</AppButton>
         </Stack>
       ) : null
     ) },
-  ], []);
+  ], [t]);
 
   const issueColumns: DataTableColumn<MaterialIssue>[] = useMemo(() => [
-    { key: 'material', label: 'المادة', render: (i) => <b>{i.material_name}</b> },
-    { key: 'lot', label: 'التشغيلة', render: (i) => i.lot_number || (i.solution_name ?? '—') },
-    { key: 'sample', label: 'العينة', render: (i) => i.sample_number || '—' },
-    { key: 'test', label: 'الفحص', render: (i) => i.test_parameter || '—' },
-    { key: 'qty', label: 'الكمية', render: (i) => `${i.quantity_used} ${i.unit}` },
-    { key: 'type', label: 'النوع', render: (i) => <StatusChip label={i.issue_type_label} tone={i.issue_type === 'RETURN' ? 'primary' : 'info'} /> },
-    { key: 'by', label: 'الصارف', render: (i) => i.issued_by_name || '—' },
-    { key: 'when', label: 'الوقت', render: (i) => formatDate(i.issued_at) },
-  ], []);
+    { key: 'material', label: t('reagents.columns.material'), render: (i) => <b>{i.material_name}</b> },
+    { key: 'lot', label: t('reagents.columns.lotNumber'), render: (i) => i.lot_number || (i.solution_name ?? '—') },
+    { key: 'sample', label: t('reagents.columns.sample'), render: (i) => i.sample_number || '—' },
+    { key: 'test', label: t('reagents.columns.test'), render: (i) => i.test_parameter || '—' },
+    { key: 'qty', label: t('reagents.columns.qty'), render: (i) => `${i.quantity_used} ${i.unit}` },
+    { key: 'type', label: t('reagents.columns.type'), render: (i) => <StatusChip label={i.issue_type_label} tone={i.issue_type === 'RETURN' ? 'primary' : 'info'} /> },
+    { key: 'by', label: t('reagents.columns.issuedBy'), render: (i) => i.issued_by_name || '—' },
+    { key: 'when', label: t('reagents.columns.when'), render: (i) => formatDate(i.issued_at) },
+  ], [t]);
 
   const dispColumns: DataTableColumn<DisposalRequest>[] = useMemo(() => [
-    { key: 'material', label: 'المادة', render: (d) => <b>{d.material_name}</b> },
-    { key: 'lot', label: 'التشغيلة', render: (d) => d.lot_number || (d.solution_name ?? '—') },
-    { key: 'qty', label: 'الكمية', render: (d) => `${d.quantity} ${d.unit}` },
-    { key: 'reason', label: 'السبب', render: (d) => d.reason || '—' },
-    { key: 'by', label: 'مقدّم الطلب', render: (d) => d.requested_by_name || '—' },
-    { key: 'status', label: 'الحالة', render: (d) => <StatusChip label={d.status_label} tone={DISPOSAL_STATUS_TONE[d.status]} /> },
+    { key: 'material', label: t('reagents.columns.material'), render: (d) => <b>{d.material_name}</b> },
+    { key: 'lot', label: t('reagents.columns.lotNumber'), render: (d) => d.lot_number || (d.solution_name ?? '—') },
+    { key: 'qty', label: t('reagents.columns.qty'), render: (d) => `${d.quantity} ${d.unit}` },
+    { key: 'reason', label: t('reagents.columns.reason'), render: (d) => d.reason || '—' },
+    { key: 'by', label: t('reagents.columns.requestedBy'), render: (d) => d.requested_by_name || '—' },
+    { key: 'status', label: t('reagents.columns.status'), render: (d) => <StatusChip label={d.status_label} tone={DISPOSAL_STATUS_TONE[d.status]} /> },
     { key: 'actions', label: '', render: (d) => d.status === 'PENDING' ? (
       <Stack direction="row" spacing={0.5}>
-        <AppButton size="small" variant="primary" onClick={() => runDispose(d.id, 'approve')}>اعتماد</AppButton>
-        <AppButton size="small" variant="secondary" onClick={() => runDispose(d.id, 'reject')}>رفض</AppButton>
+        <AppButton size="small" variant="primary" onClick={() => runDispose(d.id, 'approve')}>{t('reagents.actions.approve')}</AppButton>
+        <AppButton size="small" variant="secondary" onClick={() => runDispose(d.id, 'reject')}>{t('reagents.actions.reject')}</AppButton>
       </Stack>
     ) : d.status === 'APPROVED' ? (
-      <AppButton size="small" variant="primary" onClick={() => runDispose(d.id, 'dispose')}>تنفيذ التخلص</AppButton>
+      <AppButton size="small" variant="primary" onClick={() => runDispose(d.id, 'dispose')}>{t('reagents.actions.executeDisposal')}</AppButton>
     ) : null },
-  ], []);
+  ], [t]);
 
   const runVerify = async (id: string, decision: string) => {
     setBusy(true);
     try {
       await verifySolution(id, { decision });
-      notifySuccess(decision === 'APPROVED' ? 'تم اعتماد المحلول' : 'تم رفض المحلول');
+      notifySuccess(decision === 'APPROVED' ? t('reagents.messages.solutionApproved') : t('reagents.messages.solutionRejected'));
       solutions.refresh();
       refreshDash();
     } catch {
-      notifyError('تعذر التحقق من المحلول');
+      notifyError(t('reagents.messages.verifyFailed'));
     } finally {
       setBusy(false);
     }
@@ -398,12 +405,12 @@ const ReagentsPage = () => {
     setBusy(true);
     try {
       await disposeRequestAction(id, { action });
-      notifySuccess('تم تحديث حالة طلب التخلص');
+      notifySuccess(t('reagents.messages.disposalStatusUpdated'));
       disposals.refresh();
       lots.refresh();
       refreshDash();
     } catch {
-      notifyError('تعذر تحديث طلب التخلص');
+      notifyError(t('reagents.messages.disposalUpdateFailed'));
     } finally {
       setBusy(false);
     }
@@ -428,7 +435,7 @@ const ReagentsPage = () => {
     };
     save(
       () => (matForm.id ? updateMaterial(matForm.id, payload) : createMaterial(payload)),
-      matForm.id ? 'تم تحديث المادة' : 'تم تسجيل المادة',
+      matForm.id ? t('reagents.messages.materialUpdated') : t('reagents.messages.materialRegistered'),
       () => setMatDialog(false),
     );
   };
@@ -449,7 +456,7 @@ const ReagentsPage = () => {
         received_date: lotForm.received_date,
         notes: lotForm.notes,
       }),
-      'تم تسجيل التشغيلة',
+      t('reagents.messages.lotRegistered'),
       () => setLotDialog(false),
     );
   };
@@ -471,7 +478,7 @@ const ReagentsPage = () => {
         status: solForm.status,
         notes: solForm.notes,
       }),
-      'تم تسجيل المحلول — بانتظار التحقق',
+      t('reagents.messages.solutionRegistered'),
       () => setSolDialog(false),
     );
   };
@@ -488,7 +495,7 @@ const ReagentsPage = () => {
         issue_type: issueForm.issue_type,
         notes: issueForm.notes,
       }),
-      'تم صرف المادة وخصمها من المخزون',
+      t('reagents.messages.issueRecorded'),
       () => setIssueDialog(false),
     );
   };
@@ -504,7 +511,7 @@ const ReagentsPage = () => {
         reason: dispForm.reason,
         detail: dispForm.detail,
       }),
-      'تم إنشاء طلب التخلص — بانتظار الاعتماد',
+      t('reagents.messages.disposalRequestCreated'),
       () => setDispDialog(false),
     );
   };
@@ -517,14 +524,14 @@ const ReagentsPage = () => {
   const renderDashboard = () => (
     <Box>
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="إجمالي المواد" value={kpi?.total_materials ?? '—'} icon={<Inventory2Icon />} /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="إجمالي المخزون" value={kpi?.total_stock ?? '—'} icon={<BiotechIcon />} accent="primary.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="منتهية" value={kpi?.expired ?? '—'} icon={<EventBusyIcon />} accent="error.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="تنتهي خلال 30 يوم" value={kpi?.expiring_30 ?? '—'} icon={<WarningAmberIcon />} accent="warning.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="تحت الحد الأدنى" value={kpi?.low_stock ?? '—'} icon={<WarningAmberIcon />} accent="error.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="محاليل بانتظار التحقق" value={kpi?.solutions_pending ?? '—'} icon={<VerifiedIcon />} accent="warning.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="محاليل معتمدة" value={kpi?.solutions_approved ?? '—'} icon={<VerifiedIcon />} accent="success.main" /></Grid>
-        <Grid item xs={6} sm={4} md={3}><KpiCard label="طلبات تخلص بانتظار" value={kpi?.disposals_pending ?? '—'} icon={<DeleteSweepIcon />} accent="primary.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.totalMaterials')} value={kpi?.total_materials ?? '—'} icon={<Inventory2Icon />} /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.totalStock')} value={kpi?.total_stock ?? '—'} icon={<BiotechIcon />} accent="primary.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.expired')} value={kpi?.expired ?? '—'} icon={<EventBusyIcon />} accent="error.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.expiring30')} value={kpi?.expiring_30 ?? '—'} icon={<WarningAmberIcon />} accent="warning.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.lowStock')} value={kpi?.low_stock ?? '—'} icon={<WarningAmberIcon />} accent="error.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.solutionsPending')} value={kpi?.solutions_pending ?? '—'} icon={<VerifiedIcon />} accent="warning.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.solutionsApproved')} value={kpi?.solutions_approved ?? '—'} icon={<VerifiedIcon />} accent="success.main" /></Grid>
+        <Grid item xs={6} sm={4} md={3}><KpiCard label={t('reagents.dashboard.disposalsPending')} value={kpi?.disposals_pending ?? '—'} icon={<DeleteSweepIcon />} accent="primary.main" /></Grid>
       </Grid>
 
       <Grid container spacing={3}>
@@ -532,26 +539,26 @@ const ReagentsPage = () => {
           <Paper sx={{ p: 2.5, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <WarningAmberIcon color="warning" />
-              <Typography variant="h6">التنبيهات</Typography>
+              <Typography variant="h6">{t('reagents.dashboard.alerts')}</Typography>
             </Stack>
             <Stack spacing={1}>
               {expiredLots.length ? (
-                <Alert severity="error">🔴 {expiredLots.length} كواشف منتهية الصلاحية — محظور استخدامها</Alert>
+                <Alert severity="error">🔴 {t('reagents.dashboard.expiredAlert', { count: expiredLots.length })}</Alert>
               ) : null}
               {expiring30.length ? (
-                <Alert severity="warning">🟠 {expiring30.length} كاشف ستنتهي خلال 30 يوم</Alert>
+                <Alert severity="warning">🟠 {t('reagents.dashboard.expiring30Alert', { count: expiring30.length })}</Alert>
               ) : null}
               {expiring90.length ? (
-                <Alert severity="info">🟡 {expiring90.length} كاشف ستنتهي خلال 90 يوم</Alert>
+                <Alert severity="info">🟡 {t('reagents.dashboard.expiring90Alert', { count: expiring90.length })}</Alert>
               ) : null}
               {dash?.low_stock_materials.length ? (
-                <Alert severity="warning">🟡 {dash.low_stock_materials.length} مواد تحت الحد الأدنى</Alert>
+                <Alert severity="warning">🟡 {t('reagents.dashboard.lowStockMaterialsAlert', { count: dash.low_stock_materials.length })}</Alert>
               ) : null}
               {kpi?.solutions_pending ? (
-                <Alert severity="info">محاليل بانتظار التحقق: {kpi.solutions_pending}</Alert>
+                <Alert severity="info">{t('reagents.dashboard.solutionsPendingAlert', { count: kpi.solutions_pending })}</Alert>
               ) : null}
               {!expiredLots.length && !expiring30.length && !dash?.low_stock_materials.length && !kpi?.solutions_pending ? (
-                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>✓ لا توجد تنبيهات حرجة</Typography>
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>✓ {t('reagents.dashboard.noCriticalAlerts')}</Typography>
               ) : null}
             </Stack>
           </Paper>
@@ -561,15 +568,15 @@ const ReagentsPage = () => {
           <Paper sx={{ p: 2.5, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <LocalDrinkIcon color="primary" />
-              <Typography variant="h6">أنواع المواد</Typography>
+              <Typography variant="h6">{t('reagents.dashboard.materialTypes')}</Typography>
             </Stack>
             <Grid container spacing={1}>
-              {MATERIAL_TYPES.map((t) => {
-                const count = dash?.type_counts?.[t.value] ?? 0;
+              {MATERIAL_TYPES.map((o) => {
+                const count = dash?.type_counts?.[o.value] ?? 0;
                 return (
-                  <Grid item xs={6} key={t.value}>
+                  <Grid item xs={6} key={o.value}>
                     <Stack direction="row" justifyContent="space-between" sx={{ py: 0.6, borderBottom: '1px dashed', borderColor: 'divider' }}>
-                      <Typography variant="body2">{t.label}</Typography>
+                      <Typography variant="body2">{t(o.labelKey)}</Typography>
                       <Chip size="small" label={count} color={count ? 'primary' : 'default'} variant="outlined" />
                     </Stack>
                   </Grid>
@@ -583,7 +590,7 @@ const ReagentsPage = () => {
           <Paper sx={{ p: 2.5, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <ScienceIcon color="primary" />
-              <Typography variant="h6">آخر الحركات</Typography>
+              <Typography variant="h6">{t('reagents.dashboard.recentMovements')}</Typography>
             </Stack>
             {dash?.recent_issues.length ? (
               <Stack spacing={1}>
@@ -595,7 +602,7 @@ const ReagentsPage = () => {
                         <Box>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{i.material_name}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {i.lot_number ? `تشغيلة ${i.lot_number}` : i.solution_name ?? ''}
+                            {i.lot_number ? t('reagents.dashboard.lotLabel', { lot: i.lot_number }) : i.solution_name ?? ''}
                             {i.sample_number ? ` · ${i.sample_number}` : ''}
                             {i.test_parameter ? ` · ${i.test_parameter}` : ''}
                           </Typography>
@@ -610,7 +617,7 @@ const ReagentsPage = () => {
                 ))}
               </Stack>
             ) : (
-              <Typography variant="body2" color="text.secondary">لا توجد حركات صرف بعد</Typography>
+              <Typography variant="body2" color="text.secondary">{t('reagents.dashboard.noMovements')}</Typography>
             )}
           </Paper>
         </Grid>
@@ -623,8 +630,8 @@ const ReagentsPage = () => {
       case 'catalog': return (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" spacing={1}>
-            <Typography variant="body2" color="text.secondary">كتالوج المواد المصنفة — كاشف / محلول / قياسية / أوساط / كيميائية / مستهلكات / معتمدة</Typography>
-            <AppButton variant="primary" onClick={() => openMatDialog()} startIcon={<AddIcon />}>➕ تسجيل مادة</AppButton>
+            <Typography variant="body2" color="text.secondary">{t('reagents.catalog.subtitle')}</Typography>
+            <AppButton variant="primary" onClick={() => openMatDialog()} startIcon={<AddIcon />}>{t('reagents.catalog.registerMaterial')}</AppButton>
           </Stack>
           <DataTable<MaterialCatalog>
             columns={matColumns}
@@ -636,7 +643,7 @@ const ReagentsPage = () => {
             pageSizeOptions={materials.pageSizeOptions}
             loading={materials.loading}
             error={materials.error}
-            title="كتالوج المواد"
+            title={t('reagents.catalog.title')}
             search={materials.search}
             searchInput={materials.searchInput}
             onSearchChange={materials.setSearchInput}
@@ -648,8 +655,8 @@ const ReagentsPage = () => {
             onRefresh={materials.refresh}
             filters={[
               {
-                key: 'material_type', label: 'النوع',
-                options: MATERIAL_TYPES, value: materials.rows.length ? '' : '',
+                key: 'material_type', label: t('reagents.filters.type'),
+                options: materialTypeOptions, value: materials.rows.length ? '' : '',
                 onChange: (v) => materials.setFilter('material_type', v),
               },
             ]}
@@ -659,8 +666,8 @@ const ReagentsPage = () => {
       case 'lots': return (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" spacing={1}>
-            <Typography variant="body2" color="text.secondary">تشغيلات المواد — كل تشغيلة بصلاحيتها وكميتها وحالتها. المنتهي محظور.</Typography>
-            <AppButton variant="primary" onClick={openLotDialog} startIcon={<AddIcon />}>➕ تسجيل تشغيلة</AppButton>
+            <Typography variant="body2" color="text.secondary">{t('reagents.lots.subtitle')}</Typography>
+            <AppButton variant="primary" onClick={openLotDialog} startIcon={<AddIcon />}>{t('reagents.lots.registerLot')}</AppButton>
           </Stack>
           <DataTable<MaterialLot>
             columns={lotColumns}
@@ -672,7 +679,7 @@ const ReagentsPage = () => {
             pageSizeOptions={lots.pageSizeOptions}
             loading={lots.loading}
             error={lots.error}
-            title="التشغيلات والمخزون"
+            title={t('reagents.lots.title')}
             search={lots.search}
             searchInput={lots.searchInput}
             onSearchChange={lots.setSearchInput}
@@ -683,10 +690,10 @@ const ReagentsPage = () => {
             onRowsPerPageChange={lots.setRowsPerPage}
             onRefresh={lots.refresh}
             filters={[
-              { key: 'status', label: 'الحالة', options: [
-                { value: 'VALID', label: 'صالح' }, { value: 'EXPIRING_SOON', label: 'ينتهي قريباً' },
-                { value: 'EXPIRED', label: 'منتهي' }, { value: 'BLOCKED', label: 'محظور' },
-                { value: 'DISPOSED', label: 'تم التخلص' },
+              { key: 'status', label: t('reagents.filters.status'), options: [
+                { value: 'VALID', label: t('reagents.lotStatus.valid') }, { value: 'EXPIRING_SOON', label: t('reagents.lotStatus.expiringSoon') },
+                { value: 'EXPIRED', label: t('reagents.lotStatus.expired') }, { value: 'BLOCKED', label: t('reagents.lotStatus.blocked') },
+                { value: 'DISPOSED', label: t('reagents.lotStatus.disposed') },
               ], value: '', onChange: (v) => lots.setFilter('status', v) },
             ]}
           />
@@ -695,8 +702,8 @@ const ReagentsPage = () => {
       case 'solutions': return (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" spacing={1}>
-            <Typography variant="body2" color="text.secondary">المحاليل — تحضير → بانتظار التحقق → اعتماد / رفض (حسب سياسة المختبر).</Typography>
-            <AppButton variant="primary" onClick={openSolDialog} startIcon={<AddIcon />}>🧴 تحضير محلول</AppButton>
+            <Typography variant="body2" color="text.secondary">{t('reagents.solutionsPage.subtitle')}</Typography>
+            <AppButton variant="primary" onClick={openSolDialog} startIcon={<AddIcon />}>{t('reagents.solutionsPage.prepare')}</AppButton>
           </Stack>
           <DataTable<Solution>
             columns={solColumns}
@@ -708,7 +715,7 @@ const ReagentsPage = () => {
             pageSizeOptions={solutions.pageSizeOptions}
             loading={solutions.loading}
             error={solutions.error}
-            title="المحاليل"
+            title={t('reagents.solutionsPage.title')}
             search={solutions.search}
             searchInput={solutions.searchInput}
             onSearchChange={solutions.setSearchInput}
@@ -719,10 +726,10 @@ const ReagentsPage = () => {
             onRowsPerPageChange={solutions.setRowsPerPage}
             onRefresh={solutions.refresh}
             filters={[
-              { key: 'status', label: 'الحالة', options: [
-                { value: 'PREPARED', label: 'مُحضَّر' }, { value: 'PENDING_VERIFICATION', label: 'بانتظار التحقق' },
-                { value: 'APPROVED', label: 'معتمد' }, { value: 'REJECTED', label: 'مرفوض' },
-                { value: 'EXPIRED', label: 'منتهي' },
+              { key: 'status', label: t('reagents.filters.status'), options: [
+                { value: 'PREPARED', label: t('reagents.solutionStatus.prepared') }, { value: 'PENDING_VERIFICATION', label: t('reagents.solutionStatus.pendingVerification') },
+                { value: 'APPROVED', label: t('reagents.solutionStatus.approved') }, { value: 'REJECTED', label: t('reagents.solutionStatus.rejected') },
+                { value: 'EXPIRED', label: t('reagents.solutionStatus.expired') },
               ], value: '', onChange: (v) => solutions.setFilter('status', v) },
             ]}
           />
@@ -731,8 +738,8 @@ const ReagentsPage = () => {
       case 'issues': return (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" spacing={1}>
-            <Typography variant="body2" color="text.secondary">صرف الكواشف للمحلل — يُخصم تلقائياً من المخزون ويرتبط بالعينة والفحص للتتبع.</Typography>
-            <AppButton variant="primary" onClick={openIssueDialog} startIcon={<AddIcon />}>📤 صرف مادة</AppButton>
+            <Typography variant="body2" color="text.secondary">{t('reagents.issuesPage.subtitle')}</Typography>
+            <AppButton variant="primary" onClick={openIssueDialog} startIcon={<AddIcon />}>{t('reagents.issuesPage.issueMaterial')}</AppButton>
           </Stack>
           <DataTable<MaterialIssue>
             columns={issueColumns}
@@ -744,7 +751,7 @@ const ReagentsPage = () => {
             pageSizeOptions={issues.pageSizeOptions}
             loading={issues.loading}
             error={issues.error}
-            title="الصرف والاستهلاك"
+            title={t('reagents.issuesPage.title')}
             search={issues.search}
             searchInput={issues.searchInput}
             onSearchChange={issues.setSearchInput}
@@ -760,8 +767,8 @@ const ReagentsPage = () => {
       case 'disposal': return (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" spacing={1}>
-            <Typography variant="body2" color="text.secondary">التخلص من المواد — لا حذف مباشر: طلب → اعتماد → تخلص، مع حفظ السجل كاملاً.</Typography>
-            <AppButton variant="primary" onClick={openDispDialog} startIcon={<AddIcon />}>🗑 طلب تخلص</AppButton>
+            <Typography variant="body2" color="text.secondary">{t('reagents.disposalPage.subtitle')}</Typography>
+            <AppButton variant="primary" onClick={openDispDialog} startIcon={<AddIcon />}>{t('reagents.disposalPage.requestDisposal')}</AppButton>
           </Stack>
           <DataTable<DisposalRequest>
             columns={dispColumns}
@@ -773,7 +780,7 @@ const ReagentsPage = () => {
             pageSizeOptions={disposals.pageSizeOptions}
             loading={disposals.loading}
             error={disposals.error}
-            title="طلبات التخلص"
+            title={t('reagents.disposalPage.title')}
             search={disposals.search}
             searchInput={disposals.searchInput}
             onSearchChange={disposals.setSearchInput}
@@ -793,17 +800,17 @@ const ReagentsPage = () => {
   return (
     <Box>
       <DashboardHero
-        eyebrow="إدارة المواد والكواشف"
-        title="إدارة الكوافش والمحاليل"
-        subtitle="Reagents & Solutions Management — ربط مباشر بالعينة والاختبار والمحلل والطريقة والجهاز"
+        eyebrow={t('reagents.page.eyebrow')}
+        title={t('reagents.page.title')}
+        subtitle={t('reagents.page.subtitle')}
         gradient="emerald"
-        avatarLabel="إ"
-        action={<AppButton variant="secondary" onClick={refreshAll}>🔄 تحديث</AppButton>}
+        avatarLabel={t('reagents.page.avatarLabel')}
+        action={<AppButton variant="secondary" onClick={refreshAll}>{t('reagents.page.refresh')}</AppButton>}
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('reagents.page.live')}
           </Box>,
         ]}
       />
@@ -815,14 +822,14 @@ const ReagentsPage = () => {
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام المواد"
+            label={t('reagents.page.sectionsLabel')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
       <Box component="section" ref={register('dashboard')} data-section="dashboard" sx={{ scrollMarginTop: '80px' }}>
       <PageTabs
-        tabs={TABS.map((t) => ({ label: t.label }))}
-        value={TABS.findIndex((t) => t.key === tab)}
+        tabs={TABS.map((tabItem) => ({ label: t(tabItem.label) }))}
+        value={TABS.findIndex((tabItem) => tabItem.key === tab)}
         onChange={(idx) => setTab(TABS[idx]?.key ?? 'dashboard')}
       />
 
@@ -835,152 +842,152 @@ const ReagentsPage = () => {
       {/* نافذة مادة */}
       <FormDialog
         open={matDialog}
-        title={matForm.id ? 'تعديل مادة' : 'تسجيل مادة جديدة'}
-        subtitle="كتالوج المواد — البيانات الأساسية للمادة"
+        title={matForm.id ? t('reagents.materialDialog.editTitle') : t('reagents.materialDialog.addTitle')}
+        subtitle={t('reagents.materialDialog.subtitle')}
         icon={<Inventory2Icon />}
         onClose={() => setMatDialog(false)}
         onSubmit={submitMaterial}
         loading={busy}
         submitDisabled={!matForm.name_ar}
       >
-        <FormTextField label="اسم المادة (عربي) *" value={matForm.name_ar} onChange={(e) => setMatForm((p) => ({ ...p, name_ar: e.target.value }))} />
-        <FormTextField label="الاسم (إنجليزي)" value={matForm.name_en} onChange={(e) => setMatForm((p) => ({ ...p, name_en: e.target.value }))} />
-        <FormSelect label="النوع" value={matForm.material_type} onChange={(v) => setMatForm((p) => ({ ...p, material_type: v }))} options={MATERIAL_TYPES} />
-        <FormSelect label="القسم" value={matForm.bench} onChange={(v) => setMatForm((p) => ({ ...p, bench: v }))} options={BENCHES} />
-        <FormTextField label="الشركة المصنعة" value={matForm.manufacturer} onChange={(e) => setMatForm((p) => ({ ...p, manufacturer: e.target.value }))} />
+        <FormTextField label={t('reagents.materialDialog.fields.nameAr')} value={matForm.name_ar} onChange={(e) => setMatForm((p) => ({ ...p, name_ar: e.target.value }))} />
+        <FormTextField label={t('reagents.materialDialog.fields.nameEn')} value={matForm.name_en} onChange={(e) => setMatForm((p) => ({ ...p, name_en: e.target.value }))} />
+        <FormSelect label={t('reagents.materialDialog.fields.type')} value={matForm.material_type} onChange={(v) => setMatForm((p) => ({ ...p, material_type: v }))} options={materialTypeOptions} />
+        <FormSelect label={t('reagents.materialDialog.fields.bench')} value={matForm.bench} onChange={(v) => setMatForm((p) => ({ ...p, bench: v }))} options={benchOptions} />
+        <FormTextField label={t('reagents.materialDialog.fields.manufacturer')} value={matForm.manufacturer} onChange={(e) => setMatForm((p) => ({ ...p, manufacturer: e.target.value }))} />
         <FormTextField label="Catalog Number" value={matForm.catalog_number} onChange={(e) => setMatForm((p) => ({ ...p, catalog_number: e.target.value }))} />
         <FormTextField label="CAS Number" value={matForm.cas_number} onChange={(e) => setMatForm((p) => ({ ...p, cas_number: e.target.value }))} />
-        <FormSelect label="الدرجة" value={matForm.grade} onChange={(v) => setMatForm((p) => ({ ...p, grade: v }))} options={GRADES} />
-        <FormTextField label="وحدة القياس" value={matForm.unit} onChange={(e) => setMatForm((p) => ({ ...p, unit: e.target.value }))} />
+        <FormSelect label={t('reagents.materialDialog.fields.grade')} value={matForm.grade} onChange={(v) => setMatForm((p) => ({ ...p, grade: v }))} options={gradeOptions} />
+        <FormTextField label={t('reagents.materialDialog.fields.unit')} value={matForm.unit} onChange={(e) => setMatForm((p) => ({ ...p, unit: e.target.value }))} />
         <Grid container spacing={2}>
-          <Grid item xs={4}><FormTextField label="الحد الأدنى" type="number" value={matForm.min_stock} onChange={(e) => setMatForm((p) => ({ ...p, min_stock: e.target.value }))} /></Grid>
-          <Grid item xs={4}><FormTextField label="إعادة الطلب" type="number" value={matForm.reorder_level} onChange={(e) => setMatForm((p) => ({ ...p, reorder_level: e.target.value }))} /></Grid>
-          <Grid item xs={4}><FormTextField label="الحد الأقصى" type="number" value={matForm.max_stock} onChange={(e) => setMatForm((p) => ({ ...p, max_stock: e.target.value }))} /></Grid>
+          <Grid item xs={4}><FormTextField label={t('reagents.materialDialog.fields.minStock')} type="number" value={matForm.min_stock} onChange={(e) => setMatForm((p) => ({ ...p, min_stock: e.target.value }))} /></Grid>
+          <Grid item xs={4}><FormTextField label={t('reagents.materialDialog.fields.reorderLevel')} type="number" value={matForm.reorder_level} onChange={(e) => setMatForm((p) => ({ ...p, reorder_level: e.target.value }))} /></Grid>
+          <Grid item xs={4}><FormTextField label={t('reagents.materialDialog.fields.maxStock')} type="number" value={matForm.max_stock} onChange={(e) => setMatForm((p) => ({ ...p, max_stock: e.target.value }))} /></Grid>
         </Grid>
-        <FormSelect label="تصنيف الخطورة" value={matForm.hazard_class} onChange={(v) => setMatForm((p) => ({ ...p, hazard_class: v }))} options={HAZARDS} />
-        <FormTextField label="ملاحظات" multiline minRows={2} value={matForm.notes} onChange={(e) => setMatForm((p) => ({ ...p, notes: e.target.value }))} />
+        <FormSelect label={t('reagents.materialDialog.fields.hazardClass')} value={matForm.hazard_class} onChange={(v) => setMatForm((p) => ({ ...p, hazard_class: v }))} options={hazardOptions} />
+        <FormTextField label={t('reagents.materialDialog.fields.notes')} multiline minRows={2} value={matForm.notes} onChange={(e) => setMatForm((p) => ({ ...p, notes: e.target.value }))} />
       </FormDialog>
 
       {/* نافذة تشغيلة */}
       <FormDialog
         open={lotDialog}
-        title="تسجيل تشغيلة جديدة"
-        subtitle="كل عبوة/شحنة — صلاحيتها وكميتها وحالتها"
+        title={t('reagents.lotDialog.title')}
+        subtitle={t('reagents.lotDialog.subtitle')}
         icon={<Inventory2Icon />}
         onClose={() => setLotDialog(false)}
         onSubmit={submitLot}
         loading={busy}
         submitDisabled={!lotForm.material || !lotForm.lot_number}
       >
-        <FormSelect label="المادة *" value={lotForm.material} onChange={(v) => setLotForm((p) => ({ ...p, material: v }))} options={materials.rows.map((m) => ({ value: m.id, label: `${m.name_ar} (${m.material_type_label})` }))} placeholder="اختر المادة" />
-        <FormTextField label="رقم التشغيلة *" value={lotForm.lot_number} onChange={(e) => setLotForm((p) => ({ ...p, lot_number: e.target.value }))} />
-        <FormTextField label="رقم الدفعة" value={lotForm.batch_number} onChange={(e) => setLotForm((p) => ({ ...p, batch_number: e.target.value }))} />
+        <FormSelect label={t('reagents.lotDialog.fields.material')} value={lotForm.material} onChange={(v) => setLotForm((p) => ({ ...p, material: v }))} options={materials.rows.map((m) => ({ value: m.id, label: `${m.name_ar} (${m.material_type_label})` }))} placeholder={t('reagents.lotDialog.fields.materialPlaceholder')} />
+        <FormTextField label={t('reagents.lotDialog.fields.lotNumber')} value={lotForm.lot_number} onChange={(e) => setLotForm((p) => ({ ...p, lot_number: e.target.value }))} />
+        <FormTextField label={t('reagents.lotDialog.fields.batchNumber')} value={lotForm.batch_number} onChange={(e) => setLotForm((p) => ({ ...p, batch_number: e.target.value }))} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="تاريخ التصنيع" type="date" value={lotForm.manufacturing_date} onChange={(e) => setLotForm((p) => ({ ...p, manufacturing_date: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="تاريخ انتهاء الصلاحية" type="date" value={lotForm.expiry_date} onChange={(e) => setLotForm((p) => ({ ...p, expiry_date: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.manufacturingDate')} type="date" value={lotForm.manufacturing_date} onChange={(e) => setLotForm((p) => ({ ...p, manufacturing_date: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.expiryDate')} type="date" value={lotForm.expiry_date} onChange={(e) => setLotForm((p) => ({ ...p, expiry_date: e.target.value }))} /></Grid>
         </Grid>
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="الكمية" type="number" value={lotForm.quantity} onChange={(e) => setLotForm((p) => ({ ...p, quantity: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="الوحدة" value={lotForm.unit} onChange={(e) => setLotForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.quantity')} type="number" value={lotForm.quantity} onChange={(e) => setLotForm((p) => ({ ...p, quantity: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.unit')} value={lotForm.unit} onChange={(e) => setLotForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
         </Grid>
-        <FormSelect label="موقع التخزين" value={lotForm.storage} onChange={(v) => setLotForm((p) => ({ ...p, storage: v }))} options={storage.map((s) => ({ value: s.id, label: s.name }))} placeholder="اختر الموقع" />
+        <FormSelect label={t('reagents.lotDialog.fields.storage')} value={lotForm.storage} onChange={(v) => setLotForm((p) => ({ ...p, storage: v }))} options={storage.map((s) => ({ value: s.id, label: s.name }))} placeholder={t('reagents.lotDialog.fields.storagePlaceholder')} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="المورد" value={lotForm.supplier} onChange={(e) => setLotForm((p) => ({ ...p, supplier: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="مرجع شهادة التحليل" value={lotForm.certificate_ref} onChange={(e) => setLotForm((p) => ({ ...p, certificate_ref: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.supplier')} value={lotForm.supplier} onChange={(e) => setLotForm((p) => ({ ...p, supplier: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.lotDialog.fields.certificateRef')} value={lotForm.certificate_ref} onChange={(e) => setLotForm((p) => ({ ...p, certificate_ref: e.target.value }))} /></Grid>
         </Grid>
-        <FormTextField label="تاريخ الاستلام" type="date" value={lotForm.received_date} onChange={(e) => setLotForm((p) => ({ ...p, received_date: e.target.value }))} />
-        <FormTextField label="ملاحظات" multiline minRows={2} value={lotForm.notes} onChange={(e) => setLotForm((p) => ({ ...p, notes: e.target.value }))} />
+        <FormTextField label={t('reagents.lotDialog.fields.receivedDate')} type="date" value={lotForm.received_date} onChange={(e) => setLotForm((p) => ({ ...p, received_date: e.target.value }))} />
+        <FormTextField label={t('reagents.lotDialog.fields.notes')} multiline minRows={2} value={lotForm.notes} onChange={(e) => setLotForm((p) => ({ ...p, notes: e.target.value }))} />
       </FormDialog>
 
       {/* نافذة محلول */}
       <FormDialog
         open={solDialog}
-        title="تحضير محلول"
-        subtitle="محلول → بانتظار التحقق → اعتماد/رفض"
+        title={t('reagents.solutionDialog.title')}
+        subtitle={t('reagents.solutionDialog.subtitle')}
         icon={<LocalDrinkIcon />}
         onClose={() => setSolDialog(false)}
         onSubmit={submitSolution}
         loading={busy}
         submitDisabled={!solForm.name || !solForm.preparation_date}
       >
-        <FormTextField label="اسم المحلول *" value={solForm.name} onChange={(e) => setSolForm((p) => ({ ...p, name: e.target.value }))} />
-        <FormSelect label="المادة الأساسية" value={solForm.material} onChange={(v) => setSolForm((p) => ({ ...p, material: v }))} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder="اختر المادة" />
+        <FormTextField label={t('reagents.solutionDialog.fields.name')} value={solForm.name} onChange={(e) => setSolForm((p) => ({ ...p, name: e.target.value }))} />
+        <FormSelect label={t('reagents.solutionDialog.fields.baseMaterial')} value={solForm.material} onChange={(v) => setSolForm((p) => ({ ...p, material: v }))} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder={t('reagents.solutionDialog.fields.selectMaterial')} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="التركيز" value={solForm.concentration} onChange={(e) => setSolForm((p) => ({ ...p, concentration: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="المذيب" value={solForm.solvent} onChange={(e) => setSolForm((p) => ({ ...p, solvent: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.concentration')} value={solForm.concentration} onChange={(e) => setSolForm((p) => ({ ...p, concentration: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.solvent')} value={solForm.solvent} onChange={(e) => setSolForm((p) => ({ ...p, solvent: e.target.value }))} /></Grid>
         </Grid>
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="الحجم النهائي" type="number" value={solForm.final_volume} onChange={(e) => setSolForm((p) => ({ ...p, final_volume: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="وحدة الحجم" value={solForm.volume_unit} onChange={(e) => setSolForm((p) => ({ ...p, volume_unit: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.finalVolume')} type="number" value={solForm.final_volume} onChange={(e) => setSolForm((p) => ({ ...p, final_volume: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.volumeUnit')} value={solForm.volume_unit} onChange={(e) => setSolForm((p) => ({ ...p, volume_unit: e.target.value }))} /></Grid>
         </Grid>
-        <FormSelect label="المادة المصدرية (تشغيلة)" value={solForm.source_lot} onChange={(v) => setSolForm((p) => ({ ...p, source_lot: v }))} options={lots.rows.filter((l) => l.status === 'VALID' || l.status === 'EXPIRING_SOON').map((l) => ({ value: l.id, label: `${l.material_name} — ${l.lot_number}` }))} placeholder="اختر التشغيلة" />
+        <FormSelect label={t('reagents.solutionDialog.fields.sourceLot')} value={solForm.source_lot} onChange={(v) => setSolForm((p) => ({ ...p, source_lot: v }))} options={lots.rows.filter((l) => l.status === 'VALID' || l.status === 'EXPIRING_SOON').map((l) => ({ value: l.id, label: `${l.material_name} — ${l.lot_number}` }))} placeholder={t('reagents.solutionDialog.fields.selectLot')} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="رقم الدفعة" value={solForm.batch_number} onChange={(e) => setSolForm((p) => ({ ...p, batch_number: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="موقع التخزين" value={solForm.storage} onChange={(e) => setSolForm((p) => ({ ...p, storage: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.batchNumber')} value={solForm.batch_number} onChange={(e) => setSolForm((p) => ({ ...p, batch_number: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.storageLocation')} value={solForm.storage} onChange={(e) => setSolForm((p) => ({ ...p, storage: e.target.value }))} /></Grid>
         </Grid>
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="تاريخ التحضير *" type="date" value={solForm.preparation_date} onChange={(e) => setSolForm((p) => ({ ...p, preparation_date: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="تاريخ انتهاء الصلاحية" type="date" value={solForm.expiry_date} onChange={(e) => setSolForm((p) => ({ ...p, expiry_date: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.preparationDate')} type="date" value={solForm.preparation_date} onChange={(e) => setSolForm((p) => ({ ...p, preparation_date: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.solutionDialog.fields.expiryDate')} type="date" value={solForm.expiry_date} onChange={(e) => setSolForm((p) => ({ ...p, expiry_date: e.target.value }))} /></Grid>
         </Grid>
-        <FormTextField label="ملاحظات" multiline minRows={2} value={solForm.notes} onChange={(e) => setSolForm((p) => ({ ...p, notes: e.target.value }))} />
+        <FormTextField label={t('reagents.solutionDialog.fields.notes')} multiline minRows={2} value={solForm.notes} onChange={(e) => setSolForm((p) => ({ ...p, notes: e.target.value }))} />
       </FormDialog>
 
       {/* نافذة صرف */}
       <FormDialog
         open={issueDialog}
-        title="صرف مادة للمحلل"
-        subtitle="يُخصم من المخزون ويرتبط بالعينة/الفحص للتتبع"
+        title={t('reagents.issueDialog.title')}
+        subtitle={t('reagents.issueDialog.subtitle')}
         icon={<ScienceIcon />}
         onClose={() => setIssueDialog(false)}
         onSubmit={submitIssue}
         loading={busy}
         submitDisabled={!issueForm.material || !issueForm.quantity_used}
       >
-        <FormSelect label="المادة *" value={issueForm.material} onChange={(v) => {
+        <FormSelect label={t('reagents.issueDialog.fields.material')} value={issueForm.material} onChange={(v) => {
           setIssueForm((p) => ({ ...p, material: v }));
           const firstLot = lots.rows.find((l) => l.material === v && (l.status === 'VALID' || l.status === 'EXPIRING_SOON'));
           if (firstLot) setIssueForm((p) => ({ ...p, lot: firstLot.id, unit: firstLot.unit }));
-        }} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder="اختر المادة" />
-        <FormSelect label="التشغيلة" value={issueForm.lot} onChange={(v) => setIssueForm((p) => ({ ...p, lot: v }))} options={lots.rows.filter((l) => l.status === 'VALID' || l.status === 'EXPIRING_SOON').map((l) => ({ value: l.id, label: `${l.lot_number} (${l.quantity} ${l.unit})` }))} placeholder="اختر تشغيلة صالحة" />
+        }} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder={t('reagents.issueDialog.fields.selectMaterial')} />
+        <FormSelect label={t('reagents.issueDialog.fields.lot')} value={issueForm.lot} onChange={(v) => setIssueForm((p) => ({ ...p, lot: v }))} options={lots.rows.filter((l) => l.status === 'VALID' || l.status === 'EXPIRING_SOON').map((l) => ({ value: l.id, label: `${l.lot_number} (${l.quantity} ${l.unit})` }))} placeholder={t('reagents.issueDialog.fields.selectValidLot')} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="الكمية المستخدمة *" type="number" value={issueForm.quantity_used} onChange={(e) => setIssueForm((p) => ({ ...p, quantity_used: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="الوحدة" value={issueForm.unit} onChange={(e) => setIssueForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.issueDialog.fields.quantityUsed')} type="number" value={issueForm.quantity_used} onChange={(e) => setIssueForm((p) => ({ ...p, quantity_used: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.issueDialog.fields.unit')} value={issueForm.unit} onChange={(e) => setIssueForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
         </Grid>
-        <FormTextField label="الغرض" value={issueForm.purpose} onChange={(e) => setIssueForm((p) => ({ ...p, purpose: e.target.value }))} />
-        <FormSelect label="نوع الصرف" value={issueForm.issue_type} onChange={(v) => setIssueForm((p) => ({ ...p, issue_type: v }))} options={[
-          { value: 'ISSUE', label: 'صرف' }, { value: 'CONSUMPTION', label: 'استهلاك' }, { value: 'RETURN', label: 'إرجاع' },
+        <FormTextField label={t('reagents.issueDialog.fields.purpose')} value={issueForm.purpose} onChange={(e) => setIssueForm((p) => ({ ...p, purpose: e.target.value }))} />
+        <FormSelect label={t('reagents.issueDialog.fields.issueType')} value={issueForm.issue_type} onChange={(v) => setIssueForm((p) => ({ ...p, issue_type: v }))} options={[
+          { value: 'ISSUE', label: t('reagents.issueDialog.issueTypes.issue') }, { value: 'CONSUMPTION', label: t('reagents.issueDialog.issueTypes.consumption') }, { value: 'RETURN', label: t('reagents.issueDialog.issueTypes.return') },
         ]} />
-        <FormTextField label="ملاحظات" multiline minRows={2} value={issueForm.notes} onChange={(e) => setIssueForm((p) => ({ ...p, notes: e.target.value }))} />
+        <FormTextField label={t('reagents.issueDialog.fields.notes')} multiline minRows={2} value={issueForm.notes} onChange={(e) => setIssueForm((p) => ({ ...p, notes: e.target.value }))} />
       </FormDialog>
 
       {/* نافذة تخلص */}
       <FormDialog
         open={dispDialog}
-        title="طلب تخلص من مادة"
-        subtitle="طلب → اعتماد → تخلص — مع حفظ السجل"
+        title={t('reagents.disposalDialog.title')}
+        subtitle={t('reagents.disposalDialog.subtitle')}
         icon={<DeleteSweepIcon />}
         onClose={() => setDispDialog(false)}
         onSubmit={submitDisposal}
         loading={busy}
         submitDisabled={!dispForm.material || !dispForm.quantity}
       >
-        <FormSelect label="المادة *" value={dispForm.material} onChange={(v) => {
+        <FormSelect label={t('reagents.disposalDialog.fields.material')} value={dispForm.material} onChange={(v) => {
           setDispForm((p) => ({ ...p, material: v }));
           const firstLot = lots.rows.find((l) => l.material === v);
           if (firstLot) setDispForm((p) => ({ ...p, lot: firstLot.id, unit: firstLot.unit, quantity: String(firstLot.quantity) }));
-        }} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder="اختر المادة" />
-        <FormSelect label="التشغيلة" value={dispForm.lot} onChange={(v) => setDispForm((p) => ({ ...p, lot: v }))} options={lots.rows.map((l) => ({ value: l.id, label: `${l.lot_number} — ${l.status_label} (${l.quantity} ${l.unit})` }))} placeholder="اختر التشغيلة" />
+        }} options={materials.rows.map((m) => ({ value: m.id, label: m.name_ar }))} placeholder={t('reagents.disposalDialog.fields.selectMaterial')} />
+        <FormSelect label={t('reagents.disposalDialog.fields.lot')} value={dispForm.lot} onChange={(v) => setDispForm((p) => ({ ...p, lot: v }))} options={lots.rows.map((l) => ({ value: l.id, label: `${l.lot_number} — ${l.status_label} (${l.quantity} ${l.unit})` }))} placeholder={t('reagents.disposalDialog.fields.selectLot')} />
         <Grid container spacing={2}>
-          <Grid item xs={6}><FormTextField label="الكمية *" type="number" value={dispForm.quantity} onChange={(e) => setDispForm((p) => ({ ...p, quantity: e.target.value }))} /></Grid>
-          <Grid item xs={6}><FormTextField label="الوحدة" value={dispForm.unit} onChange={(e) => setDispForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.disposalDialog.fields.quantity')} type="number" value={dispForm.quantity} onChange={(e) => setDispForm((p) => ({ ...p, quantity: e.target.value }))} /></Grid>
+          <Grid item xs={6}><FormTextField label={t('reagents.disposalDialog.fields.unit')} value={dispForm.unit} onChange={(e) => setDispForm((p) => ({ ...p, unit: e.target.value }))} /></Grid>
         </Grid>
-        <FormSelect label="السبب" value={dispForm.reason} onChange={(v) => setDispForm((p) => ({ ...p, reason: v }))} options={[
-          { value: 'انتهاء الصلاحية', label: 'انتهاء الصلاحية' },
-          { value: 'تلف', label: 'تلف' },
-          { value: 'مستخدم جزئياً', label: 'مستخدم جزئياً' },
-          { value: 'تلوث', label: 'تلوث' },
-        ]} placeholder="اختر السبب" />
-        <FormTextField label="التفاصيل" multiline minRows={2} value={dispForm.detail} onChange={(e) => setDispForm((p) => ({ ...p, detail: e.target.value }))} />
+        <FormSelect label={t('reagents.disposalDialog.fields.reason')} value={dispForm.reason} onChange={(v) => setDispForm((p) => ({ ...p, reason: v }))} options={[
+          { value: 'انتهاء الصلاحية', label: t('reagents.disposalDialog.reasons.expired') },
+          { value: 'تلف', label: t('reagents.disposalDialog.reasons.damaged') },
+          { value: 'مستخدم جزئياً', label: t('reagents.disposalDialog.reasons.partiallyUsed') },
+          { value: 'تلوث', label: t('reagents.disposalDialog.reasons.contaminated') },
+        ]} placeholder={t('reagents.disposalDialog.fields.selectReason')} />
+        <FormTextField label={t('reagents.disposalDialog.fields.detail')} multiline minRows={2} value={dispForm.detail} onChange={(e) => setDispForm((p) => ({ ...p, detail: e.target.value }))} />
       </FormDialog>
     </Box>
   );

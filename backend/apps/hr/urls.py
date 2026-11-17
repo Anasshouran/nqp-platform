@@ -27,6 +27,7 @@ from .views import (
     HrEstablishmentViewSet,
     HrLinkableUserViewSet,
     HrPingView,
+    OrgAssignmentByStateReportView,
     PostingRequestViewSet,
 )
 
@@ -50,5 +51,6 @@ router.register('performance-reviews', PerformanceReviewViewSet, basename='hr-pe
 urlpatterns = [
     path('ping/', HrPingView.as_view(), name='ping'),
     path('dashboard/', HrDashboardView.as_view(), name='dashboard'),
+    path('reports/assignments-by-state/', OrgAssignmentByStateReportView.as_view(), name='hr-assignments-by-state'),
     path('', include(router.urls)),
 ]

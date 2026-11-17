@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -15,6 +16,7 @@ import { getSectorDashboard } from '../../../../api/endpoints/reports';
 import type { SectorDashboard } from '../../../../api/endpoints/reports';
 
 const RedSeaStaffPage = () => {
+  const { t } = useTranslation();
   const [data, setData] = useState<SectorDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,17 +34,17 @@ const RedSeaStaffPage = () => {
   const staff = data?.staff ?? [];
 
   const kpis = [
-    { label: 'إجمالي الموظفين', value: data?.kpis?.staff ?? 0, icon: <GroupsIcon />, color: 'primary.main' as const },
-    { label: 'الإدارات', value: departments.length, icon: <AccountTreeIcon />, color: 'info.main' as const },
-    { label: 'نقاط الدخول', value: data?.kpis?.ports ?? 0, icon: <BadgeIcon />, color: 'success.main' as const },
+    { label: t('redsea.portal.modules.staff.kpi.staff.label'), value: data?.kpis?.staff ?? 0, icon: <GroupsIcon />, color: 'primary.main' as const },
+    { label: t('redsea.portal.modules.staff.kpi.departments.label'), value: departments.length, icon: <AccountTreeIcon />, color: 'info.main' as const },
+    { label: t('redsea.portal.modules.staff.kpi.ports.label'), value: data?.kpis?.ports ?? 0, icon: <BadgeIcon />, color: 'success.main' as const },
   ];
 
   return (
     <Box>
       <PageHeader
-        eyebrow="إدارة القطاع"
-        title="الهيكل الإداري والموظفون — قطاع البحر الأحمر"
-        subtitle="الإدارات وأدائها وموظفو القطاع ضمن نطاق القطاع."
+        eyebrow={t('redsea.portal.modules.staff.eyebrow')}
+        title={t('redsea.portal.modules.staff.title')}
+        subtitle={t('redsea.portal.modules.staff.subtitle')}
       />
 
       <Grid container spacing={2.5} sx={{ mb: 4 }}>
@@ -69,11 +71,11 @@ const RedSeaStaffPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} lg={5}>
-          <SectionCard title="أداء الإدارات" subtitle="درجات الأداء حسب الإدارة">
+          <SectionCard title={t('redsea.portal.modules.staff.departmentsSection.title')} subtitle={t('redsea.portal.modules.staff.departmentsSection.subtitle')}>
             {loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : departments.length === 0 ? (
-              <EmptyState title="لا توجد إدارات" description="لم تُسجّل إدارات ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.staff.departmentsEmpty.title')} description={t('redsea.portal.modules.staff.departmentsEmpty.description')} />
             ) : (
               <Stack spacing={2}>
                 {departments.map((d) => (
@@ -84,7 +86,7 @@ const RedSeaStaffPage = () => {
                         {d.name}
                       </Typography>
                       <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Typography variant="caption" color="text.secondary">{d.staff} موظف</Typography>
+                        <Typography variant="caption" color="text.secondary">{t('redsea.portal.modules.staff.staffCount', { count: d.staff })}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>{d.score}</Typography>
                       </Stack>
                     </Stack>
@@ -98,11 +100,11 @@ const RedSeaStaffPage = () => {
           </SectionCard>
         </Grid>
         <Grid item xs={12} lg={7}>
-          <SectionCard title="الموظفون" subtitle="موظفو القطاع حسب الإدارة والمحطة">
+          <SectionCard title={t('redsea.portal.modules.staff.staffSection.title')} subtitle={t('redsea.portal.modules.staff.staffSection.subtitle')}>
             {loading ? (
               <Stack spacing={1}><Skeleton height={50} /><Skeleton height={50} /></Stack>
             ) : staff.length === 0 ? (
-              <EmptyState title="لا يوجد موظفون" description="لم يُسجّل موظفون ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.staff.staffEmpty.title')} description={t('redsea.portal.modules.staff.staffEmpty.description')} />
             ) : (
               <Grid container spacing={2}>
                 {staff.slice(0, 24).map((s) => (

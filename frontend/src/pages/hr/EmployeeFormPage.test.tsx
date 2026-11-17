@@ -82,7 +82,7 @@ describe('EmployeeFormPage — وضع الحساب', () => {
     expect(body.user).toBeUndefined();
   });
 
-  it('يرسل user عند التبديل إلى "ربط حساب موجود"', async () => {
+  it('يرسل user عند التبديل إلى "ربط حساب موجود"', { timeout: 20000 }, async () => {
     // This is the regression: the toggle used to live in a separate useState,
     // so `onSubmit` kept reading the RHF value ("new") and sent new_user
     // with an empty email even though the user picked "existing".

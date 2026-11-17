@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { SectorPageShell, SectorHomeLink, useSectorSite, usePageTitle } from './SectorCmsShared';
 import { EmptyState } from '../../components/common';
 import { getFaq } from '../../api/endpoints/public';
@@ -13,10 +14,11 @@ import type { FaqItem } from '../../api/endpoints/public';
 
 const SectorCmsFaq = () => {
   const { sector } = useSectorSite();
+  const { t } = useTranslation();
   const [items, setItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  usePageTitle('الأسئلة الشائعة');
+  usePageTitle(t('sector-cms.faq.pageTitle'));
 
   useEffect(() => {
     getFaq(sector?.id)
@@ -28,9 +30,9 @@ const SectorCmsFaq = () => {
   return (
     <SectorPageShell>
       <SectorHomeLink />
-      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>الأسئلة الشائعة</Typography>
+      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{t('sector-cms.faq.pageTitle')}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        إجابات لأكثر الأسئلة تكراراً حول خدمات القطاع والمنصة.
+        {t('sector-cms.faq.subtitle')}
       </Typography>
 
       {loading ? (
@@ -40,7 +42,7 @@ const SectorCmsFaq = () => {
           ))}
         </Box>
       ) : items.length === 0 ? (
-        <EmptyState title="لا توجد أسئلة شائعة" description="لا توجد أسئلة شائعة منشورة حالياً." />
+        <EmptyState title={t('sector-cms.faq.emptyTitle')} description={t('sector-cms.faq.emptyDescription')} />
       ) : (
         <Box>
           {items.map((item) => (

@@ -17,12 +17,16 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.models import RoleAssignment
+from apps.borders_health.models import QuarantineCase
 from core.filters import ExactFilterBackend
 from core.permissions import PermissionAction
 from core.utils.response import success_response
+from core.utils.scoping import resolve_authorized_entry_points, has_global_scope
 
 from .models import (
     BorderCertificate,
@@ -897,3 +901,79 @@ class BordersHealthDashboardViewSet(BordersHealthScopedMixin, viewsets.ViewSet):
             .order_by('stat_date')
         )
         return Response(success_response({'results': list(rows), 'count': len(rows)}))
+
+
+class QuarantineCaseByStateReportView(APIView):
+    """تقارير حالات الحجر الصحي حسب الولاية (STATE-only derivation).
+
+    السلسلة: QuarantineCase → BorderCrossing → EntryPoint → State →
+    StateNodeAssignment → ReportingNode (kind=STATE).
+    لا LOCALITY/FACILITY (لا يوجد FK مباشر إلى HealthFacility).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = QuarantineCase.objects.select_related(
+            'reporting_node', 'crossing__entry_point',
+        )
+        if not (user.is_superuser or has_global_scope(user)):
+            ep_ids = resolve_authorized_entry_points(user)
+            if ep_ids is None:
+                pass
+            elif not ep_ids:
+                return Response({'status': 'success', 'data': self._empty()})
+            else:
+                qs = qs.filter(crossing__entry_point_id__in=ep_ids)
+
+        total = qs.count()
+        matched = 0
+        by_state = {}
+
+        for case in qs.iterator():
+            node = case.reporting_node
+            if node is None:
+                continue
+            # STATE-only: node.kind يجب أن يكون STATE
+            if node.kind != 'STATE':
+                continue
+            matched += 1
+            key = str(node.id)
+            if key not in by_state:
+                by_state[key] = {
+                    'state_id': str(node.id),
+                    'state_name_ar': node.name_ar,
+                    'count': 0,
+                }
+            by_state[key]['count'] += 1
+
+        unassigned = qs.filter(reporting_node__isnull=True).count()
+
+        assert total == matched + unassigned, (
+            f'Reconciliation failed: {total} != {matched} + {unassigned}'
+        )
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'total': total,
+                'matched': matched,
+                'unassigned': unassigned,
+                'by_state': sorted(
+                    by_state.values(), key=lambda x: -x['count'],
+                ),
+                'scoped': not (user.is_superuser or has_global_scope(user)),
+                'note': (
+                    'STATE-only reporting. '
+                    'LOCALITY/FACILITY not available (Option 4-full deferred).'
+                ),
+            },
+        })
+
+    def _empty(self):
+        return {
+            'total': 0, 'matched': 0, 'unassigned': 0,
+            'by_state': [], 'scoped': True,
+            'note': 'STATE-only reporting. No quarantine cases in scope.',
+        }

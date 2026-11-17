@@ -5,6 +5,7 @@ from .views import (
     AircraftInspectionViewSet,
     AirportActivityLogViewSet,
     AirportDashboardViewSet,
+    AirportScreeningByStateReportView,
     AirportScreeningViewSet,
     AirportStaffViewSet,
     CrewHealthRecordViewSet,
@@ -25,5 +26,10 @@ router.register('activity-log', AirportActivityLogViewSet, basename='airport-act
 router.register('dashboard', AirportDashboardViewSet, basename='airport-dashboard')
 
 urlpatterns = [
+    path(
+        'reports/screenings/by-state/',
+        AirportScreeningByStateReportView.as_view(),
+        name='airport-screenings-by-state',
+    ),
     path('', include(router.urls)),
 ]

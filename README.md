@@ -65,6 +65,21 @@ make test              # run all tests
 
 See `deploy/local/README.md` (not tracked; created locally).
 
+### Redis / Celery (local)
+
+`backend/.env.example` uses `REDIS_HOST=redis` — the Docker Compose service name.
+That is correct **inside** the backend container.
+
+If you run Django/Celery on the host instead, override it:
+
+```sh
+REDIS_HOST=127.0.0.1 python manage.py celery worker
+```
+
+Otherwise backend tests that touch Celery fail with connection errors when run
+locally (`pytest apps/`), while CI stays green — the runner uses the `redis`
+service name.
+
 ## Docs
 
 - [`docs/`](./docs/) — full documentation (architecture, modules, DB, API, UX, security)

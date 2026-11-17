@@ -48,6 +48,29 @@ export interface MasterEntryPoint {
   updated_at: string;
 }
 
+export interface MasterHealthFacility {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en: string;
+  kind: string;
+  locality: string | null;
+  locality_name: string | null;
+  sector: string | null;
+  sector_name: string | null;
+  entry_point: string | null;
+  entry_point_name: string | null;
+  location: string;
+  address: string;
+  phone: string;
+  email: string;
+  description: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MasterTerminal {
   id: string;
   code: string;

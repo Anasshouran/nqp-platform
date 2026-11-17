@@ -1,11 +1,15 @@
+import { useTranslation } from 'react-i18next';
 import SectorContentPage from './SectorContentPage';
 
-const KhartoumContentPage = () => (
-  <SectorContentPage
-    sectorName="قطاع الخرطوم"
-    sectorSlug="khartoum"
-    subtitle="أدر أخبار القطاع، التعاميم، الإعلانات، الصفحات، الأسئلة الشائعة، الوثائق، الشرائح والوسائط وإعدادات الاتصال."
-  />
-);
+const KhartoumContentPage = () => {
+  const { t } = useTranslation();
+  return (
+    <SectorContentPage
+      sectorName={t('sector-content.khartoum.sectorName')}
+      sectorSlug="khartoum"
+      subtitle={t('sector-content.khartoum.subtitle')}
+    />
+  );
+};
 
 export default KhartoumContentPage;

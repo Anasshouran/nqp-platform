@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
@@ -26,10 +27,11 @@ const defaultContact: ContactForm = {
 };
 
 const RedSeaSettingsPanel = () => {
+  const { t } = useTranslation();
   const [contact, setContact] = useState<ContactForm>(defaultContact);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const ensureLoaded = () => {
     if (loaded) return;
@@ -52,42 +54,46 @@ const RedSeaSettingsPanel = () => {
 
   const save = () => {
     setSaving(true);
-    setMessage('');
+    setSaveStatus('idle');
     upsertCmsSetting({ key: 'contact', value: { ...contact } })
       .then(() => {
-        setMessage('تم حفظ الإعدادات بنجاح');
+        setSaveStatus('success');
         setSaving(false);
       })
       .catch(() => {
-        setMessage('فشل حفظ الإعدادات');
+        setSaveStatus('error');
         setSaving(false);
       });
   };
 
   return (
     <Stack spacing={3}>
-      <SectionCard title="معلومات الاتصال الرسمية" subtitle="تظهر هذه البيانات في صفحة اتصل بنا بالموقع العام">
-        {message && <Alert severity={message.includes('تم') ? 'success' : 'error'}><AlertTitle>{message}</AlertTitle></Alert>}
+      <SectionCard title={t('redsea.settings.contactInfoTitle')} subtitle={t('redsea.settings.contactInfoSubtitle')}>
+        {saveStatus !== 'idle' && (
+          <Alert severity={saveStatus}>
+            <AlertTitle>{saveStatus === 'success' ? t('redsea.settings.saveSuccess') : t('redsea.settings.saveError')}</AlertTitle>
+          </Alert>
+        )}
         <Grid container spacing={2} sx={{ mt: 0.5 }}>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth label="رقم الهاتف الرسمي" value={contact.official_phone} onChange={(e) => setContact((c) => ({ ...c, official_phone: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.settings.fields.officialPhone')} value={contact.official_phone} onChange={(e) => setContact((c) => ({ ...c, official_phone: e.target.value }))} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth label="البريد الإلكتروني الرسمي" value={contact.official_email} onChange={(e) => setContact((c) => ({ ...c, official_email: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.settings.fields.officialEmail')} value={contact.official_email} onChange={(e) => setContact((c) => ({ ...c, official_email: e.target.value }))} />
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth label="العنوان" multiline minRows={2} value={contact.address} onChange={(e) => setContact((c) => ({ ...c, address: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.settings.fields.address')} multiline minRows={2} value={contact.address} onChange={(e) => setContact((c) => ({ ...c, address: e.target.value }))} />
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth label="الموقع الإلكتروني" value={contact.website} onChange={(e) => setContact((c) => ({ ...c, website: e.target.value }))} />
+            <TextField fullWidth label={t('redsea.settings.fields.website')} value={contact.website} onChange={(e) => setContact((c) => ({ ...c, website: e.target.value }))} />
           </Grid>
         </Grid>
         <Divider sx={{ my: 3 }} />
         <Button variant="contained" startIcon={<SaveIcon />} onClick={save} disabled={saving} onFocus={ensureLoaded} onMouseEnter={ensureLoaded}>
-          {saving ? 'جارٍ الحفظ...' : 'حفظ الإعدادات'}
+          {saving ? t('redsea.settings.actions.saving') : t('redsea.settings.actions.save')}
         </Button>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-          ملاحظة: حتى تُعتمد البيانات رسميًا تُعرض في صفحة اتصل بنا بدلًا من النصوص المؤقتة.
+          {t('redsea.settings.note')}
         </Typography>
       </SectionCard>
     </Stack>

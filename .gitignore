@@ -86,3 +86,9 @@ frontend/dist/
 logs/
 .pytest_cache/
 deploy/local/
+
+# Dev environment overrides (pre-existing, not part of M1)
+deploy/docker-compose.override.yml
+
+# Local one-off scripts (pre-existing)
+frontend/src/pages/airportdirector/fix_c4*.py

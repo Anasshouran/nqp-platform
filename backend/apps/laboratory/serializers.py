@@ -132,6 +132,7 @@ class LabSampleSerializer(serializers.ModelSerializer):
             'rejection_reason', 'received_at', 'storage_location', 'public_result_code', 'public_issued_at',
             'visit', 'visit_traveler_name', 'visit_phase', 'lab_request', 'request_barcode', 'request_priority',
             'section', 'section_name', 'sector', 'sector_name', 'entry_point', 'entry_point_name',
+            'reporting_node',
             'collector', 'collector_name', 'collected_at', 'reception_decision_by', 'reception_decision_at',
             'test_count', 'result_count', 'movement_count', 'created_at',
         ]

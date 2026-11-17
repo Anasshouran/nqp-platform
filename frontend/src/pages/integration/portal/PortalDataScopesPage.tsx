@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +15,7 @@ import { formatDateTime } from '../../../utils/formatters';
 import { notifyError, notifySuccess } from '../../../utils/toast';
 
 const PortalDataScopesPage = () => {
+  const { t } = useTranslation();
   const table = useServerTable<DataScope>({ fetchData: getDataScopes });
   const {
     rows, count, loading, error, searchInput, setSearchInput, sortBy, sortOrder,
@@ -28,27 +30,27 @@ const PortalDataScopesPage = () => {
     setDeletingId(row.id);
     try {
       await deleteDataScope(row.id);
-      notifySuccess('تم حذف النطاق');
+      notifySuccess(t('portal.dataScopes.deleteSuccess'));
       refresh();
     } catch {
-      notifyError('تعذّر حذف النطاق');
+      notifyError(t('portal.dataScopes.deleteError'));
     } finally {
       setDeletingId(null);
     }
   };
   const columns: DataTableColumn<DataScope>[] = [
-    { key: 'organization_name', label: 'المنظمة', sortable: true },
-    { key: 'endpoint_code', label: 'نقطة API', sortable: true },
+    { key: 'organization_name', label: t('portal.dataScopes.orgColumn'), sortable: true },
+    { key: 'endpoint_code', label: t('portal.dataScopes.apiPointColumn'), sortable: true },
     {
-      key: 'direction', label: 'الاتجاه', sortable: true,
+      key: 'direction', label: t('portal.dataScopes.directionColumn'), sortable: true,
       render: (row) => (
-        <Chip size="small" color={row.direction === 'READ' ? 'info' : 'warning'} label={row.direction === 'READ' ? 'قراءة' : 'كتابة'} />
+        <Chip size="small" color={row.direction === 'READ' ? 'info' : 'warning'} label={row.direction === 'READ' ? t('portal.dataScopes.directionRead') : t('portal.dataScopes.directionWrite')} />
       ),
     },
-    { key: 'resource', label: 'المورد', sortable: true },
-    { key: 'granted_by_name', label: 'الممنوح من', hideOnMobile: true },
+    { key: 'resource', label: t('portal.dataScopes.resourceColumn'), sortable: true },
+    { key: 'granted_by_name', label: t('portal.dataScopes.grantedByColumn'), hideOnMobile: true },
     {
-      key: 'granted_at', label: 'تاريخ المنح', sortable: true,
+      key: 'granted_at', label: t('portal.dataScopes.grantedAtColumn'), sortable: true,
       render: (row) => (row.granted_at ? formatDateTime(row.granted_at) : '—'),
       hideOnMobile: true,
     },
@@ -57,8 +59,8 @@ const PortalDataScopesPage = () => {
   return (
     <Box>
       <PageHeader
-        title="نطاقات البيانات"
-        subtitle="ما يُسمح بتبادله مع كل منظمة (قراءة/كتابة)"
+        title={t('portal.dataScopes.pageTitle')}
+        subtitle={t('portal.dataScopes.pageSubtitle')}
       />
 
       <DataTable
@@ -73,7 +75,7 @@ const PortalDataScopesPage = () => {
         error={error}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        searchPlaceholder="ابحث بالمنظمة أو المورد"
+        searchPlaceholder={t('portal.dataScopes.searchPlaceholder')}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={setSorting}
@@ -81,10 +83,10 @@ const PortalDataScopesPage = () => {
         onRowsPerPageChange={setRowsPerPage}
         onRefresh={refresh}
         onExport={table.fetchAllRows}
-        emptyTitle="لا توجد نطاقات"
-        emptyDescription="امنح صلاحية تبادل البيانات لمنظمة"
+        emptyTitle={t('portal.dataScopes.emptyTitle')}
+        emptyDescription={t('portal.dataScopes.emptyDescription')}
         actions={(row) => (
-          <Tooltip title="حذف">
+          <Tooltip title={t('portal.dataScopes.deleteAction')}>
             <IconButton size="small" color="error" disabled={deletingId === row.id} onClick={() => setDeleteTarget(row)}>
               <DeleteIcon fontSize="small" />
             </IconButton>
@@ -94,10 +96,10 @@ const PortalDataScopesPage = () => {
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="تأكيد الحذف"
-        message={deleteTarget ? `حذف نطاق «${deleteTarget.organization_name} / ${deleteTarget.resource}»؟` : ''}
-        confirmLabel="حذف"
-        cancelLabel="إلغاء"
+        title={t('portal.dataScopes.confirmDeleteTitle')}
+        message={deleteTarget ? t('portal.dataScopes.confirmDeleteMessage', { organization: deleteTarget.organization_name, resource: deleteTarget.resource }) : ''}
+        confirmLabel={t('portal.dataScopes.deleteAction')}
+        cancelLabel={t('portal.dataScopes.cancelDeleteLabel')}
         tone="error"
         loading={deletingId !== null}
         onConfirm={() => {

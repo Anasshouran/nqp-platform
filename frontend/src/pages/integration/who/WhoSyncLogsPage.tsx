@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../../components/common';
 import WhoSyncLogsTable from './WhoSyncLogsTable';
 
@@ -11,15 +12,18 @@ import WhoSyncLogsTable from './WhoSyncLogsTable';
  *     ``who_logs:view`` دون ``who_integration:view`` دون أن يصطدم بـ403 على
  *     جدول التكاملات. الصفحة هنا محروسة بـ``who_logs:view`` وحدها.
  */
-const WhoSyncLogsPage = () => (
-  <Box>
-    <PageHeader
-      title="سجلات المزامنة"
-      subtitle="سجل عمليات الاتصال بمنظمة الصحة العالمية: مزامنة ICD-11، فحوص الاتصال، وإرسال أحداث اللائحة الصحية الدولية"
-      eyebrow="WHO / Sync Logs"
-    />
-    <WhoSyncLogsTable />
-  </Box>
-);
+const WhoSyncLogsPage = () => {
+  const { t } = useTranslation();
+  return (
+    <Box>
+      <PageHeader
+        title={t('integration.who.syncLogs.title')}
+        subtitle={t('integration.who.syncLogs.subtitle')}
+        eyebrow="WHO / Sync Logs"
+      />
+      <WhoSyncLogsTable />
+    </Box>
+  );
+};
 
 export default WhoSyncLogsPage;

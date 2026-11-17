@@ -140,7 +140,7 @@ const ShipmentWorkflowPage = () => {
   return (
     <Box>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/app/food')} sx={{ mb: 2 }}>
-        t('food.shipmentWorkflow.backToShipments')
+        {t('food.shipmentWorkflow.backToShipments')}
       </Button>
       <PageHeader
         title={shipment.manifest_number}
@@ -149,20 +149,20 @@ const ShipmentWorkflowPage = () => {
         action={
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <Button variant="outlined" startIcon={<ReceiptIcon />} disabled={!!invoiceOpen || shipment.fees_paid} onClick={() => setInvoiceOpen(true)}>
-              t('food.shipmentWorkflow.actions.invoice')
+              {t('food.shipmentWorkflow.actions.invoice')}
             </Button>
             <Button variant="outlined" color="success" startIcon={<PaymentsIcon />} disabled={shipment.fees_paid} onClick={() => setPayOpen(true)}>
-              t('food.shipmentWorkflow.actions.pay')
+              {t('food.shipmentWorkflow.actions.pay')}
             </Button>
             <Button variant="outlined" color="info" startIcon={<PersonAssignIcon />} onClick={() => setAssignOpen(true)}>
-              t('food.shipmentWorkflow.actions.assignInspector')
+              {t('food.shipmentWorkflow.actions.assignInspector')}
             </Button>
 <Button variant="contained" startIcon={<GavelIcon />} onClick={() => setDecideOpen(true)}>
-              t('food.shipmentWorkflow.actions.decide')
+              {t('food.shipmentWorkflow.actions.decide')}
             </Button>
             {!shipment.referred_from && (
               <Button variant="outlined" color="warning" startIcon={<ForwardToInboxIcon />} onClick={() => setReferOpen(true)}>
-                t('food.shipmentWorkflow.actions.referral')
+                {t('food.shipmentWorkflow.actions.referral')}
               </Button>
             )}
           </Stack>
@@ -186,7 +186,7 @@ const ShipmentWorkflowPage = () => {
 
       <Card sx={{ mb: 1 }}>
         <CardContent>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>t('food.shipmentWorkflow.details')</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('food.shipmentWorkflow.details')}</Typography>
           <Stack spacing={1.5}>
             <Row label={t("food.shipmentWorkflow.rows.manifestNumber")} value={shipment.manifest_number} t={t} />
             <Row label={t("food.shipmentWorkflow.rows.supplier")} value={shipment.supplier_name} t={t} />

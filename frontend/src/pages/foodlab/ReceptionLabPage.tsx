@@ -29,7 +29,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import AddIcon from '@mui/icons-material/Add';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import ArchiveIcon from '@mui/icons-material/Archive';
-import HistoryIcon from '@mui/icons-material/History';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -57,6 +56,7 @@ import { logout } from '../../store/slices/authSlice';
 import { logout as logoutApi } from '../../api/endpoints/auth';
 import type { AppDispatch } from '../../store/store';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../components/common/BrandLogo';
 import {
   DataTable,
@@ -106,10 +106,10 @@ import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '
 
 const todayArabic = () => new Date().toLocaleDateString('ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <DashboardIcon fontSize="small" /> },
-  { id: 'workflow', label: 'سير العمل', icon: <ScheduleIcon fontSize="small" /> },
-  { id: 'alerts', label: 'التنبيهات', icon: <NotificationsActiveIcon fontSize="small" /> },
+const SECTIONS = (i18nT: (key: string) => string) => [
+  { id: 'overview', label: i18nT('food.receptionLab.sections.overview'), icon: <DashboardIcon fontSize="small" /> },
+  { id: 'workflow', label: i18nT('food.receptionLab.sections.workflow'), icon: <ScheduleIcon fontSize="small" /> },
+  { id: 'alerts', label: i18nT('food.receptionLab.sections.alerts'), icon: <NotificationsActiveIcon fontSize="small" /> },
 ] as const;
 
 /* ---------- ثوابت الواجهة ---------- */
@@ -130,89 +130,114 @@ interface NavGroup {
   children: NavLeaf[];
 }
 
-const SIDEBAR_GROUPS: NavGroup[] = [
-  { key: 'home', label: 'الرئيسية', icon: <DashboardIcon />, children: [{ key: 'home', label: 'لوحة الاستلام' }] },
+const SIDEBAR_GROUPS = (i18nT: (key: string) => string): NavGroup[] => [
+  { key: 'home', label: i18nT('food.receptionLab.sidebar.home_label'), icon: <DashboardIcon />, children: [{ key: 'home', label: i18nT('food.receptionLab.sidebar.home.children.home') }] },
   {
-    key: 'receive', label: 'استلام العينات', icon: <AddIcon />, children: [
-      { key: 'receive.incoming', label: 'العينات الواردة' },
-      { key: 'receive.register', label: 'تسجيل عينة جديدة' },
-      { key: 'receive.pending', label: 'العينات المعلقة' },
+    key: 'receive', label: i18nT('food.receptionLab.sidebar.receive_label'), icon: <AddIcon />, children: [
+      { key: 'receive.incoming', label: i18nT('food.receptionLab.sidebar.receive.children.incoming') },
+      { key: 'receive.register', label: i18nT('food.receptionLab.sidebar.receive.children.register') },
+      { key: 'receive.pending', label: i18nT('food.receptionLab.sidebar.receive.children.pending') },
     ],
   },
   {
-    key: 'verify', label: 'التحقق من العينات', icon: <FactCheckIcon />, children: [
-      { key: 'verify.request', label: 'التحقق من الطلب' },
-      { key: 'verify.data', label: 'التحقق من البيانات' },
+    key: 'verify', label: i18nT('food.receptionLab.sidebar.verify_label'), icon: <FactCheckIcon />, children: [
+      { key: 'verify.request', label: i18nT('food.receptionLab.sidebar.verify.children.request') },
+      { key: 'verify.data', label: i18nT('food.receptionLab.sidebar.verify.children.data') },
     ],
   },
   {
-    key: 'barcode', label: 'الباركود والملصقات', icon: <QrCode2Icon />, children: [
-      { key: 'barcode.create', label: 'إنشاء Barcode' },
-      { key: 'barcode.print', label: 'طباعة الملصق' },
+    key: 'barcode', label: i18nT('food.receptionLab.sidebar.barcode_label'), icon: <QrCode2Icon />, children: [
+      { key: 'barcode.create', label: i18nT('food.receptionLab.sidebar.barcode.children.create') },
+      { key: 'barcode.print', label: i18nT('food.receptionLab.sidebar.barcode.children.print') },
     ],
   },
   {
-    key: 'deliver', label: 'تسليم العينات', icon: <LocalShippingIcon />, children: [
-      { key: 'deliver.ready', label: 'جاهزة للتسليم' },
-      { key: 'deliver.log', label: 'سجل التسليم' },
+    key: 'deliver', label: i18nT('food.receptionLab.sidebar.deliver_label'), icon: <LocalShippingIcon />, children: [
+      { key: 'deliver.ready', label: i18nT('food.receptionLab.sidebar.deliver.children.ready') },
+      { key: 'deliver.log', label: i18nT('food.receptionLab.sidebar.deliver.children.log') },
     ],
   },
-  { key: 'samples', label: 'سجل العينات', icon: <BiotechIcon />, children: [{ key: 'samples', label: 'السجل الكامل' }] },
-  { key: 'rejected', label: 'العينات المرفوضة', icon: <BlockIcon />, children: [{ key: 'rejected', label: 'المرفوضة' }] },
-  { key: 'alerts', label: 'التنبيهات', icon: <NotificationsActiveIcon />, children: [{ key: 'alerts', label: 'التنبيهات' }] },
-  { key: 'reports', label: 'التقارير', icon: <AssessmentIcon />, children: [{ key: 'reports', label: 'التقارير' }] },
+  { key: 'samples', label: i18nT('food.receptionLab.sidebar.samples_label'), icon: <BiotechIcon />, children: [{ key: 'samples', label: i18nT('food.receptionLab.sidebar.samples.children.samples') }] },
+  { key: 'rejected', label: i18nT('food.receptionLab.sidebar.rejected_label'), icon: <BlockIcon />, children: [{ key: 'rejected', label: i18nT('food.receptionLab.sidebar.rejected.children.rejected') }] },
+  { key: 'alerts', label: i18nT('food.receptionLab.sidebar.alerts_label'), icon: <NotificationsActiveIcon />, children: [{ key: 'alerts', label: i18nT('food.receptionLab.sidebar.alerts.children.alerts') }] },
+  { key: 'reports', label: i18nT('food.receptionLab.sidebar.reports_label'), icon: <AssessmentIcon />, children: [{ key: 'reports', label: i18nT('food.receptionLab.sidebar.reports.children.reports') }] },
 ];
 
-const FOOTER_NAV_ITEMS: NavLeaf[] = [
-  { key: 'settings', label: 'الإعدادات' },
-  { key: 'help', label: 'المساعدة' },
+const FOOTER_NAV_ITEMS = (i18nT: (key: string) => string): NavLeaf[] => [
+  { key: 'settings', label: i18nT('food.receptionLab.footer.settings') },
+  { key: 'help', label: i18nT('food.receptionLab.footer.help') },
 ];
 
-const groupOf = (key: NavKey): NavGroup | undefined => SIDEBAR_GROUPS.find((g) => g.children.some((c) => c.key === key));
-
-const CHECKLIST_ITEMS: Array<{ key: string; label: string }> = [
-  { key: 'label', label: 'العينة تحمل بطاقة تعريف' },
-  { key: 'package_intact', label: 'العبوة سليمة' },
-  { key: 'no_leak', label: 'العينة غير متسربة' },
-  { key: 'quantity_ok', label: 'الكمية كافية' },
-  { key: 'data_match', label: 'بيانات العينة مطابقة للطلب' },
-  { key: 'stored_ok', label: 'العينة محفوظة بطريقة مناسبة' },
-  { key: 'seal_match', label: 'رقم العينة / الختم مطابق' },
+const CHECKLIST_ITEMS = (i18nT: (key: string) => string): Array<{ key: string; label: string }> => [
+  { key: 'label', label: i18nT('food.receptionLab.checklist.label') },
+  { key: 'package_intact', label: i18nT('food.receptionLab.checklist.package_intact') },
+  { key: 'no_leak', label: i18nT('food.receptionLab.checklist.no_leak') },
+  { key: 'quantity_ok', label: i18nT('food.receptionLab.checklist.quantity_ok') },
+  { key: 'data_match', label: i18nT('food.receptionLab.checklist.data_match') },
+  { key: 'stored_ok', label: i18nT('food.receptionLab.checklist.stored_ok') },
+  { key: 'seal_match', label: i18nT('food.receptionLab.checklist.seal_match') },
 ];
 
-const REJECT_REASONS = [
-  'العبوة تالفة',
-  'الكمية غير كافية',
-  'بيانات غير مطابقة',
-  'العينة منتهية',
-  'درجة حرارة غير مناسبة',
-  'لا يوجد طلب تحليل',
-  'عدم وجود تعريف للعينة',
-  'سبب آخر',
+const REJECT_REASONS = (i18nT: (key: string) => string) => [
+  i18nT('food.receptionLab.rejectReasons.package_damaged'),
+  i18nT('food.receptionLab.rejectReasons.quantity_insufficient'),
+  i18nT('food.receptionLab.rejectReasons.data_mismatch'),
+  i18nT('food.receptionLab.rejectReasons.sample_expired'),
+  i18nT('food.receptionLab.rejectReasons.temperature_unsuitable'),
+  i18nT('food.receptionLab.rejectReasons.no_analysis_request'),
+  i18nT('food.receptionLab.rejectReasons.no_sample_definition'),
+  i18nT('food.receptionLab.rejectReasons.other'),
 ];
 
-const CLASSIFICATION_OPTIONS = [
-  { value: 'ANALYSIS', label: 'للتحليل' },
-  { value: 'REFERENCE', label: 'مرجعية' },
+const CLASSIFICATION_OPTIONS = (i18nT: (key: string) => string) => [
+  { value: 'ANALYSIS', label: i18nT('food.receptionLab.classification.ANALYSIS') },
+  { value: 'REFERENCE', label: i18nT('food.receptionLab.classification.REFERENCE') },
 ];
 
-const STATION_OPTIONS = ['المطار', 'المنطقة الحرة', 'الميناء الشمالي', 'الميناء الجنوبي', 'ميناء أوسيف', 'ميناء الأمير عثمان دقنة'].map((s) => ({ value: s, label: s }));
+const STATION_OPTIONS = (i18nT: (key: string) => string) => [
+  { value: 'airport', label: i18nT('food.receptionLab.stations.airport') },
+  { value: 'free_zone', label: i18nT('food.receptionLab.stations.free_zone') },
+  { value: 'north_port', label: i18nT('food.receptionLab.stations.north_port') },
+  { value: 'south_port', label: i18nT('food.receptionLab.stations.south_port') },
+  { value: 'osif_port', label: i18nT('food.receptionLab.stations.osif_port') },
+  { value: 'osman_diqna_port', label: i18nT('food.receptionLab.stations.osman_diqna_port') },
+].map((s) => ({ value: s.value, label: s.label }));
 
-const PACKAGING_TYPES = ['أكياس', 'براميل', 'كراتين', 'عبوات زجاجية', 'عبوات معدنية', 'أخرى'].map((s) => ({ value: s, label: s }));
+const PACKAGING_TYPES = (i18nT: (key: string) => string) => [
+  { value: 'bags', label: i18nT('food.receptionLab.packaging.types.bags') },
+  { value: 'barrels', label: i18nT('food.receptionLab.packaging.types.barrels') },
+  { value: 'cartons', label: i18nT('food.receptionLab.packaging.types.cartons') },
+  { value: 'glass_bottles', label: i18nT('food.receptionLab.packaging.types.glass_bottles') },
+  { value: 'metal_bottles', label: i18nT('food.receptionLab.packaging.types.metal_bottles') },
+  { value: 'other', label: i18nT('food.receptionLab.packaging.types.other') },
+].map((s) => ({ value: s.value, label: s.label }));
 
-const PACKAGING_CONDITIONS = ['سليمة', 'ممتازة', 'تالفة جزئياً', 'تالفة'].map((s) => ({ value: s, label: s }));
+const PACKAGING_CONDITIONS = (i18nT: (key: string) => string) => [
+  { value: 'intact', label: i18nT('food.receptionLab.packaging.conditions.intact') },
+  { value: 'excellent', label: i18nT('food.receptionLab.packaging.conditions.excellent') },
+  { value: 'partially_damaged', label: i18nT('food.receptionLab.packaging.conditions.partially_damaged') },
+  { value: 'damaged', label: i18nT('food.receptionLab.packaging.conditions.damaged') },
+].map((s) => ({ value: s.value, label: s.label }));
 
-const QUANTITY_UNITS = ['كجم', 'جم', 'لتر', 'مل', 'عدد'].map((u) => ({ value: u, label: u }));
+const QUANTITY_UNITS = (i18nT: (key: string) => string) => [
+  { value: 'kg', label: i18nT('food.receptionLab.units.kg') },
+  { value: 'g', label: i18nT('food.receptionLab.units.g') },
+  { value: 'liter', label: i18nT('food.receptionLab.units.liter') },
+  { value: 'ml', label: i18nT('food.receptionLab.units.ml') },
+  { value: 'count', label: i18nT('food.receptionLab.units.count') },
+].map((u) => ({ value: u.value, label: u.label }));
 
-const PRIORITY_OPTIONS = [
-  { value: 'NORMAL', label: 'عادية' },
-  { value: 'HIGH', label: 'عالية' },
-  { value: 'URGENT', label: 'عاجلة' },
+const PRIORITY_OPTIONS = (i18nT: (key: string) => string) => [
+  { value: 'NORMAL', label: i18nT('food.receptionLab.priority.NORMAL') },
+  { value: 'HIGH', label: i18nT('food.receptionLab.priority.HIGH') },
+  { value: 'URGENT', label: i18nT('food.receptionLab.priority.URGENT') },
 ];
 
-const REF_RETENTION_REASONS = ['لإعادة الفحص عند الطعن', 'بدائل للمراجعة', 'أخرى'].map((s) => ({ value: s, label: s }));
-
-const emptyChecklist = () => Object.fromEntries(CHECKLIST_ITEMS.map((c) => [c.key, false]));
+const REF_RETENTION_REASONS = (i18nT: (key: string) => string) => [
+  { value: 'retest_on_appeal', label: i18nT('food.receptionLab.refRetention.re_test_on_appeal') },
+  { value: 'alternatives_for_review', label: i18nT('food.receptionLab.refRetention.alternatives_for_review') },
+  { value: 'other', label: i18nT('food.receptionLab.refRetention.other') },
+].map((s) => ({ value: s.value, label: s.label }));
 
 interface WizardState {
   open: boolean;
@@ -354,6 +379,11 @@ const FoodDataTable = <T extends { id: string },>({
 
 /* ---------- الصفحة الرئيسية ---------- */
 
+const emptyChecklist = () =>
+  Object.fromEntries([
+    'label', 'package_intact', 'no_leak', 'quantity_ok', 'data_match', 'stored_ok', 'seal_match',
+  ].map((c) => [c, false]));
+
 const ReceptionLabPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -374,8 +404,12 @@ const ReceptionLabPage = () => {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [barcodeSample, setBarcodeSample] = useState<FoodSample | null>(null);
 
+  const { t: i18nT } = useTranslation();
+
+  const groupOf = (key: NavKey): NavGroup | undefined => SIDEBAR_GROUPS(i18nT).find((g) => g.children.some((c) => c.key === key));
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(SIDEBAR_GROUPS.map((g) => [g.key, true])),
+    Object.fromEntries(SIDEBAR_GROUPS(i18nT).map((g) => [g.key, true])),
   );
 
   const [refOpen, setRefOpen] = useState(false);
@@ -423,12 +457,12 @@ const ReceptionLabPage = () => {
       if ((s.priority === 'HIGH' || s.priority === 'URGENT') && (s.reception_status === 'RECEIVED' || s.reception_status === 'CONDITIONALLY_ACCEPTED')) {
         list.push({
           sample: s,
-          reason: s.priority === 'URGENT' ? 'عينة عاجلة بانتظار قرار الاستلام' : 'عينة عالية الأولوية بانتظار المراجعة',
+          reason: s.priority === 'URGENT' ? i18nT('food.receptionLab. _ _ _ ') : i18nT('food.receptionLab. _ _ _ '),
         });
       }
     }
     return list;
-  }, [samples.rows]);
+  }, [i18nT, samples.rows]);
 
   const receivedToday = useMemo(
     () => samples.rows.filter((s) => s.received_at && s.received_at.slice(0, 10) === new Date().toISOString().slice(0, 10)).length,
@@ -447,7 +481,7 @@ const ReceptionLabPage = () => {
   };
 
   const toggleGroup = (key: string) => {
-    const group = SIDEBAR_GROUPS.find((g) => g.key === key);
+    const group = SIDEBAR_GROUPS(i18nT).find((g) => g.key === key);
     if (!group) return;
     const activeIn = groupOf(nav)?.key === key;
     if (activeIn) {
@@ -462,13 +496,13 @@ const ReceptionLabPage = () => {
 
   const runLookup = async (raw?: string) => {
     const q = (raw ?? wizard.lookupKey).trim();
-    if (!q) return notifyError('اكتب رقم الطلب أو امسح الباركود / QR أولاً');
+    if (!q) return notifyError(i18nT('food.receptionLab. _ _ _ _ _   qr '));
     setWizard((w) => ({ ...w, lookupBusy: true, lookupMessage: '' }));
     try {
       const r = await getLabSamples({ search: q, page_size: 10 });
       const items = r.data.data.results;
       if (items.length === 0) {
-        setWizard((w) => ({ ...w, lookupBusy: false, matchedSample: null, lookupMessage: 'لم يُعثر على طلب مطابق' }));
+        setWizard((w) => ({ ...w, lookupBusy: false, matchedSample: null, lookupMessage: i18nT('food.receptionLab. _ _ _ ') }));
         return;
       }
       const m = items[0];
@@ -476,7 +510,7 @@ const ReceptionLabPage = () => {
         ...w,
         lookupBusy: false,
         matchedSample: m,
-        lookupMessage: `تم العثور على ${items.length} نتيجة — عرض أولها`,
+        lookupMessage: i18nT('food.receptionLab.lookup_found', { count: items.length }),
         source: m.source ?? w.source,
         sampleType: m.sample_type || w.sampleType,
         analysisRequestNumber: m.analysis_request_number || w.analysisRequestNumber,
@@ -498,7 +532,7 @@ const ReceptionLabPage = () => {
         refOriginalNumber: m.sample_number || w.refOriginalNumber,
       }));
     } catch {
-      setWizard((w) => ({ ...w, lookupBusy: false, matchedSample: null, lookupMessage: 'تعذر البحث — حاول مرة أخرى' }));
+      setWizard((w) => ({ ...w, lookupBusy: false, matchedSample: null, lookupMessage: i18nT('food.receptionLab. _   _ _ ') }));
     }
   };
 
@@ -512,9 +546,9 @@ const ReceptionLabPage = () => {
 
   const nextStep = () => {
     if (wizard.step === 1) {
-      if (!wizard.sampleType.trim()) return notifyError('اكتب نوع / اسم العينة');
-      if (!wizard.source) return notifyError('حدد مصدر العينة');
-      if (wizard.classification === 'REFERENCE' && !wizard.refRetentionReason) return notifyError('حدد سبب حفظ العينة المرجعية');
+      if (!wizard.sampleType.trim()) return notifyError(i18nT('food.receptionLab. _   _ '));
+      if (!wizard.source) return notifyError(i18nT('food.receptionLab. _ '));
+      if (wizard.classification === 'REFERENCE' && !wizard.refRetentionReason) return notifyError(i18nT('food.receptionLab. _ _ _ '));
     }
     setWizard((w) => ({ ...w, step: (w.step + 1) as 1 | 2 | 3 }));
   };
@@ -524,12 +558,12 @@ const ReceptionLabPage = () => {
   };
 
   const submitWizard = async () => {
-    if (!wizard.sampleType.trim()) return notifyError('اكتب نوع/اسم العينة');
-    if (!wizard.source) return notifyError('حدد مصدر العينة');
-    if (wizard.decision === 'reject' && !wizard.rejectionReason) return notifyError('لا يمكن رفض العينة بدون ذكر سبب الرفض');
+    if (!wizard.sampleType.trim()) return notifyError(i18nT('food.receptionLab. _ _ '));
+    if (!wizard.source) return notifyError(i18nT('food.receptionLab. _ '));
+    if (wizard.decision === 'reject' && !wizard.rejectionReason) return notifyError(i18nT('food.receptionLab. _ _ _ _ _ _ '));
     if (wizard.decision !== 'reject') {
-      const unchecked = CHECKLIST_ITEMS.filter((c) => !wizard.checklist[c.key]);
-      if (unchecked.length > 0) return notifyError('أكمل نموذج فحص العينة قبل قبولها');
+      const unchecked = CHECKLIST_ITEMS(i18nT).filter((c) => !wizard.checklist[c.key]);
+      if (unchecked.length > 0) return notifyError(i18nT('food.receptionLab. _ _ _ _ '));
     }
     setWizard((w) => ({ ...w, busy: true }));
     try {
@@ -586,8 +620,8 @@ const ReceptionLabPage = () => {
 
       notifySuccess(
         refCreated
-          ? `سُجّلت العينة المرجعية ${refCreated.ref_number}`
-          : `تم استلام العينة ${sample.sample_number}`,
+          ? i18nT('food.receptionLab.reference_registered', { ref: refCreated.ref_number })
+          : i18nT('food.receptionLab.sample_received', { number: sample.sample_number })
       );
       setWizard({ ...emptyWizard(sources[0]?.id ?? ''), open: false });
       if (wizard.decision !== 'reject') {
@@ -599,7 +633,7 @@ const ReceptionLabPage = () => {
       }
       refreshAll();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'تعذر استلام العينة';
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? i18nT('food.receptionLab. _ ');
       notifyError(msg);
     } finally {
       setWizard((w) => ({ ...w, busy: false }));
@@ -607,7 +641,7 @@ const ReceptionLabPage = () => {
   };
 
   const submitRef = async () => {
-    if (!refForm.product.trim()) return notifyError('اكتب اسم المادة/العينة المرجعية');
+    if (!refForm.product.trim()) return notifyError(i18nT('food.receptionLab. _ _ _ '));
     try {
       await createReferenceSample({
         product_name: refForm.product.trim(),
@@ -621,16 +655,16 @@ const ReceptionLabPage = () => {
         coding: refForm.coding,
         remarks: refForm.remarks,
       });
-      notifySuccess('تم تسجيل العينة المرجعية');
+      notifySuccess(i18nT('food.receptionLab. _ _ '));
       setRefOpen(false);
       setRefForm(emptyRefForm());
       refreshReferences();
     } catch {
-      notifyError('تعذر تسجيل العينة المرجعية');
+      notifyError(i18nT('food.receptionLab. _ _ '));
     }
   };
 
-  const stepSubtitle = wizard.step === 1 ? 'الطلب' : wizard.step === 2 ? 'فحص العينة' : 'القبول + طباعة الباركود';
+  const stepSubtitle = wizard.step === 1 ? i18nT('food.receptionLab.str89') : wizard.step === 2 ? i18nT('food.receptionLab.str68') : i18nT('food.receptionLab.   _ ');
 
   const handleLogout = async () => {
     setUserMenuAnchor(null);
@@ -653,27 +687,23 @@ const ReceptionLabPage = () => {
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <BrandLogo compact />
             <Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                الإدارة الاتحادية للحجر الصحي
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                مكتب استلام العينات — FCLIS
-              </Typography>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, lineHeight: 1.2 }}>{i18nT('food.receptionLab. _ _ ')}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{i18nT('food.receptionLab. _ _   fclis')}</Typography>
             </Box>
           </Stack>
 
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Tooltip title="الإشعارات">
-              <IconButton aria-label="الإشعارات" sx={{ color: 'text.secondary' }} onClick={() => setNav('alerts')}>
+            <Tooltip title={i18nT('food.receptionLab.attr63')}>
+              <IconButton aria-label={i18nT('food.receptionLab.attr63')} sx={{ color: 'text.secondary' }} onClick={() => setNav('alerts')}>
                 <Badge badgeContent={alerts.length} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
             </Tooltip>
-            <Tooltip title="حساب المستخدم">
-              <IconButton aria-label="قائمة المستخدم" onClick={(e) => setUserMenuAnchor(e.currentTarget)} sx={{ p: 0.5 }}>
+            <Tooltip title={i18nT('food.receptionLab.attr47')}>
+              <IconButton aria-label={i18nT('food.receptionLab.attr38')} onClick={(e) => setUserMenuAnchor(e.currentTarget)} sx={{ p: 0.5 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', fontWeight: 700 }}>
-                  {(user?.full_name || user?.email || '؟').charAt(0)}
+                  {(user?.full_name || user?.email || i18nT('food.receptionLab.str96')).charAt(0)}
                 </Avatar>
               </IconButton>
             </Tooltip>
@@ -687,7 +717,7 @@ const ReceptionLabPage = () => {
             >
               <Box sx={{ px: 2, py: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {user?.full_name || 'مستخدم'}
+                  {user?.full_name || i18nT('food.receptionLab.str83')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" noWrap>
                   {user?.email}
@@ -697,9 +727,7 @@ const ReceptionLabPage = () => {
               <MenuItem onClick={handleLogout} sx={{ color: 'error.main', fontWeight: 700 }}>
                 <ListItemIcon sx={{ color: 'inherit' }}>
                   <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                تسجيل الخروج
-              </MenuItem>
+                </ListItemIcon>{i18nT('food.receptionLab.jsx3')}</MenuItem>
             </Menu>
           </Stack>
         </Toolbar>
@@ -708,35 +736,33 @@ const ReceptionLabPage = () => {
       <Box component="main" sx={{ pt: 9, px: { xs: 2, md: 3.5 }, pb: 4, maxWidth: 1760, mx: 'auto' }}>
         <DashboardHero
           eyebrow="FCLIS — Reception Desk"
-          title="مكتب استلام العينات — FCLIS"
-          subtitle="الاستقبال السريع: تسجيل العينة ← فحصها ← قرار القبول وطباعة الباركود"
+          title={i18nT('food.receptionLab. _ _   fclis')}
+          subtitle={i18nT('food.receptionLab. _  _ _   _   _ _ _ ')}
           gradient="emerald"
-          avatarLabel={(user?.full_name || 'م').slice(0, 1)}
+          avatarLabel={(user?.full_name || i18nT('food.receptionLab.str97')).slice(0, 1)}
           action={
             <Stack direction="row" spacing={1}>
               <AppButton startIcon={<NotificationsActiveIcon />} variant="secondary" onClick={() => setNav('alerts')}>
-                التنبيهات {alerts.length > 0 ? `(${alerts.length})` : ''}
+                {i18nT('food.receptionLab.alerts')} {alerts.length > 0 ? `(${alerts.length})` : ''}
               </AppButton>
-              <AppButton startIcon={<AddIcon />} onClick={openWizard}>استلام عينة جديدة</AppButton>
+              <AppButton startIcon={<AddIcon />} onClick={openWizard}>{i18nT('food.receptionLab. _ ')}</AppButton>
             </Stack>
           }
           chips={[
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-              مباشر
-            </Box>,
+              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />{i18nT('food.receptionLab.jsx5')}</Box>,
           ]}
         />
 
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
           <CommandSectionRail
-            sections={SECTIONS as unknown as CommandSectionDef[]}
+            sections={SECTIONS(i18nT) as unknown as CommandSectionDef[]}
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label={i18nT('food.receptionLab.attr51')}
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -757,7 +783,7 @@ const ReceptionLabPage = () => {
           }}
         >
           <List disablePadding>
-            {SIDEBAR_GROUPS.map((group) => {
+            {SIDEBAR_GROUPS(i18nT).map((group) => {
               const isOpen = expanded[group.key] ?? false;
               const activeGroup = groupOf(nav)?.key === group.key;
               if (group.children.length === 1) {
@@ -833,7 +859,7 @@ const ReceptionLabPage = () => {
           <Divider sx={{ my: 1.5 }} />
 
           <List disablePadding>
-            {FOOTER_NAV_ITEMS.map((item) => {
+            {FOOTER_NAV_ITEMS(i18nT).map((item) => {
               const active = nav === item.key;
               const Icon = item.key === 'settings' ? SettingsIcon : HelpOutlineIcon;
               return (
@@ -859,20 +885,17 @@ const ReceptionLabPage = () => {
           <Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2.5, border: '1px solid', borderColor: 'divider', bgcolor: '#F8FAFC' }}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontWeight: 700, fontSize: 14 }}>
-                {(user?.full_name || user?.email || '؟').charAt(0)}
+                {(user?.full_name || user?.email || i18nT('food.receptionLab.str96')).charAt(0)}
               </Avatar>
               <Box sx={{ minWidth: 0, flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 700, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                  {user?.full_name || 'موظف استلام العينات'}
+                  {user?.full_name || i18nT('food.receptionLab. _ ')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main', fontWeight: 700 }}>
-                  <CircleIcon sx={{ fontSize: 10 }} /> متصل
-                </Typography>
+                  <CircleIcon sx={{ fontSize: 10 }} />{i18nT('food.receptionLab.jsx6')}</Typography>
               </Box>
             </Stack>
-            <AppButton fullWidth size="small" variant="ghost" startIcon={<LogoutIcon />} onClick={handleLogout} sx={{ mt: 1, color: 'error.main' }}>
-              تسجيل الخروج
-            </AppButton>
+            <AppButton fullWidth size="small" variant="ghost" startIcon={<LogoutIcon />} onClick={handleLogout} sx={{ mt: 1, color: 'error.main' }}>{i18nT('food.receptionLab.jsx7')}</AppButton>
           </Box>
         </Box>
 
@@ -935,9 +958,9 @@ const ReceptionLabPage = () => {
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar sx={{ bgcolor: 'primary.main' }}><AddIcon /></Avatar>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.3 }}>استلام عينة جديدة</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.3 }}>{i18nT('food.receptionLab. _ ')}</Typography>
             <Typography variant="caption" color="text.secondary">
-              الخطوة {wizard.step} من 3 — {stepSubtitle}
+              {i18nT('food.receptionLab.step_of', { step: wizard.step, total: 3 })} — {stepSubtitle}
             </Typography>
           </Box>
         </DialogTitle>
@@ -948,23 +971,19 @@ const ReceptionLabPage = () => {
               {/* البحث عن طلب / مسح QR */}
               <Box sx={{ border: '1px dashed', borderColor: 'primary.main', borderRadius: 2.5, p: 2, bgcolor: '#EBF2FF' }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  <QrCodeScannerIcon sx={{ verticalAlign: 'middle', mr: 0.5 }} fontSize="small" />
-                  ابحث عن طلب التحليل أو امسح QR / Barcode
-                </Typography>
+                  <QrCodeScannerIcon sx={{ verticalAlign: 'middle', mr: 0.5 }} fontSize="small" />{i18nT('food.receptionLab. _ _ _ _ _ qr   barcode')}</Typography>
                 <Stack direction="row" spacing={1} alignItems="flex-start">
                   <Box sx={{ flex: 1 }}>
                     <FormTextField
-                      label="رقم الطلب / الباركود / QR"
+                      label={i18nT('food.receptionLab. _   _   qr')}
                       value={wizard.lookupKey}
                       onChange={(e) => wizardField({ lookupKey: e.target.value })}
-                      placeholder="امسح العينة أو اكتب رقم الطلب ثم اضغط بحث"
+                      placeholder={i18nT('food.receptionLab. _ _ _ _ _ _ _ ')}
                       onKeyDown={(e) => { if (e.key === 'Enter') runLookup(); }}
                       InputProps={{ startAdornment: <QrCodeScannerIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} /> }}
                     />
                   </Box>
-                  <AppButton startIcon={<SearchIcon />} onClick={() => runLookup()} loading={wizard.lookupBusy} sx={{ mt: 2.5 }}>
-                    بحث
-                  </AppButton>
+                  <AppButton startIcon={<SearchIcon />} onClick={() => runLookup()} loading={wizard.lookupBusy} sx={{ mt: 2.5 }}>{i18nT('food.receptionLab.jsx9')}</AppButton>
                 </Stack>
                 {wizard.lookupMessage && (
                   <Typography variant="caption" color={wizard.matchedSample ? 'success.main' : 'warning.main'} sx={{ display: 'block', mt: 1 }}>
@@ -978,56 +997,54 @@ const ReceptionLabPage = () => {
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{wizard.matchedSample.sample_number}</Typography>
                       <Typography variant="caption" color="text.secondary">{wizard.matchedSample.sample_type} — {wizard.matchedSample.source_name ?? ''} {wizard.matchedSample.received_at ? `• ${formatDateTime(wizard.matchedSample.received_at)}` : ''}</Typography>
                     </Box>
-                    <AppButton size="small" variant="ghost" onClick={() => setWizard((w) => ({ ...w, matchedSample: null, lookupMessage: '', refOriginalNumber: '' }))}>
-                      إلغاء
-                    </AppButton>
+                    <AppButton size="small" variant="ghost" onClick={() => setWizard((w) => ({ ...w, matchedSample: null, lookupMessage: '', refOriginalNumber: '' }))}>{i18nT('food.receptionLab.jsx10')}</AppButton>
                   </Box>
                 )}
               </Box>
 
               <Grid container spacing={1.5}>
                 <Grid item xs={12} sm={6}>
-                  <FormSelect label="مصدر العينة" requiredMark value={wizard.source} onChange={(v) => wizardField({ source: v })} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} placeholder="اختر المصدر..." />
+                  <FormSelect label={i18nT('food.receptionLab.attr57')} requiredMark value={wizard.source} onChange={(v) => wizardField({ source: v })} options={sources.map((s) => ({ value: s.id, label: s.name_ar }))} placeholder={i18nT('food.receptionLab. _   ')} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormSelect label="التصنيف" requiredMark value={wizard.classification} onChange={(v) => wizardField({ classification: v })} options={CLASSIFICATION_OPTIONS} />
+                  <FormSelect label={i18nT('food.receptionLab.attr69')} requiredMark value={wizard.classification} onChange={(v) => wizardField({ classification: v })} options={CLASSIFICATION_OPTIONS(i18nT)} />
                 </Grid>
               </Grid>
 
               {wizard.classification === 'REFERENCE' ? (
                 <Stack spacing={1.5}>
                   <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2.5, p: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>بيانات العينة المرجعية</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{i18nT('food.receptionLab. _ ')}</Typography>
                     <Grid container spacing={1.5}>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="اسم المادة / العينة" requiredMark value={wizard.sampleType} onChange={(e) => wizardField({ sampleType: e.target.value })} placeholder="مثال: سكر مجروش" />
+                        <FormTextField label={i18nT('food.receptionLab. _   ')} requiredMark value={wizard.sampleType} onChange={(e) => wizardField({ sampleType: e.target.value })} placeholder={i18nT('food.receptionLab.  _ ')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="رقم العينة الأصلية" value={wizard.refOriginalNumber} onChange={(e) => wizardField({ refOriginalNumber: e.target.value })} placeholder="يُملأ تلقائياً عند البحث" disabled={Boolean(wizard.matchedSample)} />
+                        <FormTextField label={i18nT('food.receptionLab. _ ')} value={wizard.refOriginalNumber} onChange={(e) => wizardField({ refOriginalNumber: e.target.value })} placeholder={i18nT('food.receptionLab. _ _ ')} disabled={Boolean(wizard.matchedSample)} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="رقم طلب التحليل" value={wizard.analysisRequestNumber} onChange={(e) => wizardField({ analysisRequestNumber: e.target.value })} placeholder="رقم طلب الجهة" />
+                        <FormTextField label={i18nT('food.receptionLab. _ ')} value={wizard.analysisRequestNumber} onChange={(e) => wizardField({ analysisRequestNumber: e.target.value })} placeholder={i18nT('food.receptionLab. _ ')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="الجهة الطالبة" value={wizard.requestingDepartment} onChange={(e) => wizardField({ requestingDepartment: e.target.value })} placeholder="الإدارة العامة لرقابة الأغذية..." />
+                        <FormTextField label={i18nT('food.receptionLab.attr46')} value={wizard.requestingDepartment} onChange={(e) => wizardField({ requestingDepartment: e.target.value })} placeholder={i18nT('food.receptionLab. _ _ _   ')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormSelect label="سبب الحفظ" requiredMark value={wizard.refRetentionReason} onChange={(v) => wizardField({ refRetentionReason: v })} placeholder="اختر السبب..." options={REF_RETENTION_REASONS} />
+                        <FormSelect label={i18nT('food.receptionLab.attr65')} requiredMark value={wizard.refRetentionReason} onChange={(v) => wizardField({ refRetentionReason: v })} placeholder={i18nT('food.receptionLab. _   ')} options={REF_RETENTION_REASONS(i18nT)} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="كمية العينة المرجعية" value={wizard.refQuantity} onChange={(e) => wizardField({ refQuantity: e.target.value })} placeholder="مثال: 200 g" />
+                        <FormTextField label={i18nT('food.receptionLab. _ ')} value={wizard.refQuantity} onChange={(e) => wizardField({ refQuantity: e.target.value })} placeholder={i18nT('food.receptionLab.  200 g')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="مكان التخزين" value={wizard.refStorageLocation} onChange={(e) => wizardField({ refStorageLocation: e.target.value })} placeholder="مثال: غرفة التبريد A" />
+                        <FormTextField label={i18nT('food.receptionLab.attr54')} value={wizard.refStorageLocation} onChange={(e) => wizardField({ refStorageLocation: e.target.value })} placeholder={i18nT('food.receptionLab.  _ _ a')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="درجة الحفظ (°م)" value={wizard.refStorageTemp} onChange={(e) => wizardField({ refStorageTemp: e.target.value })} />
+                        <FormTextField label={i18nT('food.receptionLab. _   _ ')} value={wizard.refStorageTemp} onChange={(e) => wizardField({ refStorageTemp: e.target.value })} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="مدة الاحتفاظ" value={wizard.refRetentionDuration} onChange={(e) => wizardField({ refRetentionDuration: e.target.value })} placeholder="مثال: 6 أشهر" />
+                        <FormTextField label={i18nT('food.receptionLab.attr53')} value={wizard.refRetentionDuration} onChange={(e) => wizardField({ refRetentionDuration: e.target.value })} placeholder={i18nT('food.receptionLab.  6 ')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormSelect label="المنفذ / المحطة" value={wizard.station} onChange={(v) => wizardField({ station: v })} placeholder="اختر..." options={STATION_OPTIONS} />
+                        <FormSelect label={i18nT('food.receptionLab.   ')} value={wizard.station} onChange={(v) => wizardField({ station: v })} placeholder={i18nT('food.receptionLab.   ')} options={STATION_OPTIONS(i18nT)} />
                       </Grid>
                     </Grid>
                   </Box>
@@ -1035,10 +1052,10 @@ const ReceptionLabPage = () => {
               ) : (
                 <Stack spacing={1.5}>
                   <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2.5, p: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>المنتج وطلب التحليل</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{i18nT('food.receptionLab. _ ')}</Typography>
                     <Grid container spacing={1.5}>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="نوع / اسم العينة" requiredMark value={wizard.sampleType} onChange={(e) => wizardField({ sampleType: e.target.value })} placeholder="مثال: Milk Powder" />
+                        <FormTextField label={i18nT('food.receptionLab.   _ ')} requiredMark value={wizard.sampleType} onChange={(e) => wizardField({ sampleType: e.target.value })} placeholder={i18nT('food.receptionLab.  milk powder')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <Autocomplete
@@ -1052,28 +1069,26 @@ const ReceptionLabPage = () => {
                           onChange={(_, val) => { if (val && typeof val !== 'string') applyProduct(val); }}
                           renderInput={(params) => (
                             <Box>
-                              <Typography component="label" variant="body2" sx={{ display: 'block', mb: 0.5, fontWeight: 700 }}>أو اختَر من سجل الأصناف (Catalog)</Typography>
-                              <TextField {...params} variant="outlined" size="small" placeholder="اكتب للبحث عن صنف..." />
+                              <Typography component="label" variant="body2" sx={{ display: 'block', mb: 0.5, fontWeight: 700 }}>{i18nT('food.receptionLab. _ _ _ _  catalog ')}</Typography>
+                              <TextField {...params} variant="outlined" size="small" placeholder={i18nT('food.receptionLab. _ _ _   ')} />
                             </Box>
                           )}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="رقم طلب التحليل" value={wizard.analysisRequestNumber} onChange={(e) => wizardField({ analysisRequestNumber: e.target.value })} placeholder="LAB-2026-00125" />
+                        <FormTextField label={i18nT('food.receptionLab. _ ')} value={wizard.analysisRequestNumber} onChange={(e) => wizardField({ analysisRequestNumber: e.target.value })} placeholder="LAB-2026-00125" />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormTextField label="الجهة الطالبة" value={wizard.requestingDepartment} onChange={(e) => wizardField({ requestingDepartment: e.target.value })} placeholder="إدارة رقابة الأغذية..." />
+                        <FormTextField label={i18nT('food.receptionLab.attr46')} value={wizard.requestingDepartment} onChange={(e) => wizardField({ requestingDepartment: e.target.value })} placeholder={i18nT('food.receptionLab. _ _   ')} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormSelect label="الأولوية" value={wizard.priority} onChange={(v) => wizardField({ priority: v })} options={PRIORITY_OPTIONS} />
+                        <FormSelect label={i18nT('food.receptionLab.attr66')} value={wizard.priority} onChange={(v) => wizardField({ priority: v })} options={PRIORITY_OPTIONS(i18nT)} />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormSelect label="المنفذ / المحطة" value={wizard.station} onChange={(v) => wizardField({ station: v })} placeholder="اختر..." options={STATION_OPTIONS} />
+                        <FormSelect label={i18nT('food.receptionLab.   ')} value={wizard.station} onChange={(v) => wizardField({ station: v })} placeholder={i18nT('food.receptionLab.   ')} options={STATION_OPTIONS(i18nT)} />
                       </Grid>
                     </Grid>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-                      تُحدَّد التحاليل المطلوبة لاحقاً من قبل منسّق العينات بعد القبول.
-                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>{i18nT('food.receptionLab. _ _ _ _ _ _ _ _ _ ')}</Typography>
                   </Box>
                 </Stack>
               )}
@@ -1082,43 +1097,43 @@ const ReceptionLabPage = () => {
 
           {wizard.step === 2 && (
             <Stack spacing={2}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>بيانات العينة كما وردت عند الوصول</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{i18nT('food.receptionLab. _ _ _ _ ')}</Typography>
               <Grid container spacing={1.5}>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="اسم المفتش" value={wizard.inspectorName} onChange={(e) => wizardField({ inspectorName: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab.attr61')} value={wizard.inspectorName} onChange={(e) => wizardField({ inspectorName: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="العلامة التجارية" value={wizard.brand} onChange={(e) => wizardField({ brand: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab.attr29')} value={wizard.brand} onChange={(e) => wizardField({ brand: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="بلد المنشأ" value={wizard.originCountry} onChange={(e) => wizardField({ originCountry: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab.attr60')} value={wizard.originCountry} onChange={(e) => wizardField({ originCountry: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="رقم الدفعة" value={wizard.batchNumber} onChange={(e) => wizardField({ batchNumber: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab.attr58')} value={wizard.batchNumber} onChange={(e) => wizardField({ batchNumber: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="تاريخ الإنتاج" type="date" value={wizard.productionDate} onChange={(e) => wizardField({ productionDate: e.target.value })} InputLabelProps={{ shrink: true }} />
+                  <FormTextField label={i18nT('food.receptionLab.attr44')} type="date" value={wizard.productionDate} onChange={(e) => wizardField({ productionDate: e.target.value })} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="تاريخ الانتهاء" type="date" value={wizard.expiryDate} onChange={(e) => wizardField({ expiryDate: e.target.value })} InputLabelProps={{ shrink: true }} />
+                  <FormTextField label={i18nT('food.receptionLab.attr40')} type="date" value={wizard.expiryDate} onChange={(e) => wizardField({ expiryDate: e.target.value })} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <FormTextField label="الكمية" type="number" value={wizard.quantity} onChange={(e) => wizardField({ quantity: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab.attr72')} type="number" value={wizard.quantity} onChange={(e) => wizardField({ quantity: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <FormSelect label="الوحدة" value={wizard.quantityUnit} onChange={(v) => wizardField({ quantityUnit: v })} placeholder="—" options={QUANTITY_UNITS} />
+                  <FormSelect label={i18nT('food.receptionLab.attr71')} value={wizard.quantityUnit} onChange={(v) => wizardField({ quantityUnit: v })} placeholder="—" options={QUANTITY_UNITS(i18nT)} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <FormTextField label="عدد الوحدات/العبوات" type="number" value={wizard.unitsCount} onChange={(e) => wizardField({ unitsCount: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab. _ ')} type="number" value={wizard.unitsCount} onChange={(e) => wizardField({ unitsCount: e.target.value })} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormSelect label="نوع التغليف" value={wizard.packagingType} onChange={(v) => wizardField({ packagingType: v })} placeholder="—" options={PACKAGING_TYPES} />
+                  <FormSelect label={i18nT('food.receptionLab.attr56')} value={wizard.packagingType} onChange={(v) => wizardField({ packagingType: v })} placeholder="—" options={PACKAGING_TYPES(i18nT)} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormSelect label="حالة التغليف" value={wizard.packagingCondition} onChange={(v) => wizardField({ packagingCondition: v })} placeholder="—" options={PACKAGING_CONDITIONS} />
+                  <FormSelect label={i18nT('food.receptionLab.attr50')} value={wizard.packagingCondition} onChange={(v) => wizardField({ packagingCondition: v })} placeholder="—" options={PACKAGING_CONDITIONS(i18nT)} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <FormTextField label="درجة الحرارة (°م)" type="number" value={wizard.temperature} onChange={(e) => wizardField({ temperature: e.target.value })} />
+                  <FormTextField label={i18nT('food.receptionLab. _   _ ')} type="number" value={wizard.temperature} onChange={(e) => wizardField({ temperature: e.target.value })} />
                 </Grid>
               </Grid>
             </Stack>
@@ -1126,10 +1141,10 @@ const ReceptionLabPage = () => {
 
           {wizard.step === 3 && (
             <Stack spacing={2}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>نموذج فحص العينة قبل القبول</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{i18nT('food.receptionLab. _ _ _ ')}</Typography>
               <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2.5, p: 2, bgcolor: '#F4F6F9' }}>
                 <Stack spacing={0.25}>
-                  {CHECKLIST_ITEMS.map((c) => (
+                  {CHECKLIST_ITEMS(i18nT).map((c) => (
                     <FormControlLabel
                       key={c.key}
                       control={<Checkbox checked={Boolean(wizard.checklist[c.key])} onChange={() => toggleChecklist(c.key)} />}
@@ -1140,42 +1155,38 @@ const ReceptionLabPage = () => {
               </Box>
 
               <FormSelect
-                label="قرار الاستلام"
+                label={i18nT('food.receptionLab.attr43')}
                 value={wizard.decision}
                 onChange={(v) => wizardField({ decision: v as 'accept' | 'conditional' | 'reject' })}
                 options={[
-                  { value: 'accept', label: 'قبول العينة' },
-                  { value: 'conditional', label: 'قبول مشروط' },
-                  { value: 'reject', label: 'رفض العينة' },
+                  { value: 'accept', label: i18nT('food.receptionLab.str61') },
+                  { value: 'conditional', label: i18nT('food.receptionLab.str65') },
+                  { value: 'reject', label: i18nT('food.receptionLab.str67') },
                 ]}
               />
 
               {wizard.decision === 'reject' ? (
                 <>
-                  <FormSelect label="سبب الرفض" requiredMark value={wizard.rejectionReason} onChange={(v) => wizardField({ rejectionReason: v })} placeholder="اختر السبب..." options={REJECT_REASONS.map((r) => ({ value: r, label: r }))} />
-                  <FormTextField label="ملاحظات الرفض" multiline minRows={2} value={wizard.rejectionNotes} onChange={(e) => wizardField({ rejectionNotes: e.target.value })} />
+                  <FormSelect label={i18nT('food.receptionLab.attr64')} requiredMark value={wizard.rejectionReason} onChange={(v) => wizardField({ rejectionReason: v })} placeholder={i18nT('food.receptionLab. _   ')} options={REJECT_REASONS(i18nT).map((r) => ({ value: r, label: r }))} />
+                  <FormTextField label={i18nT('food.receptionLab.attr45')} multiline minRows={2} value={wizard.rejectionNotes} onChange={(e) => wizardField({ rejectionNotes: e.target.value })} />
                 </>
               ) : (
-                <FormTextField label="ملاحظات القبول" multiline minRows={2} value={wizard.receptionNotes} onChange={(e) => wizardField({ receptionNotes: e.target.value })} />
+                <FormTextField label={i18nT('food.receptionLab.attr41')} multiline minRows={2} value={wizard.receptionNotes} onChange={(e) => wizardField({ receptionNotes: e.target.value })} />
               )}
             </Stack>
           )}
         </DialogContent>
         <Divider />
         <DialogActions>
-          <AppButton variant="ghost" onClick={() => setWizard((w) => ({ ...w, open: false }))} disabled={wizard.busy}>
-            إلغاء
-          </AppButton>
+          <AppButton variant="ghost" onClick={() => setWizard((w) => ({ ...w, open: false }))} disabled={wizard.busy}>{i18nT('food.receptionLab.jsx17')}</AppButton>
           {wizard.step > 1 && (
-            <AppButton variant="secondary" onClick={() => setWizard((w) => ({ ...w, step: (w.step - 1) as 1 | 2 | 3 }))} disabled={wizard.busy}>
-              السابق
-            </AppButton>
+            <AppButton variant="secondary" onClick={() => setWizard((w) => ({ ...w, step: (w.step - 1) as 1 | 2 | 3 }))} disabled={wizard.busy}>{i18nT('food.receptionLab.jsx18')}</AppButton>
           )}
           {wizard.step < 3 ? (
-            <AppButton onClick={nextStep}>التالي</AppButton>
+            <AppButton onClick={nextStep}>{i18nT('food.receptionLab.jsx1')}</AppButton>
           ) : (
             <AppButton startIcon={<CheckCircleIcon />} onClick={submitWizard} loading={wizard.busy}>
-              {wizard.decision === 'reject' ? 'تسجيل الرفض' : 'قبول وتسجيل العينة'}
+              {wizard.decision === 'reject' ? i18nT('food.receptionLab.str63') : i18nT('food.receptionLab. _ ')}
             </AppButton>
           )}
         </DialogActions>
@@ -1210,6 +1221,7 @@ const HomeSection = ({
   onReceive: () => void;
   onSamples: () => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const stat = (label: string, value: number | string | null | undefined, color: string, icon: React.ReactNode, size: 'default' | 'lg' = 'default') => (
     <Grid item xs={6} sm={4} md={size === 'lg' ? 4 : 3}>
       <Box sx={{ borderTop: `3px solid ${color}`, borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
@@ -1220,43 +1232,41 @@ const HomeSection = ({
   return (
     <Box>
       <Box component="section" ref={register('overview')} data-section="overview" sx={{ scrollMarginTop: '80px' }}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>عينات اليوم</Typography>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.receptionLab.jsx19')}</Typography>
       <Grid container spacing={1.5}>
-        {stat('واردة', dash?.today ?? 0, '#0B5ED7', <ScheduleIcon />, 'lg')}
-        {stat('مكتملة الاستلام (مقبولة)', dash?.accepted ?? 0, '#1d7a54', <CheckCircleIcon />, 'lg')}
-        {stat('معلقة (بانتظار القرار)', dash?.pending ?? 0, '#FFC107', <RadioButtonUncheckedIcon />, 'lg')}
+        {stat(i18nT('food.receptionLab.str93'), dash?.today ?? 0, '#0B5ED7', <ScheduleIcon />, 'lg')}
+        {stat(i18nT('food.receptionLab. _  _ '), dash?.accepted ?? 0, '#1d7a54', <CheckCircleIcon />, 'lg')}
+        {stat(i18nT('food.receptionLab.  _ _ '), dash?.pending ?? 0, '#FFC107', <RadioButtonUncheckedIcon />, 'lg')}
       </Grid>
       <Grid container spacing={1.5} sx={{ mt: 0.5 }}>
-        {stat('مرفوضة', dash?.rejected ?? 0, '#c63a3a', <CircleIcon />)}
-        {stat('قبول مشروط', dash?.conditional ?? 0, '#FFC107', <RadioButtonUncheckedIcon />)}
-        {stat('عاجلة / بمراجعة', dash?.needs_review ?? 0, '#c63a3a', <NotificationsActiveIcon />)}
-        {stat('عينات مرجعية', dash?.references ?? 0, '#0B5ED7', <ArchiveIcon />)}
-        {stat('متوسط زمن القرار (دقيقة)', dash?.avg_reception_minutes, '#1d7a54', <ScheduleIcon />)}
-        {stat('مسجلة اليوم (قائمة)', receivedToday, '#0B5ED7', <BiotechIcon />)}
+        {stat(i18nT('food.receptionLab.str84'), dash?.rejected ?? 0, '#c63a3a', <CircleIcon />)}
+        {stat(i18nT('food.receptionLab.str65'), dash?.conditional ?? 0, '#FFC107', <RadioButtonUncheckedIcon />)}
+        {stat(i18nT('food.receptionLab.   '), dash?.needs_review ?? 0, '#c63a3a', <NotificationsActiveIcon />)}
+        {stat(i18nT('food.receptionLab.str60'), dash?.references ?? 0, '#0B5ED7', <ArchiveIcon />)}
+        {stat(i18nT('food.receptionLab. _ _  _ '), dash?.avg_reception_minutes, '#1d7a54', <ScheduleIcon />)}
+        {stat(i18nT('food.receptionLab. _  _ '), receivedToday, '#0B5ED7', <BiotechIcon />)}
       </Grid>
       </Box>
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={12} md={6}>
           <Box component="section" ref={register('workflow')} data-section="workflow" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2.5, scrollMarginTop: '80px' }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>سير العمل</Typography>
-            <Typography variant="body2" color="text.secondary">
-              تستقبل العينة ← تتحقق من طلب التحليل ← تطابق بيانات العينة ← تُصدر الباركود ← تسجّل الاستلام ← تسلّم للمنسق.
-              ولا تُقبل أي عينة بدون استكمال نموذج الفحص، ولا يُرفض أي طلب بدون ذكر سبب الرفض.
-            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.receptionLab.jsx20')}</Typography>
+            <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab.workflow_steps')}</Typography>
+            <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab.workflow_rules')}</Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
-              <AppButton size="small" startIcon={<AddIcon />} onClick={onReceive}>استلام عينة</AppButton>
-              <AppButton size="small" variant="secondary" onClick={onSamples}>إدارة العينات</AppButton>
+              <AppButton size="small" startIcon={<AddIcon />} onClick={onReceive}>{i18nT('food.receptionLab.jsx22')}</AppButton>
+              <AppButton size="small" variant="secondary" onClick={onSamples}>{i18nT('food.receptionLab.jsx23')}</AppButton>
             </Stack>
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
           <Box component="section" ref={register('alerts')} data-section="alerts" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2.5, scrollMarginTop: '80px' }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-              التنبيهات {alerts.length > 0 ? <Chip size="small" color="error" label={alerts.length} /> : null}
+              {i18nT('food.receptionLab.alerts')} {alerts.length > 0 ? <Chip size="small" color="error" label={alerts.length} /> : null}
             </Typography>
             {alerts.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">لا توجد عينات عاجلة تنتظر قرار الاستلام.</Typography>
+              <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab. _ _ _ _ _ _ ')}</Typography>
             ) : (
               <Stack spacing={0.75}>
                 {alerts.slice(0, 4).map((a) => (
@@ -1264,7 +1274,7 @@ const HomeSection = ({
                     <StatusChip label={labPriority[a.sample.priority]?.label ?? a.sample.priority} tone={labPriority[a.sample.priority]?.tone} />
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>{a.sample.sample_number}</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>{a.reason}</Typography>
-                    <AppButton size="small" variant="secondary" onClick={() => onOpenSample(a.sample.id)}>فتح</AppButton>
+                    <AppButton size="small" variant="secondary" onClick={() => onOpenSample(a.sample.id)}>{i18nT('food.receptionLab.jsx2')}</AppButton>
                   </Stack>
                 ))}
               </Stack>
@@ -1286,29 +1296,30 @@ const ReceptionSection = ({
   onOpenSample: (id: string) => void;
   onPrint: (s: FoodSample) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'received_at', label: 'وقت الاستلام', render: (s) => formatDateTime(s.received_at) },
-    { key: 'reception_status', label: 'قرار الاستلام', render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
-    { key: 'priority', label: 'الأولوية', render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'received_at', label: i18nT('food.receptionLab.str57'), render: (s) => formatDateTime(s.received_at) },
+    { key: 'reception_status', label: i18nT('food.receptionLab.str54'), render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
+    { key: 'priority', label: i18nT('food.receptionLab.str73'), render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح</AppButton>
-          <IconButton aria-label="طباعة" size="small" onClick={() => onPrint(s)}><PrintIcon fontSize="small" /></IconButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx2')}</AppButton>
+          <IconButton aria-label={i18nT('food.receptionLab.attr73')} size="small" onClick={() => onPrint(s)}><PrintIcon fontSize="small" /></IconButton>
         </Stack>
       ),
     },
-  ], [onOpenSample, onPrint]);
+  ], [i18nT, onOpenSample, onPrint]);
 
   return (
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <AppButton startIcon={<AddIcon />} onClick={onRegister}>استلام / تسجيل عينة</AppButton>
+        <AppButton startIcon={<AddIcon />} onClick={onRegister}>{i18nT('food.receptionLab.   _ ')}</AppButton>
       </Box>
-      <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title="أحدث العينات المستلمة" />
+      <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title={i18nT('food.receptionLab. _ ')} />
     </Box>
   );
 };
@@ -1322,37 +1333,38 @@ const SamplesSection = ({
   onOpenSample: (id: string) => void;
   onPrint: (s: FoodSample) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'station', label: 'المنفذ', render: (s) => s.station || '—' },
-    { key: 'brand', label: 'العلامة', render: (s) => s.brand || '—' },
-    { key: 'quantity', label: 'الكمية', render: (s) => (s.quantity != null ? `${s.quantity} ${s.quantity_unit ?? ''}`.trim() : '—') },
-    { key: 'temperature', label: 'الحرارة', render: (s) => (s.temperature != null ? `${s.temperature}°` : '—') },
-    { key: 'reception_status', label: 'قرار الاستلام', render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
-    { key: 'status', label: 'الحالة', render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
-    { key: 'priority', label: 'الأولوية', render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
-    { key: 'bench', label: 'القسم', render: (s) => labBench[s.bench]?.label ?? s.bench },
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'station', label: i18nT('food.receptionLab.str87'), render: (s) => s.station || '—' },
+    { key: 'brand', label: i18nT('food.receptionLab.str76'), render: (s) => s.brand || '—' },
+    { key: 'quantity', label: i18nT('food.receptionLab.str79'), render: (s) => (s.quantity != null ? `${s.quantity} ${s.quantity_unit ?? ''}`.trim() : '—') },
+    { key: 'temperature', label: i18nT('food.receptionLab.str77'), render: (s) => (s.temperature != null ? `${s.temperature}°` : '—') },
+    { key: 'reception_status', label: i18nT('food.receptionLab.str54'), render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
+    { key: 'status', label: i18nT('food.receptionLab.str80'), render: (s) => <StatusChip label={labSampleStatus[s.status]?.label ?? s.status} tone={labSampleStatus[s.status]?.tone} /> },
+    { key: 'priority', label: i18nT('food.receptionLab.str73'), render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
+    { key: 'bench', label: i18nT('food.receptionLab.str91'), render: (s) => labBench[s.bench]?.label ?? s.bench },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح</AppButton>
-          <AppButton size="small" variant="secondary" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>باركود</AppButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx2')}</AppButton>
+          <AppButton size="small" variant="secondary" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{i18nT('food.receptionLab.jsx3')}</AppButton>
         </Stack>
       ),
     },
   ], [onOpenSample, onPrint]);
 
-  return <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title="إدارة العينات — قسم الاستلام" />;
+  return <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title={i18nT('food.receptionLab. _   _ ')} />;
 };
 
 /* ================== العينات المرجعية ================== */
 
 const refStatus: Record<string, { label: string; tone: 'success' | 'warning' | 'error' }> = {
-  STORED: { label: 'مخزنة', tone: 'success' },
-  RETRIEVED: { label: 'تم الرجوع إليها', tone: 'warning' },
-  DISCARDED: { label: 'أُعدمت', tone: 'error' },
+  STORED: { label: 'stored', tone: 'success' },
+  RETRIEVED: { label: 'retrieved', tone: 'warning' },
+  DISCARDED: { label: 'discarded', tone: 'error' },
 };
 
 const ReferencesSection = ({
@@ -1367,6 +1379,7 @@ const ReferencesSection = ({
   setRefForm: React.Dispatch<React.SetStateAction<RefFormState>>;
   submitRef: () => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<ReferenceSample | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
 
@@ -1375,11 +1388,11 @@ const ReferencesSection = ({
     setDeleteBusy(true);
     try {
       await deleteReferenceSample(deleteTarget.id);
-      notifySuccess('تم الحذف');
+      notifySuccess(i18nT('food.receptionLab.str75'));
       setDeleteTarget(null);
       onRefresh();
     } catch {
-      notifyError('تعذر الحذف');
+      notifyError(i18nT('food.receptionLab.str66'));
     } finally {
       setDeleteBusy(false);
     }
@@ -1388,11 +1401,11 @@ const ReferencesSection = ({
   return (
   <Box>
     <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-      <AppButton startIcon={<AddIcon />} onClick={onOpenRegister}>تسجيل عينة مرجعية</AppButton>
+      <AppButton startIcon={<AddIcon />} onClick={onOpenRegister}>{i18nT('food.receptionLab. _ ')}</AppButton>
     </Box>
     <Grid container spacing={1.5}>
       {references.length === 0 && (
-        <Grid item xs={12}><Typography variant="body2" color="text.secondary">لا توجد عينات مرجعية مسجلة.</Typography></Grid>
+        <Grid item xs={12}><Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab. _ _ _ _ ')}</Typography></Grid>
       )}
       {references.map((r) => (
         <Grid item xs={12} md={6} lg={4} key={r.id}>
@@ -1405,28 +1418,24 @@ const ReferencesSection = ({
               <StatusChip label={refStatus[r.status]?.label ?? r.status} tone={refStatus[r.status]?.tone} />
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-              العينة الأصلية: {r.original_sample_number ?? '—'}
+              {i18nT('food.receptionLab.original_sample')}: {r.original_sample_number ?? '—'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              الموقع: {r.storage_location || '—'} • الختم: {r.seal_number || '—'}
-              {r.quantity != null ? ` • الكمية: ${r.quantity}` : ''}
-              {r.retention_reason ? ` • السبب: ${r.retention_reason}` : ''}
+              {i18nT('food.receptionLab.location')}: {r.storage_location || '—'} • {i18nT('food.receptionLab.seal')}: {r.seal_number || '—'}
+              {r.quantity != null ? ` • ${i18nT('food.receptionLab.quantity')}: ${r.quantity}` : ''}
+              {r.retention_reason ? ` • ${i18nT('food.receptionLab.reason')}: ${r.retention_reason}` : ''}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              استلام: {formatDateTime(r.received_at)} — {r.received_by_name ?? '—'}
+              {i18nT('food.receptionLab.received')}: {formatDateTime(r.received_at)} — {r.received_by_name ?? '—'}
             </Typography>
             <Stack direction="row" spacing={1}>
               <AppButton size="small" variant="secondary" disabled={r.status !== 'STORED'} onClick={async () => {
-                try { await retrieveReferenceSample(r.id, 'الرجوع للعينة المرجعية'); notifySuccess('تم الرجوع'); onRefresh(); } catch { notifyError('تعذر التنفيذ'); }
-              }}>
-                رجوع
-              </AppButton>
+                try { await retrieveReferenceSample(r.id, i18nT('food.receptionLab. _ ')); notifySuccess(i18nT('food.receptionLab.str71')); onRefresh(); } catch { notifyError(i18nT('food.receptionLab.str58')); }
+              }}>{i18nT('food.receptionLab.jsx28')}</AppButton>
               <AppButton size="small" variant="danger" disabled={r.status === 'DISCARDED'} onClick={async () => {
-                try { await discardReferenceSample(r.id, 'إعدام'); notifySuccess('تم الإعدام'); onRefresh(); } catch { notifyError('تعذر التنفيذ'); }
-              }}>
-                إعدام
-              </AppButton>
-              <IconButton aria-label="حذف" size="small" color="error" onClick={() => setDeleteTarget(r)}>
+                try { await discardReferenceSample(r.id, i18nT('food.receptionLab.str92')); notifySuccess(i18nT('food.receptionLab.str64')); onRefresh(); } catch { notifyError(i18nT('food.receptionLab.str58')); }
+              }}>{i18nT('food.receptionLab.jsx29')}</AppButton>
+              <IconButton aria-label={i18nT('food.receptionLab.attr74')} size="small" color="error" onClick={() => setDeleteTarget(r)}>
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -1435,42 +1444,42 @@ const ReferencesSection = ({
       ))}
     </Grid>
 
-    <FormDialog open={dialogOpen} onClose={dialogClose} onSubmit={submitRef} title="تسجيل عينة مرجعية" subtitle="تحفظ للرجوع إليها مرتبطة بالعينة الأصلية" maxWidth="sm">
-      <FormTextField label="اسم المادة / العينة" requiredMark value={refForm.product} onChange={(e) => setRefForm((f) => ({ ...f, product: e.target.value }))} />
+    <FormDialog open={dialogOpen} onClose={dialogClose} onSubmit={submitRef} title={i18nT('food.receptionLab. _ ')} subtitle={i18nT('food.receptionLab. _ _ _ _ ')} maxWidth="sm">
+      <FormTextField label={i18nT('food.receptionLab. _   ')} requiredMark value={refForm.product} onChange={(e) => setRefForm((f) => ({ ...f, product: e.target.value }))} />
       <Grid container spacing={1.5}>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="المنشأ / الدفعة" value={refForm.origin} onChange={(e) => setRefForm((f) => ({ ...f, origin: e.target.value }))} />
+          <FormTextField label={i18nT('food.receptionLab.   ')} value={refForm.origin} onChange={(e) => setRefForm((f) => ({ ...f, origin: e.target.value }))} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="رقم العينة الأصلية" value={refForm.originalSample} onChange={(e) => setRefForm((f) => ({ ...f, originalSample: e.target.value }))} placeholder="رقم العينة المرتبطة" />
+          <FormTextField label={i18nT('food.receptionLab. _ ')} value={refForm.originalSample} onChange={(e) => setRefForm((f) => ({ ...f, originalSample: e.target.value }))} placeholder={i18nT('food.receptionLab. _ ')} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="الكمية" value={refForm.quantity} onChange={(e) => setRefForm((f) => ({ ...f, quantity: e.target.value }))} />
+          <FormTextField label={i18nT('food.receptionLab.attr72')} value={refForm.quantity} onChange={(e) => setRefForm((f) => ({ ...f, quantity: e.target.value }))} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="درجة حرارة التخزين (°م)" value={refForm.storageTemp} onChange={(e) => setRefForm((f) => ({ ...f, storageTemp: e.target.value }))} />
+          <FormTextField label={i18nT('food.receptionLab. _ _   _ ')} value={refForm.storageTemp} onChange={(e) => setRefForm((f) => ({ ...f, storageTemp: e.target.value }))} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormSelect label="سبب الاحتفاظ" value={refForm.retentionReason} onChange={(v) => setRefForm((f) => ({ ...f, retentionReason: v }))} placeholder="—" options={REF_RETENTION_REASONS} />
+          <FormSelect label={i18nT('food.receptionLab.attr49')} value={refForm.retentionReason} onChange={(v) => setRefForm((f) => ({ ...f, retentionReason: v }))} placeholder="—" options={REF_RETENTION_REASONS(i18nT)} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="مدة الاحتفاظ / الموقع" value={refForm.storage} onChange={(e) => setRefForm((f) => ({ ...f, storage: e.target.value }))} placeholder="مثال: غرفة التخزين A" />
+          <FormTextField label={i18nT('food.receptionLab. _   ')} value={refForm.storage} onChange={(e) => setRefForm((f) => ({ ...f, storage: e.target.value }))} placeholder={i18nT('food.receptionLab.  _ _ a')} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="رقم الختم" value={refForm.seal} onChange={(e) => setRefForm((f) => ({ ...f, seal: e.target.value }))} />
+          <FormTextField label={i18nT('food.receptionLab.attr62')} value={refForm.seal} onChange={(e) => setRefForm((f) => ({ ...f, seal: e.target.value }))} />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormTextField label="الترميز" value={refForm.coding} onChange={(e) => setRefForm((f) => ({ ...f, coding: e.target.value }))} />
+          <FormTextField label={i18nT('food.receptionLab.attr70')} value={refForm.coding} onChange={(e) => setRefForm((f) => ({ ...f, coding: e.target.value }))} />
         </Grid>
       </Grid>
-      <FormTextField label="ملاحظات" value={refForm.remarks} onChange={(e) => setRefForm((f) => ({ ...f, remarks: e.target.value }))} multiline minRows={2} />
+      <FormTextField label={i18nT('food.receptionLab.attr68')} value={refForm.remarks} onChange={(e) => setRefForm((f) => ({ ...f, remarks: e.target.value }))} multiline minRows={2} />
     </FormDialog>
 
     <ConfirmDialog
       open={Boolean(deleteTarget)}
-      title="حذف عينة مرجعية"
-      message={`هل تريد حذف العينة المرجعية «${deleteTarget?.product_name || ''}» (${deleteTarget?.ref_number || '—'})؟ لا يمكن التراجع عن هذا الإجراء.`}
-      confirmLabel="حذف"
+      title={i18nT('food.receptionLab. _ ')}
+      message={i18nT('food.receptionLab.confirm_delete_reference', { name: deleteTarget?.product_name || '', ref: deleteTarget?.ref_number || '—' })}
+      confirmLabel={i18nT('food.receptionLab.attr74')}
       tone="error"
       loading={deleteBusy}
       onClose={() => {
@@ -1485,19 +1494,20 @@ const ReferencesSection = ({
 /* ================== سلسلة الحيازة (قراءة فقط) ================== */
 
 const TrackingSection = () => {
+  const { t: i18nT } = useTranslation();
   const [events, setEvents] = useState<ChainOfCustody[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     getCustodyEvents({ page_size: 50 })
       .then((r) => setEvents(r.data.data.results))
-      .catch(() => notifyError('تعذر تحميل سلسلة الحيازة'))
+      .catch(() => notifyError(i18nT('food.receptionLab. _ _ ')))
       .finally(() => setLoading(false));
   }, []);
-  if (loading) return <Typography variant="body2" color="text.secondary">جارٍ تحميل سلسلة الحيازة...</Typography>;
-  if (events.length === 0) return <Typography variant="body2" color="text.secondary">لا توجد أحداث حيازة مسجلة.</Typography>;
+  if (loading) return <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab. _ _ _   ')}</Typography>;
+  if (events.length === 0) return <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab. _ _ _ _ ')}</Typography>;
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>سلسلة الحيازة — قراءة فقط</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab. _   _ ')}</Typography>
       <Stack spacing={1}>
         {events.map((ev) => (
           <Stack key={ev.id} direction="row" spacing={1.5} alignItems="flex-start">
@@ -1516,7 +1526,7 @@ const TrackingSection = () => {
                 {ev.sample_number} — {ev.from_department} ← {ev.to_department}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                نقل: {formatDateTime(ev.transferred_at)} — {ev.transferred_by_name ?? '—'}{ev.is_received ? ` • استلم: ${ev.received_by_name ?? ''}` : ' • بانتظار الاستلام'}
+                {i18nT('food.receptionLab.transferred')}: {formatDateTime(ev.transferred_at)} — {ev.transferred_by_name ?? '—'}{ev.is_received ? ` • ${i18nT('food.receptionLab.received_by')}: ${ev.received_by_name ?? ''}` : i18nT('food.receptionLab.not_received')}
               </Typography>
               {ev.remarks && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{ev.remarks}</Typography>}
             </Box>
@@ -1530,18 +1540,19 @@ const TrackingSection = () => {
 /* ================== التقارير ================== */
 
 const ReportsSection = ({ dash, referencesCount }: { dash: ReceptionDashboard | null; referencesCount: number }) => {
+  const { t: i18nT } = useTranslation();
   const rows = [
-    { label: 'عينات اليوم', value: dash?.today ?? 0 },
-    { label: 'بانتظار قرار الاستلام', value: dash?.pending ?? 0 },
-    { label: 'مقبولة', value: dash?.accepted ?? 0 },
-    { label: 'قبول مشروط', value: dash?.conditional ?? 0 },
-    { label: 'مرفوضة', value: dash?.rejected ?? 0 },
-    { label: 'عاجلة / بانتظار المراجعة', value: dash?.needs_review ?? 0 },
-    { label: 'عينات مرجعية', value: referencesCount },
+    { label: i18nT('food.receptionLab.str62'), value: dash?.today ?? 0 },
+    { label: i18nT('food.receptionLab. _ '), value: dash?.pending ?? 0 },
+    { label: i18nT('food.receptionLab.str82'), value: dash?.accepted ?? 0 },
+    { label: i18nT('food.receptionLab.str65'), value: dash?.conditional ?? 0 },
+    { label: i18nT('food.receptionLab.str84'), value: dash?.rejected ?? 0 },
+    { label: i18nT('food.receptionLab.   _ '), value: dash?.needs_review ?? 0 },
+    { label: i18nT('food.receptionLab.str60'), value: referencesCount },
   ];
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>تقارير الاستلام</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab.jsx33')}</Typography>
       <Grid container spacing={1.5}>
         {rows.map((r) => (
           <Grid item xs={12} sm={6} md={4} key={r.label}>
@@ -1553,9 +1564,7 @@ const ReportsSection = ({ dash, referencesCount }: { dash: ReceptionDashboard | 
         ))}
       </Grid>
       <Box sx={{ mt: 2, p: 2, border: '1px dashed', borderColor: 'divider', borderRadius: 2.5, bgcolor: '#F4F6F9' }}>
-        <Typography variant="caption" color="text.secondary">
-          متاح للتصدير لاحقاً بالاشتراك مع دورة التحليل الكاملة للمختبر.
-        </Typography>
+        <Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab. _ _ _ _ _ _ _ _ ')}</Typography>
       </Box>
     </Box>
   );
@@ -1563,25 +1572,28 @@ const ReportsSection = ({ dash, referencesCount }: { dash: ReceptionDashboard | 
 
 /* ================== التنبيهات ================== */
 
-const AlertsSection = ({ alerts, onOpenSample }: { alerts: Array<{ sample: FoodSample; reason: string }>; onOpenSample: (id: string) => void }) => (
-  <Box>
-    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>التنبيهات — عينات عاجلة بانتظار قرار الاستلام</Typography>
-    {alerts.length === 0 && <Typography variant="body2" color="text.secondary">لا توجد تنبيهات حالياً.</Typography>}
+const AlertsSection = ({ alerts, onOpenSample }: { alerts: Array<{ sample: FoodSample; reason: string }>; onOpenSample: (id: string) => void }) => {
+  const { t: i18nT } = useTranslation();
+  return (
+    <Box>
+    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab.   _ _ _ _ ')}</Typography>
+    {alerts.length === 0 && <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab. _ _ _ ')}</Typography>}
     <Stack spacing={1}>
       {alerts.map((a) => (
         <Box key={a.sample.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar sx={{ bgcolor: 'error.main' }}><NotificationsActiveIcon /></Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body1" sx={{ fontWeight: 700 }}>{a.sample.sample_number} — {a.sample.sample_type}</Typography>
-            <Typography variant="caption" color="text.secondary">{a.reason}{a.sample.priority === 'URGENT' ? ' • عاجلة' : ''}</Typography>
+            <Typography variant="caption" color="text.secondary">{a.reason}{a.sample.priority === 'URGENT' ? i18nT('food.receptionLab.  ') : ''}</Typography>
           </Box>
           <StatusChip label={labPriority[a.sample.priority]?.label ?? a.sample.priority} tone={labPriority[a.sample.priority]?.tone} />
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(a.sample.id)}>اتخاذ قرار</AppButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(a.sample.id)}>{i18nT('food.receptionLab.jsx37')}</AppButton>
         </Box>
       ))}
     </Stack>
   </Box>
-);
+  );
+}
 
 /* ================== العينات المعلقة (بانتظار القرار) ================== */
 
@@ -1592,23 +1604,24 @@ const PendingSection = ({
   onOpenSample: (id: string) => void;
   onPrint: (s: FoodSample) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'priority', label: 'الأولوية', render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
-    { key: 'received_at', label: 'وقت الاستلام', render: (s) => formatDateTime(s.received_at) },
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'priority', label: i18nT('food.receptionLab.str73'), render: (s) => <StatusChip label={labPriority[s.priority]?.label ?? s.priority} tone={labPriority[s.priority]?.tone} /> },
+    { key: 'received_at', label: i18nT('food.receptionLab.str57'), render: (s) => formatDateTime(s.received_at) },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>اتخاذ قرار</AppButton>
-          <IconButton aria-label="طباعة" size="small" onClick={() => onPrint(s)}><PrintIcon fontSize="small" /></IconButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx37')}</AppButton>
+          <IconButton aria-label={i18nT('food.receptionLab.attr73')} size="small" onClick={() => onPrint(s)}><PrintIcon fontSize="small" /></IconButton>
         </Stack>
       ),
     },
   ], [onOpenSample, onPrint]);
 
-  return <FoodDataTable<FoodSample> columns={columns} table={table} title="العينات المعلقة — بانتظار قرار الاستلام" />;
+  return <FoodDataTable<FoodSample> columns={columns} table={table} title={i18nT('food.receptionLab. _   _ _ ')} />;
 };
 
 /* ================== العينات المرفوضة ================== */
@@ -1619,28 +1632,30 @@ const RejectedSection = ({
   table: ReturnType<typeof useServerTable<FoodSample>>;
   onOpenSample: (id: string) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'rejection_reason', label: 'سبب الرفض', render: (s) => s.rejection_reason || '—' },
-    { key: 'reception_decision_at', label: 'وقت الرفض', render: (s) => formatDateTime(s.reception_decision_at) },
-    { key: 'reception_decision_by_name', label: 'بواسطة', render: (s) => s.reception_decision_by_name || '—' },
-    { key: 'actions', label: '', render: (s) => <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح</AppButton> },
-  ], [onOpenSample]);
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'rejection_reason', label: i18nT('food.receptionLab.str69'), render: (s) => s.rejection_reason || '—' },
+    { key: 'reception_decision_at', label: i18nT('food.receptionLab.str70'), render: (s) => formatDateTime(s.reception_decision_at) },
+    { key: 'reception_decision_by_name', label: i18nT('food.receptionLab.str85'), render: (s) => s.reception_decision_by_name || '—' },
+    { key: 'actions', label: '', render: (s) => <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx2')}</AppButton> },
+  ], [i18nT, onOpenSample]);
 
-  return <FoodDataTable<FoodSample> columns={columns} table={table} title="العينات المرفوضة" />;
+  return <FoodDataTable<FoodSample> columns={columns} table={table} title={i18nT('food.receptionLab.attr31')} />;
 };
 
 /* ================== البحث / التحقق المشترك ================== */
 
 const SampleLookupStrip = ({ placeholder, onSearch, busy }: { placeholder: string; onSearch: (q: string) => void; busy: boolean }) => {
+  const { t: i18nT } = useTranslation();
   const [q, setQ] = useState('');
   return (
     <Stack direction="row" spacing={1} alignItems="flex-start">
       <Box sx={{ flex: 1 }}>
         <FormTextField
-          label="رقم الطلب / الباركود / QR"
+          label={i18nT('food.receptionLab. _   _   qr')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={placeholder}
@@ -1648,7 +1663,7 @@ const SampleLookupStrip = ({ placeholder, onSearch, busy }: { placeholder: strin
           InputProps={{ startAdornment: <QrCodeScannerIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} /> }}
         />
       </Box>
-      <AppButton startIcon={<SearchIcon />} onClick={() => onSearch(q)} loading={busy} sx={{ mt: 2.5 }}>بحث</AppButton>
+      <AppButton startIcon={<SearchIcon />} onClick={() => onSearch(q)} loading={busy} sx={{ mt: 2.5 }}>{i18nT('food.receptionLab.jsx4')}</AppButton>
     </Stack>
   );
 };
@@ -1661,20 +1676,21 @@ const VerifyRequestSection = ({
   onOpenSample: (id: string) => void;
   onPrint: (s: FoodSample) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<FoodSample[]>([]);
   const [message, setMessage] = useState('');
 
   const search = async (q: string) => {
-    if (!q.trim()) return notifyError('اكتب رقم الطلب أو امسح الباركود / QR');
+    if (!q.trim()) return notifyError(i18nT('food.receptionLab. _ _ _ _ _   qr'));
     setBusy(true);
     setMessage('');
     try {
       const r = await getLabSamples({ search: q.trim(), page_size: 20 });
       setResults(r.data.data.results);
-      setMessage(r.data.data.count === 0 ? 'لم يُعثر على طلب مطابق' : `تم العثور على ${r.data.data.count} نتيجة`);
+      setMessage(r.data.data.count === 0 ? i18nT('food.receptionLab.no_results') : i18nT('food.receptionLab.found_results', { count: r.data.data.count }));
     } catch {
-      setMessage('تعذر البحث — حاول مرة أخرى');
+      setMessage(i18nT('food.receptionLab. _   _ _ '));
     } finally {
       setBusy(false);
     }
@@ -1682,11 +1698,9 @@ const VerifyRequestSection = ({
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>التحقق من طلب التحليل</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        امسح Barcode / QR على العينة أو اكتب رقم الطلب، للتأكد من وجود طلب تحليل مطابق قبل الاستلام.
-      </Typography>
-      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder="امسح العينة أو اكتب رقم الطلب..." onSearch={search} busy={busy} /></Box>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab. _ _ ')}</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{i18nT('food.receptionLab. barcode   qr _ _ _ _ _ _ _ _ _ _ _ _ _ _ ')}</Typography>
+      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder={i18nT('food.receptionLab. _ _ _ _ _   ')} onSearch={search} busy={busy} /></Box>
       {message && <Typography variant="caption" color={results.length > 0 ? 'success.main' : 'warning.main'} sx={{ display: 'block', mb: 1 }}>{message}</Typography>}
       {results.length > 0 && (
         <Stack spacing={1}>
@@ -1696,11 +1710,11 @@ const VerifyRequestSection = ({
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{s.sample_number}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {s.sample_type}{s.inspector_name ? ` — مفتش: ${s.inspector_name}` : ''}{s.received_at ? ` — ${formatDateTime(s.received_at)}` : ''}
+                  {s.sample_type}{s.inspector_name ? ` — ${i18nT('food.receptionLab.inspector')}: ${s.inspector_name}` : ''}{s.received_at ? ` — ${formatDateTime(s.received_at)}` : ''}
                 </Typography>
               </Box>
-              <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح الطلب</AppButton>
-              <AppButton size="small" variant="secondary" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>باركود</AppButton>
+              <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx40')}</AppButton>
+              <AppButton size="small" variant="secondary" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{i18nT('food.receptionLab.jsx3')}</AppButton>
             </Box>
           ))}
         </Stack>
@@ -1712,24 +1726,25 @@ const VerifyRequestSection = ({
 /* ================== التحقق من البيانات ================== */
 
 const VerifyDataSection = ({ onOpenSample }: { onOpenSample: (id: string) => void }) => {
+  const { t: i18nT } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [sample, setSample] = useState<FoodSample | null>(null);
   const [message, setMessage] = useState('');
 
   const search = async (q: string) => {
-    if (!q.trim()) return notifyError('اكتب رقم العينة أو امسح الباركود / QR');
+    if (!q.trim()) return notifyError(i18nT('food.receptionLab. _ _ _ _ _   qr'));
     setBusy(true);
     setSample(null);
     setMessage('');
     try {
       const r = await getLabSamples({ search: q.trim(), page_size: 5 });
       const m = r.data.data.results[0];
-      if (!m) { setMessage('لم يُعثر على عينة مطابقة'); return; }
+      if (!m) { setMessage(i18nT('food.receptionLab. _ _ _ ')); return; }
       const detail = await getLabSample(m.id);
       setSample(detail.data.data);
-      setMessage('تم جلب البيانات — راجع مطابقة بيانات العينة مع الطلب');
+      setMessage(i18nT('food.receptionLab. _ _   _ _ _ _ _ '));
     } catch {
-      setMessage('تعذر البحث — حاول مرة أخرى');
+      setMessage(i18nT('food.receptionLab. _   _ _ '));
     } finally {
       setBusy(false);
     }
@@ -1739,11 +1754,9 @@ const VerifyDataSection = ({ onOpenSample }: { onOpenSample: (id: string) => voi
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>التحقق من بيانات العينة</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        طريق واحد للتحقق: حدد العينة ثم راجع بياناتها المسجلة مقابل طلب التحليل قبل القبول أو الرفض.
-      </Typography>
-      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder="امسح العينة أو اكتب رقمها..." onSearch={search} busy={busy} /></Box>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab. _ _ ')}</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{i18nT('food.receptionLab. _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ ')}</Typography>
+      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder={i18nT('food.receptionLab. _ _ _ _   ')} onSearch={search} busy={busy} /></Box>
       {message && <Typography variant="caption" color={sample ? 'success.main' : 'warning.main'} sx={{ display: 'block', mb: 1 }}>{message}</Typography>}
 
       {sample && (
@@ -1756,38 +1769,38 @@ const VerifyDataSection = ({ onOpenSample }: { onOpenSample: (id: string) => voi
                 <StatusChip label={labSampleStatus[sample.status]?.label ?? sample.status} tone={labSampleStatus[sample.status]?.tone} />
               </Stack>
               <Grid container spacing={1.5}>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">المنتج</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.sample_type}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">رقم طلب التحليل</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.analysis_request_number || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">المصدر</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.source_name ?? '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">الجهة الطالبة</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.requesting_department || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">المفتش</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.inspector_name || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">المحطة</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.station || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">العلامة التجارية</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.brand || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">بلد المنشأ</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.origin_country || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">رقم الدفعة</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.batch_number || '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">الكمية</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.quantity != null ? `${sample.quantity} ${sample.quantity_unit ?? ''}`.trim() : '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">درجة الحرارة</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.temperature != null ? `${sample.temperature}°` : '—'}</Typography></Grid>
-                <Grid item xs={6}><Typography variant="caption" color="text.secondary">نوع التغليف / حالته</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{`${sample.packaging_type || '—'} / ${sample.packaging_condition || '—'}`}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx5')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.sample_type}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab. _ ')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.analysis_request_number || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx6')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.source_name ?? '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx44')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.requesting_department || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx7')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.inspector_name || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx8')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.station || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx45')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.brand || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx46')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.origin_country || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx47')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.batch_number || '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx9')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.quantity != null ? `${sample.quantity} ${sample.quantity_unit ?? ''}`.trim() : '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab.jsx48')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{sample.temperature != null ? `${sample.temperature}°` : '—'}</Typography></Grid>
+                <Grid item xs={6}><Typography variant="caption" color="text.secondary">{i18nT('food.receptionLab. _   ')}</Typography><Typography variant="body2" sx={{ fontWeight: 700 }}>{`${sample.packaging_type || '—'} / ${sample.packaging_condition || '—'}`}</Typography></Grid>
               </Grid>
               <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                <AppButton size="small" variant="secondary" onClick={() => onOpenSample(sample.id)}>فتح كامل العينة</AppButton>
+                <AppButton size="small" variant="secondary" onClick={() => onOpenSample(sample.id)}>{i18nT('food.receptionLab. _ ')}</AppButton>
               </Stack>
             </Box>
           </Grid>
           <Grid item xs={12} md={5}>
             <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2.5 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>سجل فحص القبول</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{i18nT('food.receptionLab. _ ')}</Typography>
               <Stack spacing={0.5}>
-                {CHECKLIST_ITEMS.map((c) => (
+                {CHECKLIST_ITEMS(i18nT).map((c) => (
                   <Stack key={c.key} direction="row" alignItems="center" spacing={1}>
-                    <StatusChip label={checklist[c.key] ? 'سليم' : 'غير مؤكد'} tone={checklist[c.key] ? 'success' : checklist[c.key] === false ? 'error' : 'neutral'} />
+                    <StatusChip label={checklist[c.key] ? i18nT('food.receptionLab.str95') : i18nT('food.receptionLab.str74')} tone={checklist[c.key] ? 'success' : checklist[c.key] === false ? 'error' : 'neutral'} />
                     <Typography variant="body2">{c.label}</Typography>
                   </Stack>
                 ))}
               </Stack>
               {sample.rejection_reason && (
                 <Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2, bgcolor: '#FDECEA' }}>
-                  <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>سبب الرفض: {sample.rejection_reason}</Typography>
+                  <Typography variant="caption" color="error" sx={{ fontWeight: 700 }}>{i18nT('food.receptionLab.rejection_reason')}: {sample.rejection_reason}</Typography>
                 </Box>
               )}
             </Box>
@@ -1808,50 +1821,51 @@ const BarcodeSection = ({
   onPrint: (s: FoodSample) => void;
   onOpenSample: (id: string) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const isCreate = mode === 'create';
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<FoodSample[]>([]);
   const [message, setMessage] = useState('');
 
   const search = async (q: string) => {
-    if (!q.trim()) return notifyError('اكتب رقم العينة أو امسح الباركود / QR');
+    if (!q.trim()) return notifyError(i18nT('food.receptionLab. _ _ _ _ _   qr'));
     setBusy(true);
     setMessage('');
     try {
       const r = await getLabSamples({ search: q.trim(), page_size: 20 });
       setResults(r.data.data.results);
-      setMessage(r.data.data.count === 0 ? 'لم يُعثر على عينة مطابقة' : `تم العثور على ${r.data.data.count} عينة`);
+      setMessage(r.data.data.count === 0 ? i18nT('food.receptionLab.no_results') : i18nT('food.receptionLab.found_samples', { count: r.data.data.count }));
     } catch {
-      setMessage('تعذر البحث — حاول مرة أخرى');
+      setMessage(i18nT('food.receptionLab. _   _ _ '));
     } finally {
       setBusy(false);
     }
   };
 
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'reception_status', label: 'قرار الاستلام', render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'reception_status', label: i18nT('food.receptionLab.str54'), render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{isCreate ? 'إنشاء + طباعة' : 'طباعة الملصق'}</AppButton>
-          <IconButton aria-label="عرض العينة" size="small" onClick={() => onOpenSample(s.id)}><CircleIcon fontSize="small" /></IconButton>
+          <AppButton size="small" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{isCreate ? i18nT('food.receptionLab.   ') : i18nT('food.receptionLab.str56')}</AppButton>
+          <IconButton aria-label={i18nT('food.receptionLab.attr59')} size="small" onClick={() => onOpenSample(s.id)}><CircleIcon fontSize="small" /></IconButton>
         </Stack>
       ),
     },
-  ], [onPrint, onOpenSample, isCreate]);
+  ], [i18nT, onPrint, onOpenSample, isCreate]);
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{isCreate ? 'إنشاء Barcode / QR' : 'طباعة الملصقات'}</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{isCreate ? i18nT('food.receptionLab. barcode   qr') : i18nT('food.receptionLab.str51')}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {isCreate
-          ? 'امسح العينة أو ابحث عنها لإنشاء باركود / QR ليُطبع ويُلصق على العينة قبل تسليمها.'
-          : 'أعد طباعة ملصق باركود / QR لأي عينة واردة دون تعديل بياناتها.'}
+          ? i18nT('food.receptionLab. _ _ _ _ _ _   qr _ _ _ _ _ _ ')
+          : i18nT('food.receptionLab. _ _ _   qr _ _ _ _ _ _ ')}
       </Typography>
-      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder={isCreate ? 'امسح العينة أو اكتب رقمها لتوليد الباركود...' : 'امسح العينة أو اكتب رقمها لإعادة الطباعة...'} onSearch={search} busy={busy} /></Box>
+      <Box sx={{ mb: 2 }}><SampleLookupStrip placeholder={isCreate ? i18nT('food.receptionLab. _ _ _ _ _ _   ') : i18nT('food.receptionLab. _ _ _ _ _ _   ')} onSearch={search} busy={busy} /></Box>
       {message && <Typography variant="caption" color={results.length > 0 ? 'success.main' : 'warning.main'} sx={{ display: 'block', mb: 1 }}>{message}</Typography>}
       {results.length > 0 && (
         <Stack spacing={1} sx={{ mb: 2 }}>
@@ -1862,12 +1876,12 @@ const BarcodeSection = ({
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{s.sample_number}</Typography>
                 <Typography variant="caption" color="text.secondary">{s.sample_type} — {s.source_name ?? ''}</Typography>
               </Box>
-              <AppButton size="small" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{isCreate ? 'إنشاء + طباعة' : 'طباعة'}</AppButton>
+              <AppButton size="small" startIcon={<PrintIcon />} onClick={() => onPrint(s)}>{isCreate ? i18nT('food.receptionLab.   ') : i18nT('food.receptionLab.str90')}</AppButton>
             </Box>
           ))}
         </Stack>
       )}
-      {!isCreate && results.length === 0 && <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title="أحدث العينات — لإعادة الطباعة" />}
+      {!isCreate && results.length === 0 && <FoodDataTable<FoodSample> columns={columns} table={samplesTable} title={i18nT('food.receptionLab. _   _ ')} />}
     </Box>
   );
 };
@@ -1880,47 +1894,46 @@ const DeliverReadySection = ({
   table: ReturnType<typeof useServerTable<FoodSample>>;
   onOpenSample: (id: string) => void;
 }) => {
+  const { t: i18nT } = useTranslation();
   const [delivering, setDelivering] = useState<string | null>(null);
 
   const doDeliver = async (s: FoodSample) => {
     setDelivering(s.id);
     try {
       await transferSample(s.id, {
-        from_department: 'استلام العينات المختبرية',
-        to_department: 'منسّق عينات المختبر',
-        remarks: 'تسليم العينة إلى المنسق',
+        from_department: i18nT('food.receptionLab. _ '),
+        to_department: i18nT('food.receptionLab. _ '),
+        remarks: i18nT('food.receptionLab. _ _ '),
       });
-      notifySuccess(`سُلّمت العينة ${s.sample_number} إلى المنسق`);
+      notifySuccess(i18nT('food.receptionLab.delivered_to_coordinator', { number: s.sample_number }));
       table.refresh();
     } catch {
-      notifyError('تعذر تسجيل التسليم — حاول مرة أخرى');
+      notifyError(i18nT('food.receptionLab. _ _   _ _ '));
     } finally {
       setDelivering(null);
     }
   };
 
   const columns: DataTableColumn<FoodSample>[] = useMemo(() => [
-    { key: 'sample_number', label: 'الرقم', render: (s) => <b>{s.sample_number}</b> },
-    { key: 'sample_type', label: 'المنتج' },
-    { key: 'source_name', label: 'المصدر', render: (s) => s.source_name ?? '—' },
-    { key: 'received_at', label: 'وقت الاستلام', render: (s) => formatDateTime(s.received_at) },
-    { key: 'reception_status', label: 'قرار الاستلام', render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
+    { key: 'sample_number', label: i18nT('food.receptionLab.str94'), render: (s) => <b>{s.sample_number}</b> },
+    { key: 'sample_type', label: i18nT('food.receptionLab.str78') },
+    { key: 'source_name', label: i18nT('food.receptionLab.str81'), render: (s) => s.source_name ?? '—' },
+    { key: 'received_at', label: i18nT('food.receptionLab.str57'), render: (s) => formatDateTime(s.received_at) },
+    { key: 'reception_status', label: i18nT('food.receptionLab.str54'), render: (s) => <StatusChip label={labReception[s.reception_status]?.label ?? s.reception_status} tone={labReception[s.reception_status]?.tone} /> },
     {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
-          <AppButton size="small" startIcon={<LocalShippingIcon />} loading={delivering === s.id} onClick={() => doDeliver(s)}>تسليم للمنسق</AppButton>
-          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>فتح</AppButton>
+          <AppButton size="small" startIcon={<LocalShippingIcon />} loading={delivering === s.id} onClick={() => doDeliver(s)}>{i18nT('food.receptionLab.jsx52')}</AppButton>
+          <AppButton size="small" variant="secondary" onClick={() => onOpenSample(s.id)}>{i18nT('food.receptionLab.jsx2')}</AppButton>
         </Stack>
       ),
     },
-  ], [onOpenSample, delivering]);
+  ], [i18nT, onOpenSample, delivering]);
 
   return (
     <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        العينات المقبولة التي لم تُسلَّم للمنسق بعد. لا يختار موظف الاستلام القسم الفني — التوجيه يتم من قبل منسّق عينات المختبر.
-      </Typography>
-      <FoodDataTable<FoodSample> columns={columns} table={table} title="جاهزة للتسليم — مقبولة وبانتظار التسليم" />
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{i18nT('food.receptionLab. _ _ _ _ _ _  _ _ _ _ _ _   _ _ _ _ _ _ _ ')}</Typography>
+      <FoodDataTable<FoodSample> columns={columns} table={table} title={i18nT('food.receptionLab. _   _ _ ')} />
     </Box>
   );
 };
@@ -1961,6 +1974,7 @@ const SamplesLogSection = ({
 /* ================== الإعدادات ================== */
 
 const SettingsSection = () => {
+  const { t: i18nT } = useTranslation();
   const { user } = useAuth();
   const allowed = [
     'sample.create', 'sample.receive', 'sample.accept', 'sample.reject',
@@ -1972,20 +1986,18 @@ const SettingsSection = () => {
   ];
   return (
     <Box sx={{ maxWidth: 900 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>الإعدادات</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab.jsx10')}</Typography>
       <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2.5, mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>الحساب</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{i18nT('food.receptionLab.jsx11')}</Typography>
         <Typography variant="body2" color="text.secondary">
-          {user?.full_name || 'مستخدم'} — {user?.email || ''} • الدور: موظف استلام العينات (Sample Reception Officer)
+          {user?.full_name || i18nT('food.receptionLab.str83')} — {user?.email || ''} • {i18nT('food.receptionLab.role')}: {i18nT('food.receptionLab.sample_reception_officer')}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          مرحباً بك في مكتب استلام العينات. أنت متصل الآن وتعمل ضمن دورة المختبر دون الوصول للنتائج الفنية.
-        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{i18nT('food.receptionLab. _ _ _ _ _  _ _ _ _ _ _ _ _ _ _ _ ')}</Typography>
       </Box>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <Box sx={{ p: 2, border: '1px solid', borderColor: 'success.main', borderRadius: 2.5, bgcolor: '#F2FBF4' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main', mb: 1 }}>الصلاحيات المتاحة لك</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main', mb: 1 }}>{i18nT('food.receptionLab. _ ')}</Typography>
             <Stack spacing={0.5}>
               {allowed.map((p) => (
                 <Stack key={p} direction="row" alignItems="center" spacing={1}>
@@ -1998,7 +2010,7 @@ const SettingsSection = () => {
         </Grid>
         <Grid item xs={12} md={6}>
           <Box sx={{ p: 2, border: '1px solid', borderColor: 'error.main', borderRadius: 2.5, bgcolor: '#FDF1F0' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>غير متاحة لموظف الاستلام</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>{i18nT('food.receptionLab. _ _ ')}</Typography>
             <Stack spacing={0.5}>
               {blocked.map((p) => (
                 <Stack key={p} direction="row" alignItems="center" spacing={1}>
@@ -2016,18 +2028,20 @@ const SettingsSection = () => {
 
 /* ================== المساعدة ================== */
 
-const HelpSection = () => (
-  <Box sx={{ maxWidth: 900 }}>
-    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>المساعدة — دورة عمل استلام العينات</Typography>
+const HelpSection = () => {
+  const { t: i18nT } = useTranslation();
+  return (
+    <Box sx={{ maxWidth: 900 }}>
+    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{i18nT('food.receptionLab.   _ _ _ ')}</Typography>
     <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2.5, mb: 2 }}>
       <Stack spacing={1.5}>
         {[
-          ['استلام العينة', 'سجّل العينة الواردة ببياناتها ومصدرها.'],
-          ['التحقق من طلب التحليل', 'امسح الباركود أو ابحث برقم الطلب للتأكد من وجود طلب مطابق.'],
-          ['مطابقة بيانات العينة', 'راجع المطابقة: التغليف، الكمية، الختم، بيانات العينة مقابل الطلب.'],
-          ['إنشاء Barcode / QR', 'أصدر باركود / QR للعينة واطبع الملصق.'],
-          ['تسجيل الاستلام', 'اتخذ قرار القبول/الرفض عبر نموذج الفحص، والرفض يتطلب سبباً.'],
-          ['تسليم للمنسق', 'سلّم العينة المقبولة إلى منسّق عينات المختبر المسؤول عن توجيهها للقسم الفني.'],
+          [i18nT('food.receptionLab.str53'), i18nT('food.receptionLab. _ _ _ _ ')],
+          [i18nT('food.receptionLab. _ _ '), i18nT('food.receptionLab. _ _ _ _ _ _ _ _ _ _ ')],
+          [i18nT('food.receptionLab. _ '), i18nT('food.receptionLab. _  _ _ _ _ _ _ _ ')],
+          [i18nT('food.receptionLab. barcode   qr'), i18nT('food.receptionLab. _   qr _ _ _ ')],
+          [i18nT('food.receptionLab.str52'), i18nT('food.receptionLab. _ _ _ _ _ _ _ _ _ ')],
+          [i18nT('food.receptionLab.str59'), i18nT('food.receptionLab. _ _ _ _ _ _ _ _ _ _ _ ')],
         ].map(([title, desc]) => (
           <Stack key={title} direction="row" spacing={1.5}>
             <Box sx={{ mt: 0.7, width: 14, height: 14, borderRadius: '50%', flexShrink: 0, bgcolor: 'primary.main' }} />
@@ -2040,12 +2054,11 @@ const HelpSection = () => (
       </Stack>
     </Box>
     <Box sx={{ p: 2, border: '1px dashed', borderColor: 'divider', borderRadius: 2.5, bgcolor: '#F4F6F9' }}>
-      <Typography variant="body2" color="text.secondary">
-        الدور الحساس للتوجيه (القسم الفني — الكيمياء / المايكرو / السموم / الجزيئي) مخصص لمنسّق عينات المختبر، ولا يظهر لموظف الاستلام.
-        الواجهة هنا تركز على: الوصول، التحقق، التسجيل، الباركود، والتسليم فقط.
-      </Typography>
+      <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab.help_title')}</Typography>
+      <Typography variant="body2" color="text.secondary">{i18nT('food.receptionLab.help_description')}</Typography>
     </Box>
   </Box>
-);
+  );
+}
 
 export default ReceptionLabPage;

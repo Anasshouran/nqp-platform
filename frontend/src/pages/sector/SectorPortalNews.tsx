@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CampaignIcon from '@mui/icons-material/Campaign';
+import { useTranslation } from 'react-i18next';
 import { useSectorPortal } from '../../components/sectors/SectorPortalLayout';
 import { EmptyState } from '../../components/common';
 import { getSectorNews } from '../../api/endpoints/public';
@@ -17,6 +18,7 @@ const formatDate = (value?: string | null) => value ? new Date(value).toLocaleDa
 
 const SectorPortalNews = () => {
   const { sector } = useSectorPortal();
+  const { t } = useTranslation();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,11 +35,11 @@ const SectorPortalNews = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>أخبار القطاع</Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>آخر الأخبار والتحديثات من {sector?.name_ar || 'القطاع'}</Typography>
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('sector.portal.news.title')}</Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>{t('sector.portal.news.subtitle', { sectorName: sector?.name_ar || t('sector.portal.news.defaultSectorName') })}</Typography>
 
       {news.length === 0 ? (
-        <EmptyState icon={<CampaignIcon />} title="لا توجد أخبار حالياً" />
+        <EmptyState icon={<CampaignIcon />} title={t('sector.portal.news.emptyTitle')} />
       ) : (
         <Grid container spacing={3}>
           {news.map((article) => (
@@ -45,7 +47,7 @@ const SectorPortalNews = () => {
               <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                    <Chip label={article.category || 'عام'} size="small" color="primary" variant="outlined" />
+                    <Chip label={article.category || t('sector.portal.news.defaultCategory')} size="small" color="primary" variant="outlined" />
                     <Typography variant="caption" color="text.secondary">{formatDate(article.published_at)}</Typography>
                   </Stack>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{article.title}</Typography>

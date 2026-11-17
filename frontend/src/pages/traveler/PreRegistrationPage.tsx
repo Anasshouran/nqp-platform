@@ -109,51 +109,27 @@ const defaultData: WizardData = {
   consent: false,
 };
 
-const symptomQuestions: Array<{ key: string; label: string; hasExtra?: 'temperature' | 'patient_name' | 'details' }> = [
-  { key: 'fever', label: 'حمى', hasExtra: 'temperature' },
-  { key: 'headache', label: 'صداع' },
-  { key: 'body_pain', label: 'ألم في الجسم' },
-  { key: 'vomiting', label: 'قيء' },
-  { key: 'diarrhea', label: 'إسهال' },
-  { key: 'loss_of_appetite', label: 'فقدان الشهية' },
-  { key: 'difficulty_swallowing', label: 'صعوبة في البلع' },
-  { key: 'bleeding', label: 'نزيف' },
-  { key: 'contact_with_patient', label: 'مخالطة مريض', hasExtra: 'patient_name' },
-  { key: 'other_symptoms', label: 'أعراض أخرى', hasExtra: 'details' },
-];
-
-const purposeOptions = ['سياحة', 'عمل', 'زيارة', 'دراسة', 'عبور', 'دبلوماسي', 'منظمة دولية', 'آخر'];
-
-const stepMeta = [
-  { label: 'البدء', icon: <LanguageIcon /> },
-  { label: 'البيانات الشخصية', icon: <PersonIcon /> },
-  { label: 'بيانات الرحلة', icon: <FlightTakeoffIcon /> },
-  { label: 'الغرض والتواصل', icon: <ContactMailIcon /> },
-  { label: 'الإقرار الصحي', icon: <HealthAndSafetyIcon /> },
-  { label: 'المراجعة والتأكيد', icon: <FactCheckIcon /> },
-];
-
-const computeRisk = (data: WizardData) => {
-  let score = 0;
-  const s = data.symptoms;
-  if (s.fever.has) score += 10;
-  if (s.headache.has) score += 5;
-  if (s.body_pain.has) score += 5;
-  if (s.vomiting.has) score += 5;
-  if (s.diarrhea.has) score += 5;
-  if (s.loss_of_appetite.has) score += 5;
-  if (s.difficulty_swallowing.has) score += 10;
-  if (s.bleeding.has) score += 15;
-  if (s.contact_with_patient.has) score += 10;
-  if (s.other_symptoms.has) score += 5;
-  const temp = parseFloat(s.fever.temperature || '0');
-  if (s.fever.has && temp > 38) score += 10;
-  const level = score <= 10 ? 'منخفض' : score <= 30 ? 'متوسط' : 'مرتفع';
-  return { score, level };
-};
-
 const PreRegistrationPage = () => {
   const { t } = useTranslation();
+
+  const computeRisk = (data: WizardData) => {
+    let score = 0;
+    const s = data.symptoms;
+    if (s.fever.has) score += 10;
+    if (s.headache.has) score += 5;
+    if (s.body_pain.has) score += 5;
+    if (s.vomiting.has) score += 5;
+    if (s.diarrhea.has) score += 5;
+    if (s.loss_of_appetite.has) score += 5;
+    if (s.difficulty_swallowing.has) score += 10;
+    if (s.bleeding.has) score += 15;
+    if (s.contact_with_patient.has) score += 10;
+    if (s.other_symptoms.has) score += 5;
+    const temp = parseFloat(s.fever.temperature || '0');
+    if (s.fever.has && temp > 38) score += 10;
+    const level = score <= 10 ? t('traveler.preRegistration.risk.low') : score <= 30 ? t('traveler.preRegistration.risk.medium') : t('traveler.preRegistration.risk.high');
+    return { score, level };
+  };
 
   const symptomQuestions = useMemo<Array<{ key: string; label: string; hasExtra?: 'temperature' | 'patient_name' | 'details' }>>(
     () => [
@@ -221,7 +197,7 @@ const PreRegistrationPage = () => {
   const handleMrzResult = (mrz: MrzResult) => {
     const next: Partial<WizardData> = { passport_number: mrz.passportNumber };
     if (mrz.dateOfBirth) next.date_of_birth = mrz.dateOfBirth;
-    if (mrz.sex) next.gender = mrz.sex === 'M' ? 'ذكر' : mrz.sex === 'F' ? 'أنثى' : next.gender;
+    if (mrz.sex) next.gender = mrz.sex === 'M' ? t('traveler.preRegistration.genderOption.male') : mrz.sex === 'F' ? t('traveler.preRegistration.genderOption.female') : next.gender;
     const nationalityCode = mrz.nationality;
     if (nationalityCode && countries.some((c) => c.code === nationalityCode)) {
       next.nationality = nationalityCode;
@@ -264,44 +240,44 @@ const PreRegistrationPage = () => {
   const validateStep = (s: number): boolean => {
     const e: Record<string, string> = {};
     if (s === 1) {
-      if (data.full_name.trim().length < 2) e.full_name = 'يرجى إدخال الاسم الكامل.';
+      if (data.full_name.trim().length < 2) e.full_name = t('traveler.preRegistration.validation.fullNameTooShort');
       if (!/^[A-Za-z0-9]{6,20}$/.test(data.passport_number.trim())) e.passport_number = t('traveler.preRegistration.validation.passport');
       if (!data.date_of_birth) {
-        e.date_of_birth = 'يرجى إدخال تاريخ الميلاد.';
+        e.date_of_birth = t('traveler.preRegistration.validation.dateOfBirthRequired');
       }
-      if (!data.nationality) e.nationality = 'يرجى اختيار الجنسية.';
-      if (!data.gender) e.gender = 'يرجى اختيار الجنس.';
+      if (!data.nationality) e.nationality = t('traveler.preRegistration.validation.nationalityRequired');
+      if (!data.gender) e.gender = t('traveler.preRegistration.validation.genderRequired');
     } else if (s === 2) {
-      if (!data.origin_country) e.origin_country = 'يرجى اختيار دولة القدوم.';
-      if (!data.port_of_entry) e.port_of_entry = 'يرجى اختيار منفذ الدخول.';
-      if (!data.transport_mode) e.transport_mode = 'يرجى اختيار وسيلة النقل.';
+      if (!data.origin_country) e.origin_country = t('traveler.preRegistration.validation.originCountryRequired');
+      if (!data.port_of_entry) e.port_of_entry = t('traveler.preRegistration.validation.portOfEntryRequired');
+      if (!data.transport_mode) e.transport_mode = t('traveler.preRegistration.validation.transportModeRequired');
       if (data.transport_mode === 'AIR' && !/^[A-Za-z0-9]{2,10}$/.test(data.flight_number.trim())) {
         e.flight_number = t('traveler.preRegistration.validation.flight');
       }
       if (!data.arrival_date) {
-        e.arrival_date = 'يرجى إدخال تاريخ الوصول.';
+        e.arrival_date = t('traveler.preRegistration.validation.arrivalDateRequired');
       } else if (new Date(data.arrival_date) < new Date(new Date().toDateString())) {
-        e.arrival_date = 'يرجى إدخال تاريخ وصول صحيح.';
+        e.arrival_date = t('traveler.preRegistration.validation.arrivalDateInvalid');
       }
     } else if (s === 3) {
-      if (!data.purpose) e.purpose = 'يرجى اختيار الغرض من الزيارة.';
-      if (!isValidPhone(data.phone)) e.phone = 'رقم الهاتف غير صحيح.';
-      if (data.email && !isValidEmail(data.email)) e.email = 'يرجى إدخال بريد إلكتروني صحيح.';
-      if (!isValidPhone(data.emergency_phone)) e.emergency_phone = 'رقم الطوارئ غير صحيح.';
+      if (!data.purpose) e.purpose = t('traveler.preRegistration.validation.purposeRequired');
+      if (!isValidPhone(data.phone)) e.phone = t('traveler.preRegistration.validation.phoneInvalid');
+      if (data.email && !isValidEmail(data.email)) e.email = t('traveler.preRegistration.validation.emailInvalid');
+      if (!isValidPhone(data.emergency_phone)) e.emergency_phone = t('traveler.preRegistration.validation.emergencyPhoneInvalid');
     } else if (s === 4) {
       for (const q of symptomQuestions) {
         if (data.symptoms[q.key].has) {
           if (q.hasExtra === 'temperature') {
-            const t = parseFloat(data.symptoms[q.key].temperature || '');
-            if (!t || t < 35 || t > 42) e[`temp_${q.key}`] = 'درجة الحرارة غير صحيحة (35-42).';
+            const tempVal = parseFloat(data.symptoms[q.key].temperature || '');
+            if (!tempVal || tempVal < 35 || tempVal > 42) e[`temp_${q.key}`] = t('traveler.preRegistration.validation.temperatureInvalid');
           }
           if (q.hasExtra === 'patient_name' && (data.symptoms[q.key].patient_name || '').trim().length < 2) {
-            e[`name_${q.key}`] = 'يرجى إدخال اسم المريض.';
+            e[`name_${q.key}`] = t('traveler.preRegistration.validation.patientNameRequired');
           }
         }
       }
     } else if (s === 5) {
-      if (!data.consent) e.consent = 'يرجى الموافقة على صحة البيانات.';
+      if (!data.consent) e.consent = t('traveler.preRegistration.validation.consentRequired');
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -379,7 +355,7 @@ const PreRegistrationPage = () => {
         setQrLoading(false);
       }
     } catch {
-      setSubmitError('حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.');
+      setSubmitError(t('traveler.preRegistration.submitError'));
     } finally {
       setLoading(false);
     }
@@ -394,19 +370,19 @@ const PreRegistrationPage = () => {
       return (
         <Box sx={{ textAlign: 'center', py: 2 }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-            بوابة التسجيل الصحي للسفر
+            {t('traveler.preRegistration.portalTitle')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            لتسريع إجراءاتك عند الوصول، يرجى تعبئة الاستمارة الصحية قبل السفر.
+            {t('traveler.preRegistration.portalSubtitle')}
           </Typography>
           <FormControl sx={{ minWidth: 200, mb: 3 }}>
-            <InputLabel>اللغة</InputLabel>
+            <InputLabel>{t('traveler.preRegistration.languageLabel')}</InputLabel>
             <Select
               value={data.language}
-              label="اللغة"
+              label={t('traveler.preRegistration.language')}
               onChange={(e) => update('language', e.target.value as 'ar' | 'en')}
             >
-              <MenuItem value="ar">العربية</MenuItem>
+              <MenuItem value="ar">{t('traveler.preRegistration.languageArabic')}</MenuItem>
               <MenuItem value="en">English</MenuItem>
             </Select>
           </FormControl>
@@ -417,11 +393,11 @@ const PreRegistrationPage = () => {
               startIcon={<ArrowForwardIcon />}
               onClick={() => setStep(1)}
             >
-              بدء التسجيل
+              {t('traveler.preRegistration.startRegistration')}
             </Button>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-            جميع البيانات مشفرة وآمنة
+            {t('traveler.preRegistration.dataEncrypted')}
           </Typography>
         </Box>
       );
@@ -433,7 +409,7 @@ const PreRegistrationPage = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                label="الاسم الكامل"
+                label={t('traveler.preRegistration.form.fullName')}
                 value={data.full_name}
                 onChange={(e) => update('full_name', e.target.value)}
                 fullWidth
@@ -443,7 +419,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="رقم جواز السفر"
+                label={t('traveler.preRegistration.form.passportNumber')}
                 value={data.passport_number}
                 onChange={(e) => update('passport_number', e.target.value.toUpperCase())}
                 fullWidth
@@ -454,7 +430,7 @@ const PreRegistrationPage = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <Button onClick={() => setScannerOpen(true)} startIcon={<DocumentScannerIcon />} size="small">
-                        مسح
+                        {t('traveler.preRegistration.clear')}
                       </Button>
                     </InputAdornment>
                   ),
@@ -463,7 +439,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="تاريخ الميلاد"
+                label={t('traveler.preRegistration.form.dateOfBirth')}
                 type="date"
                 value={data.date_of_birth}
                 onChange={(e) => update('date_of_birth', e.target.value)}
@@ -475,8 +451,8 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={Boolean(errors.nationality)}>
-                <InputLabel>الجنسية</InputLabel>
-                <Select value={data.nationality} label="الجنسية" onChange={(e) => update('nationality', e.target.value)}>
+                <InputLabel>{t('traveler.preRegistration.form.nationality')}</InputLabel>
+                <Select value={data.nationality} label={t('traveler.preRegistration.form.nationality')} onChange={(e) => update('nationality', e.target.value)}>
                   {countries.map((country) => (
                     <MenuItem key={country.code} value={country.code}>
                       {country.name_ar || country.name}
@@ -488,10 +464,10 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl error={Boolean(errors.gender)}>
-                <FormLabel>الجنس</FormLabel>
+                <FormLabel>{t('traveler.preRegistration.form.gender')}</FormLabel>
                 <RadioGroup row value={data.gender} onChange={(e) => update('gender', e.target.value)}>
-                  <FormControlLabel value="ذكر" control={<Radio />} label="ذكر" />
-                  <FormControlLabel value="أنثى" control={<Radio />} label="أنثى" />
+                  <FormControlLabel value="ذكر" control={<Radio />} label={t('traveler.preRegistration.genderOption.male')} />
+                  <FormControlLabel value="أنثى" control={<Radio />} label={t('traveler.preRegistration.genderOption.female')} />
                 </RadioGroup>
                 {errors.gender && <FormHelperText error>{errors.gender}</FormHelperText>}
               </FormControl>
@@ -507,8 +483,8 @@ const PreRegistrationPage = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={Boolean(errors.origin_country)}>
-                <InputLabel>دولة القدوم</InputLabel>
-                <Select value={data.origin_country} label="دولة القدوم" onChange={(e) => update('origin_country', e.target.value)}>
+                <InputLabel>{t('traveler.preRegistration.form.originCountry')}</InputLabel>
+                <Select value={data.origin_country} label={t('traveler.preRegistration.form.originCountry')} onChange={(e) => update('origin_country', e.target.value)}>
                   {countries.map((country) => (
                     <MenuItem key={country.code} value={country.code}>
                       {country.name_ar || country.name}
@@ -520,8 +496,8 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={Boolean(errors.port_of_entry)}>
-                <InputLabel>منفذ الدخول</InputLabel>
-                <Select value={data.port_of_entry} label="منفذ الدخول" onChange={(e) => update('port_of_entry', e.target.value)}>
+                <InputLabel>{t('traveler.preRegistration.form.portOfEntry')}</InputLabel>
+                <Select value={data.port_of_entry} label={t('traveler.preRegistration.form.portOfEntry')} onChange={(e) => update('port_of_entry', e.target.value)}>
                   {ports.map((port) => (
                     <MenuItem key={port.id} value={port.id}>
                       {port.name_ar} ({port.type})
@@ -533,15 +509,15 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12}>
               <FormControl error={Boolean(errors.transport_mode)}>
-                <FormLabel>وسيلة النقل</FormLabel>
+                <FormLabel>{t('traveler.preRegistration.form.transportMode')}</FormLabel>
                 <RadioGroup
                   row
                   value={data.transport_mode}
                   onChange={(e) => update('transport_mode', e.target.value)}
                 >
-                  <FormControlLabel value="AIR" control={<Radio />} label="طائرة" />
-                  <FormControlLabel value="SEA" control={<Radio />} label="سفينة" />
-                  <FormControlLabel value="LAND" control={<Radio />} label="بر" />
+                  <FormControlLabel value="AIR" control={<Radio />} label={t('traveler.preRegistration.transportMode.air')} />
+                  <FormControlLabel value="SEA" control={<Radio />} label={t('traveler.preRegistration.transportMode.sea')} />
+                  <FormControlLabel value="LAND" control={<Radio />} label={t('traveler.preRegistration.transportMode.land')} />
                 </RadioGroup>
                 {errors.transport_mode && (
                   <FormHelperText error>{errors.transport_mode}</FormHelperText>
@@ -577,7 +553,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="تاريخ الوصول"
+                label={t('traveler.preRegistration.form.arrivalDate')}
                 type="date"
                 value={data.arrival_date}
                 onChange={(e) => update('arrival_date', e.target.value)}
@@ -589,11 +565,11 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>دول العبور (اختياري)</InputLabel>
+                <InputLabel>{t('traveler.preRegistration.form.transitCountries')}</InputLabel>
                 <Select
                   multiple
                   value={data.transit_countries}
-                  label="دول العبور (اختياري)"
+                  label={t('traveler.preRegistration.form.transitCountries')}
                   onChange={(e) => update('transit_countries', e.target.value as string[])}
                   renderValue={(selected) => (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -629,7 +605,7 @@ const PreRegistrationPage = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <FormControl error={Boolean(errors.purpose)}>
-                <FormLabel>الغرض من الزيارة</FormLabel>
+                <FormLabel>{t('traveler.preRegistration.summary.purposeLabel')}</FormLabel>
                 <RadioGroup row value={data.purpose} onChange={(e) => update('purpose', e.target.value)}>
                   {purposeOptions.map((option) => (
                     <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
@@ -641,7 +617,7 @@ const PreRegistrationPage = () => {
             {data.purpose === 'آخر' && (
               <Grid item xs={12}>
                 <TextField
-                  label="وضّح الغرض"
+                  label={t('traveler.preRegistration.summary.purposeSpecifyLabel')}
                   value={data.purpose_other}
                   onChange={(e) => update('purpose_other', e.target.value)}
                   fullWidth
@@ -650,7 +626,7 @@ const PreRegistrationPage = () => {
             )}
             <Grid item xs={12} sm={6}>
               <TextField
-                label="رقم الهاتف"
+                label={t('traveler.preRegistration.form.phone')}
                 value={data.phone}
                 onChange={(e) => update('phone', e.target.value)}
                 fullWidth
@@ -661,7 +637,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="واتساب (اختياري)"
+                label={t('traveler.preRegistration.form.whatsapp')}
                 value={data.whatsapp}
                 onChange={(e) => update('whatsapp', e.target.value)}
                 fullWidth
@@ -670,7 +646,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="البريد الإلكتروني (اختياري)"
+                label={t('traveler.preRegistration.form.email')}
                 value={data.email}
                 onChange={(e) => update('email', e.target.value)}
                 fullWidth
@@ -681,7 +657,7 @@ const PreRegistrationPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="رقم الطوارئ (أقرب شخص)"
+                label={t('traveler.preRegistration.form.emergencyPhone')}
                 value={data.emergency_phone}
                 onChange={(e) => update('emergency_phone', e.target.value)}
                 fullWidth
@@ -698,26 +674,26 @@ const PreRegistrationPage = () => {
     if (step === 4) {
       return (
         <Stack spacing={2}>
-          <Alert severity="info">خلال آخر 21 يوماً، هل عانيت من أي من الأعراض التالية؟</Alert>
+          <Alert severity="info">{t('traveler.preRegistration.symptoms.intro')}</Alert>
           {symptomQuestions.map((q, index) => (
             <Card key={q.key} variant="outlined">
               <CardContent>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
                   <Typography sx={{ fontWeight: 700 }}>
-                    {index + 1}. {q.label}؟
+                    {t('traveler.preRegistration.symptoms.question', { index: index + 1, label: q.label })}
                   </Typography>
                   <RadioGroup
                     row
                     value={data.symptoms[q.key].has ? 'yes' : 'no'}
                     onChange={(e) => updateSymptom(q.key, 'has', e.target.value === 'yes')}
                   >
-                    <FormControlLabel value="yes" control={<Radio />} label="نعم" />
-                    <FormControlLabel value="no" control={<Radio />} label="لا" />
+                    <FormControlLabel value="yes" control={<Radio />} label={t('traveler.preRegistration.symptoms.yes')} />
+                    <FormControlLabel value="no" control={<Radio />} label={t('traveler.preRegistration.symptoms.no')} />
                   </RadioGroup>
                 </Stack>
                 {data.symptoms[q.key].has && q.hasExtra === 'temperature' && (
                   <TextField
-                    label="درجة الحرارة (°C)"
+                    label={t('traveler.preRegistration.form.temperature')}
                     type="number"
                     value={data.symptoms[q.key].temperature || ''}
                     onChange={(e) => updateSymptom(q.key, 'temperature', e.target.value)}
@@ -729,7 +705,7 @@ const PreRegistrationPage = () => {
                 )}
                 {data.symptoms[q.key].has && q.hasExtra === 'patient_name' && (
                   <TextField
-                    label="اسم المريض"
+                    label={t('traveler.preRegistration.form.patientName')}
                     value={data.symptoms[q.key].patient_name || ''}
                     onChange={(e) => updateSymptom(q.key, 'patient_name', e.target.value)}
                     sx={{ mt: 1.5 }}
@@ -740,7 +716,7 @@ const PreRegistrationPage = () => {
                 )}
                 {data.symptoms[q.key].has && q.hasExtra === 'details' && (
                   <TextField
-                    label="تفاصيل الأعراض"
+                    label={t('traveler.preRegistration.symptoms.details')}
                     value={data.symptoms[q.key].details || ''}
                     onChange={(e) => updateSymptom(q.key, 'details', e.target.value)}
                     sx={{ mt: 1.5 }}
@@ -752,12 +728,9 @@ const PreRegistrationPage = () => {
               </CardContent>
             </Card>
           ))}
-          <Alert severity={risk.level === 'مرتفع' ? 'error' : risk.level === 'متوسط' ? 'warning' : 'success'}>
-            {risk.level === 'منخفض'
-              ? `تصنيف المخاطر المبدئي: ${risk.level} (${risk.score} نقطة).`
-              : risk.level === 'متوسط'
-                ? `تصنيف المخاطر المبدئي: ${risk.level} (${risk.score} نقطة). قد تحتاج إلى فحص إضافي عند الوصول.`
-                : `تصنيف المخاطر المبدئي: ${risk.level} (${risk.score} نقطة). يرجى التوجه إلى الفحص الطبي فور وصولك.`}
+          <Alert severity={risk.level === t('traveler.preRegistration.risk.high') ? 'error' : risk.level === t('traveler.preRegistration.risk.medium') ? 'warning' : 'success'}>
+            {t('traveler.preRegistration.risk.initial')}: {risk.level} ({risk.score} {t('traveler.preRegistration.risk.points')}).
+            {t(risk.level === t('traveler.preRegistration.risk.low') ? 'traveler.preRegistration.risk.lowDesc' : risk.level === t('traveler.preRegistration.risk.medium') ? 'traveler.preRegistration.risk.mediumDesc' : 'traveler.preRegistration.risk.highDesc')}
           </Alert>
         </Stack>
       );
@@ -770,21 +743,21 @@ const PreRegistrationPage = () => {
           <Card variant="outlined">
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                ملخص البيانات
+                {t('traveler.preRegistration.summary')}
               </Typography>
               <Stack spacing={1}>
-                <Typography variant="body1"><b>الاسم:</b> {data.full_name}</Typography>
-                <Typography variant="body1"><b>الجواز:</b> {data.passport_number}</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.form.fullName')}</b> {data.full_name}</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.form.passportNumber')}</b> {data.passport_number}</Typography>
                 <Typography variant="body1">
-                  <b>الرحلة:</b> {data.flight_number || '—'}، تاريخ {data.arrival_date}
+                  <b>{t('traveler.preRegistration.form.trip')}</b> {data.flight_number || '—'}، {t('traveler.preRegistration.summary.date')} {data.arrival_date}
                 </Typography>
-                <Typography variant="body1"><b>منفذ الدخول:</b> {tripPort?.name_ar || '—'}</Typography>
-                <Typography variant="body1"><b>الغرض:</b> {data.purpose}{data.purpose === 'آخر' ? ` - ${data.purpose_other}` : ''}</Typography>
-                <Typography variant="body1"><b>الهاتف:</b> {data.phone}</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.form.portOfEntry')}</b> {tripPort?.name_ar || '—'}</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.form.purpose')}</b> {data.purpose}{data.purpose === t('traveler.preRegistration.purpose.other') ? ` - ${data.purpose_other}` : ''}</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.form.phone')}</b> {data.phone}</Typography>
                 <Typography variant="body1">
-                  <b>الأعراض:</b> {symptomQuestions.filter((q) => data.symptoms[q.key].has).map((q) => q.label).join('، ') || t('traveler.preRegistration.noSymptoms')}
+                  <b>{t('traveler.preRegistration.summary.symptomsLabel')}</b> {symptomQuestions.filter((q) => data.symptoms[q.key].has).map((q) => q.label).join('، ') || t('traveler.preRegistration.noSymptoms')}
                 </Typography>
-                <Typography variant="body1"><b>تصنيف المخاطر:</b> {risk.level} ({risk.score} نقطة)</Typography>
+                <Typography variant="body1"><b>{t('traveler.preRegistration.risk.label')}</b> {risk.level} ({risk.score} {t('traveler.preRegistration.risk.points')})</Typography>
               </Stack>
             </CardContent>
           </Card>
@@ -792,7 +765,7 @@ const PreRegistrationPage = () => {
             control={
               <Checkbox checked={data.consent} onChange={(e) => update('consent', e.target.checked)} />
             }
-            label="أقر بصحة البيانات المقدمة"
+            label={t('traveler.preRegistration.summary.consent')}
           />
           {errors.consent && <FormHelperText error>{errors.consent}</FormHelperText>}
           {submitError && <Alert severity="error">{submitError}</Alert>}
@@ -803,7 +776,7 @@ const PreRegistrationPage = () => {
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
           >
-            حفظ وإصدار رمز المرور الصحي
+            {t('traveler.preRegistration.summary.save')}
           </Button>
         </Stack>
       );
@@ -819,10 +792,10 @@ const PreRegistrationPage = () => {
           <CardContent sx={{ p: 4, textAlign: 'center' }}>
             <CheckCircleIcon sx={{ fontSize: 72, color: 'success.main', mb: 2 }} />
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              تم التسجيل بنجاح
+              {t('traveler.preRegistration.summary.success')}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
-              رقم التسجيل: <b dir="ltr">{result.travelerId.slice(0, 8).toUpperCase()}</b>
+              {t('traveler.preRegistration.summary.registrationNumber')}: <b dir="ltr">{result.travelerId.slice(0, 8).toUpperCase()}</b>
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {result.fullName} · {result.passport}
@@ -835,16 +808,16 @@ const PreRegistrationPage = () => {
                 <Box
                   component="img"
                   src={qr.qr_code}
-                  alt="رمز QR"
+                  alt={t('traveler.preRegistration.summary.qrAlt')}
                   sx={{ width: 220, height: 220, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  اعرض هذا الرمز لموظف الحجر الصحي عند الوصول لتسريع إجراءاتك.
+                  {t('traveler.preRegistration.summary.qrInstruction')}
                 </Typography>
               </Box>
             ) : (
               <Alert severity="info" sx={{ mb: 3 }}>
-                سيتم إصدار رمز QR الخاص بك بعد مراجعة المستندات واعتماد الطلب.
+                {t('traveler.preRegistration.summary.qrIssuance')}
               </Alert>
             )}
 
@@ -855,17 +828,17 @@ const PreRegistrationPage = () => {
                 startIcon={<UploadFileIcon />}
                 onClick={() => navigate('/traveler/documents')}
               >
-                رفع المستندات الآن
+                {t('traveler.preRegistration.summary.uploadNow')}
               </Button>
               <Button variant="outlined" onClick={() => navigate(`/traveler/tracking?passport=${result.passport}`)}>
-                متابعة حالة الطلب
+                {t('traveler.preRegistration.summary.trackRequest')}
               </Button>
               <Button variant="outlined" onClick={() => navigate('/traveler/dashboard')}>
-                لوحة التحكم
+                {t('traveler.preRegistration.summary.dashboard')}
               </Button>
             </Stack>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-              يمكنك رفع المستندات لاحقاً من صفحة "رفع المستندات" في بوابة المسافرين.
+              {t('traveler.preRegistration.summary.uploadLater')}
             </Typography>
           </CardContent>
         </Card>
@@ -878,7 +851,7 @@ const PreRegistrationPage = () => {
       <PageHeader
         title={t('traveler.preRegistration.pageTitle')}
         subtitle={t('traveler.preRegistration.pageSubtitle')}
-        eyebrow="بوابة المسافرين"
+        eyebrow={t('traveler.preRegistration.summary.eyebrow')}
       />
 
       <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
@@ -909,17 +882,17 @@ const PreRegistrationPage = () => {
           {step >= 1 && step <= 4 && (
             <Stack direction="row" justifyContent="space-between" sx={{ mt: 4 }}>
               <Button onClick={back} startIcon={<ArrowBackIcon />} variant="outlined">
-                السابق
+                {t('traveler.preRegistration.summary.back')}
               </Button>
               <Button onClick={next} endIcon={<ArrowForwardIcon />} variant="contained">
-                {step === 4 ? 'التالي: مراجعة وتأكيد' : 'التالي'}
+                {step === 4 ? t('traveler.preRegistration.summary.nextReview') : t('traveler.preRegistration.summary.next')}
               </Button>
             </Stack>
           )}
           {step === 5 && (
             <Stack direction="row" justifyContent="space-between" sx={{ mt: 4 }}>
               <Button onClick={back} startIcon={<ArrowBackIcon />} variant="outlined">
-                السابق
+                {t('traveler.preRegistration.summary.back')}
               </Button>
             </Stack>
           )}

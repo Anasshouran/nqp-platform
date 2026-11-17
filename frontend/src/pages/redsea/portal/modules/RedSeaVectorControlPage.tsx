@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -26,6 +27,7 @@ const densityColor: Record<string, 'error' | 'warning' | 'info' | 'success' | 'd
 };
 
 const RedSeaVectorControlPage = () => {
+  const { t } = useTranslation();
   const surveys = useList<VectorSurvey>(getSurveys, { page_size: 10 });
   const operations = useList<VectorControlOperation>(getOperations, { page_size: 8 });
   const [overview, setOverview] = useState<VectorDashboardOverview | null>(null);
@@ -39,18 +41,18 @@ const RedSeaVectorControlPage = () => {
   }, []);
 
   const kpis = [
-    { label: 'المسوحات هذا الشهر', value: overview?.surveys_this_month ?? '-', icon: <AssessmentIcon />, color: 'primary.main' as const },
-    { label: 'البلاغات الجديدة', value: overview?.reports_new ?? '-', icon: <BugReportIcon />, color: 'info.main' as const },
-    { label: 'عمليات نشطة', value: overview?.operations_active ?? '-', icon: <CampaignIcon />, color: 'warning.main' as const },
-    { label: 'عمليات منفذة', value: overview?.operations_completed ?? '-', icon: <TaskAltIcon />, color: 'success.main' as const },
+    { label: t('redsea.portal.modules.vectorControl.kpi.surveys.label'), value: overview?.surveys_this_month ?? '-', icon: <AssessmentIcon />, color: 'primary.main' as const },
+    { label: t('redsea.portal.modules.vectorControl.kpi.reports.label'), value: overview?.reports_new ?? '-', icon: <BugReportIcon />, color: 'info.main' as const },
+    { label: t('redsea.portal.modules.vectorControl.kpi.activeOperations.label'), value: overview?.operations_active ?? '-', icon: <CampaignIcon />, color: 'warning.main' as const },
+    { label: t('redsea.portal.modules.vectorControl.kpi.completedOperations.label'), value: overview?.operations_completed ?? '-', icon: <TaskAltIcon />, color: 'success.main' as const },
   ];
 
   return (
     <Box>
       <PageHeader
-        eyebrow="الأنظمة التشغيلية"
-        title="مكافحة النواقل — قطاع البحر الأحمر"
-        subtitle="مسوحات النواقل وأوامر العمل ضمن منافذ القطاع."
+        eyebrow={t('redsea.portal.modules.vectorControl.eyebrow')}
+        title={t('redsea.portal.modules.vectorControl.title')}
+        subtitle={t('redsea.portal.modules.vectorControl.subtitle')}
       />
 
       <Grid container spacing={2.5} sx={{ mb: 4 }}>
@@ -77,11 +79,11 @@ const RedSeaVectorControlPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} lg={7}>
-          <SectionCard title="المسوحات الأخيرة" subtitle="مسوحات النواقل في القطاع">
+          <SectionCard title={t('redsea.portal.modules.vectorControl.surveysSection.title')} subtitle={t('redsea.portal.modules.vectorControl.surveysSection.subtitle')}>
             {surveys.loading ? (
               <Stack spacing={1}><Skeleton height={46} /><Skeleton height={46} /></Stack>
             ) : surveys.data.length === 0 ? (
-              <EmptyState title="لا توجد مسوحات" description="لم تُسجّل مسوحات نواقل ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.vectorControl.surveysEmpty.title')} description={t('redsea.portal.modules.vectorControl.surveysEmpty.description')} />
             ) : (
               <Stack spacing={1.5}>
                 {surveys.data.map((s) => (
@@ -104,11 +106,11 @@ const RedSeaVectorControlPage = () => {
           </SectionCard>
         </Grid>
         <Grid item xs={12} lg={5}>
-          <SectionCard title="عمليات المكافحة" subtitle="عمليات المكافحة الأخيرة">
+          <SectionCard title={t('redsea.portal.modules.vectorControl.operationsSection.title')} subtitle={t('redsea.portal.modules.vectorControl.operationsSection.subtitle')}>
             {operations.loading ? (
               <Stack spacing={1}><Skeleton height={40} /><Skeleton height={40} /></Stack>
             ) : operations.data.length === 0 ? (
-              <EmptyState title="لا توجد عمليات" description="لم تُسجّل عمليات مكافحة ضمن القطاع بعد." />
+              <EmptyState title={t('redsea.portal.modules.vectorControl.operationsEmpty.title')} description={t('redsea.portal.modules.vectorControl.operationsEmpty.description')} />
             ) : (
               <Stack spacing={1.5}>
                 {operations.data.slice(0, 6).map((w) => (

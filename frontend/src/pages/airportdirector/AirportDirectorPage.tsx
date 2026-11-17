@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -105,17 +107,17 @@ const REFERENCE_PAGE_SIZE = 100;
 const AIRPORT_RESOURCES = ['airport_health', 'airport_staff', 'screening'] as const;
 
 const RESOURCE_LABELS: Record<(typeof AIRPORT_RESOURCES)[number], string> = {
-  airport_health: 'صحة المطارات',
-  airport_staff: 'كادر صحة المطارات',
-  screening: 'الفحوصات',
+  airport_health: 'airportdirector.resources.airport_health',
+  airport_staff: 'airportdirector.resources.airport_staff',
+  screening: 'airportdirector.resources.screening',
 };
 
 const ACTION_LABELS: Record<string, string> = {
-  view: 'عرض',
-  add: 'إضافة',
-  edit: 'تعديل',
-  delete: 'حذف',
-  export: 'تصدير',
+  view: 'airportdirector.actions.view',
+  add: 'airportdirector.actions.add',
+  edit: 'airportdirector.actions.edit',
+  delete: 'airportdirector.actions.delete',
+  export: 'airportdirector.actions.export',
 };
 
 const AIRPORT_PERMISSION_CATALOG = [
@@ -124,27 +126,27 @@ const AIRPORT_PERMISSION_CATALOG = [
   'screening:view', 'screening:add', 'screening:edit', 'screening:delete', 'screening:export',
 ] as const;
 
-/** تسمية عربية مقروءة لكود صلاحية (`resource:action`). */
-const permissionLabel = (code: string): string => {
+/** تسمية مقروءة لكود صلاحية (`resource:action`). */
+const permissionLabel = (t: TFunction, code: string): string => {
   const [resource, action] = code.split(':');
-  const resourceLabel = RESOURCE_LABELS[resource as keyof typeof RESOURCE_LABELS];
-  const actionLabel = ACTION_LABELS[action];
-  return resourceLabel && actionLabel ? `${resourceLabel} · ${actionLabel}` : code;
+  const resourceKey = RESOURCE_LABELS[resource as keyof typeof RESOURCE_LABELS];
+  const actionKey = ACTION_LABELS[action];
+  return resourceKey && actionKey ? `${t(resourceKey)} · ${t(actionKey)}` : code;
 };
 
 const SECTIONS = [
-  { id: 'overview', label: 'نظرة عامة', icon: <DashboardIcon fontSize="small" /> },
-  { id: 'alerts', label: 'التنبيهات', icon: <WarningAmberIcon fontSize="small" /> },
-  { id: 'operations', label: 'العمليات', icon: <HealthAndSafetyIcon fontSize="small" /> },
-  { id: 'flights', label: 'الرحلات', icon: <VerifiedUserIcon fontSize="small" /> },
-  { id: 'screening', label: 'الفحص', icon: <BiotechIcon fontSize="small" /> },
-  { id: 'inspections', label: 'التفتيش', icon: <AirplanemodeActiveIcon fontSize="small" /> },
-  { id: 'crew', label: 'الطاقم', icon: <AirlineSeatReclineNormalIcon fontSize="small" /> },
-  { id: 'terminals', label: 'المواقع', icon: <TableChartIcon fontSize="small" /> },
-  { id: 'decision', label: 'دعم القرار', icon: <GavelIcon fontSize="small" /> },
-  { id: 'reports', label: 'التقارير', icon: <PictureAsPdfIcon fontSize="small" /> },
-  { id: 'staff', label: 'الموظفون', icon: <VerifiedUserIcon fontSize="small" /> },
-  { id: 'permissions', label: 'الصلاحيات', icon: <GavelIcon fontSize="small" /> },
+  { id: 'overview', label: 'airportdirector.sections.overview', icon: <DashboardIcon fontSize="small" /> },
+  { id: 'alerts', label: 'airportdirector.sections.alerts', icon: <WarningAmberIcon fontSize="small" /> },
+  { id: 'operations', label: 'airportdirector.sections.operations', icon: <HealthAndSafetyIcon fontSize="small" /> },
+  { id: 'flights', label: 'airportdirector.sections.flights', icon: <VerifiedUserIcon fontSize="small" /> },
+  { id: 'screening', label: 'airportdirector.sections.screening', icon: <BiotechIcon fontSize="small" /> },
+  { id: 'inspections', label: 'airportdirector.sections.inspections', icon: <AirplanemodeActiveIcon fontSize="small" /> },
+  { id: 'crew', label: 'airportdirector.sections.crew', icon: <AirlineSeatReclineNormalIcon fontSize="small" /> },
+  { id: 'terminals', label: 'airportdirector.sections.terminals', icon: <TableChartIcon fontSize="small" /> },
+  { id: 'decision', label: 'airportdirector.sections.decision', icon: <GavelIcon fontSize="small" /> },
+  { id: 'reports', label: 'airportdirector.sections.reports', icon: <PictureAsPdfIcon fontSize="small" /> },
+  { id: 'staff', label: 'airportdirector.sections.staff', icon: <VerifiedUserIcon fontSize="small" /> },
+  { id: 'permissions', label: 'airportdirector.sections.permissions', icon: <GavelIcon fontSize="small" /> },
 ] as const;
 
 /** بيانات مرجعية تُجلب بشكل متوازٍ مع لوحة التحكم (طاقم + مواقع + نقاط فحص). */
@@ -169,7 +171,7 @@ interface Recommendation {
  * C) تراكم الفحوصات المعلّقة (معلّق > منجز × 1.5) — تعزيز الموارد.
  * لا نداءات جديدة ولا نماذج جديدة؛ تُحسب في الواجهة من نفس الحمولة.
  */
-const computeRecommendations = (dashboard: AirportDashboard | null): Recommendation[] => {
+const computeRecommendations = (t: TFunction, dashboard: AirportDashboard | null): Recommendation[] => {
   if (!dashboard) return [];
   const k = dashboard.kpis;
   const recs: Recommendation[] = [];
@@ -177,10 +179,10 @@ const computeRecommendations = (dashboard: AirportDashboard | null): Recommendat
   // A) حالات مشتبهة
   if (k.suspected_cases > 0) {
     recs.push({
-      topic: 'حالات مشتبهة',
-      finding: `${k.suspected_cases} حالة مشتبهة اليوم`,
-      cause: 'ارتفاع مؤشرات الفحص الأولي',
-      recommendation: 'تصعيد الفحص الحراري وتفعيل تتبع المخالطين',
+      topic: t('airportdirector.recommendations.suspected_cases.topic'),
+      finding: t('airportdirector.recommendations.suspected_cases.finding', { count: k.suspected_cases }),
+      cause: t('airportdirector.recommendations.suspected_cases.cause'),
+      recommendation: t('airportdirector.recommendations.suspected_cases.recommendation'),
     });
   }
 
@@ -190,20 +192,23 @@ const computeRecommendations = (dashboard: AirportDashboard | null): Recommendat
   ).length;
   if (failed > 0) {
     recs.push({
-      topic: 'تفتيش الطائرات',
-      finding: `${failed} تفتيش بحالة غير مطابقة`,
-      cause: 'بنود غير مطابقة في آخر التفتيشات',
-      recommendation: 'إجراءات تصحيحية وإعادة تفتيش الطائرات المعنية',
+      topic: t('airportdirector.recommendations.non_compliant_inspections.topic'),
+      finding: t('airportdirector.recommendations.non_compliant_inspections.finding', { count: failed }),
+      cause: t('airportdirector.recommendations.non_compliant_inspections.cause'),
+      recommendation: t('airportdirector.recommendations.non_compliant_inspections.recommendation'),
     });
   }
 
   // C) تراكم الفحوصات المعلّقة مقابل المنجزة
   if (k.screened_today > 0 && k.pending_screenings > k.screened_today * 1.5) {
     recs.push({
-      topic: 'ضغط الفحص',
-      finding: `${k.pending_screenings} فحص معلّق مقابل ${k.screened_today} منجز`,
-      cause: 'تراكم الفحوصات المعلّقة',
-      recommendation: 'تعزيز الموارد في نقاط الفحص',
+      topic: t('airportdirector.recommendations.pending_screenings.topic'),
+      finding: t('airportdirector.recommendations.pending_screenings.finding', {
+        count: k.pending_screenings,
+        screened: k.screened_today,
+      }),
+      cause: t('airportdirector.recommendations.pending_screenings.cause'),
+      recommendation: t('airportdirector.recommendations.pending_screenings.recommendation'),
     });
   }
 
@@ -212,6 +217,7 @@ const computeRecommendations = (dashboard: AirportDashboard | null): Recommendat
 
 const AirportDirectorPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('DAY');
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], []);
 
@@ -237,7 +243,7 @@ const AirportDirectorPage = () => {
   const k = dashboard?.kpis;
   const alerts = dashboard?.alerts ?? [];
   const report = dashboard?.report;
-  const recommendations = computeRecommendations(dashboard);
+  const recommendations = computeRecommendations(t, dashboard);
 
   /** سجل الأنشطة الإدارية — استطلاع دوري كل 30 ثانية. */
   const [activityLog, setActivityLog] = useState<AirportActivityLog[]>([]);
@@ -278,30 +284,36 @@ const AirportDirectorPage = () => {
     }));
   }, [referenceApi.data]);
 
+  const flightColumns = useMemo(() => getFlightColumns(t), [t]);
+  const screeningColumns = useMemo(() => getScreeningColumns(t), [t]);
+  const inspectionColumns = useMemo(() => getInspectionColumns(t), [t]);
+  const crewColumns = useMemo(() => getCrewColumns(t), [t]);
+  const terminalColumns = useMemo(() => getTerminalColumns(t), [t]);
+
   const kpis: Array<{ label: string; value: number; accent: string; icon: ReactElement }> = [
-    { label: 'رحلات اليوم', value: k?.flights_today ?? 0, accent: 'primary.main', icon: <FlightLandIcon /> },
-    { label: 'مسافرون اليوم', value: k?.passengers_today ?? 0, accent: 'info.main', icon: <GroupsIcon /> },
-    { label: 'فحوصات وصول اليوم', value: k?.arrivals_today ?? 0, accent: 'success.main', icon: <FlightTakeoffIcon /> },
-    { label: 'فحوصات مغادرة اليوم', value: k?.departures_today ?? 0, accent: 'warning.main', icon: <FlightLandIcon /> },
-    { label: 'فُحصوا اليوم', value: k?.screened_today ?? 0, accent: 'primary.main', icon: <ManageSearchIcon /> },
-    { label: 'فحوصات معلّقة', value: k?.pending_screenings ?? 0, accent: 'warning.main', icon: <FactCheckIcon /> },
-    { label: 'حالات مشتبهة', value: k?.suspected_cases ?? 0, accent: 'error.main', icon: <WarningAmberIcon /> },
-    { label: 'إحالات العيادة', value: k?.clinic_referrals ?? 0, accent: 'error.light', icon: <HealthAndSafetyIcon /> },
-    { label: 'اكتملت اليوم', value: k?.completed_today ?? 0, accent: 'success.dark', icon: <CheckCircleIcon /> },
-    { label: 'تفتيش طائرات اليوم', value: k?.inspections_today ?? 0, accent: 'primary.dark', icon: <AirplanemodeActiveIcon /> },
-    { label: 'سجلات طاقم اليوم', value: k?.crew_records_today ?? 0, accent: 'info.dark', icon: <AirlineSeatReclineNormalIcon /> },
-    { label: 'تطعيمات', value: k?.vaccinations ?? 0, accent: 'success.main', icon: <VaccinesIcon /> },
+    { label: t('airportdirector.kpis.flights_today'), value: k?.flights_today ?? 0, accent: 'primary.main', icon: <FlightLandIcon /> },
+    { label: t('airportdirector.kpis.passengers_today'), value: k?.passengers_today ?? 0, accent: 'info.main', icon: <GroupsIcon /> },
+    { label: t('airportdirector.kpis.arrivals_today'), value: k?.arrivals_today ?? 0, accent: 'success.main', icon: <FlightTakeoffIcon /> },
+    { label: t('airportdirector.kpis.departures_today'), value: k?.departures_today ?? 0, accent: 'warning.main', icon: <FlightLandIcon /> },
+    { label: t('airportdirector.kpis.screened_today'), value: k?.screened_today ?? 0, accent: 'primary.main', icon: <ManageSearchIcon /> },
+    { label: t('airportdirector.kpis.pending_screenings'), value: k?.pending_screenings ?? 0, accent: 'warning.main', icon: <FactCheckIcon /> },
+    { label: t('airportdirector.kpis.suspected_cases'), value: k?.suspected_cases ?? 0, accent: 'error.main', icon: <WarningAmberIcon /> },
+    { label: t('airportdirector.kpis.clinic_referrals'), value: k?.clinic_referrals ?? 0, accent: 'error.light', icon: <HealthAndSafetyIcon /> },
+    { label: t('airportdirector.kpis.completed_today'), value: k?.completed_today ?? 0, accent: 'success.dark', icon: <CheckCircleIcon /> },
+    { label: t('airportdirector.kpis.inspections_today'), value: k?.inspections_today ?? 0, accent: 'primary.dark', icon: <AirplanemodeActiveIcon /> },
+    { label: t('airportdirector.kpis.crew_records_today'), value: k?.crew_records_today ?? 0, accent: 'info.dark', icon: <AirlineSeatReclineNormalIcon /> },
+    { label: t('airportdirector.kpis.vaccinations'), value: k?.vaccinations ?? 0, accent: 'success.main', icon: <VaccinesIcon /> },
   ];
 
   return (
     <Box>
-      {/* ===== ترحيب ===== */}
+      {/* ===== Welcome ===== */}
       <DashboardHero
-        eyebrow="لوحة القيادة التنفيذية — صحة المطارات"
-        title={`مرحباً، ${user?.full_name || 'مديرة الحجر الصحي بالمطار'} 👋`}
-        subtitle="نظرة تنفيذية شاملة على صحة المطارات: الرحلات، فحص المسافرين، الشحن الجوي، المختبر، والإيرادات"
+        eyebrow={t('airportdirector.hero.eyebrow')}
+        title={t('airportdirector.hero.title', { name: user?.full_name || t('airportdirector.hero.title_fallback') })}
+        subtitle={t('airportdirector.hero.subtitle')}
         gradient="emerald"
-        avatarLabel={(user?.full_name || 'م').slice(0, 1)}
+        avatarLabel={(user?.full_name || t('airportdirector.hero.avatar_fallback')).slice(0, 1)}
         action={
           <ToggleButtonGroup
             size="small"
@@ -310,16 +322,16 @@ const AirportDirectorPage = () => {
             onChange={(_, v: Period) => v && setPeriod(v)}
             sx={{ '& .MuiToggleButton-root': { fontWeight: 700, borderRadius: 2, px: 1.5 } }}
           >
-            <ToggleButton value="DAY">اليوم</ToggleButton>
-            <ToggleButton value="WEEK">هذا الأسبوع</ToggleButton>
-            <ToggleButton value="MONTH">هذا الشهر</ToggleButton>
+            <ToggleButton value="DAY">{t('airportdirector.period.day')}</ToggleButton>
+            <ToggleButton value="WEEK">{t('airportdirector.period.week')}</ToggleButton>
+            <ToggleButton value="MONTH">{t('airportdirector.period.month')}</ToggleButton>
           </ToggleButtonGroup>
         }
         chips={[
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>{todayArabic()}</Box>,
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#8ff5d4', flexShrink: 0 }} />
-            مباشر
+            {t('airportdirector.live')}
           </Box>,
         ]}
       />
@@ -331,7 +343,7 @@ const AirportDirectorPage = () => {
             active={active}
             onNavigate={scrollTo}
             accent="primary.main"
-            label="أقسام اللوحة"
+            label="airportdirector.rail.label"
           />
         </Grid>
         <Grid item xs={12} md={9.8} lg={10.2}>
@@ -350,15 +362,15 @@ const AirportDirectorPage = () => {
             )}
           </Grid>
 
-          {/* ===== التنبيهات ===== */}
+          {/* ===== Alerts ===== */}
           <Box ref={register('alerts')} data-section="alerts" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="🚨 مركز التنبيهات" subtitle="أحداث تستدعي النظر الفوري — الرحلة، الطاقم، الشحن">
+            <SectionCard title={t('airportdirector.alerts.title')} subtitle={t('airportdirector.alerts.subtitle')}>
               {dashboardApi.error ? (
                 <ErrorState compact onRetry={dashboardApi.retry} />
               ) : dashboardApi.loading ? (
                 <ListSkeleton count={3} />
               ) : alerts.length === 0 ? (
-                <EmptyState title="لا توجد تنبيهات" description="لا توجد تنبيهات مسجّلة حالياً." />
+                <EmptyState title={t('airportdirector.alerts.empty_title')} description={t('airportdirector.alerts.empty_description')} />
               ) : (
                 <Stack spacing={1}>
                   {alerts.map((a) => (
@@ -377,9 +389,9 @@ const AirportDirectorPage = () => {
             </SectionCard>
           </Box>
 
-          {/* ===== مؤشر العمليات + المختبر ===== */}
+          {/* ===== Operations Indicators ===== */}
           <Box ref={register('operations')} data-section="operations" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="مؤشرات العمليات" subtitle="وصول / مغادرة / فحص — مؤشرات اليوم الفعلية">
+            <SectionCard title={t('airportdirector.operations.title')} subtitle={t('airportdirector.operations.subtitle')}>
               {dashboardApi.error ? (
                 <ErrorState compact onRetry={dashboardApi.retry} />
               ) : dashboardApi.loading ? (
@@ -387,12 +399,12 @@ const AirportDirectorPage = () => {
               ) : (
                 <Grid container spacing={1.5}>
                   {[
-                    { label: 'فحوصات وصول اليوم', value: k?.arrivals_today ?? 0, accent: 'success.main' },
-                    { label: 'فحوصات مغادرة اليوم', value: k?.departures_today ?? 0, accent: 'warning.main' },
-                    { label: 'فُحصوا اليوم', value: k?.screened_today ?? 0, accent: 'primary.main' },
-                    { label: 'فحوصات معلّقة', value: k?.pending_screenings ?? 0, accent: 'error.main' },
-                    { label: 'تفتيش طائرات اليوم', value: k?.inspections_today ?? 0, accent: 'info.main' },
-                    { label: 'سجلات طاقم اليوم', value: k?.crew_records_today ?? 0, accent: 'info.dark' },
+                    { label: t('airportdirector.kpis.arrivals_today'), value: k?.arrivals_today ?? 0, accent: 'success.main' },
+                    { label: t('airportdirector.kpis.departures_today'), value: k?.departures_today ?? 0, accent: 'warning.main' },
+                    { label: t('airportdirector.kpis.screened_today'), value: k?.screened_today ?? 0, accent: 'primary.main' },
+                    { label: t('airportdirector.kpis.pending_screenings'), value: k?.pending_screenings ?? 0, accent: 'error.main' },
+                    { label: t('airportdirector.kpis.inspections_today'), value: k?.inspections_today ?? 0, accent: 'info.main' },
+                    { label: t('airportdirector.kpis.crew_records_today'), value: k?.crew_records_today ?? 0, accent: 'info.dark' },
                   ].map((op) => (
                     <Grid item key={op.label} xs={12} sm={6} md={4} xl={2}>
                       <Box
@@ -420,7 +432,7 @@ const AirportDirectorPage = () => {
 
           {/* ===== لوحة الرحلات ===== */}
           <Box ref={register('flights')} data-section="flights" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="✈️ لوحة الرحلات" subtitle="الواصلة والمغادرة قيد الفحص الصحي — الحالة الفورية">
+            <SectionCard title={t('airportdirector.flightsBoard.title')} subtitle={t('airportdirector.flightsBoard.subtitle')}>
               <DirectorTable<UpcomingFlight>
                 columns={flightColumns}
                 rows={dashboard?.upcoming_flights ?? []}
@@ -428,15 +440,15 @@ const AirportDirectorPage = () => {
                 loading={dashboardApi.loading}
                 error={dashboardApi.error}
                 onRetry={dashboardApi.retry}
-                emptyTitle="لا رحلات قادمة"
-                emptyDescription="لا توجد رحلات مسجّلة قادمة حالياً."
+                emptyTitle={t('airportdirector.flightsBoard.empty_title')}
+                emptyDescription={t('airportdirector.flightsBoard.empty_description')}
               />
             </SectionCard>
           </Box>
 
           {/* ===== فحص المسافرين + بؤر ===== */}
           <Box ref={register('screening')} data-section="screening" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="فحص المسافرين" subtitle="آخر فحوص المسافرين — الحرارة ومستوى الخطر والحالة">
+            <SectionCard title={t('airportdirector.passengerScreening.title')} subtitle={t('airportdirector.passengerScreening.subtitle')}>
               <DirectorTable<RecentScreening>
                 columns={screeningColumns}
                 rows={dashboard?.recent_screenings ?? []}
@@ -444,15 +456,15 @@ const AirportDirectorPage = () => {
                 loading={dashboardApi.loading}
                 error={dashboardApi.error}
                 onRetry={dashboardApi.retry}
-                emptyTitle="لا توجد فحوص"
-                emptyDescription="ستظهر فحوصات المسافرين هنا عند تسجيلها."
+                emptyTitle={t('airportdirector.passengerScreening.empty_title')}
+                emptyDescription={t('airportdirector.passengerScreening.empty_description')}
               />
             </SectionCard>
           </Box>
 
           {/* ===== تفتيش الطائرات ===== */}
           <Box ref={register('inspections')} data-section="inspections" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="✈️ تفتيش الطائرات" subtitle="آخر تفتيشات الطائرات — المطابقة والشهادة والتاريخ">
+            <SectionCard title={t('airportdirector.aircraftInspections.title')} subtitle={t('airportdirector.aircraftInspections.subtitle')}>
               <DirectorTable<RecentInspection>
                 columns={inspectionColumns}
                 rows={dashboard?.recent_inspections ?? []}
@@ -460,15 +472,15 @@ const AirportDirectorPage = () => {
                 loading={dashboardApi.loading}
                 error={dashboardApi.error}
                 onRetry={dashboardApi.retry}
-                emptyTitle="لا توجد تفتيشات"
-                emptyDescription="ستظهر تفتيشات الطائرات هنا عند تسجيلها."
+                emptyTitle={t('airportdirector.aircraftInspections.empty_title')}
+                emptyDescription={t('airportdirector.aircraftInspections.empty_description')}
               />
             </SectionCard>
           </Box>
 
           {/* ===== صحة الطاقم ===== */}
           <Box ref={register('crew')} data-section="crew" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="👨‍✈️ صحة الطاقم" subtitle="آخر سجلات الفحص الصحي لأطقم الرحلات">
+            <SectionCard title={t('airportdirector.crewHealth.title')} subtitle={t('airportdirector.crewHealth.subtitle')}>
               <DirectorTable<CrewHealthRecord>
                 columns={crewColumns}
                 rows={referenceApi.data?.crew ?? []}
@@ -476,15 +488,15 @@ const AirportDirectorPage = () => {
                 loading={referenceApi.loading}
                 error={referenceApi.error}
                 onRetry={referenceApi.retry}
-                emptyTitle="لا توجد سجلات طاقم"
-                emptyDescription="ستظهر سجلات صحة الطاقم هنا عند تسجيلها."
+                emptyTitle={t('airportdirector.crewHealth.empty_title')}
+                emptyDescription={t('airportdirector.crewHealth.empty_description')}
               />
             </SectionCard>
           </Box>
 
           {/* ===== أداء المواقع + الإيرادات ===== */}
           <Box ref={register('terminals')} data-section="terminals" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="أداء مواقع المطار" subtitle="الصالات — عدد نقاط الفحص لكل صالة">
+            <SectionCard title={t('airportdirector.terminalPerformance.title')} subtitle={t('airportdirector.terminalPerformance.subtitle')}>
               <DirectorTable<TerminalAggregate>
                 columns={terminalColumns}
                 rows={terminalRows}
@@ -492,23 +504,23 @@ const AirportDirectorPage = () => {
                 loading={referenceApi.loading}
                 error={referenceApi.error}
                 onRetry={referenceApi.retry}
-                emptyTitle="لا توجد صالات"
-                emptyDescription="ستظهر صالات المطار ونقاط الفحص هنا عند إضافتها."
+                emptyTitle={t('airportdirector.terminalPerformance.empty_title')}
+                emptyDescription={t('airportdirector.terminalPerformance.empty_description')}
               />
             </SectionCard>
           </Box>
 
           {/* ===== دعم القرار ===== */}
           <Box ref={register('decision')} data-section="decision" sx={{ mb: 3, scrollMarginTop: '80px' }}>
-            <SectionCard title="💡 دعم اتخاذ القرار" subtitle="النظام يوصي — والمديرة تقرر">
+            <SectionCard title={t('airportdirector.decisionSupport.title')} subtitle={t('airportdirector.decisionSupport.subtitle')}>
               {dashboardApi.loading && !dashboard ? (
                 <ListSkeleton count={1} />
               ) : dashboardApi.error && !dashboard ? (
                 <ErrorState compact onRetry={dashboardApi.retry} />
               ) : recommendations.length === 0 ? (
                 <EmptyState
-                  title="لا توجد توصيات حالية"
-                  description="سيظهر هنا أي تنبيه عند ارتفاع مؤشرات تستدعي التصعيد."
+                  title={t('airportdirector.decisionSupport.empty_title')}
+                  description={t('airportdirector.decisionSupport.empty_description')}
                 />
               ) : (
                 <Grid container spacing={2}>
@@ -533,7 +545,7 @@ const AirportDirectorPage = () => {
                             {r.finding}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                            السبب المحتمل: {r.cause}
+                            {t('airportdirector.decisionSupport.probable_cause', { cause: r.cause })}
                           </Typography>
                           <Typography variant="body2" color="success.main" sx={{ mt: 1, fontWeight: 700 }}>
                             {r.recommendation}
@@ -571,19 +583,19 @@ const AirportDirectorPage = () => {
           <Box ref={register('permissions')} data-section="permissions" sx={{ mb: 3, scrollMarginTop: '80px' }}>
             <Grid container spacing={3}>
               <Grid item xs={12} lg={6}>
-                <SectionCard title="مصفوفة الصلاحيات" subtitle="متاح لدورك / مستبعد تشغيليًا">
+                <SectionCard title={t('airportdirector.permissionsMatrix.title')} subtitle={t('airportdirector.permissionsMatrix.subtitle')}>
                   <PermissionsSection />
                 </SectionCard>
               </Grid>
               <Grid item xs={12} lg={6}>
                 <SectionCard
-                  title="📋 سجل الأنشطة"
-                  subtitle="آخر الإجراءات الإدارية"
+                  title={t('airportdirector.activityLog.title')}
+                  subtitle={t('airportdirector.activityLog.subtitle')}
                   sx={{ height: '100%' }}
                   action={
                     <IconButton
                       size="small"
-                      title="تحديث"
+                      title={t('airportdirector.activityLog.refresh')}
                       onClick={loadActivity}
                     >
                       <RefreshIcon fontSize="small" />
@@ -596,8 +608,8 @@ const AirportDirectorPage = () => {
                     <ErrorState compact onRetry={loadActivity} />
                   ) : activityLog.length === 0 ? (
                     <EmptyState
-                      title="لا يوجد نشاط مسجّل"
-                      description="سيظهر هنا سجل الإجراءات الإدارية عند حدوثها."
+                      title={t('airportdirector.activityLog.empty_title')}
+                      description={t('airportdirector.activityLog.empty_description')}
                     />
                   ) : (
                     <Stack direction="column" spacing={1} sx={{ height: '100%', overflowY: 'auto', p: 1 }}>
@@ -644,7 +656,7 @@ const AirportDirectorPage = () => {
           </Box>
 
           <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 4 }}>
-            وزارة الصحة الاتحادية — منصة الحجر الصحي القومي · إدارة الحجر الصحي بالمطار
+            {t('airportdirector.footer')}
           </Typography>
         </Grid>
       </Grid>
@@ -655,90 +667,90 @@ const AirportDirectorPage = () => {
 /* ============================= تسميات الحالة ============================= */
 
 interface ChipMeta {
-  label: string;
+  labelKey: string;
   tone: StatusTone;
 }
 
-const chipFor = (metas: Record<string, ChipMeta>, code: string) => {
+const chipFor = (t: TFunction, metas: Record<string, ChipMeta>, code: string) => {
   const meta = metas[code];
-  return <StatusChip label={meta?.label ?? code} tone={meta?.tone ?? 'neutral'} />;
+  return <StatusChip label={meta ? t(meta.labelKey) : code} tone={meta?.tone ?? 'neutral'} />;
 };
 
 const RISK_META: Record<string, ChipMeta> = {
-  GREEN: { label: 'أخضر', tone: 'success' },
-  YELLOW: { label: 'أصفر', tone: 'warning' },
-  RED: { label: 'أحمر', tone: 'error' },
+  GREEN: { labelKey: 'airportdirector.risk.green', tone: 'success' },
+  YELLOW: { labelKey: 'airportdirector.risk.yellow', tone: 'warning' },
+  RED: { labelKey: 'airportdirector.risk.red', tone: 'error' },
 };
 
 const SCREENING_STATUS_META: Record<string, ChipMeta> = {
-  PENDING: { label: 'قيد الانتظار', tone: 'warning' },
-  CLEARED: { label: 'مؤهل', tone: 'success' },
-  QUARANTINED: { label: 'محجور', tone: 'error' },
-  REFERRED: { label: 'مُحال', tone: 'info' },
+  PENDING: { labelKey: 'airportdirector.clearance.pending', tone: 'warning' },
+  CLEARED: { labelKey: 'airportdirector.clearance.cleared', tone: 'success' },
+  QUARANTINED: { labelKey: 'airportdirector.clearance.quarantined', tone: 'error' },
+  REFERRED: { labelKey: 'airportdirector.clearance.referred', tone: 'info' },
 };
 
 const INSPECTION_STATUS_META: Record<string, ChipMeta> = {
-  PASSED: { label: 'نجح', tone: 'success' },
-  FAILED: { label: 'فشل', tone: 'error' },
-  CONDITIONAL: { label: 'مشروط', tone: 'warning' },
+  PASSED: { labelKey: 'airportdirector.inspectionStatus.passed', tone: 'success' },
+  FAILED: { labelKey: 'airportdirector.inspectionStatus.failed', tone: 'error' },
+  CONDITIONAL: { labelKey: 'airportdirector.inspectionStatus.conditional', tone: 'warning' },
 };
 
 const HEALTH_STATUS_META: Record<string, ChipMeta> = {
-  FIT: { label: 'لائق', tone: 'success' },
-  UNFIT: { label: 'غير لائق', tone: 'error' },
-  UNDER_OBSERVATION: { label: 'قيد المراقبة', tone: 'warning' },
+  FIT: { labelKey: 'airportdirector.crewFitness.fit', tone: 'success' },
+  UNFIT: { labelKey: 'airportdirector.crewFitness.unfit', tone: 'error' },
+  UNDER_OBSERVATION: { labelKey: 'airportdirector.crewFitness.under_observation', tone: 'warning' },
 };
 
 const dateTime = (iso: string) => new Date(iso).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
 
 /* ============================= أعمدة الجداول ============================= */
 
-const flightColumns: DataTableColumn<UpcomingFlight>[] = [
+const getFlightColumns = (t: TFunction): DataTableColumn<UpcomingFlight>[] => [
   {
     key: 'flight_number',
-    label: 'الرحلة',
+    label: t('airportdirector.columns.flight'),
     render: (f) => <Box sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{f.flight_number}</Box>,
   },
-  { key: 'origin_country', label: 'المنشأ' },
-  { key: 'scheduled_arrival', label: 'موعد الوصول', render: (f) => dateTime(f.scheduled_arrival) },
-  { key: 'status', label: 'الحالة', render: (f) => <StatusChip label={f.status} tone="info" /> },
+  { key: 'origin_country', label: t('airportdirector.columns.origin') },
+  { key: 'scheduled_arrival', label: t('airportdirector.columns.arrival_time'), render: (f) => dateTime(f.scheduled_arrival) },
+  { key: 'status', label: t('airportdirector.columns.status'), render: (f) => <StatusChip label={f.status} tone="info" /> },
 ];
 
-const screeningColumns: DataTableColumn<RecentScreening>[] = [
+const getScreeningColumns = (t: TFunction): DataTableColumn<RecentScreening>[] => [
   {
     key: 'traveler_name',
-    label: 'المسافر',
+    label: t('airportdirector.columns.traveler'),
     render: (s) => <Box sx={{ fontWeight: 700 }}>{s.traveler_name}</Box>,
   },
-  { key: 'risk_level', label: 'مستوى الخطر', render: (s) => chipFor(RISK_META, s.risk_level) },
-  { key: 'status', label: 'الحالة', render: (s) => chipFor(SCREENING_STATUS_META, s.status) },
-  { key: 'screened_at', label: 'وقت الفحص', render: (s) => dateTime(s.screened_at) },
+  { key: 'risk_level', label: t('airportdirector.columns.risk_level'), render: (s) => chipFor(t, RISK_META, s.risk_level) },
+  { key: 'status', label: t('airportdirector.columns.status'), render: (s) => chipFor(t, SCREENING_STATUS_META, s.status) },
+  { key: 'screened_at', label: t('airportdirector.columns.screening_time'), render: (s) => dateTime(s.screened_at) },
 ];
 
-const inspectionColumns: DataTableColumn<RecentInspection>[] = [
+const getInspectionColumns = (t: TFunction): DataTableColumn<RecentInspection>[] => [
   {
     key: 'aircraft_registration',
-    label: 'تسجيل الطائرة',
+    label: t('airportdirector.columns.aircraft_registration'),
     render: (i) => <Box sx={{ fontWeight: 700, fontFamily: 'monospace' }}>{i.aircraft_registration}</Box>,
   },
-  { key: 'flight_number', label: 'الرحلة', render: (i) => <Box sx={{ fontFamily: 'monospace' }}>{i.flight_number}</Box> },
-  { key: 'overall_status', label: 'الحالة العامة', render: (i) => chipFor(INSPECTION_STATUS_META, i.overall_status) },
+  { key: 'flight_number', label: t('airportdirector.columns.flight'), render: (i) => <Box sx={{ fontFamily: 'monospace' }}>{i.flight_number}</Box> },
+  { key: 'overall_status', label: t('airportdirector.columns.overall_status'), render: (i) => chipFor(t, INSPECTION_STATUS_META, i.overall_status) },
   {
     key: 'certificate_issued',
-    label: 'الشهادة',
+    label: t('airportdirector.columns.certificate'),
     render: (i) => (
-      <StatusChip label={i.certificate_issued ? 'صدرت' : 'لم تصدر'} tone={i.certificate_issued ? 'success' : 'neutral'} />
+      <StatusChip label={i.certificate_issued ? t('airportdirector.columns.certificate_issued') : t('airportdirector.columns.certificate_not_issued')} tone={i.certificate_issued ? 'success' : 'neutral'} />
     ),
   },
-  { key: 'inspection_date', label: 'تاريخ التفتيش', render: (i) => dateTime(i.inspection_date) },
+  { key: 'inspection_date', label: t('airportdirector.columns.inspection_date'), render: (i) => dateTime(i.inspection_date) },
 ];
 
-const crewColumns: DataTableColumn<CrewHealthRecord>[] = [
-  { key: 'crew_name', label: 'الطاقم', render: (c) => <Box sx={{ fontWeight: 700 }}>{c.crew_name || '—'}</Box> },
-  { key: 'flight_number', label: 'الرحلة', render: (c) => <Box sx={{ fontFamily: 'monospace' }}>{c.flight_number || '—'}</Box> },
-  { key: 'health_status', label: 'الحالة الصحية', render: (c) => chipFor(HEALTH_STATUS_META, c.health_status) },
-  { key: 'temperature', label: 'درجة الحرارة', align: 'center', render: (c) => (c.temperature ?? 0) > 0 ? `${c.temperature}°` : '—' },
-  { key: 'next_clearance_date', label: 'التصريح القادم', render: (c) => c.next_clearance_date || '—' },
+const getCrewColumns = (t: TFunction): DataTableColumn<CrewHealthRecord>[] => [
+  { key: 'crew_name', label: t('airportdirector.columns.crew'), render: (c) => <Box sx={{ fontWeight: 700 }}>{c.crew_name || '—'}</Box> },
+  { key: 'flight_number', label: t('airportdirector.columns.flight'), render: (c) => <Box sx={{ fontFamily: 'monospace' }}>{c.flight_number || '—'}</Box> },
+  { key: 'health_status', label: t('airportdirector.columns.health_status'), render: (c) => chipFor(t, HEALTH_STATUS_META, c.health_status) },
+  { key: 'temperature', label: t('airportdirector.columns.temperature'), align: 'center', render: (c) => (c.temperature ?? 0) > 0 ? `${c.temperature}°` : '—' },
+  { key: 'next_clearance_date', label: t('airportdirector.columns.next_clearance'), render: (c) => c.next_clearance_date || '—' },
 ];
 
 const staffRoleOptions: FormSelectOption[] = (
@@ -764,14 +776,14 @@ interface TerminalAggregate {
   point_count: number;
 }
 
-const terminalColumns: DataTableColumn<TerminalAggregate>[] = [
-  { key: 'name_ar', label: 'الصالة', render: (t) => <Box sx={{ fontWeight: 700 }}>{t.name_ar}</Box> },
-  { key: 'terminal_code', label: 'الرمز', render: (t) => <Box sx={{ fontFamily: 'monospace' }}>{t.terminal_code}</Box> },
+const getTerminalColumns = (t: TFunction): DataTableColumn<TerminalAggregate>[] => [
+  { key: 'name_ar', label: t('airportdirector.columns.terminal'), render: (row) => <Box sx={{ fontWeight: 700 }}>{row.name_ar}</Box> },
+  { key: 'terminal_code', label: t('airportdirector.columns.code'), render: (row) => <Box sx={{ fontFamily: 'monospace' }}>{row.terminal_code}</Box> },
   {
     key: 'point_count',
-    label: 'نقاط الفحص',
+    label: t('airportdirector.columns.screening_points'),
     align: 'center',
-    render: (t) => <StatusChip label={String(t.point_count)} tone={t.point_count > 0 ? 'success' : 'neutral'} />,
+    render: (row) => <StatusChip label={String(row.point_count)} tone={row.point_count > 0 ? 'success' : 'neutral'} />,
   },
 ];
 
@@ -852,59 +864,62 @@ const StaffFormFields = ({
   value: StaffFormValues;
   onChange: (next: StaffFormValues) => void;
   portOptions: FormSelectOption[];
-}) => (
-  <Stack spacing={2} sx={{ pt: 1 }}>
-    <FormTextField
-      label="الاسم الكامل"
-      requiredMark
-      value={value.full_name}
-      onChange={(e) => onChange({ ...value, full_name: e.target.value })}
-    />
-    <FormSelect
-      label="الدور"
-      requiredMark
-      value={value.role}
-      onChange={(next) => onChange({ ...value, role: next as AirportStaffRole })}
-      options={staffRoleOptions}
-      SelectDisplayProps={{ 'aria-label': 'الدور' }}
-    />
-    <FormTextField
-      label="البريد الإلكتروني"
-      type="email"
-      value={value.email}
-      onChange={(e) => onChange({ ...value, email: e.target.value })}
-    />
-    <FormTextField
-      label="الهاتف"
-      value={value.phone}
-      onChange={(e) => onChange({ ...value, phone: e.target.value })}
-    />
-    <FormTextField
-      label="الوردية"
-      value={value.shift}
-      onChange={(e) => onChange({ ...value, shift: e.target.value })}
-      placeholder="صباحية / مسائية / ليلية"
-    />
-    <FormSelect
-      label="المطار"
-      requiredMark
-      value={value.airport}
-      onChange={(next) => onChange({ ...value, airport: next })}
-      options={portOptions}
-      placeholder="اختر المطار"
-      SelectDisplayProps={{ 'aria-label': 'المطار' }}
-    />
-    <FormControlLabel
-      control={
-        <Switch
-          checked={value.is_active}
-          onChange={(e) => onChange({ ...value, is_active: e.target.checked })}
-        />
-      }
-      label="نشط"
-    />
-  </Stack>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <Stack spacing={2} sx={{ pt: 1 }}>
+      <FormTextField
+        label={t('airportdirector.staff_form.full_name')}
+        requiredMark
+        value={value.full_name}
+        onChange={(e) => onChange({ ...value, full_name: e.target.value })}
+      />
+      <FormSelect
+        label={t('airportdirector.staff_form.role')}
+        requiredMark
+        value={value.role}
+        onChange={(next) => onChange({ ...value, role: next as AirportStaffRole })}
+        options={staffRoleOptions}
+        SelectDisplayProps={{ 'aria-label': t('airportdirector.staff_form.role') }}
+      />
+      <FormTextField
+        label={t('airportdirector.staff_form.email')}
+        type="email"
+        value={value.email}
+        onChange={(e) => onChange({ ...value, email: e.target.value })}
+      />
+      <FormTextField
+        label={t('airportdirector.staff_form.phone')}
+        value={value.phone}
+        onChange={(e) => onChange({ ...value, phone: e.target.value })}
+      />
+      <FormTextField
+        label={t('airportdirector.staff_form.shift')}
+        value={value.shift}
+        onChange={(e) => onChange({ ...value, shift: e.target.value })}
+        placeholder={t('airportdirector.staff_form.shift_placeholder')}
+      />
+      <FormSelect
+        label={t('airportdirector.staff_form.airport')}
+        requiredMark
+        value={value.airport}
+        onChange={(next) => onChange({ ...value, airport: next })}
+        options={portOptions}
+        placeholder={t('airportdirector.staff_form.airport_placeholder')}
+        SelectDisplayProps={{ 'aria-label': t('airportdirector.staff_form.airport') }}
+      />
+      <FormControlLabel
+        control={
+          <Switch
+            checked={value.is_active}
+            onChange={(e) => onChange({ ...value, is_active: e.target.checked })}
+          />
+        }
+        label={t('airportdirector.staff_form.active')}
+      />
+    </Stack>
+  );
+};
 
 /**
  * قسم موظفي المطار — قراءة من `getAirportStaff` (لدعم التحديث بعد التعديل)
@@ -921,6 +936,7 @@ const StaffSection = ({
   fallbackError: unknown;
   fallbackRetry: () => void;
 }) => {
+  const { t } = useTranslation();
   const staffApi = useApi<AirportStaff[]>(() =>
     getAirportStaff({ page_size: 100 }).then((res) => res.data.data.results ?? [])
   );
@@ -979,11 +995,11 @@ const StaffSection = ({
         airport: createForm.airport,
         is_active: createForm.is_active,
       });
-      notifySuccess('تمت إضافة الموظف');
+      notifySuccess(t('airportdirector.staff_notifications.added'));
       setCreateOpen(false);
       refresh();
     } catch {
-      notifyError('تعذر إضافة الموظف');
+      notifyError(t('airportdirector.staff_notifications.add_error'));
     } finally {
       setCreating(false);
     }
@@ -1015,11 +1031,11 @@ const StaffSection = ({
         airport: editForm.airport,
         is_active: editForm.is_active,
       });
-      notifySuccess('تم تحديث بيانات الموظف');
+      notifySuccess(t('airportdirector.staff_notifications.updated'));
       setEditTarget(null);
       refresh();
     } catch {
-      notifyError('تعذر تحديث بيانات الموظف');
+      notifyError(t('airportdirector.staff_notifications.update_error'));
     } finally {
       setSaving(false);
     }
@@ -1030,11 +1046,11 @@ const StaffSection = ({
     setDeleting(true);
     try {
       await deleteAirportStaff(deleteTarget.id);
-      notifySuccess('تم حذف الموظف');
+      notifySuccess(t('airportdirector.staff_notifications.deleted'));
       setDeleteTarget(null);
       refresh();
     } catch {
-      notifyError('تعذر حذف الموظف');
+      notifyError(t('airportdirector.staff_notifications.delete_error'));
     } finally {
       setDeleting(false);
     }
@@ -1042,32 +1058,32 @@ const StaffSection = ({
 
   const columns = useMemo<DataTableColumn<AirportStaff>[]>(
     () => [
-      { key: 'full_name', label: 'الاسم', render: (s) => <Box sx={{ fontWeight: 700 }}>{s.full_name || '—'}</Box> },
-      { key: 'role_label', label: 'الدور', render: (s) => <StatusChip label={s.role_label || s.role} tone="info" /> },
-      { key: 'email', label: 'البريد', render: (s) => s.email || '—' },
-      { key: 'phone', label: 'الهاتف', render: (s) => s.phone || '—' },
-      { key: 'shift', label: 'الوردية', render: (s) => s.shift || '—' },
+      { key: 'full_name', label: t('airportdirector.staff.col_name'), render: (s) => <Box sx={{ fontWeight: 700 }}>{s.full_name || '—'}</Box> },
+      { key: 'role_label', label: t('airportdirector.staff.col_role'), render: (s) => <StatusChip label={s.role_label || s.role} tone="info" /> },
+      { key: 'email', label: t('airportdirector.staff.col_email'), render: (s) => s.email || '—' },
+      { key: 'phone', label: t('airportdirector.staff.col_phone'), render: (s) => s.phone || '—' },
+      { key: 'shift', label: t('airportdirector.staff.col_shift'), render: (s) => s.shift || '—' },
       {
         key: 'is_active',
-        label: 'نشط',
+        label: t('airportdirector.staff.col_active'),
         align: 'center',
         render: (s) => (
-          <StatusChip label={s.is_active ? 'نشط' : 'غير نشط'} tone={s.is_active ? 'success' : 'neutral'} />
+          <StatusChip label={s.is_active ? t('airportdirector.staff.status_active') : t('airportdirector.staff.status_inactive')} tone={s.is_active ? 'success' : 'neutral'} />
         ),
       },
     ],
-    []
+    [t]
   );
 
   const renderActions = (row: AirportStaff) => (
     <>
-      <Tooltip title="تعديل">
-        <IconButton size="small" aria-label="تعديل" onClick={() => openEdit(row)}>
+      <Tooltip title={t('airportdirector.staff.edit')}>
+        <IconButton size="small" aria-label={t('airportdirector.staff.edit')} onClick={() => openEdit(row)}>
           <EditIcon fontSize="small" />
         </IconButton>
       </Tooltip>
-      <Tooltip title="حذف">
-        <IconButton size="small" color="error" aria-label="حذف" onClick={() => setDeleteTarget(row)}>
+      <Tooltip title={t('airportdirector.staff.delete')}>
+        <IconButton size="small" color="error" aria-label={t('airportdirector.staff.delete')} onClick={() => setDeleteTarget(row)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
       </Tooltip>
@@ -1080,11 +1096,11 @@ const StaffSection = ({
   return (
     <>
       <SectionCard
-        title="موظفو المطار"
-        subtitle="مفتشون، فنيو مختبر، كتّاب إدخال — الموظفون المسجّلون"
+        title={t('airportdirector.staff.title')}
+        subtitle={t('airportdirector.staff.subtitle')}
         action={
           <AppButton variant="primary" size="small" startIcon={<AddIcon />} onClick={openCreate}>
-            إضافة موظف
+            {t('airportdirector.staff.add_staff')}
           </AppButton>
         }
       >
@@ -1096,21 +1112,21 @@ const StaffSection = ({
           error={error}
           onRetry={refresh}
           actions={renderActions}
-          actionsLabel="إجراءات"
-          emptyTitle="لا يوجد موظفون مسجلون"
-          emptyDescription="ستظهر بيانات موظفي المطار هنا عند تسجيلهم."
+          actionsLabel={t('airportdirector.staff.actions')}
+          emptyTitle={t('airportdirector.staff.empty_title')}
+          emptyDescription={t('airportdirector.staff.empty_description')}
         />
       </SectionCard>
 
       {/* إضافة موظف */}
       <FormDialog
         open={createOpen}
-        title="إضافة موظف"
-        subtitle="سجّل موظفاً جديداً في مطار المنفذ"
+        title={t('airportdirector.staff.add_dialog_title')}
+        subtitle={t('airportdirector.staff.add_dialog_subtitle')}
         icon={<AddIcon />}
         onClose={() => setCreateOpen(false)}
         onSubmit={handleCreate}
-        submitLabel="إضافة"
+        submitLabel={t('airportdirector.staff.add_submit')}
         loading={creating}
         submitDisabled={createDisabled}
       >
@@ -1120,12 +1136,12 @@ const StaffSection = ({
       {/* تعديل موظف */}
       <FormDialog
         open={editTarget !== null}
-        title="تعديل بيانات الموظف"
+        title={t('airportdirector.staff.edit_dialog_title')}
         subtitle={editTarget?.full_name ?? ''}
         icon={<EditIcon />}
         onClose={() => setEditTarget(null)}
         onSubmit={handleUpdate}
-        submitLabel="حفظ"
+        submitLabel={t('airportdirector.staff.save')}
         loading={saving}
         submitDisabled={editDisabled}
       >
@@ -1135,9 +1151,9 @@ const StaffSection = ({
       {/* حذف موظف */}
       <ConfirmDialog
         open={deleteTarget !== null}
-        title="حذف الموظف"
-        message={deleteTarget ? `تأكيد حذف الموظف ${deleteTarget.full_name}؟` : ''}
-        confirmLabel="حذف"
+        title={t('airportdirector.staff.delete_dialog_title')}
+        message={deleteTarget ? t('airportdirector.staff.delete_confirm', { name: deleteTarget.full_name }) : ''}
+        confirmLabel={t('airportdirector.staff.delete_confirm_label')}
         loading={deleting}
         tone="error"
         onConfirm={handleDelete}
@@ -1158,30 +1174,31 @@ const ReportsSection = ({
   error: unknown;
   onRetry: () => void;
 }) => {
+  const { t } = useTranslation();
   const [tab, setTab] = useState(0);
 
   const tabs = [
-    { label: '📅 يومي', panel: <div>التقرير اليومي</div> },
-    { label: '📆 أسبوعي', panel: <div>التقرير الأسبوعي</div> },
-    { label: '📊 شهري', panel: <div>التقرير الشهري</div> },
+    { label: t('airportdirector.reports.tab_daily'), panel: <div>{t('airportdirector.reports.daily_report')}</div> },
+    { label: t('airportdirector.reports.tab_weekly'), panel: <div>{t('airportdirector.reports.weekly_report')}</div> },
+    { label: t('airportdirector.reports.tab_monthly'), panel: <div>{t('airportdirector.reports.monthly_report')}</div> },
   ];
 
   const summary = [
-    { label: 'الرحلات', value: report?.flights ?? 0 },
-    { label: 'المسافرون', value: report?.travelers ?? 0 },
-    { label: 'فُحصوا', value: report?.screened ?? 0 },
-    { label: 'الإحالات', value: report?.referrals ?? 0 },
-    { label: 'مشتبه بها', value: report?.suspected ?? 0 },
+    { label: t('airportdirector.reports.flights'), value: report?.flights ?? 0 },
+    { label: t('airportdirector.reports.travelers'), value: report?.travelers ?? 0 },
+    { label: t('airportdirector.reports.screened'), value: report?.screened ?? 0 },
+    { label: t('airportdirector.reports.referrals'), value: report?.referrals ?? 0 },
+    { label: t('airportdirector.reports.suspected'), value: report?.suspected ?? 0 },
   ];
 
   return (
     <SectionCard
-      title="مركز التقارير"
-      subtitle="تقارير الرحلات والفحص والمعمل والإيرادات"
+      title={t('airportdirector.reports.title')}
+      subtitle={t('airportdirector.reports.subtitle')}
       action={
         <Stack direction="row" spacing={1}>
-          <Button size="small" color="error" variant="contained" startIcon={<PictureAsPdfIcon />} onClick={() => notifySuccess('جارٍ تجهيز PDF')}>PDF</Button>
-          <Button size="small" color="success" variant="contained" startIcon={<TableChartIcon />} onClick={() => notifySuccess('جارٍ تجهيز Excel')}>Excel</Button>
+          <Button size="small" color="error" variant="contained" startIcon={<PictureAsPdfIcon />} onClick={() => notifySuccess(t('airportdirector.reports.generating_pdf'))}>PDF</Button>
+          <Button size="small" color="success" variant="contained" startIcon={<TableChartIcon />} onClick={() => notifySuccess(t('airportdirector.reports.generating_excel'))}>Excel</Button>
         </Stack>
       }
     >
@@ -1203,11 +1220,11 @@ const ReportsSection = ({
           </Grid>
 
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
-            توزيع الفحوص حسب الرحلة
+            {t('airportdirector.reports.screenings_by_flight_title')}
           </Typography>
           <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mb: 3 }}>
             {(report?.screenings_by_flight ?? []).length === 0 ? (
-              <Typography variant="caption" color="text.secondary">لا توجد فحوص مسجّلة اليوم.</Typography>
+              <Typography variant="caption" color="text.secondary">{t('airportdirector.reports.no_screenings_today')}</Typography>
             ) : (
               (report?.screenings_by_flight ?? []).map((r) => (
                 <StatusChip key={r.flight_number} label={`${r.flight_number} · ${r.count}`} tone="primary" />
@@ -1231,6 +1248,7 @@ const ReportsSection = ({
  * المتاح = الكتالوج ∩ الصلاحيات الفعلية · المستبعد = الكتالوج − الصلاحيات الفعلية.
  */
 const PermissionsSection = () => {
+  const { t } = useTranslation();
   const profileApi = useApi<ProfileData>(() => getProfile().then((res) => res.data.data));
   const [treeCodes, setTreeCodes] = useState<string[] | null>(null);
 
@@ -1281,8 +1299,8 @@ const PermissionsSection = () => {
   if (allowed.length === 0 && denied.length === 0) {
     return (
       <EmptyState
-        title="لا توجد صلاحيات قابلة للعرض لهذا الدور."
-        description="لم تُرجع خدمات الصلاحيات أي صلاحيات مطار مطابقة."
+        title={t('airportdirector.permissions.empty_title')}
+        description={t('airportdirector.permissions.empty_description')}
       />
     );
   }
@@ -1292,27 +1310,27 @@ const PermissionsSection = () => {
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
-            المتاح
+            {t('airportdirector.permissions.available')}
           </Typography>
           <Stack data-testid="rbac-allowed" direction="row" flexWrap="wrap" useFlexGap gap={1}>
             {allowed.map((code) => (
-              <StatusChip key={code} label={permissionLabel(code)} tone="success" />
+              <StatusChip key={code} label={permissionLabel(t, code)} tone="success" />
             ))}
           </Stack>
         </Grid>
         <Grid item xs={12} sm={6}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
-            المستبعد
+            {t('airportdirector.permissions.excluded')}
           </Typography>
           <Stack data-testid="rbac-denied" direction="row" flexWrap="wrap" useFlexGap gap={1}>
             {denied.map((code) => (
-              <StatusChip key={code} label={permissionLabel(code)} tone="neutral" />
+              <StatusChip key={code} label={permissionLabel(t, code)} tone="neutral" />
             ))}
           </Stack>
         </Grid>
       </Grid>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-        يُحدَّث تلقائيًا حسب صلاحيات دورك.
+        {t('airportdirector.permissions.auto_update')}
       </Typography>
     </>
   );

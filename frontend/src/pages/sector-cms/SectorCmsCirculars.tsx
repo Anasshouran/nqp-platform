@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import DescriptionIcon from '@mui/icons-material/Description';
+import { useTranslation } from 'react-i18next';
 import { SectorPageShell, SectorHomeLink, useSectorSite, usePageTitle } from './SectorCmsShared';
 import { CategoryChip } from '../../components/common/CategoryChip';
 import { CIRCULAR_CATEGORY_LABELS, CIRCULAR_CATEGORY_STYLES } from '../../components/common/categoryMaps';
@@ -25,9 +26,9 @@ const priorityColors: Record<string, 'error' | 'warning' | 'info'> = {
 };
 
 const priorityLabels: Record<string, string> = {
-  URGENT: 'عاجل',
-  IMPORTANT: 'مهم',
-  NORMAL: 'عادي',
+  URGENT: 'sector-cms.circulars.priority.urgent',
+  IMPORTANT: 'sector-cms.circulars.priority.important',
+  NORMAL: 'sector-cms.circulars.priority.normal',
 };
 
 const formatDate = (value?: string | null) =>
@@ -35,10 +36,11 @@ const formatDate = (value?: string | null) =>
 
 const SectorCmsCirculars = () => {
   const { sector, slug } = useSectorSite();
+  const { t } = useTranslation();
   const [circulars, setCirculars] = useState<Circular[]>([]);
   const [loading, setLoading] = useState(true);
 
-  usePageTitle('التعميمات');
+  usePageTitle(t('sector-cms.circulars.pageTitle'));
 
   useEffect(() => {
     if (!sector) {
@@ -54,9 +56,9 @@ const SectorCmsCirculars = () => {
   return (
     <SectorPageShell>
       <SectorHomeLink />
-      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>التعميمات</Typography>
+      <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{t('sector-cms.circulars.pageTitle')}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 760 }}>
-        التعميمات والقرارات الإدارية الصادرة عن الإدارة الاتحادية للحجر الصحي.
+        {t('sector-cms.circulars.subtitle')}
       </Typography>
 
       {loading ? (
@@ -68,8 +70,8 @@ const SectorCmsCirculars = () => {
       ) : circulars.length === 0 ? (
         <Card sx={{ border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
           <CampaignIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>لا توجد تعميمات منشورة حالياً</Typography>
-          <Typography variant="body2" color="text.secondary">سيتم نشر التعميمات الرسمية هنا فور صدورها.</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('sector-cms.circulars.emptyTitle')}</Typography>
+          <Typography variant="body2" color="text.secondary">{t('sector-cms.circulars.emptyDescription')}</Typography>
         </Card>
       ) : (
         <Grid container spacing={3}>
@@ -80,7 +82,7 @@ const SectorCmsCirculars = () => {
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                     <Stack direction="row" spacing={1}>
                       <CategoryChip category={circular.category} labels={CIRCULAR_CATEGORY_LABELS} styles={CIRCULAR_CATEGORY_STYLES} />
-                      <Chip label={priorityLabels[circular.priority] || circular.priority} size="small" color={priorityColors[circular.priority] || 'default'} />
+                      <Chip label={t(priorityLabels[circular.priority] || circular.priority)} size="small" color={priorityColors[circular.priority] || 'default'} />
                     </Stack>
                     <Typography variant="caption" color="text.secondary">{formatDate(circular.published_at)}</Typography>
                   </Stack>
@@ -103,7 +105,7 @@ const SectorCmsCirculars = () => {
                 </CardContent>
                 <CardActions sx={{ px: 3, pb: 2.5 }}>
                   <Button component={Link} to={`/sector/${slug}/circulars/${circular.id}`} size="small" color="primary">
-                    قراءة التعميم
+                    {t('sector-cms.circulars.readCircular')}
                   </Button>
                 </CardActions>
               </Card>

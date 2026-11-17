@@ -11,6 +11,7 @@ import i18n from '../../../i18n';
 import authReducer from '../../../store/slices/authSlice';
 import arLocale from '../../../i18n/locales/ar.json';
 import enLocale from '../../../i18n/locales/en.json';
+import FoodOpsPage from '../FoodOpsPage';
 
 i18n.addResourceBundle('ar', 'translation', arLocale, true, true);
 i18n.addResourceBundle('en', 'translation', enLocale, true, true);
@@ -68,6 +69,8 @@ vi.mock('../../../api/endpoints/food', () => ({
     total_fees: 5, total_categories: 3, categories: [],
     generated_at: '2026-01-01T00:00:00Z'
   } } }),
+  getSamplingPolicies: vi.fn().mockResolvedValue({ data: { data: [] } }),
+  getAccountingReport: vi.fn().mockResolvedValue({ data: { data: { items: [], total: 0 } } }),
 }));
 
 vi.mock('../../../api/endpoints/foodlab', () => ({
@@ -242,3 +245,26 @@ describe('Food pages language reactivity (Round 1)', () => {
     await screen.findByText(/National Food Safety Command/);
   });
 });
+
+  it('ExportInspectionForm AR→EN', async () => {
+    const { default: ExportInspectionFormView } = await import('../ExportInspectionForm');
+    const mockForm = {
+      shipment: { manifest_number: 'MF-001', created_at: '2026-01-01T00:00:00Z', customs_number: 'C-001', submitted_at: '2026-01-01T00:00:00Z', message_type: 'COMMERCIAL', port_name: 'Port', port_type: 'SEA', exporter_name: 'Exp', supplier_name: 'Sup', origin_country: 'US', vessel_name: 'V', loading_port: 'P', bill_of_lading: 'BL', clearing_agent: 'CA', total_weight_kg: 100, status: 'INSPECTED' },
+      items: [{ product_name: 'Rice', brand: 'B', origin: 'US', weight_kg: 100, package_count: 10, package_type: 'Bag' }],
+      inspection: { inspected_at: '2026-01-01T00:00:00Z', inspector_name: 'Insp', decision: 'COMPLIANT', temperature: 25, production_date: '2025-01-01', expiry_date: '2027-01-01', batch_number: 'B1', container_status: 'Good', package_condition: 'Good', damaged_count: 0, sound_count: 10, damaged_weight_kg: 0, sound_weight_kg: 100, notes: '' },
+      samples: [],
+      decision: null,
+      certificate: null,
+    } as any;
+    render(wrap(<ExportInspectionFormView form={mockForm} />));
+    await screen.findByText(/استمارة كشف الموارد الغذائية الصادرة/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Export Food Resources Inspection Form/);
+  });
+
+  it('FoodOpsPage AR→EN', async () => {
+    render(wrap(<FoodOpsPage />));
+    await screen.findByText(/Food Control Operations|عمليات رقابة/);
+    await i18n.changeLanguage('en');
+    await screen.findByText(/Food Control Operations/);
+  });
