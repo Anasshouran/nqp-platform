@@ -114,6 +114,27 @@ const getSections = (t: (key: string) => string) => [
   { id: 'health-certs', label: t('borders.portHealth.nav.healthCerts'), icon: <BadgeIcon fontSize="small" /> },
 ] as const;
 
+/** الصلاحية المطلوبة لعرض كل قسم في صفحة صحة الموانئ (بصيغة `resource:action`). */
+const SECTION_PERMISSIONS: Record<string, string> = {
+  dashboard: 'port_health:view',
+  seaports: 'port_health:view',
+  vessels: 'port_health:view',
+  crew: 'port_health:view',
+  passengers: 'port_health:view',
+  declarations: 'port_health:view',
+  inspections: 'port_health:view',
+  'ship-inspection': 'port_health:add',
+  'food-water': 'port_health:view',
+  sanitation: 'port_health:view',
+  isolation: 'port_health:view',
+  surveillance: 'port_health:view',
+  vectors: 'port_health:view',
+  cargo: 'port_health:view',
+  waste: 'port_health:view',
+  emergencies: 'port_health:view',
+  'health-certs': 'port_health:view',
+};
+
 const DashboardTab = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -616,7 +637,17 @@ const HealthCertsTab = () => {
 
 const PortHealthPage = () => {
   const { t } = useTranslation();
-  const SECTIONS = useMemo(() => getSections(t) as unknown as CommandSectionDef[], [t]);
+  const { user } = useAuth();
+  const permissions = useMemo(() => user?.permissions ?? [], [user?.permissions]);
+  const SECTIONS = useMemo(() => {
+    const all = getSections(t);
+    return all.filter((section) => {
+      const perm = SECTION_PERMISSIONS[section.id];
+      if (!perm) return true;
+      if (!permissions?.length) return true;
+      return permissions.includes(perm);
+    });
+  }, [t, permissions]);
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[]);
 
   return (

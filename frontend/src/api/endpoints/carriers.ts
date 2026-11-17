@@ -5,11 +5,13 @@ import type {
   CarrierApiKeyInfo,
   CarrierDashboardStats,
   CarrierDocument,
+  CarrierHealthDeclaration,
   CarrierMember,
   CarrierMemberCreatePayload,
   CarrierMemberUpdatePayload,
   CarrierProfile,
   Flight,
+  FlightManifestStatus,
   FlightTimelineResponse,
   HealthNotice,
   PassengerManifest,
@@ -24,6 +26,10 @@ export const getFlight = (id: string) =>
 
 export const getFlightTimeline = (id: string) =>
   apiClient.get<ApiResponse<FlightTimelineResponse>>(`/carriers/flights/${id}/timeline/`);
+
+/** ملخّص كشف الركاب لرحلة؛ يُرجع 404 حين لا يوجد كشف — يتعامل معه المتصل. */
+export const getFlightManifestStatus = (id: string) =>
+  apiClient.get<ApiResponse<FlightManifestStatus>>(`/carriers/flights/${id}/manifest/status/`);
 
 export const getCarrierDocuments = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<CarrierDocument>>>('/carriers/documents/', { params });
@@ -103,6 +109,17 @@ export const getHealthNotices = (params?: Record<string, unknown>) =>
 
 export const getRecentNotices = () =>
   apiClient.get<ApiResponse<HealthNotice[]>>('/carriers/notices/recent/');
+
+/**
+ * الإقرارات الصحية المقدَّمة من الناقلات لكل رحلة. يقصر الخادم النطاق على
+ * منافذ المطار للمستخدم المقيّد بالمطار (`flight__destination_port_id__in`)،
+ * بينما يرى المشرف كل الإقرارات. مرشّحات مدعومة: `status`, `flight`.
+ */
+export const getHealthDeclarations = (params?: Record<string, unknown>) =>
+  apiClient.get<ApiResponse<PaginatedResponse<CarrierHealthDeclaration>>>(
+    '/carriers/health-declarations/',
+    { params },
+  );
 
 export const getDashboardStats = () =>
   apiClient.get<ApiResponse<CarrierDashboardStats>>('/carriers/dashboard/stats/');

@@ -3085,6 +3085,9 @@
       }
     },
     "airportHealth": {
+      "eyebrow": "Borders & Air Points of Entry",
+      "title": "Airport Health System",
+      "subtitle": "Managing quarantine and public-health procedures at international airports under the International Health Regulations (IHR 2005).",
       "header": {
         "back": "Back to Platform",
         "home": "Home",

@@ -164,6 +164,11 @@ vi.mock('@/api/endpoints/airport', () => ({
   getAirportScreenings: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   getAircraftInspections: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   getCrewHealthRecords: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
+  getAirportStaff: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getAirportActivityLog: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getAirportPorts: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getAirportFlights: vi.fn().mockResolvedValue({ data: { data: { results: [], count: 0 } } }),
+  getAirportPortIds: vi.fn().mockResolvedValue([]),
   getTerminals: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   getCheckpoints: vi.fn().mockResolvedValue({ data: { data: [], count: 0, results: [] } }),
   getAirportDashboard: vi.fn().mockResolvedValue({ data: { data: {

@@ -24,7 +24,6 @@ import { logout as logoutApi } from '../../api/endpoints/auth';
 import { useAuth } from '../../hooks/useAuth';
 import baseTheme from '../../styles/theme';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import GovernmentHeader from '../../components/common/GovernmentHeader';
 import KpiCard from '../../components/dashboard/KpiCard';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import {

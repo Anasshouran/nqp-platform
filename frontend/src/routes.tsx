@@ -501,6 +501,7 @@ const AppRoutes = () => (
         </Route>
         <Route path="/app/port-health" element={withSuspense(<PortHealthPage />)} />
         <Route path="/app/borders-health" element={withSuspense(<BordersHealthPage />)} />
+        <Route path="/app/airport-health" element={withSuspense(<AirportHealthPage />)} />
         <Route path="/app/vector-control" element={withSuspense(<VectorControlPage />)} />
         <Route path="/app/health" element={withSuspense(<HealthDashboardPage />)} />
         <Route path="/app/quarantine-director" element={withSuspense(<QuarantineDirectorPage />)} />
@@ -547,7 +548,6 @@ const AppRoutes = () => (
       <Route path="/app/inspector-dashboard" element={withSuspense(<InspectorDashboardPage />)} />
       <Route path="/app/station-dashboard" element={withSuspense(<StationManagerDashboardPage />)} />
       <Route path="/app/reception" element={withSuspense(<ReceptionLabPage />)} />
-      <Route path="/app/airport-health" element={withSuspense(<AirportHealthPage />)} />
     </Route>
   </Routes>
 );

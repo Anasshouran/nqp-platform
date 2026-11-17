@@ -38,6 +38,15 @@ export interface FlightTimelineResponse {
   events: FlightTimelineEvent[];
 }
 
+/** ملخّص كشف الركاب لرحلة (`/carriers/flights/{id}/manifest/status/`). */
+export interface FlightManifestStatus {
+  manifest_id: string;
+  status: string;
+  total_passengers: number;
+  error_report?: Record<string, unknown> | null;
+  processed_at?: string | null;
+}
+
 export interface CarrierDocument {
   id: string;
   carrier?: string | null;
@@ -142,6 +151,37 @@ export interface HealthNotice {
   expiry_date?: string | null;
   is_active: boolean;
   acknowledged?: boolean | null;
+}
+
+/**
+ * إقرار صحي مقدَّم من شركة النقل لكل رحلة (`/carriers/health-declarations/`).
+ * حالة الإقرار مملوكة للخادم وتنتقل فقط عبر إجراءات submit/review/approve/reject.
+ */
+export interface CarrierHealthDeclaration {
+  id: string;
+  flight: string;
+  flight_number?: string;
+  carrier?: string | null;
+  carrier_name?: string;
+  declaration_date?: string | null;
+  officer_name: string;
+  officer_phone: string;
+  doctor_name: string;
+  doctor_phone: string;
+  passenger_count: number;
+  crew_count: number;
+  ill_passenger_count: number;
+  has_medical_emergency: boolean;
+  symptoms_present: boolean;
+  notes: string;
+  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | string;
+  status_label?: string;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
+  review_notes?: string;
+  rejection_reason?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface UpcomingFlight {

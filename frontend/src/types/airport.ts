@@ -124,6 +124,12 @@ export interface DashboardAlert {
   status: string;
 }
 
+export interface RiskDistributionRow {
+  level: string;
+  label: string;
+  count: number;
+}
+
 export interface AirportDashboardReport {
   flights: number;
   travelers: number;
@@ -200,6 +206,7 @@ export interface AirportDashboard {
   tasks: DashboardTask[];
   alerts: DashboardAlert[];
   report: AirportDashboardReport;
+  risk_distribution: RiskDistributionRow[];
   recent_inspections: RecentInspection[];
   recent_screenings: RecentScreening[];
   /** موظفو المطار — مختصر من AirportStaff (#71) لعرض اللوحة. */

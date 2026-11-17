@@ -556,6 +556,14 @@ class AirportDashboardViewSet(viewsets.ViewSet):
             .annotate(count=Count('id'))
             .order_by('-count')[:5]
         )
+        risk_distribution = [
+            {
+                'level': level,
+                'label': label,
+                'count': screenings.filter(created_at__date=today, risk_level=level).count(),
+            }
+            for level, label in AirportScreening.RiskLevel.choices
+        ]
         report = {
             'flights': flights_today,
             'travelers': passengers_today,
@@ -597,6 +605,7 @@ class AirportDashboardViewSet(viewsets.ViewSet):
                 'tasks': tasks,
                 'alerts': alerts,
                 'report': report,
+                'risk_distribution': risk_distribution,
                 'recent_inspections': recent_inspections,
                 'recent_screenings': recent_screenings,
                 'staff': [

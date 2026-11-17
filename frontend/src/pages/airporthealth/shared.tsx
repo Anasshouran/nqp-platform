@@ -1,37 +1,47 @@
 import { useTranslation } from 'react-i18next';
-import { labelOf, colorOf } from '../../utils/labels';
+import { alpha } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import RemoveIcon from '@mui/icons-material/Remove';
+import baseTheme from '../../styles/theme';
+import KpiCardBase from '../../components/dashboard/KpiCard';
+import { SectionCard, StatusChip, type StatusTone } from '../../components/uikit';
 
-/* ============================= نظام التصميم ============================= */
+/* ============================= نظام التصميم =============================
+ * الألوان مشتقة من سمة المنصة العامة (styles/theme) بدلاً من لوحة مستقلة،
+ * لضمان اتساق «نظام صحة المطارات» مع بقية واجهات المنصة.
+ */
+
+const palette = baseTheme.palette;
 
 export const C = {
-  primary: '#0B5CAD',
-  primaryDark: '#094A8F',
-  medicalBlue: '#0E7490',
-  medicalGreen: '#16855B',
-  bg: '#F5F7FA',
-  surface: '#FFFFFF',
-  text: '#1F2937',
-  textMuted: '#6B7280',
-  border: '#E5E7EB',
-  danger: '#C62828',
-  dangerBg: '#FDECEC',
-  warning: '#D97706',
-  warningBg: '#FFF4E5',
-  success: '#16855B',
-  successBg: '#E9F7F0',
-  info: '#0E7490',
-  infoBg: '#E6F4F8',
-  chart: ['#0B5CAD', '#0E7490', '#16855B', '#D97706', '#C62828', '#7C3AED'],
+  primary: palette.primary.main,
+  primaryDark: palette.primary.dark,
+  medicalBlue: palette.info.main,
+  medicalGreen: palette.success.main,
+  bg: palette.background.default,
+  surface: palette.background.paper,
+  text: palette.text.primary,
+  textMuted: palette.text.secondary,
+  border: palette.divider,
+  danger: palette.error.main,
+  dangerBg: alpha(palette.error.main, 0.1),
+  warning: palette.warning.main,
+  warningBg: alpha(palette.warning.main, 0.14),
+  success: palette.success.main,
+  successBg: alpha(palette.success.main, 0.12),
+  info: palette.info.main,
+  infoBg: alpha(palette.info.main, 0.1),
+  chart: [
+    palette.primary.main,
+    palette.info.main,
+    palette.success.main,
+    palette.warning.main,
+    palette.error.main,
+    '#7C3AED',
+  ],
 } as const;
 
 export type RiskKey = 'LOW' | 'MEDIUM' | 'HIGH' | 'ASSESSMENT' | 'CLOSED';
@@ -42,16 +52,16 @@ export const getRiskMeta = (t: (key: string) => string): Record<RiskKey, { label
   MEDIUM: { label: '🟡 ' + t('borders.airportHealth.risk.medium'), color: C.warning, bg: C.warningBg },
   HIGH: { label: '🔴 ' + t('borders.airportHealth.risk.high'), color: C.danger, bg: C.dangerBg },
   ASSESSMENT: { label: '🔵 ' + t('borders.airportHealth.risk.assessment'), color: C.medicalBlue, bg: C.infoBg },
-  CLOSED: { label: '⚫ ' + t('borders.airportHealth.risk.closed'), color: '#374151', bg: '#F3F4F6' },
+  CLOSED: { label: '⚫ ' + t('borders.airportHealth.risk.closed'), color: C.textMuted, bg: alpha(C.text, 0.06) },
 });
 
 export const getStatusMeta = (t: (key: string) => string): Record<HealthStatus, { label: string; color: string; bg: string }> => ({
   CLEARED: { label: t('borders.airportHealth.status.cleared') + ' ✓', color: C.success, bg: C.successBg },
-  SCREENING: { label: t('borders.airportHealth.status.screening'), color: C.primary, bg: '#EAF2FC' },
+  SCREENING: { label: t('borders.airportHealth.status.screening'), color: C.primary, bg: alpha(C.primary, 0.1) },
   SECONDARY: { label: t('borders.airportHealth.status.secondary'), color: C.medicalBlue, bg: C.infoBg },
   MEDICAL_ASSESSMENT: { label: t('borders.airportHealth.status.medicalAssessment'), color: C.warning, bg: C.warningBg },
   ALERT: { label: t('borders.airportHealth.status.alert'), color: C.danger, bg: C.dangerBg },
-  HOLD: { label: t('borders.airportHealth.status.hold'), color: '#6B7280', bg: '#F3F4F6' },
+  HOLD: { label: t('borders.airportHealth.status.hold'), color: C.textMuted, bg: alpha(C.text, 0.06) },
 });
 
 export const RISK_META: Record<RiskKey, { label: string; color: string; bg: string }> = getRiskMeta((k: string) => {
@@ -73,45 +83,43 @@ export const STATUS_META: Record<HealthStatus, { label: string; color: string; b
   return k;
 });
 
-export interface NavItem {
-  id: string;
-  label: string;
-  icon: ReactNode;
-  badge?: string;
-}
+const RISK_TONE: Record<RiskKey, StatusTone> = {
+  LOW: 'success',
+  MEDIUM: 'warning',
+  HIGH: 'error',
+  ASSESSMENT: 'info',
+  CLOSED: 'neutral',
+};
 
-export interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
+const STATUS_TONE: Record<HealthStatus, StatusTone> = {
+  CLEARED: 'success',
+  SCREENING: 'primary',
+  SECONDARY: 'info',
+  MEDICAL_ASSESSMENT: 'warning',
+  ALERT: 'error',
+  HOLD: 'neutral',
+};
 
 /* ============================= مكونات مشتركة ============================= */
 
 export const PageTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-  <Stack spacing={0.4} sx={{ mb: 3 }}>
-    <Typography variant="h4" component="h2" sx={{ fontWeight: 700, color: C.text }}>
+  <Stack spacing={0.4} sx={{ mb: 2.5 }}>
+    <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
       {title}
     </Typography>
     {subtitle && <Typography variant="body2" color="text.secondary">{subtitle}</Typography>}
   </Stack>
 );
 
-export const SurfaceCard = ({ title, subtitle, action, children, sx }: { title?: string; subtitle?: string; action?: ReactNode; children: ReactNode; sx?: object }) => (
-  <Card elevation={0} sx={{ borderRadius: '18px', border: `1px solid ${C.border}`, bgcolor: C.surface, boxShadow: '0 1px 2px rgba(17,24,39,0.04), 0 8px 24px rgba(17,24,39,0.05)', ...sx }}>
-    {title && (
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, pt: 2.5, pb: 1.5, gap: 2, flexWrap: 'wrap' }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: C.text }}>{title}</Typography>
-          {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
-        </Box>
-        {action}
-      </Stack>
-    )}
-    <CardContent sx={{ pt: title ? 1 : 2.5 }}>{children}</CardContent>
-  </Card>
+/** بطاقة قسم موحّدة — غلاف حول SectionCard العامة. */
+export const SurfaceCard = ({ title, subtitle, action, children, sx }: { title?: string; subtitle?: string; action?: ReactNode; children: ReactNode; sx?: SxProps<Theme> }) => (
+  <SectionCard title={title} subtitle={subtitle} action={action} sx={sx}>
+    {children}
+  </SectionCard>
 );
 
-export const KpiCard = ({ icon, value, label, trend, trendLabel, status, statusColor }: {
+/** بطاقة مؤشر — غلاف حول KpiCard العامة مع دعم الحالة/الاتجاه. */
+export const KpiCard = ({ icon, value, label, trend, trendLabel, status }: {
   icon: ReactNode;
   value: string;
   label: string;
@@ -119,52 +127,29 @@ export const KpiCard = ({ icon, value, label, trend, trendLabel, status, statusC
   trendLabel?: string;
   status?: string;
   statusColor?: string;
-}) => {
-  const TrendIcon = trend === 'up' ? TrendingUpIcon : trend === 'down' ? TrendingDownIcon : RemoveIcon;
-  return (
-    <Card elevation={0} sx={{ borderRadius: '18px', border: `1px solid ${C.border}`, bgcolor: C.surface, boxShadow: '0 1px 2px rgba(17,24,39,0.04), 0 8px 24px rgba(17,24,39,0.05)', overflow: 'visible' }}>
-      <CardContent sx={{ p: 2.25, display: 'flex', alignItems: 'center', gap: 1.75 }}>
-        <Box sx={{ width: 48, height: 48, borderRadius: 3, display: 'grid', placeItems: 'center', color: C.primary, bgcolor: 'rgba(11,92,173,0.09)', flexShrink: 0 }}>
-          {icon}
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" alignItems="baseline" spacing={0.75}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: C.text }}>{value}</Typography>
-            {trend && trend !== 'flat' && <TrendIcon sx={{ fontSize: 16, color: trend === 'up' ? C.success : C.danger }} />}
-            {trendLabel && <Typography variant="caption" sx={{ color: trend === 'up' ? C.success : trend === 'down' ? C.danger : 'text.disabled', fontWeight: 700 }}>{trendLabel}</Typography>}
-          </Stack>
-          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{label}</Typography>
-          {status && (
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: statusColor || C.success }} />
-              <Typography variant="caption" sx={{ fontWeight: 700, color: statusColor || C.success }}>{status}</Typography>
-            </Box>
-          )}
-        </Box>
-      </CardContent>
-    </Card>
-  );
-};
+}) => (
+  <KpiCardBase
+    icon={icon}
+    value={value}
+    label={label}
+    hint={status ?? (trend === 'flat' ? trendLabel : undefined)}
+    trend={trend && trend !== 'flat' && trendLabel ? { label: trendLabel, positive: trend === 'up' } : undefined}
+  />
+);
 
 export const RiskBadge = ({ risk }: { risk: RiskKey }) => {
   const { t } = useTranslation();
-  const meta = getRiskMeta(t);
-  return (
-    <Chip label={labelOf(meta, risk)} size="small" sx={{ bgcolor: colorOf(meta, risk, 'bg'), color: colorOf(meta, risk, 'color'), fontWeight: 700, borderRadius: 2 }} />
-  );
+  return <StatusChip label={getRiskMeta(t)[risk].label} tone={RISK_TONE[risk]} />;
 };
 
 export const StatusBadge = ({ status }: { status: HealthStatus }) => {
   const { t } = useTranslation();
-  const meta = getStatusMeta(t);
-  return (
-    <Chip label={labelOf(meta, status)} size="small" sx={{ bgcolor: colorOf(meta, status, 'bg'), color: colorOf(meta, status, 'color'), fontWeight: 700, borderRadius: 2 }} />
-  );
+  return <StatusChip label={getStatusMeta(t)[status].label} tone={STATUS_TONE[status]} />;
 };
 
 /* شريط تقدم أفقي ملوّن */
 export const ProgressBar = ({ value, color = C.primary }: { value: number; color?: string }) => (
-  <Box sx={{ height: 8, borderRadius: 4, bgcolor: '#EEF1F5', overflow: 'hidden', width: '100%' }}>
+  <Box sx={{ height: 8, borderRadius: 4, bgcolor: alpha(C.text, 0.08), overflow: 'hidden', width: '100%' }}>
     <Box sx={{ height: '100%', width: `${Math.min(100, Math.max(3, value))}%`, borderRadius: 4, bgcolor: color }} />
   </Box>
 );
@@ -173,7 +158,7 @@ export const ProgressBar = ({ value, color = C.primary }: { value: number; color
 export const RiskGauge = ({ score, label, color }: { score: number; label: string; color: string }) => (
   <Stack alignItems="center" sx={{ position: 'relative' }}>
     <svg width={160} height={92} viewBox="0 0 160 92">
-      <path d="M 18 82 A 62 62 0 0 1 142 82" fill="none" stroke="#EEF1F5" strokeWidth={14} strokeLinecap="round" />
+      <path d="M 18 82 A 62 62 0 0 1 142 82" fill="none" stroke={alpha(C.text, 0.08)} strokeWidth={14} strokeLinecap="round" />
       <path
         d="M 18 82 A 62 62 0 0 1 142 82"
         fill="none"
@@ -200,7 +185,7 @@ export const OFFLINE_PILL = ({ state, t }: { state: 'ONLINE' | 'OFFLINE' | 'SYNC
     if (k === 'borders.airportHealth.offline.synced') return 'SYNC COMPLETE — اكتمل';
     return k;
   });
-  const meta = state === 'ONLINE' ? { color: C.success, bg: C.successBg } : state === 'SYNCING' ? { color: C.warning, bg: C.warningBg } : state === 'SYNCED' ? { color: C.primary, bg: '#EAF2FC' } : { color: '#6B7280', bg: '#F3F4F6' };
+  const meta = state === 'ONLINE' ? { color: C.success, bg: C.successBg } : state === 'SYNCING' ? { color: C.warning, bg: C.warningBg } : state === 'SYNCED' ? { color: C.primary, bg: alpha(C.primary, 0.1) } : { color: C.textMuted, bg: alpha(C.text, 0.06) };
   const label = state === 'ONLINE' ? tr('borders.airportHealth.offline.online') : state === 'OFFLINE' ? tr('borders.airportHealth.offline.offline') : state === 'SYNCING' ? tr('borders.airportHealth.offline.syncing') : tr('borders.airportHealth.offline.synced');
   return (
     <Stack direction="row" alignItems="center" spacing={0.75} sx={{ px: 1.25, py: 0.5, borderRadius: 2, bgcolor: meta.bg }}>
@@ -213,7 +198,7 @@ export const OfflinePill = OFFLINE_PILL;
 
 /* حالات فارغة/تحميل/خطأ موحدة */
 export const StateBox = ({ type, text }: { type: 'empty' | 'loading' | 'error'; text: string }) => (
-  <Box sx={{ py: 6, textAlign: 'center', borderRadius: 3, border: `1px dashed ${C.border}`, bgcolor: '#FAFBFD' }}>
+  <Box sx={{ py: 6, textAlign: 'center', borderRadius: 3, border: '1px dashed', borderColor: 'divider', bgcolor: 'action.hover' }}>
     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
       {type === 'loading' ? '⏳' : type === 'error' ? '⚠️' : '🗂️'} {text}
     </Typography>

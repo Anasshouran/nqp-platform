@@ -34,7 +34,6 @@ import HistoryIcon from '@mui/icons-material/History';
 import ArticleIcon from '@mui/icons-material/Article';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import GovernmentHeader from '../../components/common/GovernmentHeader';
 import type { RoleLayoutConfig } from './core';
 
 export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
@@ -44,7 +43,6 @@ export const ROLE_LAYOUT_CONFIG: Partial<Record<string, RoleLayoutConfig>> = {
     brand: 'وزارة الصحة الاتحادية – السودان',
     color: 'primary.main',
     overline: 'الإدارة الاتحادية للحجر الصحي',
-    logo: <GovernmentHeader />,
     nav: [
       { label: 'لوحة التحكم', target: '/app', exact: true, icon: <DashboardIcon /> },
       { label: 'لوحة موظف الحجر', target: '/app/port-officer', icon: <HealthAndSafetyIcon /> },
