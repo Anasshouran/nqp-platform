@@ -3142,7 +3142,12 @@
         "alert": "إنذار",
         "hold": "إيقاف مؤقت"
       },
-      "offline": {}
+      "offline": {
+        "online": "متصل",
+        "offline": "غير متصل",
+        "syncing": "مزامنة",
+        "synced": "اكتمل"
+      }
     },
     "common": {},
     "actions": {

@@ -3142,7 +3142,12 @@
         "alert": "Alert",
         "hold": "Hold"
       },
-      "offline": {}
+      "offline": {
+        "online": "Online",
+        "offline": "Offline",
+        "syncing": "Syncing",
+        "synced": "Synced"
+      }
     },
     "common": {},
     "actions": {
