@@ -3308,6 +3308,9 @@
       "tabs": {
         "referrals": "Clinic Referrals",
         "visits": "Clinic Visits"
+      },
+      "groups": {
+        "clinic": "Clinic"
       }
     },
     "common": {

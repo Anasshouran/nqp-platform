@@ -1,9 +1,7 @@
-import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
@@ -16,29 +14,34 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { ConfirmDialog, DataTable, StatusChip } from '../../components/ui';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
+import { useOfflineSync } from '../../hooks/useOfflineSync';
+import { useAuth } from '../../hooks/useAuth';
+import { OfflinePill } from '../airporthealth/shared';
 import { acceptReferral, closeVisit, getClinicVisits, getReferrals, rejectReferral } from '../../api/endpoints/clinic';
 import type { ClinicReferral, ClinicVisit } from '../../types/clinic';
 import { referralStatus, visitStatus } from '../../utils/status';
 import { formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage, notifyError, notifySuccess } from '../../utils/toast';
 import { PassportChip, PersonAvatar } from './ui';
+import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 
 const referralStatusOptions = Object.entries(referralStatus).map(([v, m]) => ({ value: v, label: m.label }));
 const visitStatusOptions = Object.entries(visitStatus).map(([v, m]) => ({ value: v, label: m.label }));
 
-const getPhaseLabels = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
-  REGISTERED: { label: t('clinic.clinic.status.registered'), color: '#8a8f98' },
-  TRIAGED: { label: t('clinic.clinic.status.triaged'), color: '#b7791f' },
-  EXAMINED: { label: t('clinic.clinic.status.examined'), color: 'primary.main' },
-  LABORATORY: { label: t('clinic.clinic.status.laboratory'), color: 'info.main' },
-  DECISION: { label: t('clinic.clinic.status.decision'), color: '#7b4fb3' },
-  CERTIFICATE: { label: t('clinic.clinic.status.certificate'), color: '#0e7490' },
-  CLOSED: { label: t('clinic.clinic.status.closed'), color: 'error.main' },
-});
+/** الصلاحية المطلوبة لعرض كل قسم في صفحة العيادة (بصيغة resource:action). */
+const SECTION_PERMISSIONS: Record<string, string> = {
+  referrals: 'clinic:view',
+  visits: 'clinic:view',
+};
+
+const getSections = (t: (key: string) => string): CommandSectionDef[] => [
+  { id: 'referrals', label: t('clinic.clinic.tabs.referrals'), icon: <ReceiptLongIcon fontSize="small" /> },
+  { id: 'visits', label: t('clinic.clinic.tabs.visits'), icon: <MedicalServicesIcon fontSize="small" /> },
+];
 
 const AvatarCell = ({ name, passport }: { name?: string; passport?: string }) => (
   <Stack direction="row" spacing={1.5} alignItems="center">
@@ -231,6 +234,17 @@ const ReferralsTab = () => {
   );
 };
 
+/** تسميات مراحل الزيارة بألوان من الثيم العام بدلاً من أكواد الألوان الصلبة. */
+const getPhaseLabels = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  REGISTERED: { label: t('clinic.clinic.status.registered'), color: 'text.secondary' },
+  TRIAGED: { label: t('clinic.clinic.status.triaged'), color: 'warning.main' },
+  EXAMINED: { label: t('clinic.clinic.status.examined'), color: 'primary.main' },
+  LABORATORY: { label: t('clinic.clinic.status.laboratory'), color: 'info.main' },
+  DECISION: { label: t('clinic.clinic.status.decision'), color: '#7a5c9e' },
+  CERTIFICATE: { label: t('clinic.clinic.status.certificate'), color: '#0277bd' },
+  CLOSED: { label: t('clinic.clinic.status.closed'), color: 'error.main' },
+});
+
 const VisitsTab = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -354,17 +368,29 @@ const VisitsTab = () => {
   );
 };
 
+const SCREEN: Record<string, React.ComponentType<{ nav: (id: string) => void }>> = {
+  referrals: ReferralsTab,
+  visits: VisitsTab,
+};
+
 const ClinicPage = () => {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') === 'visits' ? 1 : 0;
+  const { user } = useAuth();
+  const permissions = useMemo(() => user?.permissions ?? [], [user?.permissions]);
+  const SECTIONS = useMemo(() => {
+    const all = getSections(t);
+    return all.filter((section) => {
+      const perm = SECTION_PERMISSIONS[section.id];
+      if (!perm) return true;
+      if (!permissions?.length) return true;
+      return permissions.includes(perm);
+    });
+  }, [t, permissions]);
 
-  const handleTabChange = (_: React.SyntheticEvent, value: number) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === 1) params.set('tab', 'visits');
-    else params.set('tab', 'referrals');
-    setSearchParams(params, { replace: true });
-  };
+  const { active, register, scrollTo } = useCommandSections(SECTIONS);
+
+  const { status } = useOfflineSync();
+  const pillState = status === 'OFFLINE' ? 'OFFLINE' : status === 'SYNC_PENDING' ? 'SYNCING' : 'ONLINE';
 
   return (
     <Box>
@@ -372,20 +398,36 @@ const ClinicPage = () => {
         title={t('clinic.clinic.header.title')}
         subtitle={t('clinic.clinic.header.subtitle')}
         eyebrow={t('clinic.clinic.header.eyebrow')}
+        action={<OfflinePill state={pillState} t={t} />}
       />
-      <Tabs
-        value={tab}
-        onChange={handleTabChange}
-        sx={{
-          mb: 3,
-          '& .MuiTab-root': { borderRadius: 3, minHeight: 48, fontWeight: 700 },
-          '& .MuiTabs-indicator': { height: 3, borderRadius: '999px' },
-        }}
-      >
-        <Tab icon={<ReceiptLongIcon />} iconPosition="start" label={t('clinic.clinic.tabs.referrals')} />
-        <Tab icon={<MedicalServicesIcon />} iconPosition="start" label={t('clinic.clinic.tabs.visits')} />
-      </Tabs>
-      {tab === 0 ? <ReferralsTab /> : <VisitsTab />}
+
+      <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
+        <Grid item xs={12} md={2.2} lg={1.8}>
+          <CommandSectionRail
+            sections={SECTIONS}
+            active={active}
+            onNavigate={scrollTo}
+            accent="primary.main"
+            label={t('clinic.clinic.groups.clinic')}
+          />
+        </Grid>
+        <Grid item xs={12} md={9.8} lg={10.2}>
+          {SECTIONS.map((section) => {
+            const Screen = SCREEN[section.id];
+            return (
+              <Box
+                key={section.id}
+                component="section"
+                ref={register(section.id)}
+                data-section={section.id}
+                sx={{ scrollMarginTop: '80px', mb: 4 }}
+              >
+                {Screen ? <Screen nav={scrollTo} /> : null}
+              </Box>
+            );
+          })}
+        </Grid>
+      </Grid>
     </Box>
   );
 };
