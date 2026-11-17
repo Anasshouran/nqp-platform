@@ -32,7 +32,8 @@
           "warning": "تنبيه",
           "success": "نجاح",
           "info": "معلومة"
-        }
+        },
+        "sections": "الأقسام"
       },
       "worklist": {
         "searchPlaceholder": "بحث برقم البيان، جمركي، بوليصة، مورد، باخرة…",

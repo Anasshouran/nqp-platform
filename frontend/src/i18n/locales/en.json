@@ -32,7 +32,8 @@
           "warning": "Alert",
           "success": "Success",
           "info": "Info"
-        }
+        },
+        "sections": "Sections"
       },
       "worklist": {
         "searchPlaceholder": "Search by declaration, customs, policy, vessel, consignee…",
