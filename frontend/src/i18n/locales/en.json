@@ -7533,6 +7533,7 @@
         "emptyDesc": "Register an export request from the clerk tab to view the inspection form",
         "formTitle": "Export Food Resources Inspection Form",
         "formSubtitle": "Electronic record composed of request, inspection, lab and decision data",
+        "openForm": "Open form",
         "close": "Close",
         "loading": "Assembling form data…",
         "noData": "No form data available."
