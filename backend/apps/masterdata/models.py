@@ -33,6 +33,14 @@ class State(BaseModel):
     sector = models.ForeignKey(
         Sector, on_delete=models.CASCADE, related_name='states', verbose_name='القطاع'
     )
+    geographic_state = models.ForeignKey(
+        'organization.GeographicState',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='masterdata_states',
+        verbose_name='الولاية الجغرافية (ISO 3166-2:SD)',
+    )
     description = models.TextField(blank=True, verbose_name='الوصف')
     order = models.PositiveSmallIntegerField(default=0, verbose_name='الترتيب')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
