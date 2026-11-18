@@ -223,3 +223,25 @@ class OrgAssignment(BaseModel):
 
     def __str__(self):
         return f'{self.user} → {self.position or self.sector or self.department or self.station}'
+
+
+class GeographicState(BaseModel):
+    """الولاية الجغرافية الـ18 (ISO 3166-2:SD) — مستقلة عن masterdata.State."""
+    code = models.CharField(max_length=10, unique=True, verbose_name='الكود (ISO 3166-2:SD)')
+    name_ar = models.CharField(max_length=100, verbose_name='الاسم بالعربية')
+    name_en = models.CharField(max_length=100, verbose_name='الاسم بالإنجليزية')
+    region = models.ForeignKey(
+        'organization.Sector', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='geographic_states', verbose_name='المنطقة/القطاع الإداري',
+    )
+    description = models.TextField(blank=True, verbose_name='الوصف')
+    order = models.PositiveSmallIntegerField(default=0, verbose_name='الترتيب')
+    is_active = models.BooleanField(default=True, verbose_name='نشط')
+
+    class Meta:
+        ordering = ['order', 'name_ar']
+        verbose_name = 'ولاية جغرافية'
+        verbose_name_plural = 'الولايات الجغرافية'
+
+    def __str__(self):
+        return self.name_ar
