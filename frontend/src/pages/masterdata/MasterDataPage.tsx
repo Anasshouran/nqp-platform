@@ -38,6 +38,7 @@ import {
 } from '../../components/uikit';
 import { notifySuccess, notifyError } from '../../utils/toast';
 import { getUsers } from '../../api/endpoints/users';
+import { getGeographicStates } from '../../api/endpoints/organization';
 import {
   getMasterTree,
   createMasterSector,
@@ -137,6 +138,7 @@ const SECTIONS = [
 
 const MasterDataPage = () => {
   const [tree, setTree] = useState<TreeSector[] | null>(null);
+  const [geoOptions, setGeoOptions] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
 
@@ -165,6 +167,18 @@ const MasterDataPage = () => {
 
   useEffect(() => {
     loadTree();
+    getGeographicStates()
+      .then((r) => {
+        const data = r.data?.data;
+        const list = Array.isArray(data) ? data : (data?.results ?? []);
+        setGeoOptions(
+          list.map((g) => ({
+            value: g.id,
+            label: `${g.name_ar} (${g.code})`,
+          })),
+        );
+      })
+      .catch(() => setGeoOptions([]));
   }, [loadTree]);
 
   const { active, register, scrollTo } = useCommandSections(SECTIONS as unknown as CommandSectionDef[], [loading]);
@@ -324,8 +338,8 @@ const MasterDataPage = () => {
         ]),
       ),
     );
-    return { sectorOptions, stateOptions, entryOptions, terminalOptions, stationOptions, sectionOptions };
-  }, [tree]);
+    return { sectorOptions, geoOptions, stateOptions, entryOptions, terminalOptions, stationOptions, sectionOptions };
+  }, [tree, geoOptions]);
 
   /* ---------- dialog openers ---------- */
   const openCreate = (kind: EntityKind, defaults: Record<string, unknown>) => {
@@ -344,7 +358,9 @@ const MasterDataPage = () => {
     const fields = getFormFields(kind, options);
     fields.forEach((f) => {
       const v = defaults[f.key] ?? '';
-      payload[f.key] = f.key === 'order' && v !== '' ? Number(v) : v;
+      payload[f.key] = f.nullable && v === ''
+        ? null
+        : f.key === 'order' && v !== '' ? Number(v) : v;
     });
     try {
       if (editing?.id) {
@@ -502,9 +518,9 @@ const MasterDataPage = () => {
           items={selectedSector.states.map((st) => ({
             id: st.id,
             title: st.name_ar,
-            subtitle: `${st.name_en || st.code} • ${st.entry_points.length} منفذ`,
-onClickEdit: () =>
-            openEdit('state', { id: st.id, code: st.code, name_ar: st.name_ar, name_en: st.name_en, sector: st.sector ?? '', description: st.description, order: st.order }),
+            subtitle: `${st.name_en || st.code} • ${st.geographic_state_name || 'بلا ربط جغرافي'} • ${st.entry_points.length} منفذ`,
+            onClickEdit: () =>
+            openEdit('state', { id: st.id, code: st.code, name_ar: st.name_ar, name_en: st.name_en, sector: st.sector ?? '', geographic_state: st.geographic_state ?? '', description: st.description, order: st.order }),
             onClickDelete: () => askDelete('state', st.id, st.name_ar),
           }))}
         />
@@ -643,11 +659,14 @@ interface FieldDef {
   label: string;
   type?: 'text' | 'select';
   required?: boolean;
+  /** Empty string is sent as null (nullable FK). */
+  nullable?: boolean;
   options?: { value: string; label: string }[];
 }
 
 interface OptionsLists {
   sectorOptions: { value: string; label: string }[];
+  geoOptions: { value: string; label: string }[];
   stateOptions: { value: string; label: string }[];
   entryOptions: { value: string; label: string }[];
   terminalOptions: { value: string; label: string }[];
@@ -672,6 +691,7 @@ const getFormFields = (kind: EntityKind, o: OptionsLists): FieldDef[] => {
         { key: 'name_ar', label: 'الاسم بالعربية', required: true },
         { key: 'name_en', label: 'الاسم بالإنجليزية' },
         { key: 'sector', label: 'القطاع', type: 'select', required: true, options: o.sectorOptions },
+        { key: 'geographic_state', label: 'الولاية الجغرافية (ISO)', type: 'select', nullable: true, options: o.geoOptions },
         { key: 'description', label: 'الوصف' },
         { key: 'order', label: 'الترتيب' },
       ];

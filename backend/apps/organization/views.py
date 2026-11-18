@@ -7,13 +7,14 @@ from rest_framework.response import Response
 
 from apps.accounts.models import RoleAssignment
 from core.filters import ExactFilterBackend
-from core.permissions import PermissionAction, ScopeFilter
+from core.permissions import IsAdmin, PermissionAction, ScopeFilter
 from core.utils.response import success_response
 
-from .models import Department, Locality, OrgAssignment, OrgPosition, Sector, Station
+from .models import Department, GeographicState, Locality, OrgAssignment, OrgPosition, Sector, Station
 from .serializers import (
     DepartmentSerializer,
     DepartmentWriteSerializer,
+    GeographicStateSerializer,
     LocalitySerializer,
     LocalityWriteSerializer,
     OrgAssignmentSerializer,
@@ -37,6 +38,14 @@ ACTION_TO_PERMISSION = {
     'partial_update': 'edit',
     'destroy': 'delete',
 }
+
+
+class GeographicStateViewSet(viewsets.ReadOnlyModelViewSet):
+    """الولايات الجغرافية الكانونية (18 ولاية ISO 3166-2:SD) — منتقيات master-data."""
+
+    permission_classes = [IsAdmin]
+    serializer_class = GeographicStateSerializer
+    queryset = GeographicState.objects.filter(is_active=True).order_by('order', 'name_ar')
 
 
 class OrgScopedMixin:

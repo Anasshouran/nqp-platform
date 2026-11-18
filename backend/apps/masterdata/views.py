@@ -111,6 +111,8 @@ def build_state_node(state):
         'name_ar': state.name_ar,
         'name_en': state.name_en,
         'sector': str(state.sector_id),
+        'geographic_state': str(state.geographic_state_id) if state.geographic_state_id else None,
+        'geographic_state_name': state.geographic_state.name_ar if state.geographic_state_id else None,
         'description': state.description,
         'order': state.order,
         'entry_points': [
@@ -140,7 +142,7 @@ class MasterDataTreeView(viewsets.GenericViewSet):
                 'order': s.order,
                 'states': [
                     build_state_node(st)
-                    for st in s.states.filter(is_active=True).order_by('order', 'name_ar')
+                    for st in s.states.filter(is_active=True).select_related('geographic_state').order_by('order', 'name_ar')
                 ],
             }
             for s in sectors
@@ -187,7 +189,7 @@ class SectorViewSet(BaseMasterDataViewSet):
 class StateViewSet(BaseMasterDataViewSet):
     serializer_class = StateSerializer
     write_serializer_class = StateWriteSerializer
-    queryset = State.objects.select_related('sector').all()
+    queryset = State.objects.select_related('sector', 'geographic_state').all()
     search_fields = ['name_ar', 'name_en', 'code']
     filter_fields = ['is_active', 'sector']
 

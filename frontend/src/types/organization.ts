@@ -211,3 +211,14 @@ export interface OrganizationLocality {
   created_at: string;
   updated_at: string;
 }
+
+/** الولاية الجغرافية الكانونية (ISO 3166-2:SD) — master-data state picker. */
+export interface GeographicState {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en: string;
+  region: string | null;
+  order: number;
+  is_active: boolean;
+}
