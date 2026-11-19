@@ -543,7 +543,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             </Stack>
                           ))}
                         </Stack>
-                      ) : ProcessNull()
+                      ) : ProcessNull(t)
                       }
                     </CardContent>
                   </Card>
@@ -585,7 +585,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             })}
                             {receipts.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6}>{ProcessNull()}</TableCell>
+                                <TableCell colSpan={6}>{ProcessNull(t)}</TableCell>
                               </TableRow>
                             )}
                           </TableBody>
@@ -846,8 +846,12 @@ export default function NationalFinancePage(): React.JSX.Element {
 
 const TrendMoneyIcon = PaidIcon;
 
-function ProcessNull(): React.JSX.Element {
-  const { t } = useTranslation();
+type FinanceTranslate = ReturnType<typeof useTranslation>['t'];
+
+// Pure presentational helper: it must not call hooks because callers invoke it
+// conditionally (e.g. the home funnel empty state) and hook order would break
+// when switching views.
+function ProcessNull(t: FinanceTranslate): React.JSX.Element {
   return (
     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
       {t('finance.empty.noDataYet')}
@@ -917,7 +921,7 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
           ))}
           {invoices.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8}>{ProcessNull()}</TableCell>
+              <TableCell colSpan={8}>{ProcessNull(t)}</TableCell>
             </TableRow>
           )}
         </TableBody>
@@ -974,7 +978,7 @@ function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.
             </TableRow>
           ))}
           {payments.length === 0 && (
-            <TableRow><TableCell colSpan={6}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={6}>{ProcessNull(t)}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1022,7 +1026,7 @@ function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPr
             </TableRow>
           ))}
           {receipts.length === 0 && (
-            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{ProcessNull(t)}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1063,7 +1067,7 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
             </TableRow>
           ))}
           {items.length === 0 && (
-            <TableRow><TableCell colSpan={7}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={7}>{ProcessNull(t)}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1121,7 +1125,7 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
             </TableRow>
           ))}
           {fees.length === 0 && (
-            <TableRow><TableCell colSpan={9}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={9}>{ProcessNull(t)}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1181,7 +1185,7 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
                   </TableRow>
                 ))}
                 {!invoice.items?.length && (
-                  <TableRow><TableCell colSpan={3}>{ProcessNull()}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={3}>{ProcessNull(t)}</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
