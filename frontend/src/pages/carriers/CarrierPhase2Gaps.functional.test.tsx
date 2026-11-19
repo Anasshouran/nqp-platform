@@ -150,10 +150,24 @@ describe('P3-D — CarrierFlightDetail timeline gap', () => {
     expect(screen.getAllByText(/APPROVED/).length).toBeGreaterThan(0);
   });
 
-  it('documents a timeline-only failure as a full-page load error', async () => {
-    // production wraps all three requests in one Promise.all — a timeline
-    // failure blanks the whole page instead of showing a local timeline error.
+  it('keeps the page rendered with a local alert when only the timeline fails', async () => {
     vi.mocked(getFlightTimeline).mockRejectedValueOnce(new Error('timeline down'));
+    renderFlight();
+    expect(await screen.findByText('سجل أحداث الرحلة')).toBeTruthy();
+    expect(screen.getByText('تعذّر تحميل سجل أحداث الرحلة')).toBeTruthy();
+    expect(screen.queryByText('تعذر تحميل تفاصيل الرحلة')).toBeNull();
+  });
+
+  it('keeps the page rendered with a local alert when only the documents fail', async () => {
+    vi.mocked(getCarrierDocuments).mockRejectedValueOnce(new Error('documents down'));
+    renderFlight();
+    expect(await screen.findByText('سجل أحداث الرحلة')).toBeTruthy();
+    expect(screen.getByText('تعذّر تحميل المستندات')).toBeTruthy();
+    expect(screen.queryByText('تعذر تحميل تفاصيل الرحلة')).toBeNull();
+  });
+
+  it('still shows a full-page error when the flight request itself fails', async () => {
+    vi.mocked(getFlight).mockRejectedValueOnce(new Error('flight down'));
     renderFlight();
     expect(await screen.findByText('تعذر تحميل تفاصيل الرحلة')).toBeTruthy();
     expect(screen.queryByText('سجل أحداث الرحلة')).toBeNull();
