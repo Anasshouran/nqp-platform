@@ -23,6 +23,8 @@ export interface MasterState {
   name_en: string;
   sector: string;
   sector_name: string;
+  geographic_state: string | null;
+  geographic_state_name: string | null;
   description: string;
   order: number;
   is_active: boolean;
@@ -197,6 +199,8 @@ export interface TreeState {
   name_ar: string;
   name_en: string;
   sector: string | null;
+  geographic_state: string | null;
+  geographic_state_name: string | null;
   description: string;
   order: number;
   entry_points: TreeEntryPoint[];

@@ -5,7 +5,16 @@ from rest_framework import serializers
 from apps.masterdata.models import EntryPoint
 from apps.registry.models import ReportingNode
 
-from .models import Department, Locality, OrgAssignment, OrgPosition, Sector, Station
+from .models import Department, GeographicState, Locality, OrgAssignment, OrgPosition, Sector, Station
+
+
+class GeographicStateSerializer(serializers.ModelSerializer):
+    """قراءة فقط — قائمة الولايات الجغرافية الكانونية (ISO 3166-2:SD) للمنتقيات."""
+
+    class Meta:
+        model = GeographicState
+        fields = ['id', 'code', 'name_ar', 'name_en', 'region', 'order', 'is_active']
+        read_only_fields = fields
 
 
 class OrganizationHierarchySerializer(serializers.Serializer):

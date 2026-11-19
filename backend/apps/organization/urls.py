@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     DepartmentViewSet,
+    GeographicStateViewSet,
     LocalityViewSet,
     OrganizationTreeViewSet,
     OrgAssignmentViewSet,
@@ -17,6 +18,7 @@ router.register('positions', OrgPositionViewSet, basename='org-position')
 router.register('sectors', SectorViewSet, basename='org-sector')
 router.register('localities', LocalityViewSet, basename='org-locality')
 router.register('departments', DepartmentViewSet, basename='org-department')
+router.register('geographic-states', GeographicStateViewSet, basename='org-geographic-state')
 router.register('stations', StationViewSet, basename='org-station')
 router.register('assignments', OrgAssignmentViewSet, basename='org-assignment')
 
