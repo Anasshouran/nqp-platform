@@ -3,6 +3,7 @@ import type { ApiResponse, PaginatedResponse } from '../../types/api';
 import type {
   Department,
   DepartmentInput,
+  GeographicState,
   OrgAssignment,
   OrgAssignmentInput,
   OrgHierarchy,
@@ -17,6 +18,13 @@ import type {
 
 export const getOrgHierarchy = () =>
   apiClient.get<ApiResponse<OrgHierarchy>>('/organization/tree/hierarchy/');
+
+/** الولايات الجغرافية الكانونية (18) — منتقيات master-data. */
+export const getGeographicStates = () =>
+  apiClient.get<ApiResponse<PaginatedResponse<GeographicState>>>(
+    '/organization/geographic-states/',
+    { params: { page_size: 100 } },
+  );
 
 export const getPositions = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<OrgPosition>>>('/organization/positions/', { params });

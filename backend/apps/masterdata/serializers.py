@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from apps.organization.models import Locality, Sector as OrgSector
+from apps.organization.models import GeographicState, Locality, Sector as OrgSector
 
 from .models import EntryPoint, HealthFacility, Section, SectionMember, Sector, State, Station, Terminal
 
@@ -41,12 +41,16 @@ class SectorSerializer(serializers.ModelSerializer):
 
 class StateSerializer(serializers.ModelSerializer):
     sector_name = serializers.CharField(source='sector.name_ar', read_only=True, default=None)
+    geographic_state_name = serializers.CharField(
+        source='geographic_state.name_ar', read_only=True, default=None
+    )
     entry_points_count = serializers.SerializerMethodField()
 
     class Meta:
         model = State
         fields = [
-            'id', 'code', 'name_ar', 'name_en', 'sector', 'sector_name', 'description',
+            'id', 'code', 'name_ar', 'name_en', 'sector', 'sector_name',
+            'geographic_state', 'geographic_state_name', 'description',
             'order', 'is_active', 'entry_points_count', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -168,10 +172,16 @@ class SectorWriteSerializer(serializers.ModelSerializer):
 
 class StateWriteSerializer(serializers.ModelSerializer):
     sector = serializers.PrimaryKeyRelatedField(queryset=Sector.objects.all())
+    geographic_state = serializers.PrimaryKeyRelatedField(
+        queryset=GeographicState.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = State
-        fields = ['id', 'code', 'name_ar', 'name_en', 'sector', 'description', 'order', 'is_active']
+        fields = [
+            'id', 'code', 'name_ar', 'name_en', 'sector', 'geographic_state',
+            'description', 'order', 'is_active',
+        ]
 
 
 class EntryPointWriteSerializer(serializers.ModelSerializer):
