@@ -93,6 +93,43 @@ class Locality(BaseModel):
     def __str__(self):
         return self.name_ar
 
+    @property
+    def geographic_state(self):
+        """Derived GeographicState from the locality's Sector.
+
+        A Locality has no direct link to masterdata.State; it links to a
+        Sector, and Sector.state_ids points to one or more masterdata.State
+        rows. Each State carries `.geographic_state` (FK from PR #215).
+
+        Semantics:
+        - No sector / no linked states       → None
+        - All linked states share one geo    → that GeographicState
+        - Multiple linked states disagree    → None (conflict)
+        - All linked states have NULL geo    → None (unknown)
+        - Some linked, some NULL geo         → common geo among linked ones
+                                               (unlinked states are "unknown",
+                                               not "conflicting")
+
+        Local import (not module-level) to avoid a circular dependency:
+        apps.masterdata imports apps.organization (FK to GeographicState).
+        """
+        if not self.sector_id:
+            return None
+
+        from apps.masterdata.models import State  # local — circular-safe
+        from apps.organization.models import GeographicState
+
+        linked_geo_ids = set(
+            State.objects
+            .filter(id__in=self.sector.state_ids.values_list('id', flat=True))
+            .exclude(geographic_state__isnull=True)
+            .values_list('geographic_state_id', flat=True)
+        )
+
+        if len(linked_geo_ids) == 1:
+            return GeographicState.objects.filter(id=next(iter(linked_geo_ids))).first()
+        return None
+
 
 class Department(BaseModel):
     """قسم رئيسي أو وحدة فرعية (الأغذية، الكرنتينة، الترصد، الناقل، المعمل، ...)."""
