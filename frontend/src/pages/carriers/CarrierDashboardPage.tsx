@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -23,6 +24,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FlightIcon from '@mui/icons-material/Flight';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import { useAuth } from '../../hooks/useAuth';
 import { StatusChip } from '../../components/ui';
@@ -53,16 +55,18 @@ const CarrierDashboardPage = () => {
   const [upcoming, setUpcoming] = useState<UpcomingFlight[]>([]);
   const [notices, setNotices] = useState<HealthNotice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
+    setError(null);
     Promise.all([getDashboardStats(), getDashboardUpcoming(), getRecentNotices()])
       .then(([s, u, n]) => {
         setStats(s.data.data);
         setUpcoming(u.data.data || []);
         setNotices(n.data.data || []);
       })
-      .catch(() => {})
+      .catch(() => setError('تعذّر تحميل بيانات لوحة الناقل'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -99,6 +103,20 @@ const CarrierDashboardPage = () => {
 
   return (
     <Box>
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mt: 2 }}
+          action={(
+            <Button color="inherit" size="small" startIcon={<RefreshIcon />} onClick={() => void load()}>
+              إعادة المحاولة
+            </Button>
+          )}
+        >
+          {error}
+        </Alert>
+      )}
+
       <DashboardHero
         eyebrow="شركات الطيران"
         title="بوابة شركات الطيران"

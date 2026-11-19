@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -165,12 +165,23 @@ describe('CarrierDashboardPage — P3-B functional coverage', () => {
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 
-  it('documents the silent API failure: empty KPIs and no error alert', async () => {
+  it('shows an error alert with retry when the dashboard API fails', async () => {
     vi.mocked(getDashboardStats).mockRejectedValue(new Error('down'));
     renderPage();
-    expect(await screen.findByText('الرحلات القادمة اليوم')).toBeTruthy();
-    await waitFor(() => expect(screen.queryAllByText('…').length).toBe(0));
-    expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
+    expect(await screen.findByText('تعذّر تحميل بيانات لوحة الناقل')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /إعادة المحاولة/ })).toBeTruthy();
+    expect(screen.queryByRole('alert')).not.toBeNull();
+  });
+
+  it('recovers from a dashboard API failure when retry succeeds', async () => {
+    vi.mocked(getDashboardStats)
+      .mockRejectedValueOnce(new Error('down'))
+      .mockResolvedValue(ok(stats) as any);
+    renderPage();
+    expect(await screen.findByText('تعذّر تحميل بيانات لوحة الناقل')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /إعادة المحاولة/ }));
+    expect((await screen.findAllByText('2،500')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('تعذّر تحميل بيانات لوحة الناقل')).toBeNull();
+    expect(vi.mocked(getDashboardStats)).toHaveBeenCalledTimes(2);
   });
 });
