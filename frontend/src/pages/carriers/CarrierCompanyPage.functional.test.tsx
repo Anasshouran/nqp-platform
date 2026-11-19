@@ -63,13 +63,24 @@ describe('CarrierCompanyPage — P3-A functional coverage', () => {
     expect(screen.getByText(/nqp_•+/)).toBeTruthy();
   });
 
-  it('conflates a failed profile load with the no-company alert (documented gap)', async () => {
+  it('shows the load error with retry when the profile request fails, not the no-company alert', async () => {
     vi.mocked(getCompanyProfile).mockRejectedValue(new Error('down'));
     renderPage();
-    // production sets the load-error message but returns early on !profile,
-    // so the visible alert is the no-company one — the error text never renders.
-    expect(await screen.findByText('لم يتم العثور على شركة مرتبطة بحسابك.')).toBeTruthy();
+    expect(await screen.findByText('تعذّر تحميل بيانات الشركة')).toBeTruthy();
+    expect(screen.queryByText('لم يتم العثور على شركة مرتبطة بحسابك.')).toBeNull();
+    expect(screen.getByRole('button', { name: /إعادة المحاولة/ })).toBeTruthy();
+  });
+
+  it('recovers from a failed load when retry succeeds', async () => {
+    vi.mocked(getCompanyProfile)
+      .mockRejectedValueOnce(new Error('down'))
+      .mockResolvedValue(ok(profile) as any);
+    renderPage();
+    expect(await screen.findByText('تعذّر تحميل بيانات الشركة')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /إعادة المحاولة/ }));
+    expect(await screen.findByText(/الخطوط السودانية/)).toBeTruthy();
     expect(screen.queryByText('تعذّر تحميل بيانات الشركة')).toBeNull();
+    expect(vi.mocked(getCompanyProfile)).toHaveBeenCalledTimes(2);
   });
 
   it('shows the no-company alert when the profile is null', async () => {
