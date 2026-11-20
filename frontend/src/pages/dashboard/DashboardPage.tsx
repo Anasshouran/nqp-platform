@@ -24,6 +24,15 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import LocalDiningIcon from '@mui/icons-material/LocalDining';
+import SecurityIcon from '@mui/icons-material/Security';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import PersonIcon from '@mui/icons-material/Person';
+import LocalAirportIcon from '@mui/icons-material/LocalAirport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
@@ -63,6 +72,18 @@ const quickModules = [
   { label: 'المختبر', desc: 'إدارة العينات والتحاليل المخبرية', path: '/app/laboratory', icon: <HealthAndSafetyIcon />, accent: accentTokens.lab },
   { label: 'التطعيم', desc: 'إدارة شهادات التطعيم والسجلات الصحية', path: '/app/vaccination', icon: <VaccinesIcon />, accent: accentTokens.brand },
   { label: 'صحة المعابر', desc: 'إدارة صحة المنافذ البرية والبحرية والجوية', path: '/app/borders-health', icon: <DirectionsBoatIcon />, accent: accentTokens.air },
+  { label: 'سلامة الأغذية', desc: 'إدارة التفتيش الصحي للمواد الغذائية', path: '/app/food', icon: <RestaurantIcon />, accent: accentTokens.sea },
+  { label: 'عمليات الأغذية', desc: 'متابعة شحنات الأغذية والنوافذ', path: '/app/food-ops', icon: <LocalDiningIcon />, accent: accentTokens.sea },
+  { label: 'مفتش الحجر الصحي', desc: 'التفتيش الصحي وإصدار القرارات', path: '/app/quarantine-inspector', icon: <HealthAndSafetyIcon />, accent: accentTokens.sea },
+  { label: 'مدير الحجر الصحي', desc: 'إدارة محطات الحجر والتقارير', path: '/app/quarantine-director', icon: <SecurityIcon />, accent: accentTokens.brand },
+  { label: 'مكافحة النواقل', desc: 'مراقبة ومكافحة الحشرات النواقل للأمراض', path: '/app/vector-control', icon: <BugReportIcon />, accent: accentTokens.sea },
+  { label: 'لوحة الأوبئة', desc: 'مراقبة الأوبئة والتفشي المرضي', path: '/app/epidemic-dashboard', icon: <ErrorOutlineIcon />, accent: accentTokens.land },
+  { label: 'الرصد الوبائي', desc: 'مراقبة الحالات والأمراض المسجلة', path: '/app/surveillance', icon: <RemoveRedEyeIcon />, accent: accentTokens.brand },
+  { label: 'تقييم المخاطر', desc: 'تقييم مستويات المخاطر الصحية', path: '/app/risk', icon: <WarningAmberIcon />, accent: accentTokens.land },
+  { label: 'التقارير', desc: 'التقارير الإحصائية والتحليلية', path: '/app/reports', icon: <AssessmentIcon />, accent: accentTokens.brand },
+  { label: 'لوحة المفتش', desc: 'لوحة عمل المفتش الصحي', path: '/app/inspector-dashboard', icon: <PersonIcon />, accent: accentTokens.sea },
+  { label: 'مدير المطار', desc: 'إدارة عمليات المطار والصحة', path: '/app/airport-director', icon: <LocalAirportIcon />, accent: accentTokens.sea },
+  { label: 'مدير الأغذية', desc: 'إدارة عمليات سلامة الأغذية', path: '/app/food-director', icon: <LocalDiningIcon />, accent: accentTokens.sea },
 ];
 
 const quickLinks = [
