@@ -157,7 +157,7 @@ class FinanceModelTests(TestCase):
         confirm_payment(invoice, self.user, 'CASH', amount='40.00')
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, InvoiceStatus.PARTIAL)
-        self.assertEqual(paid_amount(invoice), 40)
+        self.assertEqual(paid_amount(invoice, invoice.currency), 40)
         self.assertEqual(balance_due(invoice), 60)
         self.assertEqual(invoice.payments.count(), 1)
         self.assertEqual(invoice.receipts.count(), 1)
@@ -169,7 +169,7 @@ class FinanceModelTests(TestCase):
         confirm_payment(invoice, self.user, 'BANK_CARD', amount='60.00', gateway_ref='POS-X')
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, InvoiceStatus.PAID)
-        self.assertEqual(paid_amount(invoice), 100)
+        self.assertEqual(paid_amount(invoice, invoice.currency), 100)
         self.assertEqual(balance_due(invoice), 0)
         self.assertEqual(invoice.payments.count(), 2)
         self.assertEqual(invoice.receipts.count(), 2)
@@ -184,7 +184,7 @@ class FinanceModelTests(TestCase):
         self.assertIn('يتجاوز', str(ctx.exception))
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, InvoiceStatus.PARTIAL)
-        self.assertEqual(paid_amount(invoice), 60)
+        self.assertEqual(paid_amount(invoice, invoice.currency), 60)
 
     def test_zero_or_negative_payment_rejected(self):
         invoice = self._make_invoice()
@@ -216,7 +216,7 @@ class FinanceModelTests(TestCase):
         run_overdue_sweep()
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, InvoiceStatus.OVERDUE)
-        self.assertEqual(paid_amount(invoice), 40)
+        self.assertEqual(paid_amount(invoice, invoice.currency), 40)
 
     def test_refund_partial_refunds_collected(self):
         invoice = self._make_invoice()

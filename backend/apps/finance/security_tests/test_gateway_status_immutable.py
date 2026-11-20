@@ -52,7 +52,7 @@ def test_paid_amount_matches_confirmed_payment(api_client, two_ports):
     assert res.status_code == 200, res.content
     invoice.refresh_from_db()
     assert invoice.status == InvoiceStatus.PARTIAL
-    assert paid_amount(invoice) == Decimal('40.00')
+    assert paid_amount(invoice, invoice.currency) == Decimal('40.00')
     assert invoice.payments.get().gateway_status == GatewayStatus.CONFIRMED
 
 
