@@ -6,6 +6,7 @@
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -13,6 +14,7 @@ from django.utils import timezone
 from .models import (
     AuditAction,
     Cancellation,
+    Currency,
     Fee,
     GatewayStatus,
     Invoice,
@@ -270,6 +272,8 @@ def create_vaccination_invoice(certificate, user, request=None, year=None, curre
     """فاتورة شهادة تطعيم (VACCINATION_CERTIFICATE) — بنود من QuarantineFee.VACCINATION."""
     from apps.food_quarantine.models import QuarantineFee
 
+    if currency not in (Currency.SDG, Currency.USD):
+        raise ValidationError(f'Unsupported currency: {currency!r}')
     if year is None:
         year = timezone.localdate().year
     fees = QuarantineFee.objects.filter(
@@ -284,23 +288,34 @@ def create_vaccination_invoice(certificate, user, request=None, year=None, curre
     total_sdg = Decimal('0')
     total_usd = Decimal('0')
     for qf in fees:
-        amount_sdg = qf.amount_sdg if qf.amount_sdg is not None else Decimal('0')
-        amount_usd = qf.amount_usd if qf.amount_usd is not None else Decimal('0')
-        total_sdg += amount_sdg
-        total_usd += amount_usd
+        # B6/vaccination: غياب السعر بالعملة المطلوبة خطأ صريح، لا صفر صامت.
+        if currency == Currency.USD:
+            if qf.amount_usd is None:
+                raise ValidationError(
+                    f'USD price required for vaccination fee {qf.code} — no silent zero.'
+                )
+            price = qf.amount_usd
+            total_usd += price
+        else:
+            if qf.amount_sdg is None:
+                raise ValidationError(
+                    f'SDG price required for vaccination fee {qf.code} — no silent zero.'
+                )
+            price = qf.amount_sdg
+            total_sdg += price
         lines.append({
             'fee_id': None,
             'fee_code': qf.code or '',
             'name': qf.name_ar,
             'quantity': 1,
             'unit': '',
-            'unit_amount': str(amount_sdg if currency == 'SDG' else amount_usd),
-            'amount': str(amount_sdg if currency == 'SDG' else amount_usd),
+            'unit_amount': str(price),
+            'amount': str(price),
             'currency': currency,
             'quarantine_fee_id': str(qf.id),
         })
 
-    primary_total = total_sdg if currency == 'SDG' else total_usd
+    primary_total = total_sdg if currency == Currency.SDG else total_usd
     invoice = Invoice.objects.create(
         invoice_number=next_invoice_number(),
         source_type=InvoiceSource.VACCINATION_CERTIFICATE,
@@ -338,17 +353,23 @@ def latest_payment(invoice):
     return invoice.payments.order_by('-collected_at').first()
 
 
-def paid_amount(invoice) -> Decimal:
-    """إجمالي المحصل فعلياً (كل العمليات غير الفاشلة)."""
-    total = invoice.payments.exclude(gateway_status=GatewayStatus.FAILED).aggregate(
-        t=Sum('amount')
-    )['t']
+def paid_amount(invoice, currency: str) -> Decimal:
+    """إجمالي المحصل بعملة محددة (العمليات الفاشلة مستبعدة).
+
+    B7: دفعة USD لا تُرضي فاتورة SDG (والعكس). الوسيط إلزامي حتى لا يقع
+    استدعاء صامت بخلط العملات في الحراس المالية.
+    """
+    total = invoice.payments.filter(
+        currency=currency,
+    ).exclude(
+        gateway_status=GatewayStatus.FAILED,
+    ).aggregate(t=Sum('amount'))['t']
     return Decimal(str(total or 0))
 
 
 def balance_due(invoice) -> Decimal:
-    """الرصيد المتبقي للسداد."""
-    return Decimal(str(invoice.net_amount or 0)) - paid_amount(invoice)
+    """الرصيد المتبقي للسداد — بنفس عملة الفاتورة."""
+    return Decimal(str(invoice.net_amount or 0)) - paid_amount(invoice, invoice.currency)
 
 
 def DecimalOf(item):
@@ -359,14 +380,25 @@ def DecimalOf(item):
         return Decimal('0')
 
 
-def fee_amount_for(fee: Fee, currency='SDG') -> Decimal:
-    if currency == 'USD' and fee.amount_usd is not None:
+def fee_amount_for(fee: Fee, currency: str) -> Decimal:
+    """Return the fee amount in the requested currency.
+
+    B6: fail-closed — a missing price in the requested currency is an error,
+    never a silent SDG→USD (or USD→SDG) substitution.
+    """
+    if currency == Currency.USD:
+        if fee.amount_usd is None:
+            raise ValidationError(
+                f'Fee {fee.id} has no USD amount; cannot price in USD.'
+            )
         return fee.amount_usd
-    if fee.amount_sdg is not None:
+    if currency == Currency.SDG:
+        if fee.amount_sdg is None:
+            raise ValidationError(
+                f'Fee {fee.id} has no SDG amount; cannot price in SDG.'
+            )
         return fee.amount_sdg
-    if fee.amount_usd is not None:
-        return fee.amount_usd
-    return Decimal('0')
+    raise ValidationError(f'Unsupported currency: {currency!r}')
 
 
 # ---------------------------------------------------------------------------
@@ -543,7 +575,7 @@ def cancel_invoice(invoice, user, reason, approver_id=None, request=None):
     """إلغاء فاتورة غير مسددة → CANCELLED (لا حذف)."""
     if invoice.status in _FINAL:
         raise FinanceServiceError('لا يمكن إلغاء فاتورة في حالة نهائية.')
-    col = paid_amount(invoice)
+    col = paid_amount(invoice, invoice.currency)
     if col > 0:
         raise FinanceServiceError('لا يمكن إلغاء فاتورة بها مبالغ محصلة — استرد المبلغ أولاً.')
     approver = None
@@ -576,7 +608,7 @@ def refund_invoice(invoice, user, reason, amount=None, approver_id=None, request
         locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
         if locked.status not in (InvoiceStatus.PAID, InvoiceStatus.RECONCILED, InvoiceStatus.PARTIAL):
             raise FinanceServiceError('الاسترداد يتطلب فاتورة عليها تحصيل فعلي.')
-        collected = paid_amount(locked)
+        collected = paid_amount(locked, locked.currency)
         if collected <= 0:
             raise FinanceServiceError('لا يوجد مبلغ محصّل للاسترداد.')
         amount = Decimal(str(amount)) if amount is not None else collected
