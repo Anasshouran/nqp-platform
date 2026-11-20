@@ -125,6 +125,9 @@ export default function NationalFinancePage(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const isDesktop = useMediaQuery('(min-width:900px)');
 
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('finance:view');
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<HTMLElement | null>(null);
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -397,6 +400,16 @@ export default function NationalFinancePage(): React.JSX.Element {
       })[activeView] ?? t('finance.pageHeader.default'),
     [activeView, t],
   );
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>

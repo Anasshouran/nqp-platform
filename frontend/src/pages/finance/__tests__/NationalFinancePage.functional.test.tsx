@@ -39,7 +39,7 @@ vi.mock('react-i18next', async (importOriginal) => {
 
 vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => ({
-    user: { id: 'u-1', full_name: 'مدير مالية اختبار', email: 'finance@nqp.gov.sd', role: 'FINANCE_DIRECTOR' },
+    user: { id: 'u-1', full_name: 'مدير مالية اختبار', email: 'finance@nqp.gov.sd', role: 'FINANCE_DIRECTOR', permissions: ['finance:view'] },
   }),
 }));
 
