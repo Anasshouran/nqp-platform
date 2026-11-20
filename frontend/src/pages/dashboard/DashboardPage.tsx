@@ -33,13 +33,23 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PersonIcon from '@mui/icons-material/Person';
 import LocalAirportIcon from '@mui/icons-material/LocalAirport';
-import BusinessIcon from '@mui/icons-material/Business';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CodeIcon from '@mui/icons-material/Code';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import SchoolIcon from '@mui/icons-material/School';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import ScienceIcon from '@mui/icons-material/Science';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import PaymentIcon from '@mui/icons-material/Payment';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LayersIcon from '@mui/icons-material/Layers';
+import NoteIcon from '@mui/icons-material/Note';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -87,7 +97,26 @@ const quickModules = [
   { label: 'مدير المطار', desc: 'إدارة عمليات المطار والصحة', path: '/app/airport-director', icon: <LocalAirportIcon />, accent: accentTokens.sea },
   { label: 'مدير الأغذية', desc: 'إدارة عمليات سلامة الأغذية', path: '/app/food-director', icon: <LocalDiningIcon />, accent: accentTokens.sea },
   { label: 'الموارد البشرية', desc: 'إدارة الموظفين والحضور والإجازات', path: '/app/hr', icon: <PeopleIcon />, accent: accentTokens.brand },
-  { label: 'التمويل الوطني', desc: 'إدارة الفواتير والتحصيل والرسوم', path: '/app/finance', icon: <AccountBalanceIcon />, accent: accentTokens.air },
+  { label: 'الموظفين', desc: 'إدارة بيانات الموظفين والسجلات الوظيفية', path: '/app/hr/employees', icon: <SupervisorAccountIcon />, accent: accentTokens.brand },
+  { label: 'الإجازات', desc: 'إدارة طلبات الإجازات والموافقة عليها', path: '/app/hr/leave', icon: <EventNoteIcon />, accent: accentTokens.sea },
+  { label: 'التدريب', desc: 'إدارة الدورات التدريبية والشهادات', path: '/app/hr/training', icon: <SchoolIcon />, accent: accentTokens.sea },
+  { label: 'النقل والمناوبات', desc: 'إدارة طلبات النقل والمناوبات الوظيفية', path: '/app/hr/postings', icon: <AssignmentTurnedInIcon />, accent: accentTokens.sea },
+  { label: 'الكيمياء', desc: 'إدارة التحاليل الكيميائية والمختبرات', path: '/app/chemistry', icon: <ScienceIcon />, accent: accentTokens.sea },
+  { label: 'الأحياء الدقيقة', desc: 'إدارة التحاليل الميكروبيولوجية', path: '/app/microbiology', icon: <ScienceIcon />, accent: accentTokens.sea },
+  { label: 'ضمان الجودة', desc: 'إدارة ضمان الجودة والمطابقة', path: '/app/quality', icon: <AssessmentIcon />, accent: accentTokens.sea },
+  { label: 'الكواشف', desc: 'إدارة الكواشف والمواد المخبرية', path: '/app/reagents', icon: <InventoryIcon />, accent: accentTokens.sea },
+  { label: 'الاستقبال', desc: 'إدارة استقبال العينات وال casos', path: '/app/reception', icon: <PaymentIcon />, accent: accentTokens.sea },
+  { label: 'الهيكل التنظيمي', desc: 'إدارة الهيكل التنظيمي للوحدات', path: '/app/organization', icon: <BusinessCenterIcon />, accent: accentTokens.brand },
+  { label: 'الحساب', desc: 'إدارة الحساب الشخصي والإعدادات', path: '/app/account', icon: <PersonIcon />, accent: accentTokens.brand },
+  { label: 'لوحة المحاسب', desc: 'إدارة الفواتير والمدفوعات', path: '/app/accountant-dashboard', icon: <PaymentIcon />, accent: accentTokens.sea },
+  { label: 'لوحة المحطة', desc: 'إدارة عمليات المحطة الصحية', path: '/app/station-dashboard', icon: <LocationOnIcon />, accent: accentTokens.sea },
+  { label: 'مدير القطاع', desc: 'إدارة عمليات القطاع الصحي', path: '/app/sector-manager', icon: <SupervisorAccountIcon />, accent: accentTokens.sea },
+  { label: 'لوحة القطاع', desc: 'لوحات وإحصائيات القطاع', path: '/app/sector-dashboard', icon: <LayersIcon />, accent: accentTokens.sea },
+  { label: 'رسوم الحجر الصحي', desc: 'إدارة رسوم وغرامات الحجر الصحي', path: '/app/quarantine-fees', icon: <PaymentIcon />, accent: accentTokens.sea },
+  { label: 'مسؤول المنفذ', desc: 'إدارة عمليات المنفذ الصحي', path: '/app/port-officer', icon: <NoteIcon />, accent: accentTokens.sea },
+  { label: 'شركات الطيران', desc: 'إدارة شركات الطيران والرحلات', path: '/app/carriers', icon: <LocalAirportIcon />, accent: accentTokens.sea },
+  { label: 'الشحن', desc: 'إدارة الشحنات والبضائع الصحية', path: '/app/shipping', icon: <InventoryIcon />, accent: accentTokens.sea },
+  { label: 'المعايير', desc: 'إدارة ومراجعة المعايير الصحية', path: '/app/standards', icon: <CodeIcon />, accent: accentTokens.sea },
 ];
 
 const quickLinks = [
