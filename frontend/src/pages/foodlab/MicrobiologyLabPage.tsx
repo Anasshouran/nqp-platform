@@ -57,6 +57,7 @@ import {
   setSamplePriority,
 } from '../../api/endpoints/foodlab';
 import { getUsers } from '../../api/endpoints/users';
+import { EmptyState } from '../../components/uikit';
 import type {
   ApplicableLimits,
   FoodSample,
@@ -208,6 +209,7 @@ const MicrobiologyLabPage = () => {
   }, []);
 
   const [dash, setDash] = useState<MicroDashboard | null>(null);
+  const [dashLoading, setDashLoading] = useState(true);
   const [parameters, setParameters] = useState<LabParameter[]>([]);
   const [analysts, setAnalysts] = useState<User[]>([]);
   const [specs, setSpecs] = useState<MicrobiologicalSpecification[]>([]);
@@ -252,7 +254,11 @@ const MicrobiologyLabPage = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshDash = useCallback(() => {
-    getMicroBiologyDashboard().then((r) => setDash(r.data.data)).catch(() => undefined);
+    setDashLoading(true);
+    getMicroBiologyDashboard()
+      .then((r) => setDash(r.data.data))
+      .catch(() => undefined)
+      .finally(() => setDashLoading(false));
   }, []);
 
   const refreshWorkload = useCallback(() => {
@@ -598,6 +604,13 @@ const MicrobiologyLabPage = () => {
       <Box>
         {nav === 'home' && (
           <Box component="section" ref={register('overview')} data-section="overview" sx={{ scrollMarginTop: '80px' }}>
+            {!dash && !dashLoading && (
+              <EmptyState
+                title={i18nT('food.microbiologyLab.str262')}
+                description={i18nT('food.microbiologyLab.str263')}
+              />
+            )}
+            {dash && (
             <>
                 {statGroup(i18nT('food.microbiologyLab.str215'), [
                   stat(i18nT('food.microbiologyLab.str10'), dash?.total_samples ?? '—', <BiotechIcon />),
@@ -651,6 +664,7 @@ const MicrobiologyLabPage = () => {
                   </Grid>
                 </Grid>
               </>
+            )}
               </Box>
             )}
 

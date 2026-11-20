@@ -8022,7 +8022,9 @@
       "str217": "Translation missing str217",
       "str258": "Translation missing str258",
       "str260": "Translation missing str260",
-      "str261": "Translation missing str261"
+      "str261": "Translation missing str261",
+      "str262": "No data available",
+      "str263": "Microbiology lab data is not available at the moment. Please check server connection or try again later."
     },
     "receptionLab": {
       "  ": "  ",
