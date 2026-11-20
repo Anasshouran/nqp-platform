@@ -46,6 +46,7 @@ class ReceiptSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     shed_status = serializers.SerializerMethodField()
     paid_amount = serializers.SerializerMethodField()
+    paid_amount_by_currency = serializers.SerializerMethodField()
     balance_due = serializers.SerializerMethodField()
 
     payments = PaymentAttemptSerializer(many=True, read_only=True)
@@ -59,10 +60,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
             'items', 'gross_amount', 'discount_amount', 'discount_reason', 'net_amount',
             'currency', 'status', 'issued_by', 'issued_at', 'due_date', 'receipt_number',
             'reviewed_by', 'reviewed_at', 'reconciled_by', 'reconciled_at',
-            'paid_amount', 'balance_due',
+            'paid_amount', 'paid_amount_by_currency', 'balance_due',
             'payments', 'receipts', 'shed_status', 'created_at',
         ]
-        read_only_fields = ['id', 'issued_by', 'issued_at', 'status', 'payments', 'receipts', 'shed_status', 'paid_amount', 'balance_due']
+        read_only_fields = ['id', 'issued_by', 'issued_at', 'status', 'payments', 'receipts', 'shed_status', 'paid_amount', 'paid_amount_by_currency', 'balance_due']
 
     def get_shed_status(self, obj):
         shipment = obj.food_shipment
@@ -72,7 +73,21 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     def get_paid_amount(self, obj):
         from .services import paid_amount as _paid_amount
-        return str(_paid_amount(obj))
+        return str(_paid_amount(obj, obj.currency))
+
+    def get_paid_amount_by_currency(self, obj):
+        """Breakdown صريح: عملة → إجمالي محصّل (الفاشلة مستبعدة)."""
+        from django.db.models import Sum
+
+        from .models import GatewayStatus
+
+        rows = (
+            obj.payments
+            .exclude(gateway_status=GatewayStatus.FAILED)
+            .values('currency')
+            .annotate(total=Sum('amount'))
+        )
+        return {row['currency']: str(row['total'] or 0) for row in rows}
 
     def get_balance_due(self, obj):
         from .services import balance_due as _balance_due
