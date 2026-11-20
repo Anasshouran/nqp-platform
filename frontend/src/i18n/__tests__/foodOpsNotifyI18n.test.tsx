@@ -36,3 +36,23 @@ describe('M5-D-J2B Phase 4-C — food.ops.notify Arabic keys', () => {
     expect(i18n.t('food.ops.notify.selectInspector')).toBe(EXPECTED['food.ops.notify.selectInspector']);
   });
 });
+
+// The same five keys were also absent from en.json, so English operators saw
+// raw key strings. Keep both locales covered by the same test file.
+const EXPECTED_EN: Record<string, string> = {
+  'food.ops.notify.assigned': 'Inspector assigned',
+  'food.ops.notify.decisionFailed': 'Failed to make decision',
+  'food.ops.notify.feeCollected': 'Fee collected',
+  'food.ops.notify.paymentFailed': 'Payment failed',
+  'food.ops.notify.selectInspector': 'Select inspector',
+};
+
+describe('M5-D-J2B Phase 4-C — food.ops.notify English keys', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it.each(Object.entries(EXPECTED_EN))('%s', (key, expected) => {
+    expect(i18n.t(key)).toBe(expected);
+  });
+});
