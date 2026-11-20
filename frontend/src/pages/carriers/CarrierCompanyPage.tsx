@@ -30,6 +30,7 @@ const CarrierCompanyPage = () => {
   const [profile, setProfile] = useState<CarrierProfile | null>(null);
   const [api, setApi] = useState<CarrierApiKeyInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showKey, setShowKey] = useState(false);
@@ -38,6 +39,7 @@ const CarrierCompanyPage = () => {
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     Promise.all([getCompanyProfile(), getApiKey()])
       .then(([p, k]) => {
         const pk = p.data?.data ?? p.data;
@@ -45,7 +47,7 @@ const CarrierCompanyPage = () => {
         setProfile(pk as CarrierProfile);
         setApi(ak as CarrierApiKeyInfo);
       })
-      .catch(() => setMessage({ type: 'error', text: 'تعذّر تحميل بيانات الشركة' }))
+      .catch(() => setLoadError('تعذّر تحميل بيانات الشركة'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -110,6 +112,23 @@ const CarrierCompanyPage = () => {
         <Skeleton width="40%" height={48} />
         <Skeleton variant="rectangular" height={200} sx={{ mt: 3 }} />
         <Skeleton variant="rectangular" height={200} sx={{ mt: 3 }} />
+      </Box>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Box sx={{ p: 3, maxWidth: 1080, mx: 'auto', width: '100%' }}>
+        <Alert
+          severity="error"
+          action={(
+            <Button color="inherit" size="small" startIcon={<RefreshIcon />} onClick={() => void load()}>
+              إعادة المحاولة
+            </Button>
+          )}
+        >
+          {loadError}
+        </Alert>
       </Box>
     );
   }

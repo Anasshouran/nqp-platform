@@ -33,18 +33,34 @@ const CarrierFlightDetailPage = () => {
   const [documents, setDocuments] = useState<CarrierDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     let active = true;
     setLoading(true);
     setError(null);
-    Promise.all([getFlight(id), getFlightTimeline(id), getCarrierDocuments({ flight: id })])
-      .then(([flightResponse, timelineResponse, documentsResponse]) => {
+    setTimelineError(null);
+    setDocumentsError(null);
+    Promise.allSettled([getFlight(id), getFlightTimeline(id), getCarrierDocuments({ flight: id })])
+      .then(([flightResult, timelineResult, documentsResult]) => {
         if (!active) return;
-        setFlight(flightResponse.data.data);
-        setTimeline(timelineResponse.data.data.events);
-        setDocuments(documentsResponse.data.data.results);
+        if (flightResult.status === 'rejected') {
+          setError(t('carriers.flightDetail.loadError'));
+          return;
+        }
+        setFlight(flightResult.value.data.data);
+        if (timelineResult.status === 'fulfilled') {
+          setTimeline(timelineResult.value.data.data.events);
+        } else {
+          setTimelineError('تعذّر تحميل سجل أحداث الرحلة');
+        }
+        if (documentsResult.status === 'fulfilled') {
+          setDocuments(documentsResult.value.data.data.results);
+        } else {
+          setDocumentsError('تعذّر تحميل المستندات');
+        }
       })
       .catch(() => {
         if (active) setError(t('carriers.flightDetail.loadError'));
@@ -108,7 +124,9 @@ const CarrierFlightDetailPage = () => {
         {t('carriers.flightDetail.documentsTitle')}
       </Typography>
       <Paper sx={{ p: 2, mb: 3 }}>
-        {documents.length === 0 ? (
+        {documentsError ? (
+          <Alert severity="warning">{documentsError}</Alert>
+        ) : documents.length === 0 ? (
           <Alert severity="info" variant="outlined">{t('carriers.flightDetail.noDocuments')}</Alert>
         ) : (
           <List disablePadding>
@@ -133,7 +151,9 @@ const CarrierFlightDetailPage = () => {
         {t('carriers.flightDetail.timelineTitle')}
       </Typography>
       <Paper sx={{ p: 2 }}>
-        {timeline.length === 0 ? (
+        {timelineError ? (
+          <Alert severity="warning">{timelineError}</Alert>
+        ) : timeline.length === 0 ? (
           <Alert severity="info">{t('carriers.flightDetail.noEvents')}</Alert>
         ) : (
           <List disablePadding>
