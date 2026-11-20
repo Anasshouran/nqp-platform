@@ -18,6 +18,12 @@ import DomainIcon from '@mui/icons-material/Domain';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import BiotechIcon from '@mui/icons-material/Biotech';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
+import AnchorIcon from '@mui/icons-material/Anchor';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
+import VaccinesIcon from '@mui/icons-material/Vaccines';
+import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
@@ -51,6 +57,12 @@ const quickModules = [
   { label: 'المسافرون', desc: 'إدارة تسجيلات المسافرين', path: '/app/travelers', icon: <LocalShippingIcon />, accent: accentTokens.air },
   { label: 'الفحوصات الصحية', desc: 'متابعة الفحوصات عند المنافذ', path: '/app/screening', icon: <BiotechIcon />, accent: accentTokens.sea },
   { label: 'غرفة الطوارئ', desc: 'الإنذارات وحالات الطوارئ', path: '/app/emergency', icon: <WarningAmberIcon />, accent: accentTokens.land },
+  { label: 'صحة المطارات', desc: 'إدارة الرحلات والفحوصات الصحية بالمطارات', path: '/app/airport-health', icon: <FlightTakeoffIcon />, accent: accentTokens.brand },
+  { label: 'صحة الموانئ', desc: 'إدارة السفن والشحنات والتفتيش الصحي بالموانئ', path: '/app/port-health', icon: <AnchorIcon />, accent: accentTokens.sea },
+  { label: 'العيادة', desc: 'إدارة الإحالات والزيارات الطبية بالعناية بالصحة', path: '/app/clinic', icon: <LocalHospitalIcon />, accent: accentTokens.brand },
+  { label: 'المختبر', desc: 'إدارة العينات والتحاليل المخبرية', path: '/app/laboratory', icon: <HealthAndSafetyIcon />, accent: accentTokens.lab },
+  { label: 'التطعيم', desc: 'إدارة شهادات التطعيم والسجلات الصحية', path: '/app/vaccination', icon: <VaccinesIcon />, accent: accentTokens.brand },
+  { label: 'صحة المعابر', desc: 'إدارة صحة المنافذ البرية والبحرية والجوية', path: '/app/borders-health', icon: <DirectionsBoatIcon />, accent: accentTokens.air },
 ];
 
 const quickLinks = [
