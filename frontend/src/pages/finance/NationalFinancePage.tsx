@@ -556,7 +556,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             </Stack>
                           ))}
                         </Stack>
-                      ) : ProcessNull()
+                      ) : <ProcessNull />
                       }
                     </CardContent>
                   </Card>
@@ -598,7 +598,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                             })}
                             {receipts.length === 0 && (
                               <TableRow>
-                                <TableCell colSpan={6}>{ProcessNull()}</TableCell>
+                                <TableCell colSpan={6}>{<ProcessNull />}</TableCell>
                               </TableRow>
                             )}
                           </TableBody>
@@ -930,7 +930,7 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
           ))}
           {invoices.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8}>{ProcessNull()}</TableCell>
+              <TableCell colSpan={8}>{<ProcessNull />}</TableCell>
             </TableRow>
           )}
         </TableBody>
@@ -987,7 +987,7 @@ function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.
             </TableRow>
           ))}
           {payments.length === 0 && (
-            <TableRow><TableCell colSpan={6}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={6}>{<ProcessNull />}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1035,7 +1035,7 @@ function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPr
             </TableRow>
           ))}
           {receipts.length === 0 && (
-            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{<ProcessNull />}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1076,7 +1076,7 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
             </TableRow>
           ))}
           {items.length === 0 && (
-            <TableRow><TableCell colSpan={7}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={7}>{<ProcessNull />}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1134,7 +1134,7 @@ function FeesTable({ fees, onEdit, onDeactivate }: {
             </TableRow>
           ))}
           {fees.length === 0 && (
-            <TableRow><TableCell colSpan={9}>{ProcessNull()}</TableCell></TableRow>
+            <TableRow><TableCell colSpan={9}>{<ProcessNull />}</TableCell></TableRow>
           )}
         </TableBody>
       </Table>
@@ -1194,7 +1194,7 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
                   </TableRow>
                 ))}
                 {!invoice.items?.length && (
-                  <TableRow><TableCell colSpan={3}>{ProcessNull()}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={3}>{<ProcessNull />}</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
