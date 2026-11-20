@@ -218,7 +218,7 @@ describe('NationalFinancePage — functional', () => {
     await user.click(filter);
     await user.click(await screen.findByRole('option', { name: 'مدفوعة' }));
     await waitFor(() => {
-      expect(api.getFinanceInvoices).toHaveBeenCalledWith(expect.objectContaining({ status: 'PAID', page_size: 100 }));
+      expect(api.getFinanceInvoices).toHaveBeenCalledWith(expect.objectContaining({ status: 'PAID', page_size: 25, page: 1 }));
     });
   });
 
@@ -393,5 +393,89 @@ describe('NationalFinancePage — functional', () => {
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'حفظ' }));
     expect(await screen.findByRole('alert', { hidden: true })).toHaveTextContent('fee failed');
+  });
+
+  // --- F1 — payForm reset on open/close ---
+
+  it('resets the payment amount when switching invoices', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await openInvoices(user);
+
+    await user.click(within(rowFor('INV-001')).getByRole('button', { name: 'تحصيل' }));
+    const first = await screen.findByRole('dialog');
+    fireEvent.change(within(first).getByRole('spinbutton'), { target: { value: '777' } });
+    expect(within(first).getByRole('spinbutton')).toHaveValue(777);
+
+    await user.click(within(first).getByRole('button', { name: 'إلغاء' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await user.click(within(rowFor('INV-002')).getByRole('button', { name: 'دفعة إضافية' }));
+    const second = await screen.findByRole('dialog');
+    expect(within(second).getByRole('spinbutton')).toHaveValue(500);
+  });
+
+  it('resets the payment method when reopening the dialog', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await openInvoices(user);
+
+    await user.click(within(rowFor('INV-001')).getByRole('button', { name: 'تحصيل' }));
+    const first = await screen.findByRole('dialog');
+    await user.click(within(first).getByRole('combobox'));
+    await user.click(await screen.findByRole('option', { name: 'تحويل بنكي' }));
+    expect(within(first).getByRole('combobox')).toHaveTextContent('تحويل بنكي');
+
+    await user.click(within(first).getByRole('button', { name: 'إلغاء' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await user.click(within(rowFor('INV-002')).getByRole('button', { name: 'دفعة إضافية' }));
+    const second = await screen.findByRole('dialog');
+    expect(within(second).getByRole('combobox')).toHaveTextContent('نقدي');
+  });
+
+  // --- F2 — single fetch per filter change ---
+
+  it('fetches invoices once per filter change (no duplicate effect)', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await openInvoices(user);
+
+    api.getFinanceInvoices.mockClear();
+    await user.click(screen.getByLabelText('الحالة'));
+    await user.click(await screen.findByRole('option', { name: 'مدفوعة' }));
+
+    await waitFor(() => {
+      expect(api.getFinanceInvoices).toHaveBeenCalledWith(expect.objectContaining({ status: 'PAID', page: 1, page_size: 25 }));
+    });
+    expect(api.getFinanceInvoices).toHaveBeenCalledTimes(1);
+  });
+
+  // --- F3 — server-side pagination ---
+
+  it('renders invoices pagination and requests the next page', async () => {
+    api.getFinanceInvoices.mockResolvedValue(ok({ results: [invoicePending], count: 250 }));
+    const user = userEvent.setup();
+    renderPage();
+    await openInvoices(user);
+
+    expect(await screen.findByText('1-25 من 250')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /next page/i }));
+    await waitFor(() => {
+      expect(api.getFinanceInvoices).toHaveBeenCalledWith(expect.objectContaining({ page: 2, page_size: 25 }));
+    });
+  });
+
+  it('renders fees pagination and requests the next page', async () => {
+    api.getFinanceFees.mockResolvedValue(ok({ results: [], count: 250 }));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: 'بنود الرسوم' }));
+
+    expect(await screen.findByText('1-25 من 250')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /next page/i }));
+    await waitFor(() => {
+      expect(api.getFinanceFees).toHaveBeenCalledWith(expect.objectContaining({ page: 2, page_size: 25 }));
+    });
   });
 });
