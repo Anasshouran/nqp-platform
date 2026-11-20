@@ -29,7 +29,8 @@ class PaymentAttemptSerializer(serializers.ModelSerializer):
             'id', 'invoice', 'method', 'amount', 'currency',
             'gateway_ref', 'gateway_status', 'collected_by', 'collected_at', 'notes',
         ]
-        read_only_fields = ['id', 'collected_by', 'collected_at']
+        # B5: حالة البوابة تُثبَّت في الخدمة، لا تُستقبل من العميل.
+        read_only_fields = ['id', 'collected_by', 'collected_at', 'gateway_status']
 
 
 class ReceiptSerializer(serializers.ModelSerializer):
@@ -93,7 +94,12 @@ class ReconciliationSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_name', 'reconciled_by', 'reconciled_by_name', 'reconciled_at',
             'created_at',
         ]
-        read_only_fields = ['id', 'reconciled_by', 'reconciled_at', 'status', 'created_by']
+        # B2: الحقول المحسوبة/الإدارية غير قابلة للكتابة — منع تزوير أرقام التسوية.
+        read_only_fields = [
+            'id', 'system_total', 'channel_total', 'difference', 'status',
+            'matched_count', 'discrepancy_count', 'matches', 'discrepancies',
+            'created_by', 'reconciled_by', 'reconciled_at', 'created_at',
+        ]
 
     def get_status_display(self, obj):
         from .models import ReconciliationStatus
