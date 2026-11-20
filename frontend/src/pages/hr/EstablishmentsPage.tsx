@@ -8,15 +8,19 @@ import Button from '@mui/material/Button';
 import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import StatusChip from '../../components/ui/StatusChip';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
+import { useAuth } from '../../hooks/useAuth';
 import { getHrEstablishments } from '../../api/endpoints/hr';
 import type { HrEstablishment } from '../../types/hr';
 
 const EstablishmentsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_establishment:view');
 
   const KIND_OPTIONS = useMemo(
     () => [
@@ -110,6 +114,16 @@ const EstablishmentsPage = () => {
     ],
     [navigate, t],
   );
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

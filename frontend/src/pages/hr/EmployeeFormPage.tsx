@@ -22,7 +22,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { FormTextField } from '../../components/ui';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { createEmployeeSchema, emptyEmployeeForm } from '../../components/forms/schemas/hr';
 import type { EmployeeFormValues } from '../../components/forms/schemas/hr';
 import {
@@ -39,6 +39,7 @@ import {
   GENDER_LABELS,
 } from '../../utils/hrLabels';
 import { notifySuccess, extractErrorMessage } from '../../utils/toast';
+import { useAuth } from '../../hooks/useAuth';
 
 /** يحوّل أخطاء الخادم (`{field: [msg]}`) إلى رسائل عربية قابلة للعرض. */
 const serverErrorMessage = (payload: unknown): string | null => {
@@ -58,6 +59,9 @@ const EmployeeFormPage = () => {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_employee:view');
 
   const [formError, setFormError] = useState<string | null>(null);
   const [current, setCurrent] = useState<EmployeeDetail | null>(null);
@@ -246,6 +250,16 @@ const EmployeeFormPage = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
       </Box>
     );
   }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../hooks/useAuth';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -364,6 +365,9 @@ const TimelinePanel = ({
   employeeId, entries, loading, expanded, onToggle, onCreated, saving, onSavingChange,
 }: TimelinePanelProps) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_employee:view');
   const [formOpen, setFormOpen] = useState(false);
   const [event, setEvent] = useState<TimelineEventType>('HIRE');
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
@@ -403,6 +407,16 @@ const TimelinePanel = ({
       onSavingChange(false);
     }
   };
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

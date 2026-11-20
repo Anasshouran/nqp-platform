@@ -10,7 +10,7 @@ import enLocale from '../../../i18n/locales/en.json';
 import NationalFinancePage from '../NationalFinancePage';
 
 vi.mock('../../../hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: '1', full_name: 'مدير مالية اختبار', email: 'finance@nqp.gov.sd', role: 'FINANCE_DIRECTOR' } }),
+  useAuth: () => ({ user: { id: '1', full_name: 'مدير مالية اختبار', email: 'finance@nqp.gov.sd', role: 'FINANCE_DIRECTOR', permissions: ['finance:view'] } }),
 }));
 
 // mock finance API endpoints

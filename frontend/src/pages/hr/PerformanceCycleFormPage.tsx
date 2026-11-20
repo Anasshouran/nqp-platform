@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../hooks/useAuth';
 import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,7 +16,7 @@ import Alert from '@mui/material/Alert';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { FormTextField } from '../../components/ui';
 import { createPerformanceCycle } from '../../api/endpoints/hr';
 import { getDepartments } from '../../api/endpoints/organization';
@@ -35,6 +37,9 @@ type CycleFormValues = z.infer<ReturnType<typeof createCycleSchema>>;
 const PerformanceCycleFormPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_performance:view');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,6 +81,16 @@ const PerformanceCycleFormPage = () => {
       setError(extractErrorMessage(err, t('hr.performanceCycleForm.errors.createFailed')));
     }
   };
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

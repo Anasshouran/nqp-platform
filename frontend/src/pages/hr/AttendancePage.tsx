@@ -6,13 +6,14 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { FormTextField } from '../../components/ui';
 import KpiCard from '../../components/dashboard/KpiCard';
 import {
@@ -20,6 +21,7 @@ import {
   getEmployees,
   getMyAttendanceSummary,
 } from '../../api/endpoints/hr';
+import { useAuth } from '../../hooks/useAuth';
 import type { AttendanceStatus, Employee } from '../../types/hr';
 import {
   ATTENDANCE_NEEDS_PUNCH,
@@ -93,6 +95,9 @@ const today = () => new Date().toISOString().slice(0, 10);
 const AttendancePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_attendance:view');
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [summary, setSummary] = useState<{
     present: number; absent: number; late: number; overtime: number;
@@ -162,6 +167,16 @@ const AttendancePage = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
       </Box>
     );
   }

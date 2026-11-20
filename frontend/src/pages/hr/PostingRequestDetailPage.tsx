@@ -46,6 +46,8 @@ const PostingRequestDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_posting:view');
 
   const [posting, setPosting] = useState<PostingRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,6 +102,16 @@ const PostingRequestDetailPage = () => {
   const isSubmitter = posting.requested_by === user?.id;
   const isApprover = user?.role === 'HR_APPROVER';
   const canDecide = posting.status === 'SUBMITTED' && isApprover && !isSubmitter;
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

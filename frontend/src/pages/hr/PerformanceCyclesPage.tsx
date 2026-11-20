@@ -13,12 +13,13 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { FormTextField } from '../../components/ui';
 import StatusChip from '../../components/ui/StatusChip';
 import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import { useServerTable } from '../../hooks/useServerTable';
+import { useAuth } from '../../hooks/useAuth';
 import { getDepartments } from '../../api/endpoints/organization';
 import {
   closePerformanceCycle,
@@ -33,7 +34,10 @@ import { extractErrorMessage, notifySuccess } from '../../utils/toast';
 
 const PerformanceCyclesPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t } = useTranslation();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_performance:view');
 
   const {
     rows, count, loading, error, page, rowsPerPage, pageSizeOptions, searchInput,
@@ -184,6 +188,16 @@ const PerformanceCyclesPage = () => {
       setBusy(false);
     }
   };
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

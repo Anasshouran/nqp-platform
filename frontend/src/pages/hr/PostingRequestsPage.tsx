@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import StatusChip from '../../components/ui/StatusChip';
@@ -28,6 +28,8 @@ const PostingRequestsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_posting:view');
   // التطبيق يحرس بالدور لا بالصلاحية المفردة (ProtectedRoute)، فيُشتق
   // «من يستطيع الإنشاء» من الدور: المعتمد وحده لا يُدخل.
   const canAdd = user?.role !== 'HR_APPROVER';
@@ -63,38 +65,41 @@ const PostingRequestsPage = () => {
       {
         key: 'employee_name',
         label: t('hr.postingRequests.columns.employee'),
+        sortable: true,
         render: (row) => (
           <Box>
             <Typography variant="body2" fontWeight={600}>
-              {row.employee_name || '—'}
+              {row.employee_name}
             </Typography>
-            <Typography variant="caption" color="text.secondary" dir="ltr">
+            <Typography variant="caption" color="text.secondary">
               {row.employee_number}
             </Typography>
           </Box>
         ),
       },
       {
+        key: 'employee_number',
+        label: t('hr.postingRequests.export.employeeNumber'),
+        hideOnMobile: true,
+        render: (row) => row.employee_number || '—',
+      },
+      {
         key: 'kind',
         label: t('hr.postingRequests.columns.kind'),
-        render: (row) => <StatusChip label={t(`hr.postingRequests.kindLabels.${row.kind}`)} tone="info" showIcon={false} />,
+        sortable: true,
+        render: (row) => <StatusChip label={POSTING_KIND_LABELS[row.kind] || row.kind} tone="neutral" />,
       },
       {
         key: 'status',
         label: t('hr.postingRequests.columns.status'),
-        render: (row) => (
-          <StatusChip
-            label={t(`hr.postingRequests.statusLabels.${row.status}`)}
-            tone={POSTING_STATUS_TONES[row.status] ?? 'neutral'}
-          />
-        ),
+        sortable: true,
+        render: (row) => <StatusChip label={POSTING_STATUS_LABELS[row.status] || row.status} tone={POSTING_STATUS_TONES[row.status] ?? 'neutral'} />,
       },
       {
         key: 'target_summary',
         label: t('hr.postingRequests.columns.destination'),
-        render: (row) => (
-          <Typography variant="body2">{row.target_summary}</Typography>
-        ),
+        hideOnMobile: true,
+        render: (row) => row.target_summary || '—',
       },
       {
         key: 'effective_date',
@@ -126,6 +131,16 @@ const PostingRequestsPage = () => {
     ],
     [t],
   );
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

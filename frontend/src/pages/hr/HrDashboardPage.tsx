@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
@@ -25,14 +25,25 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PublicIcon from '@mui/icons-material/Public';
 import LockIcon from '@mui/icons-material/Lock';
-import { PageHeader, EmptyState, ErrorState } from '../../components/common';
+import { PageHeader, EmptyState } from '../../components/uikit';
+import { ErrorState } from '../../components/common';
 import KpiCard from '../../components/dashboard/KpiCard';
 import StatusChip from '../../components/ui/StatusChip';
 import { getHrDashboard } from '../../api/endpoints/hr';
+import { useAuth } from '../../hooks/useAuth';
 import type { HrDashboard, HrLabelCount } from '../../types/hr';
 import { TIMELINE_EVENT_TONES } from '../../utils/hrLabels';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/toast';
+
+/** الصلاحية المطلوبة لعرض كل قسم في لوحة الموارد البشرية (بصيغة resource:action). */
+const SECTION_PERMISSIONS: Record<string, string> = {
+  dashboard: 'hr_dashboard:view',
+  byEmploymentType: 'hr_employee:view',
+  byDepartment: 'hr_employee:view',
+  bySector: 'hr_employee:view',
+  recentEvents: 'hr_employee:view',
+};
 
 /** شريط أفقي لنسبة كل فئة من إجمالي معروف. */
 const DistributionBar = ({
@@ -80,10 +91,22 @@ const DistributionBar = ({
 const HrDashboardPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = useMemo(() => user?.permissions ?? [], [user?.permissions]);
   const [data, setData] = useState<HrDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const visibleSections = useMemo(() => {
+    return {
+      dashboard: !SECTION_PERMISSIONS.dashboard || !permissions?.length || permissions.includes(SECTION_PERMISSIONS.dashboard),
+      byEmploymentType: !SECTION_PERMISSIONS.byEmploymentType || !permissions?.length || permissions.includes(SECTION_PERMISSIONS.byEmploymentType),
+      byDepartment: !SECTION_PERMISSIONS.byDepartment || !permissions?.length || permissions.includes(SECTION_PERMISSIONS.byDepartment),
+      bySector: !SECTION_PERMISSIONS.bySector || !permissions?.length || permissions.includes(SECTION_PERMISSIONS.bySector),
+      recentEvents: !SECTION_PERMISSIONS.recentEvents || !permissions?.length || permissions.includes(SECTION_PERMISSIONS.recentEvents),
+    };
+  }, [permissions]);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -197,47 +220,50 @@ const HrDashboardPage = () => {
       </Grid>
 
       <Grid container spacing={2}>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                {t('hr.hrDashboard.sections.byEmploymentType')}
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <DistributionBar
-                rows={data.by_employment_type}
-                total={data.total_employees}
-                resolveLabel={(type) => t(`hr.hrDashboard.employmentType.${type}`) ?? type}
-                t={t}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                {t('hr.hrDashboard.sections.byDepartment')}
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <DistributionBar rows={data.by_department} total={data.total_employees} t={t} />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                {t('hr.hrDashboard.sections.bySector')}
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <DistributionBar rows={data.by_sector} total={data.total_employees} t={t} />
-            </CardContent>
-          </Card>
-        </Grid>
-
+        {visibleSections.byEmploymentType && (
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                  {t('hr.hrDashboard.sections.byEmploymentType')}
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <DistributionBar
+                  rows={data.by_employment_type}
+                  total={data.total_employees}
+                  resolveLabel={(type) => t(`hr.hrDashboard.employmentType.${type}`) ?? type}
+                  t={t}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {visibleSections.byDepartment && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                  {t('hr.hrDashboard.sections.byDepartment')}
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <DistributionBar rows={data.by_department} total={data.total_employees} t={t} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {visibleSections.bySector && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                  {t('hr.hrDashboard.sections.bySector')}
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <DistributionBar rows={data.by_sector} total={data.total_employees} t={t} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <Card>
             <CardContent>
@@ -248,13 +274,15 @@ const HrDashboardPage = () => {
                     {t('hr.hrDashboard.sections.recentEvents')}
                   </Typography>
                 </Stack>
-                <Button
-                  size="small"
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={() => navigate('/app/hr/timeline')}
-                >
-                  {t('hr.hrDashboard.sections.viewAll')}
-                </Button>
+                {visibleSections.recentEvents && (
+                  <Button
+                    size="small"
+                    endIcon={<ArrowForwardIcon />}
+                    onClick={() => navigate('/app/hr/timeline')}
+                  >
+                    {t('hr.hrDashboard.sections.viewAll')}
+                  </Button>
+                )}
               </Stack>
               <Divider sx={{ mb: 1 }} />
               {data.recent_events.length === 0 ? (

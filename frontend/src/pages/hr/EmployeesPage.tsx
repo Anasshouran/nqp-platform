@@ -11,12 +11,13 @@ import Avatar from '@mui/material/Avatar';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import HistoryIcon from '@mui/icons-material/History';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import StatusChip from '../../components/ui/StatusChip';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
+import { useAuth } from '../../hooks/useAuth';
 import { getEmployees } from '../../api/endpoints/hr';
 import type { Employee } from '../../types/hr';
 import { employmentStatusTone } from '../../utils/hrLabels';
@@ -25,6 +26,9 @@ import { formatDate } from '../../utils/formatters';
 const EmployeesPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_employee:view');
 
   const EMPLOYMENT_TYPE_OPTIONS_LOCAL = useMemo(
     () => [
@@ -157,6 +161,16 @@ const EmployeesPage = () => {
     [setFilter, t, EMPLOYMENT_TYPE_OPTIONS_LOCAL, EMPLOYMENT_STATUS_OPTIONS_LOCAL],
   );
 
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <PageHeader
@@ -180,6 +194,7 @@ const EmployeesPage = () => {
         count={count}
         page={page}
         rowsPerPage={rowsPerPage}
+        pageSizeOptions={pageSizeOptions}
         loading={loading}
         error={error}
         searchInput={searchInput}
@@ -191,8 +206,6 @@ const EmployeesPage = () => {
         onSortChange={setSorting}
         onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
-        pageSizeOptions={pageSizeOptions}
-        onRefresh={refresh}
         onExport={() =>
           exportAll({
             filename: 'hr_employees.csv',

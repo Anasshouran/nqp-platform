@@ -49,6 +49,8 @@ const TrainingDetailPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_training:view');
   const isHr = ['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
   const [enrollment, setEnrollment] = useState<TrainingEnrollment | null>(null);
@@ -106,6 +108,16 @@ const TrainingDetailPage = () => {
   const canSubmit = ['DRAFT', 'RETURNED'].includes(enrollment.status);
   const canDecide = ['REQUESTED', 'RETURNED'].includes(enrollment.status) && isHr;
   const canComplete = ['APPROVED', 'IN_PROGRESS'].includes(enrollment.status) && isHr;
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

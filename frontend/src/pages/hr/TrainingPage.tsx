@@ -17,7 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { FormTextField } from '../../components/ui';
 import StatusChip from '../../components/ui/StatusChip';
 import {
@@ -50,6 +50,8 @@ const TrainingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_training:view');
   const isEmployee = !['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
   const [plans, setPlans] = useState<TrainingPlan[]>([]);
@@ -112,6 +114,16 @@ const TrainingPage = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
       </Box>
     );
   }
