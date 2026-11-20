@@ -56,7 +56,16 @@ const onRefreshed = (token: string) => {
 };
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // The finance envelope can report an authorization/business failure with
+    // HTTP 200 ({ status: 'error', message }). Without this check callers see
+    // `data` as success (e.g. preview renders fmtMoney(undefined) = 0).
+    if (response?.data?.status === 'error') {
+      const message = response.data?.message ?? 'خطأ غير معروف من الخادم.';
+      return Promise.reject(new Error(message));
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const config = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
 

@@ -261,8 +261,11 @@ def create_sample_invoice(sample, user, request=None, currency='SDG', due_days=1
     )
     if total == 0:
         issue_invoice(invoice, user, due_days=due_days, request=request)
-        confirm_payment(invoice, user, PaymentMethod.CASH, amount=Decimal('0'),
-                        notes='صفر الرسوم (إعفاء تلقائي)', request=request)
+        exempt_invoice(
+            invoice,
+            reason='صفر الرسوم — إعفاء تلقائي',
+            actor=user, request=request,
+        )
         return invoice, True
     issue_invoice(invoice, user, due_days=due_days, request=request)
     return invoice, False
@@ -550,6 +553,48 @@ def confirm_payment(invoice, user, method, amount=None, gateway_ref='',
               invoice=locked, field_name='status', old_value=old, new_value=locked.status,
               event='confirm_payment', method=method_value, receipt=receipt_number, amount=str(amount))
         return locked, payment, receipt
+
+
+def exempt_invoice(
+    invoice, *,
+    reason: str,
+    actor=None,
+    request=None,
+) -> Invoice:
+    """Mark an invoice as fully exempt — no payment, no PaymentAttempt.
+
+    Fail-closed: refuses final states and any invoice that already has a
+    successful payment. `balance_due` is deliberately not the guard: zero
+    balance with no payments is exactly the zero-total case (nothing to
+    collect), while zero balance with payments means it is already paid.
+
+    Uses PAID (no EXEMPT status exists); the FinancialAuditLog row with
+    action=EXEMPT distinguishes exemption from real payment.
+    """
+    if not reason or not reason.strip():
+        raise FinanceServiceError('سبب الإعفاء مطلوب.')
+    with transaction.atomic():
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
+        if locked.status in _FINAL:
+            raise FinanceServiceError(
+                f'لا يمكن إعفاء فاتورة في الحالة {locked.status}.'
+            )
+        has_payments = locked.payments.exclude(
+            gateway_status=GatewayStatus.FAILED
+        ).exists()
+        if has_payments:
+            raise FinanceServiceError('لا يمكن إعفاء فاتورة لها تحصيلات سابقة.')
+        old_status = locked.status
+        locked.status = InvoiceStatus.PAID
+        locked.save(update_fields=['status', 'updated_at'])
+        audit(
+            request or actor, AuditAction.EXEMPT,
+            resource_type='invoice', resource_id=str(locked.pk),
+            invoice=locked, field_name='status',
+            old_value=old_status, new_value=InvoiceStatus.PAID,
+            reason=reason.strip(),
+        )
+        return locked
 
 
 def reconcile_invoice(invoice, user, collector_id=None, request=None):
