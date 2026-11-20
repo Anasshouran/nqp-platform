@@ -33,6 +33,8 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PersonIcon from '@mui/icons-material/Person';
 import LocalAirportIcon from '@mui/icons-material/LocalAirport';
+import BusinessIcon from '@mui/icons-material/Business';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
@@ -84,6 +86,8 @@ const quickModules = [
   { label: 'لوحة المفتش', desc: 'لوحة عمل المفتش الصحي', path: '/app/inspector-dashboard', icon: <PersonIcon />, accent: accentTokens.sea },
   { label: 'مدير المطار', desc: 'إدارة عمليات المطار والصحة', path: '/app/airport-director', icon: <LocalAirportIcon />, accent: accentTokens.sea },
   { label: 'مدير الأغذية', desc: 'إدارة عمليات سلامة الأغذية', path: '/app/food-director', icon: <LocalDiningIcon />, accent: accentTokens.sea },
+  { label: 'الموارد البشرية', desc: 'إدارة الموظفين والحضور والإجازات', path: '/app/hr', icon: <PeopleIcon />, accent: accentTokens.brand },
+  { label: 'التمويل الوطني', desc: 'إدارة الفواتير والتحصيل والرسوم', path: '/app/finance', icon: <AccountBalanceIcon />, accent: accentTokens.air },
 ];
 
 const quickLinks = [
