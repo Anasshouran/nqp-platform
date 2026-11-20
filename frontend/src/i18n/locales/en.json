@@ -7212,6 +7212,10 @@
       "loading": "Updating…",
       "updated": "Updated",
       "errorLoad": "Failed to load national dashboard",
+      "noData": {
+        "title": "No data available",
+        "description": "National Food Director dashboard data is not available at the moment. Please check the server connection or try again later."
+      },
       "kpis": {
         "shipments": "Shipments",
         "inspections": "Inspections Completed",

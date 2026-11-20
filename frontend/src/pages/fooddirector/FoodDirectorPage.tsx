@@ -35,6 +35,7 @@ import PublicIcon from '@mui/icons-material/Public';
 import { getFoodDirectorDashboard } from '../../api/endpoints/food';
 import type { FoodDirectorDashboard } from '../../types/food';
 import { notifyError } from '../../utils/toast';
+import { EmptyState } from '../../components/uikit';
 
 const DOT_META = {
   green: { emoji: '🟢', color: 'success.main' },
@@ -131,6 +132,13 @@ const FoodDirectorPage = () => {
           />
         </Stack>
       </Stack>
+
+      {!dash && !loadingData && (
+        <EmptyState
+          title={t('food.foodDirector.noData.title')}
+          description={t('food.foodDirector.noData.description')}
+        />
+      )}
 
       {dash && (
         <>
