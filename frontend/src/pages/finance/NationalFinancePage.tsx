@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -81,6 +81,7 @@ import PrintReceiptDialog from '../../components/finance/PrintReceiptDialog';
 import ReconciliationView from '../../components/finance/ReconciliationView';
 import ReportsView from '../../components/finance/ReportsView';
 import AuditLogsView from '../../components/finance/AuditLogsView';
+import { DataTable, type DataTableColumn } from '../../components/uikit';
 import type { AxiosError } from 'axios';
 import { notifySuccess } from '../../utils/toast';
 import { useAuth } from '../../hooks/useAuth';
@@ -147,6 +148,26 @@ export default function NationalFinancePage(): React.JSX.Element {
   const [arrearsTotal, setArrearsTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
 
+  // F3 — server-side pagination: one state set per paginated section.
+  const [invoicesPage, setInvoicesPage] = useState(0);
+  const [invoicesPageSize, setInvoicesPageSize] = useState(25);
+  const [invoicesCount, setInvoicesCount] = useState(0);
+  const [paymentsPage, setPaymentsPage] = useState(0);
+  const [paymentsPageSize, setPaymentsPageSize] = useState(25);
+  const [paymentsCount, setPaymentsCount] = useState(0);
+  const [receiptsPage, setReceiptsPage] = useState(0);
+  const [receiptsPageSize, setReceiptsPageSize] = useState(25);
+  const [receiptsCount, setReceiptsCount] = useState(0);
+  const [feesPage, setFeesPage] = useState(0);
+  const [feesPageSize, setFeesPageSize] = useState(25);
+  const [feesCount, setFeesCount] = useState(0);
+
+  // F2 — a stale response must never overwrite a newer filter/page result.
+  const invoicesRunId = useRef(0);
+  const paymentsRunId = useRef(0);
+  const receiptsRunId = useRef(0);
+  const feesRunId = useRef(0);
+
   const [invoiceDetail, setInvoiceDetail] = useState<FinanceInvoice | null>(null);
   const [payTarget, setPayTarget] = useState<FinanceInvoice | null>(null);
   const [payForm, setPayForm] = useState({ method: 'CASH', notes: '', gateway_ref: '', amount: '' });
@@ -156,6 +177,17 @@ export default function NationalFinancePage(): React.JSX.Element {
   const [feeDialog, setFeeDialog] = useState<{ mode: 'create' | 'edit'; fee: Partial<FinanceFee> } | null>(null);
   const [feeForm, setFeeForm] = useState<Partial<FinanceFee>>({});
   const [printTarget, setPrintTarget] = useState<{ receipt: FinanceReceipt; invoice?: FinanceInvoice; payment?: FinancePayment } | null>(null);
+
+  // F1 — every payment dialog opens from a clean form.
+  const openPay = useCallback((inv: FinanceInvoice) => {
+    setPayForm({ method: 'CASH', notes: '', gateway_ref: '', amount: '' });
+    setPayTarget(inv);
+  }, []);
+
+  const closePay = useCallback(() => {
+    setPayTarget(null);
+    setPayForm({ method: 'CASH', notes: '', gateway_ref: '', amount: '' });
+  }, []);
 
   const notifyError = useCallback((e: AxiosError<{ message?: string }>) => {
     const msg = (e.response?.data as { message?: string } | undefined)?.message;
@@ -169,28 +201,60 @@ export default function NationalFinancePage(): React.JSX.Element {
   }, []);
 
   const loadInvoices = useCallback(async (f: Filters) => {
-    const params: Record<string, unknown> = { page_size: 100 };
+    const myRun = ++invoicesRunId.current;
+    const params: Record<string, unknown> = { page: invoicesPage + 1, page_size: invoicesPageSize };
     if (f.status) params.status = f.status;
     if (f.sector) params.sector = f.sector;
     if (f.service_type) params.service_type = f.service_type;
-    const res = await getFinanceInvoices(params);
-    setInvoices(res.data.data.results ?? []);
-  }, []);
+    try {
+      const res = await getFinanceInvoices(params);
+      if (myRun !== invoicesRunId.current) return;
+      setInvoices(res.data.data.results ?? []);
+      setInvoicesCount(res.data.data.count ?? 0);
+    } catch (e) {
+      if (myRun !== invoicesRunId.current) return;
+      throw e; // refresh() reports the error once
+    }
+  }, [invoicesPage, invoicesPageSize]);
 
   const loadPayments = useCallback(async () => {
-    const res = await getFinancePayments({ page_size: 100 });
-    setPayments(res.data.data.results ?? []);
-  }, []);
+    const myRun = ++paymentsRunId.current;
+    try {
+      const res = await getFinancePayments({ page: paymentsPage + 1, page_size: paymentsPageSize });
+      if (myRun !== paymentsRunId.current) return;
+      setPayments(res.data.data.results ?? []);
+      setPaymentsCount(res.data.data.count ?? 0);
+    } catch (e) {
+      if (myRun !== paymentsRunId.current) return;
+      throw e;
+    }
+  }, [paymentsPage, paymentsPageSize]);
 
   const loadReceipts = useCallback(async () => {
-    const res = await getFinanceReceipts({ page_size: 100 });
-    setReceipts(res.data.data.results ?? []);
-  }, []);
+    const myRun = ++receiptsRunId.current;
+    try {
+      const res = await getFinanceReceipts({ page: receiptsPage + 1, page_size: receiptsPageSize });
+      if (myRun !== receiptsRunId.current) return;
+      setReceipts(res.data.data.results ?? []);
+      setReceiptsCount(res.data.data.count ?? 0);
+    } catch (e) {
+      if (myRun !== receiptsRunId.current) return;
+      throw e;
+    }
+  }, [receiptsPage, receiptsPageSize]);
 
   const loadFees = useCallback(async () => {
-    const res = await getFinanceFees({ page_size: 200 });
-    setFees(res.data.data.results ?? []);
-  }, []);
+    const myRun = ++feesRunId.current;
+    try {
+      const res = await getFinanceFees({ page: feesPage + 1, page_size: feesPageSize });
+      if (myRun !== feesRunId.current) return;
+      setFees(res.data.data.results ?? []);
+      setFeesCount(res.data.data.count ?? 0);
+    } catch (e) {
+      if (myRun !== feesRunId.current) return;
+      throw e;
+    }
+  }, [feesPage, feesPageSize]);
 
   const loadReports = useCallback(async () => {
     const a = await getFinanceArrears();
@@ -213,10 +277,6 @@ export default function NationalFinancePage(): React.JSX.Element {
   useEffect(() => {
     refresh();
   }, [refresh]);
-
-  useEffect(() => {
-    loadInvoices(filters);
-  }, [filters, loadInvoices]);
 
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem('refresh_token');
@@ -245,8 +305,7 @@ export default function NationalFinancePage(): React.JSX.Element {
       const payload = { ...payForm, amount: amountNum };
       const res = await payFinanceInvoice(payTarget.id, payload);
       setInvoiceDetail(null);
-      setPayTarget(null);
-      setPayForm({ method: 'CASH', notes: '', gateway_ref: '', amount: '' });
+      closePay();
       await refresh();
       const r = res.data.data.receipts?.[0];
       if (r) {
@@ -617,7 +676,19 @@ export default function NationalFinancePage(): React.JSX.Element {
                   ))}
                 </TextField>
               </Stack>
-              <InvoicesTable invoices={invoices} onView={setInvoiceDetail} onPay={setPayTarget} onCancel={setCancelTarget} onRefund={setRefundTarget} />
+              <InvoicesTable
+                invoices={invoices}
+                onView={setInvoiceDetail}
+                onPay={openPay}
+                onCancel={setCancelTarget}
+                onRefund={setRefundTarget}
+                count={invoicesCount}
+                page={invoicesPage}
+                pageSize={invoicesPageSize}
+                loading={loading}
+                onPageChange={setInvoicesPage}
+                onPageSizeChange={(n) => { setInvoicesPageSize(n); setInvoicesPage(0); }}
+              />
             </>
           )}
 
@@ -629,7 +700,15 @@ export default function NationalFinancePage(): React.JSX.Element {
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.collections.payments')}</Typography>
-                      <PaymentsTable payments={payments} />
+                      <PaymentsTable
+                        payments={payments}
+                        count={paymentsCount}
+                        page={paymentsPage}
+                        pageSize={paymentsPageSize}
+                        loading={loading}
+                        onPageChange={setPaymentsPage}
+                        onPageSizeChange={(n) => { setPaymentsPageSize(n); setPaymentsPage(0); }}
+                      />
                     </CardContent>
                   </Card>
                 </Grid>
@@ -637,7 +716,16 @@ export default function NationalFinancePage(): React.JSX.Element {
                   <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.collections.receipts')}</Typography>
-                      <ReceiptsTable receipts={receipts} onPrint={(r) => setPrintTarget({ receipt: r })} />
+                      <ReceiptsTable
+                        receipts={receipts}
+                        onPrint={(r) => setPrintTarget({ receipt: r })}
+                        count={receiptsCount}
+                        page={receiptsPage}
+                        pageSize={receiptsPageSize}
+                        loading={loading}
+                        onPageChange={setReceiptsPage}
+                        onPageSizeChange={(n) => { setReceiptsPageSize(n); setReceiptsPage(0); }}
+                      />
                     </CardContent>
                   </Card>
                 </Grid>
@@ -714,6 +802,12 @@ export default function NationalFinancePage(): React.JSX.Element {
                 fees={fees}
                 onEdit={(fee) => handleFeeDialogOpen('edit', fee)}
                 onDeactivate={handleFeeDeactivate}
+                count={feesCount}
+                page={feesPage}
+                pageSize={feesPageSize}
+                loading={loading}
+                onPageChange={setFeesPage}
+                onPageSizeChange={(n) => { setFeesPageSize(n); setFeesPage(0); }}
               />
             </>
           )}
@@ -726,11 +820,11 @@ export default function NationalFinancePage(): React.JSX.Element {
 
       {/* حوار الفاتورة */}
       <Dialog open={Boolean(invoiceDetail)} onClose={() => setInvoiceDetail(null)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        {invoiceDetail && <InvoiceDetailDialog invoice={invoiceDetail} onClose={() => setInvoiceDetail(null)} onPay={setPayTarget} onPrint={(r) => setPrintTarget({ receipt: r, invoice: invoiceDetail, payment: invoiceDetail.payments?.[0] })} />}
+        {invoiceDetail && <InvoiceDetailDialog invoice={invoiceDetail} onClose={() => setInvoiceDetail(null)} onPay={openPay} onPrint={(r) => setPrintTarget({ receipt: r, invoice: invoiceDetail, payment: invoiceDetail.payments?.[0] })} />}
       </Dialog>
 
       {/* حوار الدفع */}
-      <Dialog open={Boolean(payTarget)} onClose={() => setPayTarget(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={Boolean(payTarget)} onClose={closePay} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>{t('finance.dialogs.collectInvoice', { number: payTarget?.invoice_number })}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
@@ -767,7 +861,7 @@ export default function NationalFinancePage(): React.JSX.Element {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setPayTarget(null)}>{t('finance.actions.cancel')}</Button>
+          <Button onClick={closePay}>{t('finance.actions.cancel')}</Button>
           <Button variant="contained" color="success" startIcon={<PaidIcon />} onClick={handlePay}>{t('finance.actions.confirmCollection')}</Button>
         </DialogActions>
       </Dialog>
@@ -861,72 +955,67 @@ function ProcessNull(t: FinanceTranslate): React.JSX.Element {
 
 /* ============================ جداول و مكوّنات ============================ */
 
-function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund }: {
+function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund, count, page, pageSize, loading, onPageChange, onPageSizeChange }: {
   invoices: FinanceInvoice[];
   onView: (i: FinanceInvoice) => void;
   onPay: (i: FinanceInvoice) => void;
   onCancel: (i: FinanceInvoice) => void;
   onRefund: (i: FinanceInvoice) => void;
+  count: number;
+  page: number;
+  pageSize: number;
+  loading?: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const columns = useMemo<DataTableColumn<FinanceInvoice>[]>(() => [
+    { key: 'invoice_number', label: t('finance.columns.invoice'), align: 'left', render: (r) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{r.invoice_number}</Typography> },
+    { key: 'request_ref', label: t('finance.columns.order'), align: 'left', render: (r) => r.request_ref || '—' },
+    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (r) => serviceLabel(r.service_type) },
+    { key: 'net_amount', label: t('finance.columns.net'), render: (r) => `${fmtMoney(r.net_amount)} ${r.currency}` },
+    { key: 'paid_amount', label: t('finance.columns.paidRemaining'), render: (r) => (
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{fmtMoney(r.paid_amount)}</Typography>
+        {Number(r.balance_due) > 0 && (
+          <Typography variant="caption" color="error.main">{t('finance.arrears.remaining', { amount: fmtMoney(r.balance_due) })}</Typography>
+        )}
+      </Box>
+    ) },
+    { key: 'status', label: t('finance.columns.status'), align: 'left', render: (r) => statusChipLocal(r.status) },
+    { key: 'due_date', label: t('finance.columns.dueDate'), align: 'left', render: (r) => (r.due_date ? new Date(r.due_date).toLocaleDateString('ar-SD') : '—') },
+  ], [t]);
+
   return (
-    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('finance.columns.invoice')}</TableCell>
-            <TableCell>{t('finance.columns.order')}</TableCell>
-            <TableCell>{t('finance.columns.service')}</TableCell>
-            <TableCell>{t('finance.columns.net')}</TableCell>
-            <TableCell>{t('finance.columns.paidRemaining')}</TableCell>
-            <TableCell>{t('finance.columns.status')}</TableCell>
-            <TableCell>{t('finance.columns.dueDate')}</TableCell>
-            <TableCell align="center">{t('finance.columns.actions')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {invoices.map((inv) => (
-            <TableRow key={inv.id} hover>
-              <TableCell sx={{ fontWeight: 700 }}>{inv.invoice_number}</TableCell>
-              <TableCell>{inv.request_ref || '—'}</TableCell>
-              <TableCell>{serviceLabel(inv.service_type)}</TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(inv.net_amount)} {inv.currency}</TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{fmtMoney(inv.paid_amount)}</Typography>
-                  {Number(inv.balance_due) > 0 && (
-                    <Typography variant="caption" color="error.main">{t('finance.arrears.remaining', { amount: fmtMoney(inv.balance_due) })}</Typography>
-                  )}
-                </Box>
-              </TableCell>
-              <TableCell>{statusChipLocal(inv.status)}</TableCell>
-              <TableCell>{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ar-SD') : '—'}</TableCell>
-              <TableCell align="center">
-                <Stack direction="row" spacing={0.5} justifyContent="center" useFlexGap flexWrap="wrap">
-                  <Button size="small" onClick={() => onView(inv)}>{t('finance.actions.details')}</Button>
-                  {(inv.status === 'PENDING_PAYMENT' || inv.status === 'OVERDUE' || inv.status === 'ISSUED' || inv.status === 'PARTIAL') && (
-                    <Button size="small" variant="contained" color="success" startIcon={<PaidIcon />} onClick={() => onPay(inv)}>
-                      {inv.status === 'PARTIAL' ? t('finance.payments.extraPayment') : t('finance.payments.collect')}
-                    </Button>
-                  )}
-                  {(inv.status === 'PAID' || inv.status === 'PARTIAL') && (
-                    <Button size="small" variant="outlined" color="error" onClick={() => onRefund(inv)}>{t('finance.actions.refund')}</Button>
-                  )}
-                  {inv.status !== 'PAID' && inv.status !== 'RECONCILED' && inv.status !== 'CANCELLED' && inv.status !== 'REFUNDED' && inv.status !== 'PARTIAL' && (
-                    <Button size="small" color="error" onClick={() => onCancel(inv)}>{t('finance.actions.cancel')}</Button>
-                  )}
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-          {invoices.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={8}>{ProcessNull(t)}</TableCell>
-            </TableRow>
+    <DataTable<FinanceInvoice>
+      columns={columns}
+      rows={invoices}
+      rowKey={(r) => r.id}
+      count={count}
+      page={page + 1}
+      rowsPerPage={pageSize}
+      loading={loading}
+      onPageChange={(p) => onPageChange(p - 1)}
+      onRowsPerPageChange={onPageSizeChange}
+      actionsLabel={t('finance.columns.actions')}
+      emptyTitle={t('finance.empty.noDataYet')}
+      actions={(inv) => (
+        <Stack direction="row" spacing={0.5} justifyContent="center" useFlexGap flexWrap="wrap">
+          <Button size="small" onClick={() => onView(inv)}>{t('finance.actions.details')}</Button>
+          {(inv.status === 'PENDING_PAYMENT' || inv.status === 'OVERDUE' || inv.status === 'ISSUED' || inv.status === 'PARTIAL') && (
+            <Button size="small" variant="contained" color="success" startIcon={<PaidIcon />} onClick={() => onPay(inv)}>
+              {inv.status === 'PARTIAL' ? t('finance.payments.extraPayment') : t('finance.payments.collect')}
+            </Button>
           )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          {(inv.status === 'PAID' || inv.status === 'PARTIAL') && (
+            <Button size="small" variant="outlined" color="error" onClick={() => onRefund(inv)}>{t('finance.actions.refund')}</Button>
+          )}
+          {inv.status !== 'PAID' && inv.status !== 'RECONCILED' && inv.status !== 'CANCELLED' && inv.status !== 'REFUNDED' && inv.status !== 'PARTIAL' && (
+            <Button size="small" color="error" onClick={() => onCancel(inv)}>{t('finance.actions.cancel')}</Button>
+          )}
+        </Stack>
+      )}
+    />
   );
 }
 
@@ -941,96 +1030,98 @@ function statusChipLocal(status: string): React.JSX.Element {
   );
 }
 
-function PaymentsTable({ payments }: { payments: FinancePayment[] }): React.JSX.Element {
+function PaymentsTable({ payments, count, page = 0, pageSize = 25, loading = false, onPageChange, onPageSizeChange, hidePagination = false }: {
+  payments: FinancePayment[];
+  count?: number;
+  page?: number;
+  pageSize?: number;
+  loading?: boolean;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  hidePagination?: boolean;
+}): React.JSX.Element {
   const { t } = useTranslation();
+  const columns = useMemo<DataTableColumn<FinancePayment>[]>(() => [
+    { key: 'invoice', label: t('finance.columns.invoice'), align: 'left', render: (p) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{shortId(p.invoice)}</Typography> },
+    { key: 'method', label: t('finance.columns.method'), align: 'left', render: (p) => methodLabel(p.method) },
+    { key: 'amount', label: t('finance.columns.amount'), render: (p) => `${fmtMoney(p.amount)} ${p.currency}` },
+    { key: 'gateway_status', label: t('finance.columns.status'), align: 'left', render: (p) => (
+      <Chip size="small" color={p.gateway_status === 'CONFIRMED' ? 'success' : 'warning'} label={p.gateway_status === 'CONFIRMED' ? t('finance.payments.confirmed') : p.gateway_status} variant="outlined" />
+    ) },
+    { key: 'gateway_ref', label: t('finance.columns.reference'), align: 'left', render: (p) => (p.gateway_ref ? (
+      <Tooltip title={`${p.gateway_ref}${p.notes ? ` — ${p.notes}` : ''}`}>
+        <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{p.gateway_ref}</Typography>
+      </Tooltip>
+    ) : (
+      <Typography variant="caption" color="text.secondary">—</Typography>
+    )) },
+    { key: 'collected_at', label: t('finance.columns.time'), align: 'left', render: (p) => new Date(p.collected_at).toLocaleString('ar-SD') },
+  ], [t]);
+
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('finance.columns.invoice')}</TableCell>
-            <TableCell>{t('finance.columns.method')}</TableCell>
-            <TableCell>{t('finance.columns.amount')}</TableCell>
-            <TableCell>{t('finance.columns.status')}</TableCell>
-            <TableCell>{t('finance.columns.reference')}</TableCell>
-            <TableCell>{t('finance.columns.time')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {payments.map((p) => (
-            <TableRow key={p.id}>
-              <TableCell sx={{ fontWeight: 700 }}>{shortId(p.invoice)}</TableCell>
-              <TableCell>{methodLabel(p.method)}</TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(p.amount)} {p.currency}</TableCell>
-              <TableCell>
-                <Chip size="small" color={p.gateway_status === 'CONFIRMED' ? 'success' : 'warning'} label={p.gateway_status === 'CONFIRMED' ? t('finance.payments.confirmed') : p.gateway_status} variant="outlined" />
-              </TableCell>
-              <TableCell>
-                {p.gateway_ref ? (
-                  <Tooltip title={`${p.gateway_ref}${p.notes ? ` — ${p.notes}` : ''}`}>
-                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{p.gateway_ref}</Typography>
-                  </Tooltip>
-                ) : (
-                  <Typography variant="caption" color="text.secondary">—</Typography>
-                )}
-              </TableCell>
-              <TableCell>{new Date(p.collected_at).toLocaleString('ar-SD')}</TableCell>
-            </TableRow>
-          ))}
-          {payments.length === 0 && (
-            <TableRow><TableCell colSpan={6}>{ProcessNull(t)}</TableCell></TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <DataTable<FinancePayment>
+      columns={columns}
+      rows={payments}
+      rowKey={(p) => p.id}
+      count={count ?? payments.length}
+      page={page + 1}
+      rowsPerPage={pageSize}
+      loading={loading}
+      hidePagination={hidePagination}
+      onPageChange={(p) => onPageChange?.(p - 1)}
+      onRowsPerPageChange={onPageSizeChange}
+      emptyTitle={t('finance.empty.noDataYet')}
+    />
   );
 }
 
-function ReceiptsTable({ receipts, onPrint }: { receipts: FinanceReceipt[]; onPrint?: (r: FinanceReceipt) => void }): React.JSX.Element {
+function ReceiptsTable({ receipts, onPrint, count, page = 0, pageSize = 25, loading = false, onPageChange, onPageSizeChange, hidePagination = false }: {
+  receipts: FinanceReceipt[];
+  onPrint?: (r: FinanceReceipt) => void;
+  count?: number;
+  page?: number;
+  pageSize?: number;
+  loading?: boolean;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  hidePagination?: boolean;
+}): React.JSX.Element {
   const { t } = useTranslation();
+  const columns = useMemo<DataTableColumn<FinanceReceipt>[]>(() => [
+    { key: 'receipt_number', label: t('finance.columns.receiptNumber'), align: 'left', render: (r) => (
+      <Stack direction="row" alignItems="center" spacing={0.75}>
+        <ReceiptIcon fontSize="small" color="action" />
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{r.receipt_number}</Typography>
+      </Stack>
+    ) },
+    { key: 'amount', label: t('finance.columns.amount'), render: (r) => `${fmtMoney(r.amount)} ${r.currency}` },
+    { key: 'issued_at', label: t('finance.columns.issuedAt'), align: 'left', render: (r) => new Date(r.issued_at).toLocaleString('ar-SD') },
+    { key: 'verification_code', label: t('finance.columns.verificationCode'), align: 'left', render: (r) => (
+      <Tooltip title={r.verification_code}>
+        <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{shortId(r.verification_code)}</Typography>
+      </Tooltip>
+    ) },
+  ], [t]);
+
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('finance.columns.receiptNumber')}</TableCell>
-            <TableCell>{t('finance.columns.amount')}</TableCell>
-            <TableCell>{t('finance.columns.issuedAt')}</TableCell>
-            <TableCell>{t('finance.columns.verificationCode')}</TableCell>
-            {onPrint && <TableCell align="center"></TableCell>}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {receipts.map((r) => (
-            <TableRow key={r.id}>
-              <TableCell sx={{ fontWeight: 700 }}>
-                <Stack direction="row" alignItems="center" spacing={0.75}>
-                  <ReceiptIcon fontSize="small" color="action" />
-                  {r.receipt_number}
-                </Stack>
-              </TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(r.amount)} {r.currency}</TableCell>
-              <TableCell>{new Date(r.issued_at).toLocaleString('ar-SD')}</TableCell>
-              <TableCell>
-                <Tooltip title={r.verification_code}>
-                  <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{shortId(r.verification_code)}</Typography>
-                </Tooltip>
-              </TableCell>
-              {onPrint && (
-                <TableCell align="center">
-                  <IconButton size="small" aria-label={t('finance.actions.printReceipt')} onClick={() => onPrint(r)}>
-                    <PrintIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-          {receipts.length === 0 && (
-            <TableRow><TableCell colSpan={onPrint ? 5 : 4}>{ProcessNull(t)}</TableCell></TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <DataTable<FinanceReceipt>
+      columns={columns}
+      rows={receipts}
+      rowKey={(r) => r.id}
+      count={count ?? receipts.length}
+      page={page + 1}
+      rowsPerPage={pageSize}
+      loading={loading}
+      hidePagination={hidePagination}
+      onPageChange={(p) => onPageChange?.(p - 1)}
+      onRowsPerPageChange={onPageSizeChange}
+      emptyTitle={t('finance.empty.noDataYet')}
+      actions={onPrint ? (r) => (
+        <IconButton size="small" aria-label={t('finance.actions.printReceipt')} onClick={() => onPrint(r)}>
+          <PrintIcon fontSize="small" />
+        </IconButton>
+      ) : undefined}
+    />
   );
 }
 
@@ -1075,61 +1166,57 @@ function ArrearsTable({ items, onView }: { items: OverdueInvoice[]; onView: (id:
   );
 }
 
-function FeesTable({ fees, onEdit, onDeactivate }: {
+function FeesTable({ fees, onEdit, onDeactivate, count, page, pageSize, loading, onPageChange, onPageSizeChange }: {
   fees: FinanceFee[];
   onEdit: (fee: FinanceFee) => void;
   onDeactivate: (id: string) => void;
+  count: number;
+  page: number;
+  pageSize: number;
+  loading?: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const columns = useMemo<DataTableColumn<FinanceFee>[]>(() => [
+    { key: 'code', label: t('finance.columns.code'), align: 'left', render: (f) => <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 12 }}>{f.code || '—'}</Typography> },
+    { key: 'name_ar', label: t('finance.columns.name'), align: 'left', render: (f) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{f.name_ar}</Typography> },
+    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (f) => serviceLabel(f.service_type) },
+    { key: 'amount_sdg', label: 'SDG', render: (f) => (f.amount_sdg != null ? fmtMoney(f.amount_sdg) : '—') },
+    { key: 'amount_usd', label: 'USD', render: (f) => (f.amount_usd != null ? fmtMoney(f.amount_usd) : '—') },
+    { key: 'year', label: t('finance.columns.year'), render: (f) => f.year },
+    { key: 'legal_reference', label: t('finance.columns.reference'), align: 'left', render: (f) => (
+      <Tooltip title={f.legal_reference || '—'}>
+        <Typography variant="caption" noWrap sx={{ display: 'block', maxWidth: 140 }}>{f.legal_reference || '—'}</Typography>
+      </Tooltip>
+    ) },
+    { key: 'is_active', label: t('finance.columns.status'), align: 'left', render: (f) => (
+      <Chip size="small" color={f.is_active ? 'success' : 'default'} label={f.is_active ? t('finance.status.active') : t('finance.status.inactive')} variant={f.is_active ? 'filled' : 'outlined'} />
+    ) },
+  ], [t]);
+
   return (
-    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('finance.columns.code')}</TableCell>
-            <TableCell>{t('finance.columns.name')}</TableCell>
-            <TableCell>{t('finance.columns.service')}</TableCell>
-            <TableCell>SDG</TableCell>
-            <TableCell>USD</TableCell>
-            <TableCell>{t('finance.columns.year')}</TableCell>
-            <TableCell>{t('finance.columns.reference')}</TableCell>
-            <TableCell>{t('finance.columns.status')}</TableCell>
-            <TableCell align="center">{t('finance.columns.actions')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {fees.map((f) => (
-            <TableRow key={f.id} hover>
-              <TableCell sx={{ fontFamily: 'monospace', fontSize: 12 }}>{f.code || '—'}</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>{f.name_ar}</TableCell>
-              <TableCell>{serviceLabel(f.service_type)}</TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{f.amount_sdg != null ? fmtMoney(f.amount_sdg) : '—'}</TableCell>
-              <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{f.amount_usd != null ? fmtMoney(f.amount_usd) : '—'}</TableCell>
-              <TableCell>{f.year}</TableCell>
-              <TableCell>
-                <Tooltip title={f.legal_reference || '—'}>
-                  <Typography variant="caption" noWrap sx={{ display: 'block', maxWidth: 140 }}>{f.legal_reference || '—'}</Typography>
-                </Tooltip>
-              </TableCell>
-              <TableCell>
-                <Chip size="small" color={f.is_active ? 'success' : 'default'} label={f.is_active ? t('finance.status.active') : t('finance.status.inactive')} variant={f.is_active ? 'filled' : 'outlined'} />
-              </TableCell>
-              <TableCell align="center">
-                <Stack direction="row" spacing={0.5} justifyContent="center">
-                  <Button size="small" onClick={() => onEdit(f)}>{t('finance.actions.edit')}</Button>
-                  {f.is_active && (
-                    <Button size="small" color="error" onClick={() => onDeactivate(f.id)}>{t('finance.actions.deactivate')}</Button>
-                  )}
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-          {fees.length === 0 && (
-            <TableRow><TableCell colSpan={9}>{ProcessNull(t)}</TableCell></TableRow>
+    <DataTable<FinanceFee>
+      columns={columns}
+      rows={fees}
+      rowKey={(f) => f.id}
+      count={count}
+      page={page + 1}
+      rowsPerPage={pageSize}
+      loading={loading}
+      onPageChange={(p) => onPageChange(p - 1)}
+      onRowsPerPageChange={onPageSizeChange}
+      actionsLabel={t('finance.columns.actions')}
+      emptyTitle={t('finance.empty.noDataYet')}
+      actions={(f) => (
+        <Stack direction="row" spacing={0.5} justifyContent="center">
+          <Button size="small" onClick={() => onEdit(f)}>{t('finance.actions.edit')}</Button>
+          {f.is_active && (
+            <Button size="small" color="error" onClick={() => onDeactivate(f.id)}>{t('finance.actions.deactivate')}</Button>
           )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </Stack>
+      )}
+    />
   );
 }
 
@@ -1221,14 +1308,14 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
             <>
               <Divider />
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.collections.payments')}</Typography>
-              <PaymentsTable payments={invoice.payments} />
+              <PaymentsTable payments={invoice.payments} hidePagination />
             </>
           )}
           {invoice.receipts?.length > 0 && (
             <>
               <Divider />
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('finance.dialogs.receipts')}</Typography>
-              <ReceiptsTable receipts={invoice.receipts} onPrint={onPrint} />
+              <ReceiptsTable receipts={invoice.receipts} onPrint={onPrint} hidePagination />
               <Stack direction="row" spacing={1} justifyContent="flex-end">
                 {invoice.receipts[0] && (
                   <Button size="small" startIcon={<PrintIcon />} onClick={() => onPrint(invoice.receipts[0])}>{t('finance.actions.printReceipt')}</Button>

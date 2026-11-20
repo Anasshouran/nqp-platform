@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
@@ -67,10 +67,8 @@ const fmtMoney = (v: string | number | null | undefined) =>
 
 const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString('ar-SD') : '—');
 
-const ERROR_NO_REPORTS = 'لا تملك صلاحية المطابقات المالية';
-
 export default function ReconciliationView(): React.JSX.Element {
-  const [reconciliations, setReconciliations] = useState<FinanceReconciliation[]>([]);
+  const [allReconciliations, setAllReconciliations] = useState<FinanceReconciliation[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [detail, setDetail] = useState<FinanceReconciliation | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -79,39 +77,39 @@ export default function ReconciliationView(): React.JSX.Element {
 
   const table = useServerTable<FinanceReconciliation>({
     fetchData: getFinanceReconciliations,
-    initialPageSize: 10,
+    initialPageSize: 25,
   });
   const {
     rows, count, loading: tableLoading, error: tableError, page, pageSizeOptions,
-    setPage, setRowsPerPage, refresh, setFilter,
+    setPage, setRowsPerPage, refresh, setFilter, fetchAllRows,
   } = table;
 
-  const load = useCallback(async () => {
-    try {
-      const res = await getFinanceReconciliations({ page_size: 100 });
-      setReconciliations(res.data.data.results ?? []);
-    } catch (e) {
-      const msg = (e as AxiosError<{ message?: string }>).response?.data?.message;
-      setErrorMsg(msg || ERROR_NO_REPORTS);
-    }
-  }, []);
+  // F6 — one source for the table (table.count) and all rows for the status cards.
+  // `fetchAllRows` is a stable useCallback from useServerTable; depending on the
+  // whole `table` object (a fresh literal each render) would re-run this every render.
+  const reloadTotals = useCallback(async () => {
+    const data = await fetchAllRows();
+    setAllReconciliations(data ?? []);
+  }, [fetchAllRows]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void reloadTotals();
+  }, [reloadTotals]);
 
   const afterMutate = async () => {
     setCreateOpen(false);
     setDetail(null);
-    await Promise.all([load(), refresh()]);
+    await refresh();
+    await reloadTotals();
   };
 
-  const totals = reconciliations.reduce(
-    (acc, r) => {
-      acc[STATUS_META[r.status]?.label ?? r.status] = (acc[STATUS_META[r.status]?.label ?? r.status] ?? 0) + 1;
+  const totals = useMemo(
+    () => allReconciliations.reduce((acc, r) => {
+      const key = STATUS_META[r.status]?.label ?? r.status;
+      acc[key] = (acc[key] ?? 0) + 1;
       return acc;
-    },
-    {} as Record<string, number>,
+    }, {} as Record<string, number>),
+    [allReconciliations],
   );
 
   return (
@@ -132,7 +130,7 @@ export default function ReconciliationView(): React.JSX.Element {
 
       <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard label="إجمالي التسويات" value={reconciliations.length} trend={{ label: 'سجل دوري غير قابل للحذف' }} icon={<SyncAltIcon />} accent="primary.main" />
+          <StatCard label="إجمالي التسويات" value={count} trend={{ label: 'سجل دوري غير قابل للحذف' }} icon={<SyncAltIcon />} accent="primary.main" />
         </Grid>
         <Grid item xs={6} md={3}>
           <StatCard label="مطابقة" value={totals['مطابق'] ?? 0} trend={{ label: 'متوازنة مع القناة' }} icon={<FactCheckIcon />} accent="success.main" />
