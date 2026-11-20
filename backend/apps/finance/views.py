@@ -1,6 +1,8 @@
+import logging
 from datetime import timedelta
 from decimal import Decimal
 
+from django.core.exceptions import FieldError, PermissionDenied
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
@@ -8,8 +10,13 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core.permissions import PermissionAction
+from apps.accounts.models import RoleAssignment
+from apps.masterdata.models import EntryPoint
+from core.permissions import PermissionAction, ScopeFilter
 from core.utils.response import error_response, success_response
+from core.utils.scoping import resolve_user_port_ids
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     Fee,
@@ -54,21 +61,91 @@ def _may(user, action):
 
 
 class FinancePermissionMixin:
-    """يفرض صلاحية `finance:<action>` على كل واجهات النظام المالي (مفتاحية وطنية)."""
+    """صلاحية `finance:<action>` + تقييد نطاق المنفذ (fail-closed).
+
+    `ScopeFilter` يتحقق على مستوى الكائن فقط (`has_permission` يعيد True)،
+    لذلك تقييد *القوائم* تتم هنا في `get_queryset` صراحةً، بنفس نمط
+    `FoodPermissionMixin`. المستخدم الوطني (`resolve_user_port_ids` → None)
+    بلا تقييد؛ غياب النطاق (→ []) يعني حجب كل الصفوف.
+    """
 
     permission_resource = 'finance'
-    permission_classes = [PermissionAction]
+    permission_classes = [PermissionAction, ScopeFilter]
+    scope_type = RoleAssignment.ScopeType.PORT
     action_to_permission = {}
     default_permission = 'reports'
+    port_scope_field = None
+
+    @property
+    def scope_field(self):
+        """مسار الحقل الذي يقرأه `ScopeFilter.has_object_permission`."""
+        return self.port_scope_field
 
     def get_permissions(self):
         action = self.action or 'list'
         self.permission_action = self.action_to_permission.get(action, self.default_permission)
         return super().get_permissions()
 
+    def _scope_queryset(self, qs, request=None, field=None):
+        """تقييد استعلام بمعرفات منافذ المستخدم — فشل آمن في كل الحالات."""
+        request = request or getattr(self, 'request', None)
+        user = getattr(request, 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return qs.none()
+        port_ids = resolve_user_port_ids(user)
+        if port_ids is None:
+            return qs
+        if not port_ids:
+            return qs.none()
+        field = field or self.port_scope_field
+        if not field:
+            logger.warning(
+                'FinancePermissionMixin: no port scope field on %s - DENYING all rows',
+                type(self).__name__,
+            )
+            return qs.none()
+        try:
+            return qs.filter(**{f'{field}__in': port_ids})
+        except (FieldError, ValueError):
+            logger.exception(
+                'FinancePermissionMixin failed to scope %s (%s) - DENYING all rows',
+                type(self).__name__, field,
+            )
+            return qs.none()
+
+    def _validate_scope_params(self, request):
+        """رفض `?sector=`/`?point=` خارج نطاق المستخدم (لا توسيع للنطاق بالمعاملات)."""
+        user = getattr(request, 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return
+        port_ids = resolve_user_port_ids(user)
+        if port_ids is None:
+            return
+        params = getattr(request, 'query_params', {})
+        point = params.get('point')
+        sector = params.get('sector')
+        if point and str(point) not in {str(i) for i in port_ids}:
+            raise PermissionDenied('المنفذ المطلوب خارج نطاق المستخدم.')
+        if sector:
+            allowed = {
+                str(s) for s in EntryPoint.objects.filter(
+                    id__in=port_ids,
+                ).values_list('sector_id', flat=True) if s is not None
+            }
+            if str(sector) not in allowed:
+                raise PermissionDenied('القطاع المطلوب خارج نطاق المستخدم.')
+
 
 class FeeViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
-    """بنود الرسوم (Master Data) — لا حذف نهائي، تُلغى عبر is_active."""
+    """بنود الرسوم (Master Data) — لا حذف نهائي، تُلغى عبر is_active.
+
+    معفاة من تقييد المنفذ: لا حقل جغرافي ولا بيانات شخصية، وهي دليل
+    تعريفة عامة يحتاجها كل مستخدم لإصدار الفواتير. `ScopeFilter` لا يُطبَّق
+    هنا لأن `has_object_permission` سيرفض كل كائن بلا مسار `port`.
+    """
+
+    permission_classes = [PermissionAction]
+    port_scope_field = None
 
     action_to_permission = {
         'create': 'fee_manage',
@@ -86,7 +163,11 @@ class FeeViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         instance.is_active = False
         instance.save(update_fields=['is_active'])
-        return error_response({'message': 'لا يُحذف بند الرسوم نهائياً؛ تم تعطيله'})
+        # العملية نجحت (التعطيل حصل) — 200 مع رسالة توضيحية، لا 400.
+        return Response(
+            {'detail': 'لا يُحذف بند الرسوم نهائياً؛ تم تعطيله'},
+            status=status.HTTP_200_OK,
+        )
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -109,6 +190,7 @@ class FeeViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
 class InvoiceViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Invoice.objects.select_related('food_shipment', 'food_sample', 'issued_by')
     serializer_class = InvoiceSerializer
+    port_scope_field = 'food_shipment__port'
     filterset_fields = ['status', 'source_type', 'currency', 'service_type']
     search_fields = ['invoice_number', 'request_ref', 'applicant_name']
 
@@ -120,7 +202,8 @@ class InvoiceViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSet):
     }
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        self._validate_scope_params(self.request)
+        qs = self._scope_queryset(super().get_queryset())
         status_ = self.request.query_params.get('status')
         sector = self.request.query_params.get('sector')
         point = self.request.query_params.get('point')
@@ -151,7 +234,7 @@ class InvoiceViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSet):
                 amount=request.data.get('amount'),
                 gateway_ref=request.data.get('gateway_ref', ''),
                 notes=request.data.get('notes', ''),
-                gateway_status=request.data.get('gateway_status', 'CONFIRMED'),
+                # B5: لا قيم من العميل — الخدمة تثبّت GatewayStatus.CONFIRMED.
                 request=request,
             )
         except FinanceServiceError as exc:
@@ -204,9 +287,11 @@ class PaymentAttemptViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSe
     serializer_class = PaymentAttemptSerializer
     filterset_fields = ['method', 'gateway_status', 'currency']
     search_fields = ['gateway_ref', 'invoice__invoice_number']
+    port_scope_field = 'invoice__food_shipment__port'
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        self._validate_scope_params(self.request)
+        qs = self._scope_queryset(super().get_queryset())
         from_date = self.request.query_params.get('from')
         to_date = self.request.query_params.get('to')
         if from_date:
@@ -220,6 +305,11 @@ class ReceiptViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Receipt.objects.select_related('invoice', 'payment', 'issued_by')
     serializer_class = ReceiptSerializer
     search_fields = ['receipt_number', 'invoice__invoice_number']
+    port_scope_field = 'invoice__food_shipment__port'
+
+    def get_queryset(self):
+        self._validate_scope_params(self.request)
+        return self._scope_queryset(super().get_queryset())
 
     @action(detail=True, methods=['get'], url_path='print', url_name='print')
     def print_receipt(self, request, pk=None):
@@ -297,10 +387,23 @@ class ReceiptViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
+    """المطابقات: إنشاء ومعاينة/إغلاق/حسم فقط — بلا تعديل أو حذف مباشر.
+
+    `POST` على القائمة يبقى متاحاً لأن الواجهة تنشئ تسوية عبر
+    `POST /finance/reconciliations/`؛ أما `PUT/PATCH/DELETE` فمحجوبة
+    على مستوى `http_method_names` (405). لا حقل منفذ على النموذج، لذا
+    يُحجب عن مستخدمي المنافذ (fail-closed) ويبقى للمستخدم الوطني.
+    """
+
     queryset = Reconciliation.objects.select_related('reconciled_by')
     serializer_class = ReconciliationSerializer
     filterset_fields = ['channel', 'status']
     search_fields = ['investigation_notes']
+    port_scope_field = None
+    http_method_names = ['get', 'head', 'options', 'post']
+
+    def get_queryset(self):
+        return self._scope_queryset(super().get_queryset())
 
     def _recon(self, request):
         reconciliation = self.get_object()
@@ -317,12 +420,18 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
     def preview(self, request):
         """معاينة التسوية: حساب إجماليات النظام للفترة/القناة قبل الحفظ."""
         if not _may(request.user, 'reports'):
-            return error_response({'message': 'لا تملك صلاحية المطابقات المالية'}, status.HTTP_403_FORBIDDEN)
+            return Response(
+                error_response('لا تملك صلاحية المطابقات المالية'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
         period_start = request.query_params.get('period_start')
         period_end = request.query_params.get('period_end')
         channel = request.query_params.get('channel')
         if not (period_start and period_end and channel):
-            return error_response({'message': 'ابدأ الفترة والقناة'}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response('ابدأ الفترة والقناة'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             data = build_reconciliation(
                 period_start,
@@ -331,9 +440,15 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
                 request=request,
             )
         except FinanceServiceError as exc:
-            return error_response({'message': str(exc)}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response(str(exc)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except ValueError:
-            return error_response({'message': 'قناة تسوية غير صالحة'}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response('قناة تسوية غير صالحة'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(success_response(data))
 
     @action(detail=True, methods=['post'], url_path='seal')
@@ -341,17 +456,24 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
         """إغلاق التسوية: DRAFT → MATCHED/DISCREPANCY → RESOLVED."""
         reconciliation = self._recon(request)
         if reconciliation is None:
-            return error_response({'message': 'لا تملك صلاحية المطابقات المالية'}, status.HTTP_403_FORBIDDEN)
+            return Response(
+                error_response('لا تملك صلاحية المطابقات المالية'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
             result = seal_reconciliation(
                 reconciliation, request.user,
-                system_total=request.data.get('system_total'),
+                # B2: إجمالي النظام محسوب من الخدمة ولا يُستبدل بقيمة العميل.
+                system_total=None,
                 channel_total=request.data.get('channel_total'),
                 investigation_notes=request.data.get('investigation_notes', ''),
                 request=request,
             )
         except FinanceServiceError as exc:
-            return error_response({'message': str(exc)}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response(str(exc)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(success_response(ReconciliationSerializer(result).data))
 
     @action(detail=True, methods=['post'], url_path='resolve')
@@ -359,22 +481,32 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
         """الحسم النهائي للتسوية (RESOLVED) — فصل الاختصاص عند الإغلاق."""
         reconciliation = self._recon(request)
         if reconciliation is None:
-            return error_response({'message': 'لا تملك صلاحية المطابقات المالية'}, status.HTTP_403_FORBIDDEN)
+            return Response(
+                error_response('لا تملك صلاحية المطابقات المالية'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
             result = resolve_reconciliation(
                 reconciliation, request.user,
-                system_total=request.data.get('system_total'),
+                # B2: إجمالي النظام محسوب من الخدمة ولا يُستبدل بقيمة العميل.
+                system_total=None,
                 channel_total=request.data.get('channel_total'),
                 investigation_notes=request.data.get('investigation_notes', ''),
                 request=request,
             )
         except FinanceServiceError as exc:
-            return error_response({'message': str(exc)}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response(str(exc)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(success_response(ReconciliationSerializer(result).data))
 
     def create(self, request, *args, **kwargs):
         if not _may(request.user, 'reports'):
-            return error_response({'message': 'لا تملك صلاحية المطابقات المالية'}, status.HTTP_403_FORBIDDEN)
+            return Response(
+                error_response('لا تملك صلاحية المطابقات المالية'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         from django.utils.dateparse import parse_date
 
@@ -382,7 +514,10 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
         period_end = request.data.get('period_end')
         channel = request.data.get('channel')
         if not (period_start and period_end and channel):
-            return error_response({'message': 'ابدأ الفترة والقناة'}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response('ابدأ الفترة والقناة'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         channel_total = request.data.get('channel_total')
         try:
             reconciliation = create_reconciliation(
@@ -395,9 +530,15 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
                 request=request,
             )
         except FinanceServiceError as exc:
-            return error_response({'message': str(exc)}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response(str(exc)),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except ValueError:
-            return error_response({'message': 'قناة تسوية غير صالحة أو تاريخ غير صالح'}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                error_response('قناة تسوية غير صالحة أو تاريخ غير صالح'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             success_response(ReconciliationSerializer(reconciliation).data),
             status=status.HTTP_201_CREATED,
@@ -410,9 +551,11 @@ class FinancialAuditLogViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelVie
     filterset_fields = ['action', 'resource_type', 'actor', 'invoice']
     search_fields = ['invoice_ref', 'resource_id', 'new_value', 'old_value']
     default_permission = 'audit'
+    port_scope_field = 'invoice__food_shipment__port'
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        self._validate_scope_params(self.request)
+        qs = self._scope_queryset(super().get_queryset())
         resource_type = self.request.query_params.get('resource_type')
         action_ = self.request.query_params.get('action')
         if resource_type:
@@ -423,18 +566,28 @@ class FinancialAuditLogViewSet(FinancePermissionMixin, viewsets.ReadOnlyModelVie
 
 
 class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
-    """التقارير المالية: يومي، شهري، قومي، متأخرات، بمحاور الإيرادات والطباعة/التصدير."""
+    """التقارير المالية: يومي، شهري، قومي، متأخرات، بمحاور الإيرادات والطباعة/التصدير.
+
+    هذا ViewSet لا يملك `get_queryset`؛ كل action يبني استعلامه بنفسه، لذا
+    يُطبَّق `_scope_queryset` صراحةً على كل مصدر بيانات (بما فيها `national`).
+    """
+
+    port_scope_field = 'food_shipment__port'
 
     def _gate(self, request):
         if not _may(request.user, 'reports'):
             return Response(
-                error_response({'message': 'لا تملك صلاحية التقارير المالية'}),
+                error_response('لا تملك صلاحية التقارير المالية'),
                 status=status.HTTP_403_FORBIDDEN,
             )
         return None
 
     def _revenue_qs(self, request):
-        qs = Invoice.objects.filter(status__in=[InvoiceStatus.PAID, InvoiceStatus.RECONCILED])
+        self._validate_scope_params(request)
+        qs = self._scope_queryset(
+            Invoice.objects.filter(status__in=[InvoiceStatus.PAID, InvoiceStatus.RECONCILED]),
+            request,
+        )
         sector = request.query_params.get('sector')
         point = request.query_params.get('point')
         service_type = request.query_params.get('service_type')
@@ -457,17 +610,22 @@ class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
         now = timezone.now()
         today = now.date()
         revenue_qs = self._revenue_qs(request)
-        paid_today = PaymentAttempt.objects.filter(collected_at__date=today).aggregate(
-            total=Sum('amount'), count=Count('id')
-        )
-        overdue = Invoice.objects.filter(
-            status=InvoiceStatus.OVERDUE
+        paid_today = self._scope_queryset(
+            PaymentAttempt.objects.filter(collected_at__date=today),
+            request, 'invoice__food_shipment__port',
+        ).aggregate(total=Sum('amount'), count=Count('id'))
+        overdue = self._scope_queryset(
+            Invoice.objects.filter(status=InvoiceStatus.OVERDUE), request,
         ).aggregate(total=Sum('net_amount'), count=Count('id'))
-        pending = Invoice.objects.filter(
-            status__in=[InvoiceStatus.PENDING_PAYMENT, InvoiceStatus.ISSUED, InvoiceStatus.PARTIAL]
+        pending = self._scope_queryset(
+            Invoice.objects.filter(
+                status__in=[InvoiceStatus.PENDING_PAYMENT, InvoiceStatus.ISSUED, InvoiceStatus.PARTIAL]
+            ), request,
         ).count()
         funnel = {}
-        for each in Invoice.objects.values('status').annotate(n=Count('id')).order_by():
+        for each in self._scope_queryset(Invoice.objects.all(), request).values(
+            'status'
+        ).annotate(n=Count('id')).order_by():
             funnel[each['status']] = each['n']
         data = {
             'today': {
@@ -539,7 +697,10 @@ class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
         if denied:
             return denied
         year = request.query_params.get('year')
-        payments = PaymentAttempt.objects.filter(gateway_status='CONFIRMED')
+        payments = self._scope_queryset(
+            PaymentAttempt.objects.filter(gateway_status='CONFIRMED'),
+            request, 'invoice__food_shipment__port',
+        )
         if year:
             payments = payments.filter(collected_at__year=year)
         rows = list(payments.values('method').annotate(
@@ -564,12 +725,20 @@ class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
         denied = self._gate(request)
         if denied:
             return denied
-        paid = Invoice.objects.filter(status__in=[InvoiceStatus.PAID, InvoiceStatus.RECONCILED])
-        refunded = Invoice.objects.filter(status=InvoiceStatus.REFUNDED)
-        cancelled = Invoice.objects.filter(status=InvoiceStatus.CANCELLED)
+        paid = self._scope_queryset(
+            Invoice.objects.filter(status__in=[InvoiceStatus.PAID, InvoiceStatus.RECONCILED]), request,
+        )
+        refunded = self._scope_queryset(
+            Invoice.objects.filter(status=InvoiceStatus.REFUNDED), request,
+        )
+        cancelled = self._scope_queryset(
+            Invoice.objects.filter(status=InvoiceStatus.CANCELLED), request,
+        )
         data = {
             'issued': {
-                'count': Invoice.objects.exclude(status=InvoiceStatus.DRAFT).count(),
+                'count': self._scope_queryset(
+                    Invoice.objects.exclude(status=InvoiceStatus.DRAFT), request,
+                ).count(),
             },
             'paid': {'count': paid.count(), 'amount': float(paid.aggregate(t=Sum('net_amount'))['t'] or 0)},
             'refunded': {'count': refunded.count(), 'amount': float(refunded.aggregate(t=Sum('net_amount'))['t'] or 0)},
@@ -613,7 +782,9 @@ class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
             '61_90': {'label': '61-90 يوم', 'count': 0, 'amount': 0},
             '90_plus': {'label': 'أكثر من 90 يوم', 'count': 0, 'amount': 0},
         }
-        for inv in Invoice.objects.filter(status=InvoiceStatus.OVERDUE):
+        for inv in self._scope_queryset(
+            Invoice.objects.filter(status=InvoiceStatus.OVERDUE), request,
+        ):
             late = (today - inv.due_date).days if inv.due_date else 0
             key = ('0_30' if late <= 30 else '31_60' if late <= 60 else '61_90' if late <= 90 else '90_plus')
             buckets[key]['count'] += 1
@@ -659,7 +830,9 @@ class FinanceReportViewSet(FinancePermissionMixin, viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='arrears')
     def arrears(self, request):
         today = timezone.now().date()
-        rows = Invoice.objects.filter(status=InvoiceStatus.OVERDUE).order_by('due_date')
+        rows = self._scope_queryset(
+            Invoice.objects.filter(status=InvoiceStatus.OVERDUE), request,
+        ).order_by('due_date')
         data = [
             {
                 'id': str(i.id),
