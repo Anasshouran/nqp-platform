@@ -8,12 +8,13 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import DataTable from '../../components/ui/DataTable';
 import type { DataTableColumn } from '../../components/ui/DataTable';
 import StatusChip from '../../components/ui/StatusChip';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
+import { useAuth } from '../../hooks/useAuth';
 import { getLeaveRequests } from '../../api/endpoints/hr';
 import type { LeaveRequest } from '../../types/hr';
 import {
@@ -25,6 +26,9 @@ import { formatDate } from '../../utils/formatters';
 const LeaveRequestsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_leave:view');
 
   const STATUS_OPTIONS = useMemo(
     () => [
@@ -105,6 +109,16 @@ const LeaveRequestsPage = () => {
     ],
     [t],
   );
+
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

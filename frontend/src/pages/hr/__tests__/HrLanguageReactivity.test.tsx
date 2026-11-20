@@ -155,7 +155,7 @@ vi.mock('../../../api/endpoints/hr', () => ({
 }));
 
 vi.mock('../../../hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: '1', full_name: 'أحمد علي', email: 'hr@nqp.gov.sd', role: 'HR_OFFICER' } }),
+  useAuth: () => ({ user: { id: '1', full_name: 'أحمد علي', email: 'hr@nqp.gov.sd', role: 'HR_OFFICER', permissions: ['hr_employee:view', 'hr_dashboard:view', 'hr_leave:view'] } }),
 }));
 
 vi.mock('../../../hooks/useServerTable', () => ({
