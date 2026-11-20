@@ -7304,8 +7304,12 @@
       "alerts": {
         "title": "🚨 National Food Alerts"
       }
-    },
-    "exportInspection": {
+      },
+      "noData": {
+        "title": "No data available",
+        "description": "National Food Director dashboard data is not available at the moment. Please check server connection or try again later."
+      },
+      "exportInspection": {
       "title": "Export Food Resources Inspection Form",
       "subtitle": "Electronic record — data read automatically from request, inspection, lab and decision",
       "print": "Print / PDF",

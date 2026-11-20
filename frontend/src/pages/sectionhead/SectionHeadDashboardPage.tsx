@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -85,6 +86,7 @@ import { useDispatch } from 'react-redux';
 import { logout as logoutApi } from '../../api/endpoints/auth';
 import { logout } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store/store';
+import { EmptyState } from '../../components/uikit';
 import { notifyError, notifySuccess } from '../../utils/toast';
 
 const PERIODS = [
@@ -150,6 +152,7 @@ const fmtSdg = (n: number) => new Intl.NumberFormat('ar-EG').format(n);
 
 const SectionHeadDashboardPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [period, setPeriod] = useState('MONTH');
@@ -503,6 +506,12 @@ const SectionHeadDashboardPage = () => {
 
         {/* المحتوى */}
         <Box component="main" sx={{ flexGrow: 1, minWidth: 0, p: { xs: 1.75, md: 2.5 }, maxWidth: 1500, width: '100%', mx: 'auto', pb: 4 }}>
+      {!dash && !loadingData && (
+        <EmptyState
+          title={t('food.director.noData.title')}
+          description={t('food.director.noData.description')}
+        />
+      )}
       {dash && (
         <>
           {/* ===== الصف الأول: مؤشرات رئيسية ===== */}
