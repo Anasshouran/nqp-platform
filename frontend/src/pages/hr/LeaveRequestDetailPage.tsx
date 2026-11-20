@@ -44,6 +44,8 @@ const LeaveRequestDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_leave:view');
 
   const [leave, setLeave] = useState<LeaveRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,16 @@ const LeaveRequestDetailPage = () => {
   const isApprover = user?.role === 'HR_APPROVER';
   const canDecide = leave.status === 'SUBMITTED' && isApprover && !isSubmitter;
   const needsDocument = Boolean(leave.leave_type_requires_document) && !leave.document;
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

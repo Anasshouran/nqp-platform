@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../hooks/useAuth';
 import type { TFunction } from 'i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -15,7 +16,7 @@ import Alert from '@mui/material/Alert';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PageHeader } from '../../components/common';
+import { PageHeader } from '../../components/uikit';
 import { FormTextField } from '../../components/ui';
 import {
   createPerformanceReview,
@@ -40,6 +41,9 @@ const PerformanceReviewFormPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_performance:view');
   const [cycles, setCycles] = useState<PerformanceCycle[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +107,16 @@ const PerformanceReviewFormPage = () => {
       setError(extractErrorMessage(err, t('hr.performanceReviewForm.errors.createFailed')));
     }
   };
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

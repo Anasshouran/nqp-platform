@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../hooks/useAuth';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -30,6 +31,9 @@ import { ConfirmDialog } from '../../components/uikit';
 
 const PerformanceCycleDetailPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_performance:view');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -115,6 +119,16 @@ const PerformanceCycleDetailPage = () => {
 
   const editable = cycle.status === 'DRAFT' || cycle.status === 'OPEN';
   const balanced = Math.round(total) === 100;
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>

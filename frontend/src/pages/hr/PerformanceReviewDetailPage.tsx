@@ -50,6 +50,8 @@ const PerformanceReviewDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const permissions = user?.permissions ?? [];
+  const hasPermission = permissions.includes('hr_performance:view');
   const isHr = ['HR_MANAGER', 'HR_SPECIALIST', 'HR_APPROVER'].includes(user?.role ?? '');
 
   const [review, setReview] = useState<PerformanceReview | null>(null);
@@ -121,6 +123,16 @@ const PerformanceReviewDetailPage = () => {
       t('hr.performanceReview.messages.scoresSaved'),
     );
   };
+  if (!hasPermission) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          غير مصرح لك بعرض هذه الصفحة
+        </Typography>
+      </Box>
+    );
+  }
+
 
   return (
     <Box>
