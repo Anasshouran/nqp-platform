@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableBody from '@mui/material/TableBody';
@@ -15,7 +15,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import Divider from '@mui/material/Divider';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PaidIcon from '@mui/icons-material/Paid';
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
@@ -44,12 +43,14 @@ import type {
 import SectionTitle from '../../components/common/SectionTitle';
 import StatCard from '../../components/common/StatCard';
 
-const REPORT_PERMISSION_MSG = 'لا تملك صلاحية التقارير المالية';
-
 const fmtMoney = (v: string | number | null | undefined) =>
   new Intl.NumberFormat('ar-SD').format(Number(v ?? 0));
 
+const reportError = (e: unknown, fallback: string) =>
+  (e as AxiosError<{ message?: string }>).response?.data?.message ?? fallback;
+
 export default function ReportsView(): React.JSX.Element {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<FinanceSummaryReport | null>(null);
   const [monthly, setMonthly] = useState<MonthlyRevenueReport>({ series: [], by_sector: [] });
   const [national, setNational] = useState<NationalRevenueTree>({});
@@ -59,9 +60,6 @@ export default function ReportsView(): React.JSX.Element {
   const [aging, setAging] = useState<ArrearsAgingReport | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const reportError = (e: unknown, fallback = REPORT_PERMISSION_MSG) =>
-    (e as AxiosError<{ message?: string }>).response?.data?.message ?? fallback;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -85,11 +83,11 @@ export default function ReportsView(): React.JSX.Element {
       if (mx.status === 'fulfilled') setMatrix(mx.value.data.data);
       if (ag.status === 'fulfilled') setAging(ag.value.data.data);
       const firstError = results.find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
-      if (firstError) setErrorMsg(reportError(firstError.reason));
+      if (firstError) setErrorMsg(reportError(firstError.reason, t('finance.reports.noPermission')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -108,7 +106,7 @@ export default function ReportsView(): React.JSX.Element {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setErrorMsg(reportError(e));
+      setErrorMsg(reportError(e, t('finance.reports.noPermission')));
     }
   };
 
@@ -119,30 +117,30 @@ export default function ReportsView(): React.JSX.Element {
   return (
     <>
       <SectionTitle
-        title="التقارير المالية"
-        subtitle="قائمة الإيرادات القومية، التوزيع حسب الوسيلة والقطاع، والمتأخرات"
+        title={t('finance.reports.title')}
+        subtitle={t('finance.reports.subtitle')}
       />
       {loading && <LinearProgress sx={{ mb: 2 }} />}
       {errorMsg && <Typography color="error" sx={{ mb: 2 }}>{errorMsg}</Typography>}
 
       <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2.5 }}>
         <Button variant="contained" startIcon={<DownloadIcon />} onClick={handleExport}>
-          تصدير CSV
+          {t('finance.reports.actions.export')}
         </Button>
       </Stack>
 
       <Grid container spacing={2.5} sx={{ mb: 1 }}>
-        <StatCard label="إجمالي الإيرادات" value={`${fmtMoney(summary?.revenue.total)} SDG`} trend={{ label: `${fmtMoney(summary?.revenue.count)} فاتورة مدفوعة` }} icon={<AssessmentIcon />} accent="primary.main" />
-        <StatCard label="محصل اليوم" value={`${fmtMoney(summary?.today.collected)} SDG`} trend={{ label: `${fmtMoney(summary?.today.count)} عملية` }} icon={<PaidIcon />} accent="success.main" />
-        <StatCard label="متأخرات" value={fmtMoney(summary?.overdue.count)} trend={{ label: `${fmtMoney(summary?.overdue.amount)} SDG` }} icon={<WarningAmberIcon />} accent="error.main" />
-        <StatCard label="صافي الإيراد (بعد الاستردادات)" value={`${fmtMoney(totalDiff)} SDG`} trend={{ label: `${fmtMoney(variation?.refunded.count)} استرداد` }} icon={<DynamicFeedIcon />} accent="secondary.main" />
+        <StatCard label={t('finance.reports.summary.totalRevenue')} value={`${fmtMoney(summary?.revenue.total)} SDG`} trend={{ label: t('finance.reports.summary.paidInvoices', { count: Number(summary?.revenue.count ?? 0) }) }} icon={<AssessmentIcon />} accent="primary.main" />
+        <StatCard label={t('finance.reports.summary.todayCollection')} value={`${fmtMoney(summary?.today.collected)} SDG`} trend={{ label: t('finance.reports.summary.operations', { count: Number(summary?.today.count ?? 0) }) }} icon={<PaidIcon />} accent="success.main" />
+        <StatCard label={t('finance.reports.summary.arrears')} value={fmtMoney(summary?.overdue.count)} trend={{ label: `${fmtMoney(summary?.overdue.amount)} SDG` }} icon={<WarningAmberIcon />} accent="error.main" />
+        <StatCard label={t('finance.reports.summary.netRevenue')} value={`${fmtMoney(totalDiff)} SDG`} trend={{ label: t('finance.reports.summary.refunds', { count: Number(variation?.refunded.count ?? 0) }) }} icon={<DynamicFeedIcon />} accent="secondary.main" />
       </Grid>
 
       <Grid container spacing={2.5}>
         <Grid item xs={12} md={6}>
           <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>الإيرادات الشهرية (آخر 12 شهراً)</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.monthly.title')}</Typography>
               <BarChart data={monthly.series} />
             </CardContent>
           </Card>
@@ -150,9 +148,9 @@ export default function ReportsView(): React.JSX.Element {
         <Grid item xs={12} md={6}>
           <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>الإيرادات حسب القطاع</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.bySector.title')}</Typography>
               {monthly.by_sector.length === 0 ? (
-                <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد بيانات بعد</Typography>
+                <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('finance.reports.empty')}</Typography>
               ) : (
                 <SectorBreakdown rows={monthly.by_sector} />
               )}
@@ -165,7 +163,7 @@ export default function ReportsView(): React.JSX.Element {
         <Grid item xs={12} md={6}>
           <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>الإيراد المحصّل حسب وسيلة الدفع</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.byChannel.title')}</Typography>
               <ChannelSplit report={byChannel} />
             </CardContent>
           </Card>
@@ -173,7 +171,7 @@ export default function ReportsView(): React.JSX.Element {
         <Grid item xs={12} md={6}>
           <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>توزيع المتأخرات حسب فترة التأخير</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.arrearsAging.title')}</Typography>
               <ArrearsAging report={aging} />
             </CardContent>
           </Card>
@@ -183,7 +181,7 @@ export default function ReportsView(): React.JSX.Element {
       <Box sx={{ mt: 3 }}>
         <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>مصفوفة الإيرادات القومية — قطاع ← منفذ</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.matrix.title')}</Typography>
             <SectorPortMatrix report={matrix} />
           </CardContent>
         </Card>
@@ -192,7 +190,7 @@ export default function ReportsView(): React.JSX.Element {
       <Box sx={{ mt: 3 }}>
         <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>شجرة الإيرادات القومية — قطاع ← منفذ ← خدمة</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>{t('finance.reports.tree.title')}</Typography>
             <NationalTreeDisplay tree={national} />
           </CardContent>
         </Card>
@@ -202,8 +200,9 @@ export default function ReportsView(): React.JSX.Element {
 }
 
 function ChannelSplit({ report }: { report: ByChannelReport | null }): React.JSX.Element {
+  const { t } = useTranslation();
   if (!report || report.items.length === 0) {
-    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد بيانات بعد</Typography>;
+    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('finance.reports.empty')}</Typography>;
   }
   const max = Math.max(1, ...report.items.map((i) => i.amount));
   return (
@@ -211,10 +210,10 @@ function ChannelSplit({ report }: { report: ByChannelReport | null }): React.JSX
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الوسيلة</TableCell>
-            <TableCell align="center">النسبة</TableCell>
-            <TableCell>المبلغ</TableCell>
-            <TableCell>العدد</TableCell>
+            <TableCell>{t('finance.reports.columns.channel')}</TableCell>
+            <TableCell align="center">{t('finance.reports.columns.pct')}</TableCell>
+            <TableCell>{t('finance.reports.columns.amount')}</TableCell>
+            <TableCell>{t('finance.reports.columns.count')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -244,8 +243,9 @@ function ChannelSplit({ report }: { report: ByChannelReport | null }): React.JSX
 }
 
 function ArrearsAging({ report }: { report: ArrearsAgingReport | null }): React.JSX.Element {
+  const { t } = useTranslation();
   if (!report || report.buckets.length === 0) {
-    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد متأخرات</Typography>;
+    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('finance.reports.arrearsAging.empty')}</Typography>;
   }
   const max = Math.max(1, ...report.buckets.map((b) => b.amount));
   return (
@@ -253,10 +253,10 @@ function ArrearsAging({ report }: { report: ArrearsAgingReport | null }): React.
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>الفترة</TableCell>
-            <TableCell align="center">الوزن النسبي</TableCell>
-            <TableCell>المبلغ</TableCell>
-            <TableCell>العدد</TableCell>
+            <TableCell>{t('finance.reports.columns.period')}</TableCell>
+            <TableCell align="center">{t('finance.reports.columns.weight')}</TableCell>
+            <TableCell>{t('finance.reports.columns.amount')}</TableCell>
+            <TableCell>{t('finance.reports.columns.count')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -276,7 +276,7 @@ function ArrearsAging({ report }: { report: ArrearsAgingReport | null }): React.
             </TableRow>
           ))}
           <TableRow>
-            <TableCell colSpan={2} sx={{ fontWeight: 700 }}>الإجمالي</TableCell>
+            <TableCell colSpan={2} sx={{ fontWeight: 700 }}>{t('finance.reports.columns.total')}</TableCell>
             <TableCell sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{fmtMoney(report.total_amount)}</TableCell>
             <TableCell sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{report.total_count}</TableCell>
           </TableRow>
@@ -287,18 +287,19 @@ function ArrearsAging({ report }: { report: ArrearsAgingReport | null }): React.
 }
 
 function SectorPortMatrix({ report }: { report: MatrixReport | null }): React.JSX.Element {
+  const { t } = useTranslation();
   if (!report || report.rows.length === 0) {
-    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد إيرادات من المنافذ بعد</Typography>;
+    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('finance.reports.matrix.empty')}</Typography>;
   }
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>القطاع</TableCell>
-            <TableCell>المنفذ</TableCell>
-            <TableCell align="center">المبلغ</TableCell>
-            <TableCell align="center">عدد الفواتير</TableCell>
+            <TableCell>{t('finance.reports.columns.sector')}</TableCell>
+            <TableCell>{t('finance.reports.columns.port')}</TableCell>
+            <TableCell align="center">{t('finance.reports.columns.amount')}</TableCell>
+            <TableCell align="center">{t('finance.reports.columns.invoiceCount')}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -317,11 +318,12 @@ function SectorPortMatrix({ report }: { report: MatrixReport | null }): React.JS
 }
 
 function BarChart({ data }: { data: Array<{ month: string | null; amount: number }> }): React.JSX.Element {
+  const { t } = useTranslation();
   const max = Math.max(1, ...data.map((d) => d.amount));
   return (
     <Box sx={{ minHeight: 220, display: 'flex', alignItems: 'flex-end', gap: 1, overflowX: 'auto' }}>
       {data.length === 0 && (
-        <Typography color="text.secondary" sx={{ py: 4, width: '100%', textAlign: 'center' }}>لا توجد بيانات بعد</Typography>
+        <Typography color="text.secondary" sx={{ py: 4, width: '100%', textAlign: 'center' }}>{t('finance.reports.empty')}</Typography>
       )}
       {data.map((d, i) => (
         <Box key={d.month ?? `m-${i}`} sx={{ flex: '1 1 0', minWidth: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
@@ -359,9 +361,10 @@ function SectorBreakdown({ rows }: { rows: Array<{ name: string; amount: number 
 }
 
 function NationalTreeDisplay({ tree }: { tree: NationalRevenueTree }): React.JSX.Element {
+  const { t } = useTranslation();
   const sectors = Object.entries(tree);
   if (sectors.length === 0) {
-    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>لا توجد بيانات بعد</Typography>;
+    return <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>{t('finance.reports.empty')}</Typography>;
   }
   return (
     <Stack spacing={1.5}>

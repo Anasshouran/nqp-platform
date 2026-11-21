@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,16 +17,16 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import type { FinanceInvoice, FinancePayment, FinanceReceipt, FinanceReceiptPrint } from '../../types/finance';
 import { getFinanceReceiptPrint } from '../../api/endpoints/finance';
 
-const CURRENCY_LABELS: Record<string, string> = {
-  SDG: 'جنيه سوداني',
-  USD: 'دولار أمريكي',
+const CURRENCY_KEYS: Record<string, string> = {
+  SDG: 'finance.receipt.currency.sdg',
+  USD: 'finance.receipt.currency.usd',
 };
 
-const METHOD_LABELS: Record<string, string> = {
-  CASH: 'نقدي',
-  BANK_CARD: 'شبكة بنكية (POS)',
-  BANK_TRANSFER: 'تحويل بنكي',
-  ELECTRONIC: 'إلكتروني',
+const METHOD_KEYS: Record<string, string> = {
+  CASH: 'finance.receipt.methods.cash',
+  BANK_CARD: 'finance.receipt.methods.pos',
+  BANK_TRANSFER: 'finance.receipt.methods.bankTransfer',
+  ELECTRONIC: 'finance.receipt.methods.electronic',
 };
 
 const fmtMoney = (v: string | number | null | undefined): string => {
@@ -60,9 +61,14 @@ function normalizeItems(items: Array<Record<string, unknown>>): FinanceReceiptPr
   });
 }
 
-function buildLocal(receipt: FinanceReceipt, invoice?: FinanceInvoice | null, payment?: FinancePayment | null): FinanceReceiptPrint {
+function buildLocal(
+  receipt: FinanceReceipt,
+  invoice: FinanceInvoice | null | undefined,
+  payment: FinancePayment | null | undefined,
+  t: (key: string) => string,
+): FinanceReceiptPrint {
   const pmt = payment ?? invoice?.payments?.[0];
-  const methodLabel = (m?: string) => METHOD_LABELS[m ?? ''] ?? m ?? '—';
+  const methodLabel = (m?: string) => (m && METHOD_KEYS[m] ? t(METHOD_KEYS[m]) : m ?? '—');
   return {
     receipt: {
       number: receipt.receipt_number,
@@ -88,7 +94,7 @@ function buildLocal(receipt: FinanceReceipt, invoice?: FinanceInvoice | null, pa
       method_code: pmt?.method ?? 'CASH',
       gateway_ref: pmt?.gateway_ref ?? '',
       gateway_status: pmt?.gateway_status === 'CONFIRMED'
-        ? 'مؤكد'
+        ? t('finance.receipt.status.confirmed')
         : (pmt?.gateway_status ?? ''),
       notes: pmt?.notes ?? '',
       collected_at: pmt?.collected_at ?? receipt.issued_at,
@@ -121,6 +127,7 @@ export default function PrintReceiptDialog({
   payment,
   data: directData,
 }: PrintReceiptDialogProps): React.JSX.Element | null {
+  const { t } = useTranslation();
   const [remote, setRemote] = useState<FinanceReceiptPrint | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -154,9 +161,9 @@ export default function PrintReceiptDialog({
   const data = useMemo<FinanceReceiptPrint | null>(() => {
     if (directData) return directData;
     if (!receipt) return null;
-    if (invoice) return buildLocal(receipt, invoice, payment);
+    if (invoice) return buildLocal(receipt, invoice, payment, t);
     return remote;
-  }, [receipt, invoice, payment, remote, directData]);
+  }, [receipt, invoice, payment, remote, directData, t]);
 
   useEffect(() => {
     if (!open) return;
@@ -201,35 +208,36 @@ function PrinterDialogShell({ onClose, data, loading }: {
   data: FinanceReceiptPrint | null;
   loading: boolean;
 }): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <Dialog open onClose={onClose} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
       <DialogTitle sx={{ fontWeight: 700 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" alignItems="center" spacing={1}>
             <PrintIcon color="primary" />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>طباعة الإيصال الإلكتروني</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('finance.receipt.actions.printElectronic')}</Typography>
           </Stack>
-          <IconButton onClick={onClose} size="small" aria-label="إغلاق" sx={{ borderRadius: 2 }}><CloseIcon /></IconButton>
+          <IconButton onClick={onClose} size="small" aria-label={t('finance.receipt.actions.close')} sx={{ borderRadius: 2 }}><CloseIcon /></IconButton>
         </Stack>
       </DialogTitle>
       <DialogContent dividers sx={{ bgcolor: 'grey.100', display: 'flex', justifyContent: 'center' }}>
         {loading && (
           <Stack alignItems="center" spacing={1.5} sx={{ py: 8 }}>
             <CircularProgress size={28} />
-            <Typography variant="body2" color="text.secondary">جاري تجهيز بيانات الإيصال...</Typography>
+            <Typography variant="body2" color="text.secondary">{t('finance.receipt.loading')}</Typography>
           </Stack>
         )}
-        {!loading && (data ? <ReceiptSheet data={data} /> : <Typography color="error" sx={{ py: 8 }}>تعذّر تحميل بيانات الإيصال.</Typography>)}
+        {!loading && (data ? <ReceiptSheet data={data} /> : <Typography color="error" sx={{ py: 8 }}>{t('finance.receipt.error.load')}</Typography>)}
       </DialogContent>
       {!loading && data && (
         <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-          <Button onClick={onClose}>إغلاق</Button>
+          <Button onClick={onClose}>{t('finance.receipt.actions.close')}</Button>
           <Button
             variant="contained"
             startIcon={<PrintIcon />}
             onClick={() => window.print()}
           >
-            طباعة الإيصال
+            {t('finance.receipt.actions.print')}
           </Button>
         </DialogActions>
       )}
@@ -247,7 +255,16 @@ function SheetRow({ label, value, strong = false }: { label: string; value: stri
 }
 
 function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Element {
-  const currencyLabel = CURRENCY_LABELS[data.invoice.currency] ?? data.invoice.currency;
+  const { t } = useTranslation();
+  const currencyKey = CURRENCY_KEYS[data.invoice.currency];
+  const currencyLabel = currencyKey ? t(currencyKey) : data.invoice.currency;
+  const methodKey = METHOD_KEYS[data.payment.method_code];
+  const methodLabel = methodKey ? t(methodKey) : data.payment.method;
+  const gatewayStatus = data.payment.gateway_status;
+  const confirmedLabel = t('finance.receipt.status.confirmed');
+  const statusLabel = gatewayStatus === 'CONFIRMED' || gatewayStatus === confirmedLabel
+    ? confirmedLabel
+    : gatewayStatus;
   const gross = Number(data.invoice.gross_amount);
   const discount = Number(data.invoice.discount_amount ?? 0);
   const net = Number(data.invoice.net_amount);
@@ -267,9 +284,9 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
     >
       {/* الترويسة */}
       <Stack spacing={0.5} alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="body1" sx={{ fontWeight: 700, letterSpacing: 1 }}>جمهورية السودان</Typography>
-        <Typography variant="body2" sx={{ fontWeight: 700 }}>وزارة الصحة الاتحادية — الإدارة العامة للصحة الحيوانية</Typography>
-        <Typography variant="caption" color="text.secondary">المنصة الوطنية للحجر الصحي — إقرار استلام رسوم</Typography>
+        <Typography variant="body1" sx={{ fontWeight: 700, letterSpacing: 1 }}>{t('finance.receipt.header.country')}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('finance.receipt.header.ministry')}</Typography>
+        <Typography variant="caption" color="text.secondary">{t('finance.receipt.header.platform')}</Typography>
       </Stack>
 
       <Divider sx={{ borderBottomWidth: 3, mb: 2 }} />
@@ -277,37 +294,37 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
       {/* بيانات الإيصال والدفع */}
       <Stack direction="row" spacing={3} justifyContent="space-between" sx={{ mb: 1, flexWrap: 'wrap' }}>
         <Box sx={{ minWidth: 260 }}>
-          <SheetRow label="رقم الإيصال" value={data.receipt.number} strong />
-          <SheetRow label="تاريخ الإصدار" value={fmtDateTime(data.receipt.issued_at)} />
-          <SheetRow label="المحصل" value={data.payment.collected_by || data.receipt.issued_by || '—'} />
+          <SheetRow label={t('finance.receipt.fields.receiptNumber')} value={data.receipt.number} strong />
+          <SheetRow label={t('finance.receipt.fields.issueDate')} value={fmtDateTime(data.receipt.issued_at)} />
+          <SheetRow label={t('finance.receipt.fields.collector')} value={data.payment.collected_by || data.receipt.issued_by || '—'} />
         </Box>
         <Box sx={{ minWidth: 260 }}>
-          <SheetRow label="رقم الفاتورة" value={data.invoice.number} strong />
-          <SheetRow label="رقم الطلب / المرجع" value={data.invoice.request_ref || '—'} />
-          <SheetRow label="الخدمة" value={data.invoice.service_type || '—'} />
+          <SheetRow label={t('finance.receipt.fields.invoiceNumber')} value={data.invoice.number} strong />
+          <SheetRow label={t('finance.receipt.fields.orderRef')} value={data.invoice.request_ref || '—'} />
+          <SheetRow label={t('finance.receipt.fields.service')} value={data.invoice.service_type || '—'} />
         </Box>
       </Stack>
 
       {/* العميل */}
       <Box sx={{ bgcolor: 'grey.50', borderRadius: 1.5, border: '1px dashed', borderColor: 'divider', p: 1.5, mt: 1, mb: 2 }}>
         <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
-          <SheetRow label="العميل" value={data.customer.name || '—'} strong />
-          <SheetRow label="الرقم الوطني" value={data.customer.id_number || '—'} />
-          <SheetRow label="الهاتف" value={data.customer.phone || '—'} />
+          <SheetRow label={t('finance.receipt.fields.customer')} value={data.customer.name || '—'} strong />
+          <SheetRow label={t('finance.receipt.fields.nationalId')} value={data.customer.id_number || '—'} />
+          <SheetRow label={t('finance.receipt.fields.phone')} value={data.customer.phone || '—'} />
         </Stack>
       </Box>
 
       {/* البنود */}
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>تفاصيل البنود ({data.invoice.currency})</Typography>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t('finance.receipt.items.title', { currency: data.invoice.currency })}</Typography>
       <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden', mb: 2 }}>
         <Stack direction="row" sx={{ bgcolor: 'grey.100', px: 1.5, py: 0.8 }} justifyContent="space-between">
-          <Typography variant="caption" sx={{ fontWeight: 700 }}>البند</Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700 }} ml="auto" mr={8}>الكمية</Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 90, textAlign: 'center' }}>قيمة الوحدة</Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 110, textAlign: 'right' }}>الإجمالي</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700 }}>{t('finance.receipt.items.columns.item')}</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700 }} ml="auto" mr={8}>{t('finance.receipt.items.columns.quantity')}</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 90, textAlign: 'center' }}>{t('finance.receipt.items.columns.unitValue')}</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 110, textAlign: 'right' }}>{t('finance.receipt.items.columns.total')}</Typography>
         </Stack>
         {data.invoice.items.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ px: 1.5, py: 1 }}>لا توجد بنود.</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ px: 1.5, py: 1 }}>{t('finance.receipt.items.empty')}</Typography>
         )}
         {data.invoice.items.map((it, idx) => (
           <Stack key={idx} direction="row" sx={{ px: 1.5, py: 0.8 }} justifyContent="space-between">
@@ -325,13 +342,13 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
 
       {/* الإجماليات */}
       <Stack sx={{ maxWidth: 340, alignSelf: 'flex-end', mb: 2, mr: { md: 'auto' } }} alignItems="flex-start">
-        <SheetRow label={`الإجمالي (${currencyLabel})`} value={fmtMoney(gross)} />
-        {discount > 0 && <SheetRow label={`الخصم — ${data.invoice.discount_reason || 'ممنوح'}`} value={`− ${fmtMoney(discount)}`} />}
+        <SheetRow label={t('finance.receipt.total', { currencyLabel })} value={fmtMoney(gross)} />
+        {discount > 0 && <SheetRow label={t('finance.receipt.discount', { reason: data.invoice.discount_reason || t('finance.receipt.discountGranted') })} value={`− ${fmtMoney(discount)}`} />}
         <Divider sx={{ width: '100%', my: 0.75 }} />
-        <SheetRow label="الصافي المستحق" value={fmtMoney(net)} strong />
+        <SheetRow label={t('finance.receipt.netDue')} value={fmtMoney(net)} strong />
         <Box sx={{ bgcolor: 'success.light', borderRadius: 1.5, px: 2, py: 0.8, mt: 0.75, width: '100%', textAlign: 'center' }}>
           <Typography sx={{ fontWeight: 700, color: 'success.contrastText' }}>
-            المبلغ المحصّل: {fmtMoney(paid)} ({currencyLabel}) — {data.payment.method}
+            {t('finance.receipt.collected', { amount: fmtMoney(paid), currency: currencyLabel, method: methodLabel })}
           </Typography>
         </Box>
       </Stack>
@@ -340,18 +357,18 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
       {hasVariable && (
         <Box sx={{ bgcolor: 'grey.50', borderRadius: 1.5, p: 1.5, mb: 2 }}>
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-            عملية دفع غير نقدية:
+            {t('finance.receipt.nonCash')}
           </Typography>
           {data.payment.gateway_ref && (
             <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 13, mt: 0.5 }}>
-              مرجع {data.payment.method}: {data.payment.gateway_ref}
+              {t('finance.receipt.reference', { method: methodLabel, ref: data.payment.gateway_ref })}
             </Typography>
           )}
           {data.payment.gateway_status && (
-            <Typography variant="caption" color="text.secondary">حالة المعاملة: {data.payment.gateway_status}</Typography>
+            <Typography variant="caption" color="text.secondary">{t('finance.receipt.transactionStatus', { status: statusLabel })}</Typography>
           )}
           {data.payment.notes && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>ملاحظات: {data.payment.notes}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('finance.receipt.notes', { notes: data.payment.notes })}</Typography>
           )}
         </Box>
       )}
@@ -360,7 +377,7 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ bgcolor: 'primary.light', borderRadius: 1.5, p: 1.5, mb: 2 }} useFlexGap>
         <VerifiedUserIcon color="primary" />
         <Box>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark' }}>رمز التحقق الإلكتروني</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark' }}>{t('finance.receipt.verificationCode')}</Typography>
           <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 13, color: 'primary.dark', wordBreak: 'break-all' }}>
             {data.receipt.verification_code || '—'}
           </Typography>
@@ -368,10 +385,10 @@ function ReceiptSheet({ data }: { data: FinanceReceiptPrint }): React.JSX.Elemen
       </Stack>
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mb: 1 }}>
-        {fmtDate(data.payment.collected_at)} — يُتحقق من صحة هذا الإيصال عبر رمز التحقق أعلاه في سجل المنصة الوطنية.
+        {t('finance.receipt.verificationNote', { date: fmtDate(data.payment.collected_at) })}
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-        لا يُقبل استرداد النقدية إلا بتحويل الفاتورة إلى الحالة (مسترَدّة) واعتماد المدير المالي. هذا الإيصال صادر إلكترونياً ولا يتطلب ختماً يدوياً.
+        {t('finance.receipt.alerts.noCashRefund')}
       </Typography>
     </Box>
   );
