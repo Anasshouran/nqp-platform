@@ -45,9 +45,10 @@ import {
 import KpiCard from '../../components/dashboard/KpiCard';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
-import { useServerTable } from '../../hooks/useServerTable';
+import { describeLoadFailure, useServerTable } from '../../hooks/useServerTable';
 import { useTableExport } from '../../hooks/useTableExport';
 import {
+  approveSampleTest,
   assignSampleAnalyst,
   getApplicableLimits,
   getLabParameters,
@@ -58,9 +59,11 @@ import {
   getMicroWorkload,
   markSampleTestQC,
   returnSampleTest,
+  reviseSampleTest,
   reviewSampleTest,
   setSampleParameters,
   setSamplePriority,
+  startSampleTest,
 } from '../../api/endpoints/foodlab';
 import { getUsers } from '../../api/endpoints/users';
 import { EmptyState } from '../../components/uikit';
@@ -194,8 +197,18 @@ interface AnalystRow { user: User; workload?: WorkloadItem; }
 
 const MicrobiologyLabPage = () => {
   const { user } = useAuth();
-  const isSectionHead = user?.role === 'MICRO_SECTION_HEAD';
-  const isManager = user?.role === 'LAB_MANAGER' || user?.role === 'ADMIN';
+  // UI gating mirrors the backend FoodPermissionMixin resources. Permissions
+  // (not the legacy single `role` field) are the source of truth: lab roles can
+  // hold multiple role assignments. An empty list means a stale cached login —
+  // fail open in the UI only; the API still enforces the real permission.
+  const permissions = useMemo(() => user?.permissions ?? [], [user?.permissions]);
+  const hasFoodPerm = useCallback(
+    (action: string) => permissions.length === 0 || permissions.includes(`food:${action}`),
+    [permissions],
+  );
+  const canAssign = hasFoodPerm('edit');
+  const canReview = hasFoodPerm('review');
+  const canApprove = hasFoodPerm('approve');
 
   const { t: i18nT } = useTranslation();
 
@@ -216,6 +229,7 @@ const MicrobiologyLabPage = () => {
 
   const [dash, setDash] = useState<MicroDashboard | null>(null);
   const [dashLoading, setDashLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
   const [parameters, setParameters] = useState<LabParameter[]>([]);
   const [analysts, setAnalysts] = useState<User[]>([]);
   const [specs, setSpecs] = useState<MicrobiologicalSpecification[]>([]);
@@ -242,6 +256,9 @@ const MicrobiologyLabPage = () => {
   const [qcStatus, setQcStatus] = useState('PASSED');
   const [qcNotes, setQcNotes] = useState('');
   const [qcConfirmOpen, setQcConfirmOpen] = useState(false);
+
+  const [reviseTest, setReviseTest] = useState<SampleTest | null>(null);
+  const [reviseReason, setReviseReason] = useState('');
 
   const samples = useServerTable<FoodSample>({ fetchData: getLabSamples, initialPageSize: 100 });
   const tests = useServerTable<SampleTest>({ fetchData: getLabSampleTests });
@@ -292,30 +309,48 @@ const MicrobiologyLabPage = () => {
   const refreshDash = useCallback(() => {
     setDashLoading(true);
     getMicroBiologyDashboard()
-      .then((r) => setDash(r.data.data))
-      .catch(() => undefined)
+      .then((r) => {
+        setDash(r.data.data);
+        setStatsError(null);
+      })
+      .catch((err) => {
+        setDash(null);
+        setStatsError(describeLoadFailure(err));
+      })
       .finally(() => setDashLoading(false));
   }, []);
 
   const refreshWorkload = useCallback(() => {
     getMicroWorkload({ bench: 'MICROBIOLOGY' })
       .then((r) => setWorkload(r.data.data.workload))
-      .catch(() => undefined);
+      .catch((err) => setStatsError(describeLoadFailure(err)));
   }, []);
+
+  // `useServerTable` returns a fresh object literal every render. Depending on
+  // the whole object here made `refreshAll` change on every render, which in
+  // turn re-ran the mount effect and triggered an infinite fetch loop. Depend
+  // on the stable `refresh` callbacks instead.
+  const { refresh: refreshSamples } = samples;
+  const { refresh: refreshTests } = tests;
+  const { refresh: refreshQcTests } = qcTests;
+  const { refresh: refreshPathoTests } = pathoTests;
 
   const refreshAll = useCallback(() => {
     refreshDash();
     refreshWorkload();
-    samples.refresh();
-    tests.refresh();
-    qcTests.refresh();
-    pathoTests.refresh();
-  }, [refreshDash, refreshWorkload, samples, tests, qcTests, pathoTests]);
+    refreshSamples();
+    refreshTests();
+    refreshQcTests();
+    refreshPathoTests();
+  }, [refreshDash, refreshWorkload, refreshSamples, refreshTests, refreshQcTests, refreshPathoTests]);
 
+  // Tables already fetch themselves on mount (useServerTable's own effect), so
+  // only the dashboard/workload need an explicit initial load here. Keeping
+  // this effect mount-only prevents the refresh loop above.
   useEffect(() => {
     getLabParameters({ bench: 'MICROBIOLOGY', page_size: 100 })
       .then((r) => setParameters(r.data.data.results))
-      .catch(() => undefined);
+      .catch((err) => setStatsError(describeLoadFailure(err)));
     getUsers({ page_size: 100 })
       .then((r) => {
         const rows = r.data.data.results;
@@ -323,12 +358,13 @@ const MicrobiologyLabPage = () => {
         const lab = rows.filter((u) => u.role === 'LAB_TECHNICIAN' || u.role === 'LAB_MANAGER');
         setAnalysts(lab.length ? lab : rows.filter((u) => u.is_active));
       })
-      .catch(() => undefined);
+      .catch((err) => setStatsError(describeLoadFailure(err)));
     getMicroSpecifications({ page_size: 100 })
       .then((r) => setSpecs(r.data.data.results))
-      .catch(() => undefined);
-    refreshAll();
-  }, [refreshAll]);
+      .catch((err) => setStatsError(describeLoadFailure(err)));
+    refreshDash();
+    refreshWorkload();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { active, register, scrollTo } = useCommandSections(SECTIONS(i18nT) as unknown as CommandSectionDef[], [nav]);
 
@@ -459,6 +495,51 @@ const MicrobiologyLabPage = () => {
     void doSubmitQc();
   };
 
+  const runWorkflowAction = useCallback(
+    async (action: () => Promise<unknown>, successKey: string) => {
+      try {
+        await action();
+        notifySuccess(i18nT(successKey));
+        setReviseTest(null);
+        setReviseReason('');
+        refreshAll();
+      } catch {
+        notifyError(i18nT('food.microbiologyLab.workflow.actionFailed'));
+      }
+    },
+    [i18nT, refreshAll],
+  );
+
+  const submitStartTest = useCallback(
+    (t: SampleTest) => void runWorkflowAction(
+      () => startSampleTest(t.id),
+      'food.microbiologyLab.workflow.startSuccess',
+    ),
+    [runWorkflowAction],
+  );
+
+  const submitApproveTest = useCallback(
+    (t: SampleTest) => void runWorkflowAction(
+      () => approveSampleTest(t.id),
+      'food.microbiologyLab.workflow.approveSuccess',
+    ),
+    [runWorkflowAction],
+  );
+
+  const submitReviseTest = () => {
+    if (!reviseTest) return;
+    const reason = reviseReason.trim();
+    if (!reason) return notifyError(i18nT('food.microbiologyLab.workflow.reviseReasonRequired'));
+    void runWorkflowAction(
+      () => reviseSampleTest(reviseTest.id, {
+        reason,
+        result_value: reviseTest.result_value,
+        decision: reviseTest.decision,
+      }),
+      'food.microbiologyLab.workflow.reviseSuccess',
+    );
+  };
+
   const toggleReviewReason = (value: string) =>
     setReviewReasons((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
 
@@ -467,10 +548,13 @@ const MicrobiologyLabPage = () => {
   const handleExportSamples = () => sampleExport.exportAll({
     filename: `microbiology-samples-${new Date().toISOString().slice(0, 10)}.csv`,
     headers: [
-      i18nT('food.microbiologyLab.str64'), i18nT('food.microbiologyLab.str65'),
-      i18nT('food.microbiologyLab.str66'), i18nT('food.microbiologyLab.str58'),
-      i18nT('food.microbiologyLab.str67'), i18nT('food.microbiologyLab.str57'),
-      i18nT('food.microbiologyLab.str10'),
+      i18nT('food.microbiologyLab.export.sampleNumber'),
+      i18nT('food.microbiologyLab.export.sampleType'),
+      i18nT('food.microbiologyLab.export.source'),
+      i18nT('food.microbiologyLab.export.priority'),
+      i18nT('food.microbiologyLab.export.status'),
+      i18nT('food.microbiologyLab.export.analyst'),
+      i18nT('food.microbiologyLab.export.receivedAt'),
     ],
     mapRow: (s) => [
       s.sample_number, s.sample_type, s.source_name ?? '',
@@ -478,15 +562,24 @@ const MicrobiologyLabPage = () => {
       labSampleStatus[s.status]?.label ?? s.status,
       s.analyst_name ?? '', formatDateTime(s.received_at),
     ],
+    // The table filters sample tabs client-side; keep the CSV in sync with the
+    // tab the user is actually looking at.
+    filterRows: (s) => {
+      const statuses = SAMPLE_STATUS_GROUPS[nav];
+      return !statuses || statuses.includes(s.status);
+    },
     message: i18nT('food.microbiologyLab.export.samples'),
   });
 
   const handleExportTests = () => testExport.exportAll({
     filename: `microbiology-tests-${new Date().toISOString().slice(0, 10)}.csv`,
     headers: [
-      i18nT('food.microbiologyLab.str68'), i18nT('food.microbiologyLab.str67'),
-      i18nT('food.microbiologyLab.str69'), i18nT('food.microbiologyLab.str70'),
-      i18nT('food.microbiologyLab.str71'), 'QC', 'SLA',
+      i18nT('food.microbiologyLab.export.test'),
+      i18nT('food.microbiologyLab.export.status'),
+      i18nT('food.microbiologyLab.export.result'),
+      i18nT('food.microbiologyLab.export.decision'),
+      i18nT('food.microbiologyLab.export.evaluation'),
+      'QC', 'SLA',
     ],
     mapRow: (t) => [
       t.parameter?.name_ar ?? '', labTestStatus[t.status]?.label ?? t.status,
@@ -502,8 +595,10 @@ const MicrobiologyLabPage = () => {
   const handleExportQc = () => qcExport.exportAll({
     filename: `microbiology-qc-${new Date().toISOString().slice(0, 10)}.csv`,
     headers: [
-      i18nT('food.microbiologyLab.str68'), i18nT('food.microbiologyLab.str67'),
-      i18nT('food.microbiologyLab.str70'), 'QC',
+      i18nT('food.microbiologyLab.export.test'),
+      i18nT('food.microbiologyLab.export.status'),
+      i18nT('food.microbiologyLab.export.decision'),
+      'QC',
     ],
     mapRow: (t) => [
       t.parameter?.name_ar ?? '', labTestStatus[t.status]?.label ?? t.status,
@@ -526,13 +621,13 @@ const MicrobiologyLabPage = () => {
       key: 'actions', label: '', render: (s) => (
         <Stack direction="row" spacing={0.5}>
           <AppButton size="small" variant="secondary" onClick={() => setDetailId(s.id)}>{i18nT('food.microbiologyLab.button.open')}</AppButton>
-          {(isSectionHead || isManager) && (
+          {canAssign && (
             <AppButton size="small" variant="secondary" onClick={() => openAssign(s)}>{i18nT('food.microbiologyLab.button.assign')}</AppButton>
           )}
         </Stack>
       ),
     },
-  ], [isSectionHead, isManager, i18nT]);
+  ], [canAssign, i18nT]);
 
   const testColumns: DataTableColumn<SampleTest>[] = useMemo(() => [
     { key: 'parameter', label: i18nT('food.microbiologyLab.str68'), noWrap: false, render: (t) => <b>{t.parameter.name_ar}</b> },
@@ -550,17 +645,34 @@ const MicrobiologyLabPage = () => {
     { key: 'sla', label: 'SLA', render: (t) => (t.sla?.status ? <StatusChip label={labSla[t.sla.status]?.label ?? t.sla.status} tone={labSla[t.sla.status]?.tone} /> : '—') },
     {
       key: 'actions', label: '', render: (t) => (
-        <Stack direction="row" spacing={0.5}>
-          {(isSectionHead || isManager) && (
-            <AppButton size="small" variant="secondary" onClick={() => openReview(t)}>{i18nT('food.microbiologyLab.button.review')}</AppButton>
+        <Stack direction="row" spacing={0.5} useFlexGap flexWrap="wrap">
+          {canAssign && ['PENDING', 'DRAFT', 'RETEST'].includes(t.status) && (
+            <AppButton size="small" variant="secondary" onClick={() => submitStartTest(t)}>
+              {i18nT('food.microbiologyLab.button.start')}
+            </AppButton>
           )}
-          {(isSectionHead || isManager) && (
+          {canReview && (
+            <AppButton size="small" variant="secondary" onClick={() => openReview(t)}>
+              {i18nT('food.microbiologyLab.button.review')}
+            </AppButton>
+          )}
+          {canReview && (
             <AppButton size="small" variant="secondary" onClick={() => { setQcTest(t); setQcStatus('PASSED'); setQcNotes(''); }}>QC</AppButton>
+          )}
+          {canApprove && ['REVIEWED', 'SUBMITTED'].includes(t.status) && (
+            <AppButton size="small" variant="secondary" onClick={() => submitApproveTest(t)}>
+              {i18nT('food.microbiologyLab.button.approve')}
+            </AppButton>
+          )}
+          {canReview && ['APPROVED', 'REVIEWED', 'COMPLETED'].includes(t.status) && (
+            <AppButton size="small" variant="secondary" onClick={() => { setReviseTest(t); setReviseReason(''); }}>
+              {i18nT('food.microbiologyLab.button.revise')}
+            </AppButton>
           )}
         </Stack>
       ),
     },
-  ], [isSectionHead, isManager, i18nT]);
+  ], [canAssign, canReview, canApprove, submitStartTest, submitApproveTest, i18nT]);
 
   const workloadColumns: DataTableColumn<WorkloadItem>[] = useMemo(() => [
     { key: 'full_name', label: i18nT('food.microbiologyLab.str57'), render: (w) => <b>{w.full_name}</b> },
@@ -698,6 +810,20 @@ const MicrobiologyLabPage = () => {
           </Box>,
         ]}
       />
+
+      {statsError && (
+        <Alert
+          severity="error"
+          sx={{ mt: 2 }}
+          action={
+            <AppButton size="small" variant="secondary" onClick={refreshAll}>
+              {i18nT('food.microbiologyLab.error.retry')}
+            </AppButton>
+          }
+        >
+          {i18nT('food.microbiologyLab.error.loadFailed')}: {statsError}
+        </Alert>
+      )}
 
       <Grid container spacing={0} sx={{ mt: 3 }} columnSpacing={3}>
         <Grid item xs={12} md={2.2} lg={1.8}>
@@ -1447,6 +1573,26 @@ const MicrobiologyLabPage = () => {
         onConfirm={() => void doSubmitQc()}
         onClose={() => setQcConfirmOpen(false)}
       />
+
+      <FormDialog
+        open={Boolean(reviseTest)}
+        onClose={() => setReviseTest(null)}
+        onSubmit={submitReviseTest}
+        title={i18nT('food.microbiologyLab.button.revise')}
+        subtitle={reviseTest?.parameter?.name_ar ?? ''}
+        maxWidth="xs"
+        submitLabel={i18nT('food.microbiologyLab.button.revise')}
+      >
+        {reviseTest && (
+          <FormTextField
+            label={i18nT('food.microbiologyLab.workflow.reviseReason')}
+            multiline
+            minRows={2}
+            value={reviseReason}
+            onChange={(e) => setReviseReason(e.target.value)}
+          />
+        )}
+      </FormDialog>
     </Box>
   );
 };

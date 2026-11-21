@@ -828,6 +828,9 @@ ROLES = [
         'description': 'استلام العينات وتوزيعها على الفنيين واعتماد النتائج وإرسالها للنظام',
         'default_scope': ScopeType.STATION,
         'resources': {
+            # Micro-lab screens read /food/* endpoints, so lab roles need food
+            # permissions in addition to laboratory ones.
+            'food': ['view', 'add', 'edit', 'review', 'approve'],
             'laboratory': ['view', 'add', 'edit', 'delete'],
             'reports': ['view', 'add'],
             'travelers': ['view'],
@@ -857,6 +860,7 @@ ROLES = [
         'description': 'إجراء التحاليل وإدخال النتائج وتوثيق الفحوصات',
         'default_scope': ScopeType.STATION,
         'resources': {
+            'food': ['view', 'add', 'edit'],
             'laboratory': ['view', 'add', 'edit'],
             'reports': ['view'],
             'notifications': ['view'],
@@ -899,6 +903,7 @@ ROLES = [
         'description': 'توزيع عينات الأحياء الدقيقة على المحللين ومتابعة عبء العمل ومراجعة النتائج ومراجعة الحدود الميكروبيولوجية (n/c/m/M) ومراجعة الجودة (QC) ومتابعة SLA. لا يعتمد النتيجة نهائياً ولا يعدل النتائج بنفسه ولا يعدل المواصفات',
         'default_scope': ScopeType.STATION,
         'resources': {
+            'food': ['view', 'add', 'edit', 'review'],
             'laboratory': ['view', 'add', 'edit'],
             'reports': ['view'],
             'travelers': ['view'],
@@ -913,6 +918,7 @@ ROLES = [
         'description': 'تنفيذ التحليل الميكروبيولوجي وتوثيق كل مرحلة (الزراعة، الحضانة، القراءة، العدّ الميكروبي، النتائج النوعية) وإدخال النتائج وإرسالها لرئيس قسم الأحياء الدقيقة للمراجعة. لا يعدل المواصفة ولا يعتمد النتائج ولا يحذف النتائج',
         'default_scope': ScopeType.STATION,
         'resources': {
+            'food': ['view', 'add', 'edit'],
             'laboratory': ['view', 'add', 'edit'],
             'reports': ['view'],
             'notifications': ['view'],
@@ -926,6 +932,7 @@ ROLES = [
         'description': 'مراقبة سلامة النظام الفني للمختبر: المواصفات الميكروبيولوجية (n/c/m/M)، طرق الاختبار، مراجعة الجودة (QC)، المعايرة، الكواشف، الوثائق، عدم المطابقة (NC)، CAPA، وسجل التدقيق (Audit Trail). لا يعدل نتائج المحللين ولا يعتمد النتيجة النهائية ولا يدير المستخدمين ولا الرسوم',
         'default_scope': ScopeType.STATION,
         'resources': {
+            'food': ['view', 'review'],
             'laboratory': ['view', 'edit'],
             'reports': ['view'],
             'notifications': ['view'],

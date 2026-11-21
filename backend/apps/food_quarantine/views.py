@@ -1553,17 +1553,34 @@ class FoodSampleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
 class SampleTestViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SampleTest.objects.all()
     serializer_class = SampleTestSerializer
+    # Workflow actions need real permissions; without this map every action
+    # silently inherited `food:view`, so any reader could review/approve/QC.
+    action_permission_map = {
+        'start': 'edit',
+        'enter_result': 'edit',
+        'save_result': 'edit',
+        'retest': 'edit',
+        'review': 'review',
+        'return_result': 'review',
+        'mark_qc': 'review',
+        'revise': 'review',
+        'approve': 'approve',
+    }
     # Micro-lab test lists filter by bench/status/qc/parameter/analyst and sort.
     filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
     search_fields = ['result_text', 'method_used', 'device_used', 'reagent_lot']
     ordering_fields = ['created_at', 'updated_at', 'status', 'decision', 'qc_status']
     filter_fields = [
-        'bench', 'status', 'decision', 'qc_status', 'parameter',
+        'status', 'decision', 'qc_status', 'parameter',
         'assigned_to', 'evaluation', 'entered_by',
     ]
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # `bench` lives on the parent sample, not on the test itself.
+        bench = self.request.query_params.get('bench')
+        if bench:
+            qs = qs.filter(sample__bench=bench)
         date_from = self.request.query_params.get('entered_at_from')
         date_to = self.request.query_params.get('entered_at_to')
         if date_from:

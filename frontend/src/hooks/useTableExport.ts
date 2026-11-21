@@ -9,6 +9,8 @@ export interface ExportAllOptions<T> {
   headers: string[];
   mapRow: (row: T) => CsvRow;
   message: string;
+  /** Optional predicate to keep the export in sync with a client-side view (e.g. an active tab). */
+  filterRows?: (row: T) => boolean;
 }
 
 /**
@@ -21,12 +23,13 @@ export const useTableExport = <T,>(fetchAllRows: () => Promise<T[]>) => {
 
   const exportAll = useCallback(
     async (options: ExportAllOptions<T>) => {
-      const { filename, headers, mapRow, message } = options;
+      const { filename, headers, mapRow, message, filterRows } = options;
       setExporting(true);
       try {
         const all = await fetchAllRows();
-        exportToCsv(filename, headers, all.map(mapRow));
-        notifySuccess(`${message} (${all.length})`);
+        const rows = filterRows ? all.filter(filterRows) : all;
+        exportToCsv(filename, headers, rows.map(mapRow));
+        notifySuccess(`${message} (${rows.length})`);
       } catch {
         notifyError('تعذر التصدير، حاول مرة أخرى');
       } finally {
