@@ -10444,7 +10444,121 @@
       "extraPayment": "Extra Payment",
       "collect": "Collect",
       "confirmed": "Confirmed"
-    }
+    },
+      "reports": {
+        "noPermission": "You do not have permission to view financial reports",
+        "title": "Financial Reports",
+        "subtitle": "National revenue listings, distribution by method and sector, and arrears",
+        "actions": {
+          "export": "Export CSV"
+        },
+        "summary": {
+          "totalRevenue": "Total Revenue",
+          "paidInvoices": "{{count}} paid invoice(s)",
+          "todayCollection": "Collected Today",
+          "operations": "{{count}} transactions",
+          "arrears": "Arrears",
+          "netRevenue": "Net Revenue (after refunds)",
+          "refunds": "{{count}} refund(s)"
+        },
+        "monthly": {
+          "title": "Monthly Revenue (last 12 months)"
+        },
+        "bySector": {
+          "title": "Revenue by Sector"
+        },
+        "byChannel": {
+          "title": "Revenue Collected by Payment Method"
+        },
+        "arrearsAging": {
+          "title": "Arrears Aging Distribution",
+          "empty": "No arrears"
+        },
+        "matrix": {
+          "title": "National Revenue Matrix — sector ← port",
+          "empty": "No revenue from ports yet"
+        },
+        "tree": {
+          "title": "National Revenue Tree — sector ← port ← service"
+        },
+        "empty": "No data yet",
+        "columns": {
+          "channel": "Method",
+          "pct": "Share",
+          "amount": "Amount",
+          "count": "Count",
+          "period": "Period",
+          "weight": "Relative Weight",
+          "total": "Total",
+          "sector": "Sector",
+          "port": "Port",
+          "invoiceCount": "Invoice Count"
+        }
+      },
+      "receipt": {
+        "currency": {
+          "sdg": "Sudanese Pound",
+          "usd": "US Dollar"
+        },
+        "methods": {
+          "cash": "Cash",
+          "pos": "Bank card (POS)",
+          "bankTransfer": "Bank transfer",
+          "electronic": "Electronic"
+        },
+        "status": {
+          "confirmed": "Confirmed"
+        },
+        "actions": {
+          "printElectronic": "Print Electronic Receipt",
+          "print": "Print Receipt",
+          "close": "Close"
+        },
+        "loading": "Preparing receipt data...",
+        "error": {
+          "load": "Failed to load receipt data."
+        },
+        "header": {
+          "country": "Republic of Sudan",
+          "ministry": "Federal Ministry of Health — General Directorate of Animal Health",
+          "platform": "National Quarantine Platform — Fee Payment Acknowledgement"
+        },
+        "fields": {
+          "receiptNumber": "Receipt Number",
+          "issueDate": "Issue Date",
+          "collector": "Collected By",
+          "invoiceNumber": "Invoice Number",
+          "orderRef": "Request / Reference",
+          "service": "Service",
+          "customer": "Customer",
+          "nationalId": "National ID",
+          "phone": "Phone"
+        },
+        "items": {
+          "title": "Line Items ({{currency}})",
+          "empty": "No line items.",
+          "columns": {
+            "item": "Item",
+            "quantity": "Quantity",
+            "unitValue": "Unit Value",
+            "total": "Total"
+          }
+        },
+        "total": "Total ({{currencyLabel}})",
+        "discount": "Discount — {{reason}}",
+        "discountGranted": "Granted",
+        "netDue": "Net Due",
+        "collected": "Amount Collected: {{amount}} ({{currency}}) — {{method}}",
+        "nonCash": "Non-cash payment:",
+        "reference": "Reference {{method}}: {{ref}}",
+        "transactionStatus": "Transaction status: {{status}}",
+        "notes": "Notes: {{notes}}",
+        "verificationCode": "Electronic Verification Code",
+        "verificationNote": "{{date}} — This receipt can be verified using the code above in the platform registry.",
+        "alerts": {
+          "noCashRefund": "Cash refunds are not accepted unless the invoice is moved to the refunded status and approved by the finance manager. This receipt is issued electronically and requires no manual stamp."
+        }
+      }
   },
   "carriers": {
     "flightDetail": {

@@ -10444,7 +10444,121 @@
       "extraPayment": "دفعة إضافية",
       "collect": "تحصيل",
       "confirmed": "مؤكد"
-    }
+    },
+      "reports": {
+        "noPermission": "لا تملك صلاحية التقارير المالية",
+        "title": "التقارير المالية",
+        "subtitle": "قائمة الإيرادات القومية، التوزيع حسب الوسيلة والقطاع، والمتأخرات",
+        "actions": {
+          "export": "تصدير CSV"
+        },
+        "summary": {
+          "totalRevenue": "إجمالي الإيرادات",
+          "paidInvoices": "{{count}} فاتورة مدفوعة",
+          "todayCollection": "محصل اليوم",
+          "operations": "{{count}} عملية",
+          "arrears": "متأخرات",
+          "netRevenue": "صافي الإيراد (بعد الاستردادات)",
+          "refunds": "{{count}} استرداد"
+        },
+        "monthly": {
+          "title": "الإيرادات الشهرية (آخر 12 شهراً)"
+        },
+        "bySector": {
+          "title": "الإيرادات حسب القطاع"
+        },
+        "byChannel": {
+          "title": "الإيراد المحصّل حسب وسيلة الدفع"
+        },
+        "arrearsAging": {
+          "title": "توزيع المتأخرات حسب فترة التأخير",
+          "empty": "لا توجد متأخرات"
+        },
+        "matrix": {
+          "title": "مصفوفة الإيرادات القومية — قطاع ← منفذ",
+          "empty": "لا توجد إيرادات من المنافذ بعد"
+        },
+        "tree": {
+          "title": "شجرة الإيرادات القومية — قطاع ← منفذ ← خدمة"
+        },
+        "empty": "لا توجد بيانات بعد",
+        "columns": {
+          "channel": "الوسيلة",
+          "pct": "النسبة",
+          "amount": "المبلغ",
+          "count": "العدد",
+          "period": "الفترة",
+          "weight": "الوزن النسبي",
+          "total": "الإجمالي",
+          "sector": "القطاع",
+          "port": "المنفذ",
+          "invoiceCount": "عدد الفواتير"
+        }
+      },
+      "receipt": {
+        "currency": {
+          "sdg": "جنيه سوداني",
+          "usd": "دولار أمريكي"
+        },
+        "methods": {
+          "cash": "نقدي",
+          "pos": "شبكة بنكية (POS)",
+          "bankTransfer": "تحويل بنكي",
+          "electronic": "إلكتروني"
+        },
+        "status": {
+          "confirmed": "مؤكد"
+        },
+        "actions": {
+          "printElectronic": "طباعة الإيصال الإلكتروني",
+          "print": "طباعة الإيصال",
+          "close": "إغلاق"
+        },
+        "loading": "جاري تجهيز بيانات الإيصال...",
+        "error": {
+          "load": "تعذّر تحميل بيانات الإيصال."
+        },
+        "header": {
+          "country": "جمهورية السودان",
+          "ministry": "وزارة الصحة الاتحادية — الإدارة العامة للصحة الحيوانية",
+          "platform": "المنصة الوطنية للحجر الصحي — إقرار استلام رسوم"
+        },
+        "fields": {
+          "receiptNumber": "رقم الإيصال",
+          "issueDate": "تاريخ الإصدار",
+          "collector": "المحصل",
+          "invoiceNumber": "رقم الفاتورة",
+          "orderRef": "رقم الطلب / المرجع",
+          "service": "الخدمة",
+          "customer": "العميل",
+          "nationalId": "الرقم الوطني",
+          "phone": "الهاتف"
+        },
+        "items": {
+          "title": "تفاصيل البنود ({{currency}})",
+          "empty": "لا توجد بنود.",
+          "columns": {
+            "item": "البند",
+            "quantity": "الكمية",
+            "unitValue": "قيمة الوحدة",
+            "total": "الإجمالي"
+          }
+        },
+        "total": "الإجمالي ({{currencyLabel}})",
+        "discount": "الخصم — {{reason}}",
+        "discountGranted": "ممنوح",
+        "netDue": "الصافي المستحق",
+        "collected": "المبلغ المحصّل: {{amount}} ({{currency}}) — {{method}}",
+        "nonCash": "عملية دفع غير نقدية:",
+        "reference": "مرجع {{method}}: {{ref}}",
+        "transactionStatus": "حالة المعاملة: {{status}}",
+        "notes": "ملاحظات: {{notes}}",
+        "verificationCode": "رمز التحقق الإلكتروني",
+        "verificationNote": "{{date}} — يُتحقق من صحة هذا الإيصال عبر رمز التحقق أعلاه في سجل المنصة الوطنية.",
+        "alerts": {
+          "noCashRefund": "لا يُقبل استرداد النقدية إلا بتحويل الفاتورة إلى الحالة (مسترَدّة) واعتماد المدير المالي. هذا الإيصال صادر إلكترونياً ولا يتطلب ختماً يدوياً."
+        }
+      }
   },
   "carriers": {
     "flightDetail": {
