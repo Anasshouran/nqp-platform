@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -17,22 +18,20 @@ import { useServerTable } from '../../hooks/useServerTable';
 import { getFinanceAuditLogs } from '../../api/endpoints/finance';
 import { DataTable } from '../../components/uikit';
 import SectionTitle from '../../components/common/SectionTitle';
-import { AUDIT_ACTION_LABELS, type FinanceAuditLog } from '../../types/finance';
+import { labelOf, optionsOf, AUDIT_ACTION_LABELS, type FinanceAuditLog, type Locale } from '../../types/finance';
 
 const RESOURCE_OPTIONS = [
   { value: 'Invoice', label: 'فاتورة' },
   { value: 'Reconciliation', label: 'تسوية' },
 ];
 
-const ACTION_OPTIONS = Object.entries(AUDIT_ACTION_LABELS).map(([value, label]) => ({ value, label }));
-
 const shortId = (id?: string | null) => (id ? id.slice(0, 8).toUpperCase() : '—');
 
 const fmtDateTime = (iso: string) => new Date(iso).toLocaleString('ar-SD');
 
-const auditLabel = (a?: string) => AUDIT_ACTION_LABELS[a ?? ''] ?? a ?? '—';
+const auditLabel = (a: string | undefined, locale: Locale) => labelOf(AUDIT_ACTION_LABELS, a, locale);
 
-function AuditDetailDialog({ log, onClose }: { log: FinanceAuditLog; onClose: () => void }): React.JSX.Element {
+function AuditDetailDialog({ log, onClose, locale }: { log: FinanceAuditLog; onClose: () => void; locale: Locale }): React.JSX.Element {
   return (
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
       <DialogTitle sx={{ fontWeight: 700 }}>
@@ -51,8 +50,8 @@ function AuditDetailDialog({ log, onClose }: { log: FinanceAuditLog; onClose: ()
           <Box>
             <Row label="التوقيت" value={fmtDateTime(log.occurred_at)} />
             <Row label="المستخدم" value={log.actor_name || '—'} />
-            <Row label="الدور" value={auditLabel(log.actor_role) || log.actor_role || '—'} />
-            <Row label="الإجراء" value={auditLabel(log.action)} />
+            <Row label="الدور" value={auditLabel(log.actor_role, locale) || log.actor_role || '—'} />
+            <Row label="الإجراء" value={auditLabel(log.action, locale)} />
             <Row label="نوع المورد" value={log.resource_type} />
             <Row label="رقم المورد" value={shortId(log.resource_id)} />
             <Row label="مرجع الفاتورة" value={log.invoice_ref || '—'} />
@@ -104,6 +103,10 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function AuditLogsView(): React.JSX.Element {
+  const { i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
+  const actionOptions = useMemo(() => optionsOf(AUDIT_ACTION_LABELS, locale), [locale]);
+
   const table = useServerTable<FinanceAuditLog>({
     fetchData: getFinanceAuditLogs,
     initialPageSize: 25,
@@ -119,7 +122,7 @@ export default function AuditLogsView(): React.JSX.Element {
 
   const buildFilterDefs = useCallback(() => [
     {
-      key: 'action', label: 'الإجراء', options: ACTION_OPTIONS,
+      key: 'action', label: 'الإجراء', options: actionOptions,
       value: actionValue,
       onChange: (v: string) => { setActionValue(v); setFilter('action', v); },
     },
@@ -128,7 +131,7 @@ export default function AuditLogsView(): React.JSX.Element {
       value: resourceValue,
       onChange: (v: string) => { setResourceValue(v); setFilter('resource_type', v); },
     },
-  ], [setFilter, actionValue, resourceValue]);
+  ], [setFilter, actionValue, resourceValue, actionOptions]);
 
   return (
     <>
@@ -141,8 +144,8 @@ export default function AuditLogsView(): React.JSX.Element {
         columns={[
           { key: 'occurred_at', label: 'التوقيت', sortable: true, render: (l) => <Typography sx={{ whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: 12 }}>{fmtDateTime(l.occurred_at)}</Typography> },
           { key: 'actor_name', label: 'المستخدم', render: (l) => <Typography sx={{ fontWeight: 600 }}>{l.actor_name || '—'}</Typography> },
-          { key: 'actor_role', label: 'الدور', render: (l) => auditLabel(l.actor_role) || l.actor_role || '—' },
-          { key: 'action', label: 'الإجراء', render: (l) => <Chip size="small" variant="outlined" label={auditLabel(l.action)} /> },
+          { key: 'actor_role', label: 'الدور', render: (l) => auditLabel(l.actor_role, locale) || l.actor_role || '—' },
+          { key: 'action', label: 'الإجراء', render: (l) => <Chip size="small" variant="outlined" label={auditLabel(l.action, locale)} /> },
           { key: 'resource_type', label: 'المورد' },
           { key: 'invoice_ref', label: 'الفاتورة', render: (l) => <Typography sx={{ fontWeight: 700 }}>{l.invoice_ref || shortId(l.resource_id)}</Typography> },
           { key: 'change', label: 'التغيير', hideOnMobile: true, render: (l) => (
@@ -184,7 +187,7 @@ export default function AuditLogsView(): React.JSX.Element {
       />
 
       {detail && (
-        <AuditDetailDialog log={detail} onClose={() => setDetail(null)} />
+        <AuditDetailDialog log={detail} onClose={() => setDetail(null)} locale={locale} />
       )}
     </>
   );

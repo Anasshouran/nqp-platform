@@ -65,9 +65,12 @@ import {
   refundFinanceInvoice,
 } from '../../api/endpoints/finance';
 import {
+  labelOf,
+  optionsOf,
   INVOICE_STATUS_LABELS,
   PAYMENT_METHOD_LABELS,
   SERVICE_TYPE_LABELS,
+  type Locale,
   type FinanceFee,
   type FinanceInvoice,
   type FinancePayment,
@@ -107,9 +110,9 @@ const fmtMoney = (v: string | number | null | undefined) =>
 
 const shortId = (id?: string | null) => (id ? id.slice(0, 8).toUpperCase() : '—');
 
-const statusLabel = (s?: string) => INVOICE_STATUS_LABELS[s ?? ''] ?? s ?? '—';
-const serviceLabel = (s?: string) => SERVICE_TYPE_LABELS[s ?? ''] ?? s ?? '—';
-const methodLabel = (m?: string) => PAYMENT_METHOD_LABELS[m ?? ''] ?? m ?? '—';
+const statusLabel = (s: string | undefined, locale: Locale) => labelOf(INVOICE_STATUS_LABELS, s, locale);
+const serviceLabel = (s: string | undefined, locale: Locale) => labelOf(SERVICE_TYPE_LABELS, s, locale);
+const methodLabel = (m: string | undefined, locale: Locale) => labelOf(PAYMENT_METHOD_LABELS, m, locale);
 
 interface Filters {
   status: string;
@@ -120,7 +123,11 @@ interface Filters {
 const emptyFilters: Filters = { status: '', sector: '', service_type: '' };
 
 export default function NationalFinancePage(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
+  const statusOptions = useMemo(() => optionsOf(INVOICE_STATUS_LABELS, locale), [locale]);
+  const serviceOptions = useMemo(() => optionsOf(SERVICE_TYPE_LABELS, locale), [locale]);
+  const methodOptions = useMemo(() => optionsOf(PAYMENT_METHOD_LABELS, locale), [locale]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
@@ -436,7 +443,7 @@ export default function NationalFinancePage(): React.JSX.Element {
   const statusChip = (status: string) => (
     <Chip
       size="small"
-      label={statusLabel(status)}
+      label={statusLabel(status, locale)}
       color={STATUS_COLORS[status] as 'default' | 'info' | 'warning' | 'success' | 'secondary' | 'error'}
       variant={status === 'PAID' || status === 'RECONCILED' ? 'filled' : 'outlined'}
     />
@@ -632,7 +639,7 @@ export default function NationalFinancePage(): React.JSX.Element {
                                   <TableCell sx={{ fontWeight: 700 }}>{r.receipt_number}</TableCell>
                                   <TableCell>{inv?.invoice_number ?? shortId(r.invoice)}</TableCell>
                                   <TableCell sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(r.amount)}</TableCell>
-                                  <TableCell>{pmt ? methodLabel(pmt.method) : '—'}</TableCell>
+                                  <TableCell>{pmt ? methodLabel(pmt.method, locale) : '—'}</TableCell>
                                   <TableCell>{new Date(r.issued_at).toLocaleString('ar-SD')}</TableCell>
                                   <TableCell align="center">
                                     <IconButton size="small" aria-label={t('finance.actions.printReceipt')} onClick={() => setPrintTarget({ receipt: r })}>
@@ -664,15 +671,15 @@ export default function NationalFinancePage(): React.JSX.Element {
                 <TextField
                   select label={t('finance.filters.status')} size="small" value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))} sx={{ minWidth: 170 }}>
                   <MenuItem value="">{t('finance.filters.all')}</MenuItem>
-                  {Object.entries(INVOICE_STATUS_LABELS).map(([k, v]) => (
-                    <MenuItem key={k} value={k}>{v}</MenuItem>
+                  {statusOptions.map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
                   ))}
                 </TextField>
                 <TextField
                   select label={t('finance.filters.service')} size="small" value={filters.service_type} onChange={(e) => setFilters((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 170 }}>
                   <MenuItem value="">{t('finance.filters.all')}</MenuItem>
-                  {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
-                    <MenuItem key={k} value={k}>{v}</MenuItem>
+                  {serviceOptions.map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
                   ))}
                 </TextField>
               </Stack>
@@ -852,8 +859,8 @@ export default function NationalFinancePage(): React.JSX.Element {
             />
             <TextField
               select label={t('finance.dialogs.paymentMethod')} value={payForm.method} onChange={(e) => setPayForm((p) => ({ ...p, method: e.target.value }))}>
-              {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
-                <MenuItem key={k} value={k}>{v}</MenuItem>
+              {methodOptions.map(({ value, label }) => (
+                <MenuItem key={value} value={value}>{label}</MenuItem>
               ))}
             </TextField>
             <TextField label={t('finance.dialogs.gatewayRef')} value={payForm.gateway_ref} onChange={(e) => setPayForm((p) => ({ ...p, gateway_ref: e.target.value }))} fullWidth />
@@ -900,8 +907,8 @@ export default function NationalFinancePage(): React.JSX.Element {
             <TextField label={t('finance.fees.nameAr')} value={feeForm.name_ar ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, name_ar: e.target.value }))} fullWidth required />
             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
               <TextField select label={t('finance.fees.serviceType')} value={feeForm.service_type ?? 'FOOD_CONTROL'} onChange={(e) => setFeeForm((f) => ({ ...f, service_type: e.target.value }))} sx={{ minWidth: 180 }}>
-                {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
-                  <MenuItem key={k} value={k}>{v}</MenuItem>
+                {serviceOptions.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>{label}</MenuItem>
                 ))}
               </TextField>
               <TextField label={t('finance.fees.code')} value={feeForm.code ?? ''} onChange={(e) => setFeeForm((f) => ({ ...f, code: e.target.value }))} sx={{ minWidth: 140 }} />
@@ -968,11 +975,12 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund, count, pag
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 }): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
   const columns = useMemo<DataTableColumn<FinanceInvoice>[]>(() => [
     { key: 'invoice_number', label: t('finance.columns.invoice'), align: 'left', render: (r) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{r.invoice_number}</Typography> },
     { key: 'request_ref', label: t('finance.columns.order'), align: 'left', render: (r) => r.request_ref || '—' },
-    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (r) => serviceLabel(r.service_type) },
+    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (r) => serviceLabel(r.service_type, locale) },
     { key: 'net_amount', label: t('finance.columns.net'), render: (r) => `${fmtMoney(r.net_amount)} ${r.currency}` },
     { key: 'paid_amount', label: t('finance.columns.paidRemaining'), render: (r) => (
       <Box>
@@ -982,9 +990,9 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund, count, pag
         )}
       </Box>
     ) },
-    { key: 'status', label: t('finance.columns.status'), align: 'left', render: (r) => statusChipLocal(r.status) },
+    { key: 'status', label: t('finance.columns.status'), align: 'left', render: (r) => statusChipLocal(r.status, locale) },
     { key: 'due_date', label: t('finance.columns.dueDate'), align: 'left', render: (r) => (r.due_date ? new Date(r.due_date).toLocaleDateString('ar-SD') : '—') },
-  ], [t]);
+  ], [t, locale]);
 
   return (
     <DataTable<FinanceInvoice>
@@ -1019,11 +1027,11 @@ function InvoicesTable({ invoices, onView, onPay, onCancel, onRefund, count, pag
   );
 }
 
-function statusChipLocal(status: string): React.JSX.Element {
+function statusChipLocal(status: string, locale: Locale): React.JSX.Element {
   return (
     <Chip
       size="small"
-      label={statusLabel(status)}
+      label={statusLabel(status, locale)}
       color={STATUS_COLORS[status] as 'default' | 'info' | 'warning' | 'success' | 'secondary' | 'error'}
       variant={status === 'PAID' || status === 'RECONCILED' ? 'filled' : 'outlined'}
     />
@@ -1040,10 +1048,11 @@ function PaymentsTable({ payments, count, page = 0, pageSize = 25, loading = fal
   onPageSizeChange?: (size: number) => void;
   hidePagination?: boolean;
 }): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
   const columns = useMemo<DataTableColumn<FinancePayment>[]>(() => [
     { key: 'invoice', label: t('finance.columns.invoice'), align: 'left', render: (p) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{shortId(p.invoice)}</Typography> },
-    { key: 'method', label: t('finance.columns.method'), align: 'left', render: (p) => methodLabel(p.method) },
+    { key: 'method', label: t('finance.columns.method'), align: 'left', render: (p) => methodLabel(p.method, locale) },
     { key: 'amount', label: t('finance.columns.amount'), render: (p) => `${fmtMoney(p.amount)} ${p.currency}` },
     { key: 'gateway_status', label: t('finance.columns.status'), align: 'left', render: (p) => (
       <Chip size="small" color={p.gateway_status === 'CONFIRMED' ? 'success' : 'warning'} label={p.gateway_status === 'CONFIRMED' ? t('finance.payments.confirmed') : p.gateway_status} variant="outlined" />
@@ -1056,7 +1065,7 @@ function PaymentsTable({ payments, count, page = 0, pageSize = 25, loading = fal
       <Typography variant="caption" color="text.secondary">—</Typography>
     )) },
     { key: 'collected_at', label: t('finance.columns.time'), align: 'left', render: (p) => new Date(p.collected_at).toLocaleString('ar-SD') },
-  ], [t]);
+  ], [t, locale]);
 
   return (
     <DataTable<FinancePayment>
@@ -1177,11 +1186,12 @@ function FeesTable({ fees, onEdit, onDeactivate, count, page, pageSize, loading,
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 }): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
   const columns = useMemo<DataTableColumn<FinanceFee>[]>(() => [
     { key: 'code', label: t('finance.columns.code'), align: 'left', render: (f) => <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 12 }}>{f.code || '—'}</Typography> },
     { key: 'name_ar', label: t('finance.columns.name'), align: 'left', render: (f) => <Typography variant="body2" sx={{ fontWeight: 700 }}>{f.name_ar}</Typography> },
-    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (f) => serviceLabel(f.service_type) },
+    { key: 'service_type', label: t('finance.columns.service'), align: 'left', render: (f) => serviceLabel(f.service_type, locale) },
     { key: 'amount_sdg', label: 'SDG', render: (f) => (f.amount_sdg != null ? fmtMoney(f.amount_sdg) : '—') },
     { key: 'amount_usd', label: 'USD', render: (f) => (f.amount_usd != null ? fmtMoney(f.amount_usd) : '—') },
     { key: 'year', label: t('finance.columns.year'), render: (f) => f.year },
@@ -1193,7 +1203,7 @@ function FeesTable({ fees, onEdit, onDeactivate, count, page, pageSize, loading,
     { key: 'is_active', label: t('finance.columns.status'), align: 'left', render: (f) => (
       <Chip size="small" color={f.is_active ? 'success' : 'default'} label={f.is_active ? t('finance.status.active') : t('finance.status.inactive')} variant={f.is_active ? 'filled' : 'outlined'} />
     ) },
-  ], [t]);
+  ], [t, locale]);
 
   return (
     <DataTable<FinanceFee>
@@ -1226,7 +1236,8 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
   onPay: (i: FinanceInvoice) => void;
   onPrint: (r: FinanceReceipt) => void;
 }): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n?.language === 'en' ? 'en' : 'ar';
   return (
     <>
       <DialogTitle sx={{ fontWeight: 700 }}>
@@ -1238,8 +1249,8 @@ function InvoiceDetailDialog({ invoice, onClose, onPay, onPrint }: {
       <DialogContent dividers>
         <Stack spacing={2}>
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            {statusChipLocal(invoice.status)}
-            <Chip size="small" variant="outlined" label={serviceLabel(invoice.service_type)} />
+            {statusChipLocal(invoice.status, locale)}
+            <Chip size="small" variant="outlined" label={serviceLabel(invoice.service_type, locale)} />
             <Chip size="small" variant="outlined" label={t('finance.dialogs.orderRef', { ref: invoice.request_ref || '—' })} />
             {invoice.receipt_number && (
               <Chip size="small" color="success" variant="outlined" icon={<ReceiptIcon />} label={invoice.receipt_number} />

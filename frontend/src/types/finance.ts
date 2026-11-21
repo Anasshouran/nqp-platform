@@ -268,44 +268,78 @@ export interface OverdueInvoice {
   late_days: number;
 }
 
-export const SERVICE_TYPE_LABELS: Record<string, string> = {
-  QUARANTINE: 'رسوم الحجر الصحي',
-  FOOD_CONTROL: 'رقابة الأغذية',
-  INSPECTION: 'التفتيش',
-  SAMPLING: 'أخذ العينات',
-  LAB: 'المختبر',
-  CERTIFICATE: 'الشهادات',
-  PEST_CONTROL: 'مكافحة النواقل',
-  OTHER: 'خدمات أخرى',
+export type Locale = 'ar' | 'en';
+
+export interface LocalizedLabel {
+  ar: string;
+  en: string;
+}
+
+// Arabic wording is kept identical to the previous string maps so existing
+// screens and tests keep their behaviour; English is added alongside it.
+export const SERVICE_TYPE_LABELS: Record<string, LocalizedLabel> = {
+  QUARANTINE: { ar: 'رسوم الحجر الصحي', en: 'Quarantine' },
+  FOOD_CONTROL: { ar: 'رقابة الأغذية', en: 'Food control' },
+  INSPECTION: { ar: 'التفتيش', en: 'Inspection' },
+  SAMPLING: { ar: 'أخذ العينات', en: 'Sampling' },
+  LAB: { ar: 'المختبر', en: 'Laboratory' },
+  CERTIFICATE: { ar: 'الشهادات', en: 'Certificates' },
+  PEST_CONTROL: { ar: 'مكافحة النواقل', en: 'Vector control' },
+  OTHER: { ar: 'خدمات أخرى', en: 'Other services' },
 };
 
-export const INVOICE_STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'مسودة',
-  ISSUED: 'صادرة',
-  PENDING_PAYMENT: 'بانتظار الدفع',
-  PARTIAL: 'مسددة جزئياً',
-  PAID: 'مدفوعة',
-  RECONCILED: 'تسويت',
-  CANCELLED: 'ملغاة',
-  REFUNDED: 'مسترَدّة',
-  OVERDUE: 'متأخرة',
+export const INVOICE_STATUS_LABELS: Record<string, LocalizedLabel> = {
+  DRAFT: { ar: 'مسودة', en: 'Draft' },
+  ISSUED: { ar: 'صادرة', en: 'Issued' },
+  PENDING_PAYMENT: { ar: 'بانتظار الدفع', en: 'Pending payment' },
+  PARTIAL: { ar: 'مسددة جزئياً', en: 'Partially paid' },
+  PAID: { ar: 'مدفوعة', en: 'Paid' },
+  RECONCILED: { ar: 'تسويت', en: 'Reconciled' },
+  CANCELLED: { ar: 'ملغاة', en: 'Cancelled' },
+  REFUNDED: { ar: 'مسترَدّة', en: 'Refunded' },
+  OVERDUE: { ar: 'متأخرة', en: 'Overdue' },
+  EXEMPT: { ar: 'معفاة', en: 'Exempt' },
 };
 
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: 'نقدي',
-  BANK_CARD: 'شبكة بنكية',
-  BANK_TRANSFER: 'تحويل بنكي',
-  ELECTRONIC: 'إلكتروني',
+export const PAYMENT_METHOD_LABELS: Record<string, LocalizedLabel> = {
+  CASH: { ar: 'نقدي', en: 'Cash' },
+  BANK_CARD: { ar: 'شبكة بنكية', en: 'Bank card' },
+  BANK_TRANSFER: { ar: 'تحويل بنكي', en: 'Bank transfer' },
+  ELECTRONIC: { ar: 'إلكتروني', en: 'Electronic' },
 };
 
-export const AUDIT_ACTION_LABELS: Record<string, string> = {
-  CREATE: 'إنشاء',
-  UPDATE: 'تعديل',
-  APPROVE: 'اعتماد',
-  CANCEL: 'إلغاء',
-  REFUND: 'استرداد',
-  REVERSE: 'عكس',
-  RECONCILE: 'تسوية',
-  EXEMPT: 'إعفاء',
-  MARK_PAID: 'تحصيل',
+export const AUDIT_ACTION_LABELS: Record<string, LocalizedLabel> = {
+  CREATE: { ar: 'إنشاء', en: 'Create' },
+  UPDATE: { ar: 'تعديل', en: 'Update' },
+  APPROVE: { ar: 'اعتماد', en: 'Approve' },
+  CANCEL: { ar: 'إلغاء', en: 'Cancel' },
+  REFUND: { ar: 'استرداد', en: 'Refund' },
+  REVERSE: { ar: 'عكس', en: 'Reverse' },
+  RECONCILE: { ar: 'تسوية', en: 'Reconcile' },
+  EXEMPT: { ar: 'إعفاء', en: 'Exempt' },
+  MARK_PAID: { ar: 'تحصيل', en: 'Mark paid' },
 };
+
+/** Resolve one localized label. Falls back to '—' for empty keys and to the
+ * raw key for unknown ones — same behavior as the old `MAP[key] ?? key`. */
+export function labelOf(
+  map: Record<string, LocalizedLabel>,
+  key: string | null | undefined,
+  locale: Locale = 'ar',
+): string {
+  if (!key) return '—';
+  const entry = map[key];
+  if (!entry) return key;
+  return locale === 'en' ? entry.en : entry.ar;
+}
+
+/** Dropdown options built from a label map, in insertion order. */
+export function optionsOf(
+  map: Record<string, LocalizedLabel>,
+  locale: Locale = 'ar',
+): Array<{ value: string; label: string }> {
+  return Object.entries(map).map(([value, labels]) => ({
+    value,
+    label: locale === 'en' ? labels.en : labels.ar,
+  }));
+}
