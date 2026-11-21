@@ -1062,6 +1062,26 @@ class FoodInspectionViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
 class FoodSampleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = FoodSample.objects.all()
     serializer_class = FoodSampleSerializer
+    # Micro-lab lists filter by bench/status/priority/analyst and sort by date;
+    # without backends these query params were silently ignored.
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['sample_number', 'sample_barcode', 'analysis_request_number']
+    ordering_fields = ['received_at', 'created_at', 'sample_number', 'priority', 'status']
+    filter_fields = [
+        'bench', 'status', 'priority', 'analyst', 'approval_status',
+        'collection_status', 'reception_status', 'source', 'sector',
+    ]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Date-range filtering for the lab's advanced filter bar.
+        date_from = self.request.query_params.get('received_at_from')
+        date_to = self.request.query_params.get('received_at_to')
+        if date_from:
+            qs = qs.filter(received_at__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(received_at__date__lte=date_to)
+        return qs
 
     def create(self, request, *args, **kwargs):
         serializer = FoodSampleWriteSerializer(data=request.data)
@@ -1533,6 +1553,24 @@ class FoodSampleViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
 class SampleTestViewSet(FoodPermissionMixin, viewsets.ModelViewSet):
     queryset = SampleTest.objects.all()
     serializer_class = SampleTestSerializer
+    # Micro-lab test lists filter by bench/status/qc/parameter/analyst and sort.
+    filter_backends = [SearchFilter, OrderingFilter, ExactFilterBackend]
+    search_fields = ['result_text', 'method_used', 'device_used', 'reagent_lot']
+    ordering_fields = ['created_at', 'updated_at', 'status', 'decision', 'qc_status']
+    filter_fields = [
+        'bench', 'status', 'decision', 'qc_status', 'parameter',
+        'assigned_to', 'evaluation', 'entered_by',
+    ]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        date_from = self.request.query_params.get('entered_at_from')
+        date_to = self.request.query_params.get('entered_at_to')
+        if date_from:
+            qs = qs.filter(entered_at__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(entered_at__date__lte=date_to)
+        return qs
 
     # ---------------------------------------------------------------
     # دورة حياة الفحص الواحد — المسارات التي يطلبها `FoodLabPage`:

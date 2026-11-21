@@ -13,6 +13,10 @@ import TableRow from '@mui/material/TableRow';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
+import Paper from '@mui/material/Paper';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as ChartTooltip } from 'recharts';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import ScienceIcon from '@mui/icons-material/Science';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -30,6 +34,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import {
   AppButton,
+  ConfirmDialog,
   DataTable,
   FormDialog,
   FormSelect,
@@ -41,6 +46,7 @@ import KpiCard from '../../components/dashboard/KpiCard';
 import DashboardHero from '../../components/dashboard/DashboardHero';
 import { CommandSectionRail, useCommandSections, type CommandSectionDef } from '../../components/command';
 import { useServerTable } from '../../hooks/useServerTable';
+import { useTableExport } from '../../hooks/useTableExport';
 import {
   assignSampleAnalyst,
   getApplicableLimits,
@@ -235,11 +241,24 @@ const MicrobiologyLabPage = () => {
   const [qcTest, setQcTest] = useState<SampleTest | null>(null);
   const [qcStatus, setQcStatus] = useState('PASSED');
   const [qcNotes, setQcNotes] = useState('');
+  const [qcConfirmOpen, setQcConfirmOpen] = useState(false);
 
   const samples = useServerTable<FoodSample>({ fetchData: getLabSamples, initialPageSize: 100 });
   const tests = useServerTable<SampleTest>({ fetchData: getLabSampleTests });
   const qcTests = useServerTable<SampleTest>({ fetchData: getLabSampleTests });
   const pathoTests = useServerTable<SampleTest>({ fetchData: getLabSampleTests });
+
+  // Advanced filter state for the samples list (applied to the server query).
+  const [sampleStatus, setSampleStatus] = useState('');
+  const [samplePriority, setSamplePriorityFilter] = useState('');
+  const [sampleAnalyst, setSampleAnalyst] = useState('');
+  const [sampleDateFrom, setSampleDateFrom] = useState('');
+  const [sampleDateTo, setSampleDateTo] = useState('');
+
+  // Export all filtered rows (not just the visible page) via the shared hook.
+  const sampleExport = useTableExport(samples.fetchAllRows);
+  const testExport = useTableExport(tests.fetchAllRows);
+  const qcExport = useTableExport(qcTests.fetchAllRows);
 
   useEffect(() => {
     samples.setFilter('bench', 'MICROBIOLOGY');
@@ -252,6 +271,23 @@ const MicrobiologyLabPage = () => {
     pathoTests.setFilter('bench', 'MICROBIOLOGY');
     pathoTests.setFilter('ordering', '-created_at');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Apply advanced filters to the samples server query.
+  useEffect(() => {
+    samples.setFilter('status', sampleStatus);
+    samples.setFilter('priority', samplePriority);
+    samples.setFilter('analyst', sampleAnalyst);
+    samples.setFilter('received_at_from', sampleDateFrom);
+    samples.setFilter('received_at_to', sampleDateTo);
+  }, [sampleStatus, samplePriority, sampleAnalyst, sampleDateFrom, sampleDateTo]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const resetSampleFilters = () => {
+    setSampleStatus('');
+    setSamplePriorityFilter('');
+    setSampleAnalyst('');
+    setSampleDateFrom('');
+    setSampleDateTo('');
+  };
 
   const refreshDash = useCallback(() => {
     setDashLoading(true);
@@ -399,21 +435,83 @@ const MicrobiologyLabPage = () => {
     }
   };
 
-  const submitQc = async () => {
+  const doSubmitQc = async () => {
     if (!qcTest) return;
     try {
       await markSampleTestQC(qcTest.id, { qc_status: qcStatus, qc_notes: qcNotes });
       notifySuccess(qcStatus === 'PASSED' ? i18nT('food.microbiologyLab.str126') : i18nT('food.microbiologyLab.str127'));
       setQcTest(null);
       setQcNotes('');
+      setQcConfirmOpen(false);
       refreshAll();
     } catch {
       notifyError(i18nT('food.microbiologyLab.str9'));
     }
   };
 
+  const submitQc = () => {
+    if (!qcTest) return;
+    // Require explicit confirmation before rejecting a test in QC.
+    if (qcStatus !== 'PASSED') {
+      setQcConfirmOpen(true);
+      return;
+    }
+    void doSubmitQc();
+  };
+
   const toggleReviewReason = (value: string) =>
     setReviewReasons((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+
+  /* ---------- تصدير البيانات ---------- */
+
+  const handleExportSamples = () => sampleExport.exportAll({
+    filename: `microbiology-samples-${new Date().toISOString().slice(0, 10)}.csv`,
+    headers: [
+      i18nT('food.microbiologyLab.str64'), i18nT('food.microbiologyLab.str65'),
+      i18nT('food.microbiologyLab.str66'), i18nT('food.microbiologyLab.str58'),
+      i18nT('food.microbiologyLab.str67'), i18nT('food.microbiologyLab.str57'),
+      i18nT('food.microbiologyLab.str10'),
+    ],
+    mapRow: (s) => [
+      s.sample_number, s.sample_type, s.source_name ?? '',
+      labPriority[s.priority]?.label ?? s.priority,
+      labSampleStatus[s.status]?.label ?? s.status,
+      s.analyst_name ?? '', formatDateTime(s.received_at),
+    ],
+    message: i18nT('food.microbiologyLab.export.samples'),
+  });
+
+  const handleExportTests = () => testExport.exportAll({
+    filename: `microbiology-tests-${new Date().toISOString().slice(0, 10)}.csv`,
+    headers: [
+      i18nT('food.microbiologyLab.str68'), i18nT('food.microbiologyLab.str67'),
+      i18nT('food.microbiologyLab.str69'), i18nT('food.microbiologyLab.str70'),
+      i18nT('food.microbiologyLab.str71'), 'QC', 'SLA',
+    ],
+    mapRow: (t) => [
+      t.parameter?.name_ar ?? '', labTestStatus[t.status]?.label ?? t.status,
+      t.result_value != null ? `${t.result_value} ${t.unit}` : t.result_text,
+      labDecision[t.decision]?.label ?? t.decision,
+      t.evaluation ? (labDecision[t.evaluation]?.label ?? t.evaluation) : '',
+      labQc[t.qc_status]?.label ?? t.qc_status,
+      t.sla?.status ? (labSla[t.sla.status]?.label ?? t.sla.status) : '',
+    ],
+    message: i18nT('food.microbiologyLab.export.tests'),
+  });
+
+  const handleExportQc = () => qcExport.exportAll({
+    filename: `microbiology-qc-${new Date().toISOString().slice(0, 10)}.csv`,
+    headers: [
+      i18nT('food.microbiologyLab.str68'), i18nT('food.microbiologyLab.str67'),
+      i18nT('food.microbiologyLab.str70'), 'QC',
+    ],
+    mapRow: (t) => [
+      t.parameter?.name_ar ?? '', labTestStatus[t.status]?.label ?? t.status,
+      labDecision[t.decision]?.label ?? t.decision,
+      labQc[t.qc_status]?.label ?? t.qc_status,
+    ],
+    message: i18nT('food.microbiologyLab.export.qc'),
+  });
 
   /* ---------- أعمدة الجداول ---------- */
 
@@ -559,6 +657,17 @@ const MicrobiologyLabPage = () => {
     return samples.rows.filter((s) => statuses.includes(s.status));
   }, [samples.rows, nav]);
 
+  // Live sample-status distribution for the overview donut chart.
+  const statusDistribution = useMemo(() => {
+    if (!dash) return [];
+    return [
+      { name: labSampleStatus.UNDER_TESTING?.label ?? 'Under testing', value: dash.under_testing, color: '#f59e0b' },
+      { name: labSampleStatus.READY_FOR_APPROVAL?.label ?? 'Ready for approval', value: dash.ready_for_approval, color: '#0d6efd' },
+      { name: labSampleStatus.APPROVED?.label ?? 'Approved', value: dash.approved, color: '#1d7a54' },
+      { name: labSampleStatus.COMPLETED?.label ?? 'Completed', value: dash.completed, color: '#6f42c1' },
+    ].filter((s) => s.value > 0);
+  }, [dash]);
+
   const slaPct = Math.min(Math.max(dash?.sla_compliance?.percent ?? 0, 0), 100);
 
   const pathogenLabel = PATHOGEN_LIST(i18nT).find((p) => p.key === nav)?.label ?? i18nT('food.microbiologyLab.str130');
@@ -663,6 +772,30 @@ const MicrobiologyLabPage = () => {
                     </Box>
                   </Grid>
                 </Grid>
+
+                {statusDistribution.length > 0 && (
+                  <Paper elevation={0} sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                    <Typography variant="h6" sx={{ mb: 1.5 }}>{i18nT('food.microbiologyLab.chart.statusTitle')}</Typography>
+                    <Box sx={{ width: '100%', height: 220 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={statusDistribution} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={2} stroke="rgba(255,255,255,0.9)" strokeWidth={2}>
+                            {statusDistribution.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
+                          </Pie>
+                          <ChartTooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Box>
+                    <Stack direction="row" flexWrap="wrap" useFlexGap sx={{ gap: 1, justifyContent: 'center' }}>
+                      {statusDistribution.map((s) => (
+                        <Stack key={s.name} direction="row" spacing={0.5} alignItems="center">
+                          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: s.color }} />
+                          <Typography variant="caption">{s.name}: {s.value}</Typography>
+                        </Stack>
+                      ))}
+                    </Stack>
+                  </Paper>
+                )}
               </>
             )}
               </Box>
@@ -695,6 +828,51 @@ const MicrobiologyLabPage = () => {
                   </>
                 )
                 : (
+                  <>
+                  <Paper elevation={0} sx={{ p: 1.5, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+                      <TextField
+                        select size="small" label={i18nT('food.microbiologyLab.filters.status')}
+                        value={sampleStatus} onChange={(e) => setSampleStatus(e.target.value)} sx={{ minWidth: 150 }}
+                      >
+                        <MenuItem value="">{i18nT('food.microbiologyLab.filters.all')}</MenuItem>
+                        {Object.entries(labSampleStatus).map(([value, meta]) => (
+                          <MenuItem key={value} value={value}>{meta.label}</MenuItem>
+                        ))}
+                      </TextField>
+                      <TextField
+                        select size="small" label={i18nT('food.microbiologyLab.filters.priority')}
+                        value={samplePriority} onChange={(e) => setSamplePriorityFilter(e.target.value)} sx={{ minWidth: 140 }}
+                      >
+                        <MenuItem value="">{i18nT('food.microbiologyLab.filters.all')}</MenuItem>
+                        {Object.entries(labPriority).map(([value, meta]) => (
+                          <MenuItem key={value} value={value}>{meta.label}</MenuItem>
+                        ))}
+                      </TextField>
+                      <TextField
+                        select size="small" label={i18nT('food.microbiologyLab.filters.analyst')}
+                        value={sampleAnalyst} onChange={(e) => setSampleAnalyst(e.target.value)} sx={{ minWidth: 160 }}
+                      >
+                        <MenuItem value="">{i18nT('food.microbiologyLab.filters.all')}</MenuItem>
+                        {analysts.map((a) => (
+                          <MenuItem key={a.id} value={a.id}>{a.full_name || a.email}</MenuItem>
+                        ))}
+                      </TextField>
+                      <TextField
+                        size="small" type="date" label={i18nT('food.microbiologyLab.filters.dateFrom')}
+                        value={sampleDateFrom} onChange={(e) => setSampleDateFrom(e.target.value)}
+                        InputLabelProps={{ shrink: true }} sx={{ minWidth: 150 }}
+                      />
+                      <TextField
+                        size="small" type="date" label={i18nT('food.microbiologyLab.filters.dateTo')}
+                        value={sampleDateTo} onChange={(e) => setSampleDateTo(e.target.value)}
+                        InputLabelProps={{ shrink: true }} sx={{ minWidth: 150 }}
+                      />
+                      <AppButton size="small" variant="secondary" onClick={resetSampleFilters}>
+                        {i18nT('food.microbiologyLab.filters.reset')}
+                      </AppButton>
+                    </Stack>
+                  </Paper>
                   <DataTable<FoodSample>
                     columns={sampleColumns}
                     rows={samplesGroupRows}
@@ -715,7 +893,10 @@ const MicrobiologyLabPage = () => {
                     onSortChange={samples.setSorting}
                     hidePagination
                     onRefresh={samples.refresh}
+                    onExport={handleExportSamples}
+                    exporting={sampleExport.exporting}
                   />
+                  </>
                 )}
               </Box>
             )}
@@ -874,6 +1055,8 @@ const MicrobiologyLabPage = () => {
                   onPageChange={qcTests.setPage}
                   onRowsPerPageChange={qcTests.setRowsPerPage}
                   onRefresh={qcTests.refresh}
+                  onExport={handleExportQc}
+                  exporting={qcExport.exporting}
                 />
               </>
               </Box>
@@ -947,6 +1130,8 @@ const MicrobiologyLabPage = () => {
                 onPageChange={tests.setPage}
                 onRowsPerPageChange={tests.setRowsPerPage}
                 onRefresh={tests.refresh}
+                onExport={handleExportTests}
+                exporting={testExport.exporting}
               />
               </Box>
             )}
@@ -1251,6 +1436,17 @@ const MicrobiologyLabPage = () => {
           </>
         )
       </FormDialog>
+
+      <ConfirmDialog
+        open={qcConfirmOpen}
+        title={i18nT('food.microbiologyLab.confirm.qcFailTitle')}
+        message={i18nT('food.microbiologyLab.confirm.qcFailMessage')}
+        confirmLabel={i18nT('food.microbiologyLab.confirm.confirm')}
+        cancelLabel={i18nT('food.microbiologyLab.confirm.cancel')}
+        tone="error"
+        onConfirm={() => void doSubmitQc()}
+        onClose={() => setQcConfirmOpen(false)}
+      />
     </Box>
   );
 };

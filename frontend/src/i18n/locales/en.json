@@ -8024,7 +8024,32 @@
       "str260": "Translation missing str260",
       "str261": "Translation missing str261",
       "str262": "No data available",
-      "str263": "Microbiology lab data is not available at the moment. Please check server connection or try again later."
+      "str263": "Microbiology lab data is not available at the moment. Please check server connection or try again later.",
+      "export": {
+        "samples": "Samples exported",
+        "tests": "Tests exported",
+        "qc": "QC review exported",
+        "analysts": "Analysts exported"
+      },
+      "filters": {
+        "status": "Status",
+        "priority": "Priority",
+        "analyst": "Analyst",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "all": "All",
+        "reset": "Reset",
+        "active": "Active filters"
+      },
+      "chart": {
+        "statusTitle": "Sample distribution by status"
+      },
+      "confirm": {
+        "qcFailTitle": "Confirm QC rejection",
+        "qcFailMessage": "This test will be marked as failed in quality control. Continue?",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      }
     },
     "receptionLab": {
       "  ": "  ",
