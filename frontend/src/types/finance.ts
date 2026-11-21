@@ -320,6 +320,18 @@ export const AUDIT_ACTION_LABELS: Record<string, LocalizedLabel> = {
   MARK_PAID: { ar: 'تحصيل', en: 'Mark paid' },
 };
 
+export const CHANNEL_LABELS: Record<string, LocalizedLabel> = {
+  PAYMENT_GATEWAY: { ar: 'بوابة الدفع (إلكتروني/بطاقة)', en: 'Payment gateway (electronic/card)' },
+  BANK: { ar: 'البنك (تحويل/بطاقة)', en: 'Bank (transfer/card)' },
+};
+
+export const RECONCILIATION_STATUS_LABELS: Record<string, LocalizedLabel> = {
+  DRAFT: { ar: 'مسودة', en: 'Draft' },
+  MATCHED: { ar: 'مطابق', en: 'Matched' },
+  DISCREPANCY: { ar: 'يوجد فرق', en: 'Discrepancy' },
+  RESOLVED: { ar: 'تم التسوية', en: 'Resolved' },
+};
+
 /** Resolve one localized label. Falls back to '—' for empty keys and to the
  * raw key for unknown ones — same behavior as the old `MAP[key] ?? key`. */
 export function labelOf(

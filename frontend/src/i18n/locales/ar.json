@@ -10558,6 +10558,100 @@
         "alerts": {
           "noCashRefund": "لا يُقبل استرداد النقدية إلا بتحويل الفاتورة إلى الحالة (مسترَدّة) واعتماد المدير المالي. هذا الإيصال صادر إلكترونياً ولا يتطلب ختماً يدوياً."
         }
+      },
+      "reconciliation": {
+        "title": "المطابقة المالية (التسويات)",
+        "subtitle": "مطابقة دورية: نظام المنصة الوطني ↔ بوابة الدفع/البنك — فصل الاختصاص عند الحسم النهائي",
+        "actions": {
+          "new": "تسوية جديدة",
+          "view": "عرض",
+          "close": "إغلاق",
+          "cancel": "إلغاء",
+          "save": "حفظ التسوية",
+          "preview": "معاينة من نظام المنصة",
+          "closeByCompare": "إغلاق بالمقارنة",
+          "finalResolution": "الحسم النهائي"
+        },
+        "statCards": {
+          "total": "إجمالي التسويات",
+          "totalTrend": "سجل دوري غير قابل للحذف",
+          "matched": "مطابقة",
+          "matchedTrend": "متوازنة مع القناة",
+          "pending": "فروقات معلقة",
+          "pendingTrend": "تحتاج إغلاق/حسم",
+          "resolved": "محسومة نهائياً",
+          "resolvedTrend": "مطلوب اعتماد المدير"
+        },
+        "section": {
+          "title": "التسويات",
+          "subtitle": "{{count}} تسوية"
+        },
+        "filters": {
+          "channel": "القناة",
+          "status": "الحالة"
+        },
+        "columns": {
+          "period": "الفترة",
+          "channel": "القناة",
+          "systemTotal": "إجمالي النظام",
+          "channelTotal": "إجمالي القناة",
+          "difference": "الفرق",
+          "matchedCount": "مطابقات",
+          "discrepancyCount": "فروقات",
+          "status": "الحالة",
+          "createdBy": "أنشئت بواسطة",
+          "actions": "إجراءات"
+        },
+        "empty": {
+          "list": "لا توجد تسويات بعد",
+          "listHint": "ابدأ بإنشاء تسوية للفترة والقناة ثم اعتمد الحقائق من بوابة الدفع/البنك.",
+          "matches": "لا توجد مطابقات",
+          "discrepancies": "لا توجد فروقات."
+        },
+        "form": {
+          "newDialog": "تسوية جديدة",
+          "periodStart": "بداية الفترة",
+          "periodEnd": "نهاية الفترة",
+          "channel": "القناة",
+          "channelTotal": "إجمالي القناة (الحقيقي)",
+          "systemTotal": "إجمالي النظام (SDG)",
+          "channelTotalSDG": "إجمالي القناة (SDG)",
+          "notes": "ملاحظات التحقيق / قرار الصيانة",
+          "previewHint": "إجمالي النظام للفترة: {{total}} — {{matched}} مطابقة / {{discrepancy}} فرق"
+        },
+        "detail": {
+          "title": "التسوية {{start}} ← {{end}}",
+          "channel": "القناة",
+          "createdBy": "أنشئت بواسطة",
+          "reconciledBy": "الحسم",
+          "totalsSection": "الإجماليات والفرق",
+          "finalDiff": "الفرق النهائي",
+          "matchesSection": "المطابقات ({{count}})",
+          "discrepanciesSection": "الفروقات ({{count}})"
+        },
+        "matches": {
+          "ref": "المرجع",
+          "invoice": "الفاتورة",
+          "receipt": "الإيصال",
+          "amount": "المبلغ",
+          "time": "التوقيت",
+          "collector": "المحصل"
+        },
+        "discrepancies": {
+          "type": "النوع",
+          "ref": "المرجع",
+          "invoice": "الفاتورة",
+          "amount": "المبلغ",
+          "description": "الوصف",
+          "duplicateRef": "مرجع مكرر",
+          "noRef": "بلا مرجع"
+        },
+        "errors": {
+          "preview": "تعذّرت المعاينة",
+          "create": "تعذّر إنشاء التسوية",
+          "seal": "تعذّر إغلاق التسوية",
+          "resolve": "تعذّر الحسم النهائي"
+        }
       }
   },
   "carriers": {

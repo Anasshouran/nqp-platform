@@ -10558,6 +10558,100 @@
         "alerts": {
           "noCashRefund": "Cash refunds are not accepted unless the invoice is moved to the refunded status and approved by the finance manager. This receipt is issued electronically and requires no manual stamp."
         }
+      },
+      "reconciliation": {
+        "title": "Financial Reconciliation",
+        "subtitle": "Periodic reconciliation: national platform system ↔ payment gateway/bank — separation of duties at final resolution",
+        "actions": {
+          "new": "New reconciliation",
+          "view": "View",
+          "close": "Close",
+          "cancel": "Cancel",
+          "save": "Save reconciliation",
+          "preview": "Preview from platform system",
+          "closeByCompare": "Close with comparison",
+          "finalResolution": "Final resolution"
+        },
+        "statCards": {
+          "total": "Total reconciliations",
+          "totalTrend": "Periodic record, cannot be deleted",
+          "matched": "Matched",
+          "matchedTrend": "Balanced with the channel",
+          "pending": "Pending discrepancies",
+          "pendingTrend": "Requires closing/resolution",
+          "resolved": "Finally resolved",
+          "resolvedTrend": "Requires finance director approval"
+        },
+        "section": {
+          "title": "Reconciliations",
+          "subtitle": "{{count}} reconciliation(s)"
+        },
+        "filters": {
+          "channel": "Channel",
+          "status": "Status"
+        },
+        "columns": {
+          "period": "Period",
+          "channel": "Channel",
+          "systemTotal": "System total",
+          "channelTotal": "Channel total",
+          "difference": "Difference",
+          "matchedCount": "Matches",
+          "discrepancyCount": "Discrepancies",
+          "status": "Status",
+          "createdBy": "Created by",
+          "actions": "Actions"
+        },
+        "empty": {
+          "list": "No reconciliations yet",
+          "listHint": "Create a reconciliation for the period and channel first, then approve the facts from the payment gateway/bank.",
+          "matches": "No matches",
+          "discrepancies": "No discrepancies."
+        },
+        "form": {
+          "newDialog": "New reconciliation",
+          "periodStart": "Period start",
+          "periodEnd": "Period end",
+          "channel": "Channel",
+          "channelTotal": "Actual channel total",
+          "systemTotal": "System total (SDG)",
+          "channelTotalSDG": "Channel total (SDG)",
+          "notes": "Investigation notes / resolution decision",
+          "previewHint": "System total for the period: {{total}} — {{matched}} match(es) / {{discrepancy}} difference(s)"
+        },
+        "detail": {
+          "title": "Reconciliation {{start}} ← {{end}}",
+          "channel": "Channel",
+          "createdBy": "Created by",
+          "reconciledBy": "Resolved by",
+          "totalsSection": "Totals and differences",
+          "finalDiff": "Final difference",
+          "matchesSection": "Matches ({{count}})",
+          "discrepanciesSection": "Discrepancies ({{count}})"
+        },
+        "matches": {
+          "ref": "Reference",
+          "invoice": "Invoice",
+          "receipt": "Receipt",
+          "amount": "Amount",
+          "time": "Time",
+          "collector": "Collected by"
+        },
+        "discrepancies": {
+          "type": "Type",
+          "ref": "Reference",
+          "invoice": "Invoice",
+          "amount": "Amount",
+          "description": "Description",
+          "duplicateRef": "Duplicate reference",
+          "noRef": "No reference"
+        },
+        "errors": {
+          "preview": "Failed to load preview",
+          "create": "Failed to create reconciliation",
+          "seal": "Failed to close reconciliation",
+          "resolve": "Failed to finalize resolution"
+        }
       }
   },
   "carriers": {
