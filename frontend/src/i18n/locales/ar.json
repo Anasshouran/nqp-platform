@@ -10652,7 +10652,60 @@
           "seal": "تعذّر إغلاق التسوية",
           "resolve": "تعذّر الحسم النهائي"
         }
-      }
+      },
+        "audit": {
+          "section": {
+            "title": "سجل التدقيق المالي",
+            "subtitle": "كل عملية موثقة: المستخدم، الدور، الإجراء، قبل/بعد، IP"
+          },
+          "table": {
+            "title": "سجل التدقيق",
+            "count": "{{count}} سجل",
+            "search": "بحث بالمرجع أو المعرف...",
+            "empty": {
+              "title": "لا توجد سجلات",
+              "description": "لم يتم توثيق عمليات مالية بعد"
+            }
+          },
+          "columns": {
+            "time": "التوقيت",
+            "user": "المستخدم",
+            "role": "الدور",
+            "action": "الإجراء",
+            "resource": "المورد",
+            "invoice": "الفاتورة",
+            "change": "التغيير",
+            "ip": "IP"
+          },
+          "filters": {
+            "action": "الإجراء",
+            "resourceType": "نوع المورد"
+          },
+          "resourceOptions": {
+            "invoice": "فاتورة",
+            "reconciliation": "تسوية"
+          },
+          "actions": {
+            "view": "عرض",
+            "viewDetails": "عرض التفاصيل"
+          },
+          "detail": {
+            "title": "تفاصيل التدقيق",
+            "close": "إغلاق",
+            "fields": {
+              "time": "التوقيت",
+              "user": "المستخدم",
+              "role": "الدور",
+              "action": "الإجراء",
+              "resourceType": "نوع المورد",
+              "resourceId": "رقم المورد",
+              "invoiceRef": "مرجع الفاتورة",
+              "field": "الحقل",
+              "change": "التغيير",
+              "ip": "عنوان (IP)"
+            }
+          }
+        }
   },
   "carriers": {
     "flightDetail": {

@@ -59,10 +59,10 @@ describe('AuditLogsView — F15 coverage', () => {
 
   it('renders English localized labels when language=en', async () => {
     await wrap('en');
-    // The section title is still hardcoded Arabic in this view (i18n of
-    // AuditLogsView is out of F15 scope); the action label is localized via
-    // AUDIT_ACTION_LABELS + the active locale.
-    expect(await screen.findByText('سجل التدقيق المالي')).toBeInTheDocument();
+    // F5e localized the view; the action label is still localized via
+    // AUDIT_ACTION_LABELS + the active locale. The DataTable title is used
+    // as the anchor here (the section title is covered by its own test).
+    expect(await screen.findByText('Audit Log')).toBeInTheDocument();
     expect(await screen.findByText('Create')).toBeInTheDocument();
   });
 
@@ -79,5 +79,28 @@ describe('AuditLogsView — F15 coverage', () => {
     await waitFor(() => {
       expect(financeApi.getFinanceAuditLogs).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('AuditLogsView — F5e i18n', () => {
+  it('renders English section title', async () => {
+    await wrap('en');
+    await waitFor(() => expect(financeApi.getFinanceAuditLogs).toHaveBeenCalled());
+    expect(await screen.findByText('Financial Audit Log')).toBeInTheDocument();
+  });
+
+  it('renders English section subtitle', async () => {
+    await wrap('en');
+    await waitFor(() => expect(financeApi.getFinanceAuditLogs).toHaveBeenCalled());
+    expect(await screen.findByText(
+      'Every audited operation: user, role, action, before/after, IP',
+    )).toBeInTheDocument();
+  });
+
+  it('renders English empty state', async () => {
+    vi.mocked(financeApi.getFinanceAuditLogs).mockResolvedValue(ok([]) as never);
+    await wrap('en');
+    await waitFor(() => expect(financeApi.getFinanceAuditLogs).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('No records')).toBeInTheDocument();
   });
 });
