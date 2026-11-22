@@ -478,4 +478,30 @@ describe('NationalFinancePage — functional', () => {
       expect(api.getFinanceFees).toHaveBeenCalledWith(expect.objectContaining({ page: 2, page_size: 25 }));
     });
   });
+
+  // --- F15 — read endpoints are fetched exactly once on mount ---
+  // The hook-free react-i18next mock at the top of this file stays untouched
+  // (TD-L1: React 19 conditional hooks in ProcessNull()).
+  describe('F15 — read endpoints called once on mount', () => {
+    it('getFinanceSummary called once', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(api.getFinanceSummary).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('getFinancePayments called once', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(api.getFinancePayments).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('getFinanceReceipts called once', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(api.getFinanceReceipts).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });
