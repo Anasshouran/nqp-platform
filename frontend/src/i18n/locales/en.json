@@ -10652,7 +10652,60 @@
           "seal": "Failed to close reconciliation",
           "resolve": "Failed to finalize resolution"
         }
-      }
+      },
+        "audit": {
+          "section": {
+            "title": "Financial Audit Log",
+            "subtitle": "Every audited operation: user, role, action, before/after, IP"
+          },
+          "table": {
+            "title": "Audit Log",
+            "count": "{{count}} records",
+            "search": "Search by reference or ID...",
+            "empty": {
+              "title": "No records",
+              "description": "No financial operations have been logged yet"
+            }
+          },
+          "columns": {
+            "time": "Time",
+            "user": "User",
+            "role": "Role",
+            "action": "Action",
+            "resource": "Resource",
+            "invoice": "Invoice",
+            "change": "Change",
+            "ip": "IP"
+          },
+          "filters": {
+            "action": "Action",
+            "resourceType": "Resource type"
+          },
+          "resourceOptions": {
+            "invoice": "Invoice",
+            "reconciliation": "Reconciliation"
+          },
+          "actions": {
+            "view": "View",
+            "viewDetails": "View details"
+          },
+          "detail": {
+            "title": "Audit details",
+            "close": "Close",
+            "fields": {
+              "time": "Time",
+              "user": "User",
+              "role": "Role",
+              "action": "Action",
+              "resourceType": "Resource type",
+              "resourceId": "Resource ID",
+              "invoiceRef": "Invoice reference",
+              "field": "Field",
+              "change": "Change",
+              "ip": "IP address"
+            }
+          }
+        }
   },
   "carriers": {
     "flightDetail": {
