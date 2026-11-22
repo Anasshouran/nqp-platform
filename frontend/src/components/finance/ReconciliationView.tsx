@@ -33,6 +33,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import type { AxiosError } from 'axios';
 import {
   getFinanceReconciliations,
+  getFinanceReconciliationTotals,
   createFinanceReconciliation,
   getFinanceReconciliationPreview,
   sealFinanceReconciliation,
@@ -80,7 +81,7 @@ export default function ReconciliationView(): React.JSX.Element {
     [intlLocale],
   );
 
-  const [allReconciliations, setAllReconciliations] = useState<FinanceReconciliation[]>([]);
+  const [totals, setTotals] = useState<Record<string, number>>({});
   const [createOpen, setCreateOpen] = useState(false);
   const [detail, setDetail] = useState<FinanceReconciliation | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -93,16 +94,19 @@ export default function ReconciliationView(): React.JSX.Element {
   });
   const {
     rows, count, loading: tableLoading, error: tableError, page, pageSizeOptions,
-    setPage, setRowsPerPage, refresh, setFilter, fetchAllRows,
+    setPage, setRowsPerPage, refresh, setFilter,
   } = table;
 
-  // F6 — one source for the table (table.count) and all rows for the status cards.
-  // `fetchAllRows` is a stable useCallback from useServerTable; depending on the
-  // whole `table` object (a fresh literal each render) would re-run this every render.
+  // F4b — one source for the table (table.count) and a single server-side
+  // aggregate for the status cards (no client-side all-rows loop).
   const reloadTotals = useCallback(async () => {
-    const data = await fetchAllRows();
-    setAllReconciliations(data ?? []);
-  }, [fetchAllRows]);
+    try {
+      const res = await getFinanceReconciliationTotals();
+      setTotals(res.data.data ?? {});
+    } catch {
+      setTotals({}); // silent — cards fall back to 0
+    }
+  }, []);
 
   useEffect(() => {
     void reloadTotals();
@@ -114,14 +118,6 @@ export default function ReconciliationView(): React.JSX.Element {
     await refresh();
     await reloadTotals();
   };
-
-  const totals = useMemo(
-    () => allReconciliations.reduce<Record<string, number>>((acc, r) => {
-      acc[r.status] = (acc[r.status] ?? 0) + 1;
-      return acc;
-    }, {}),
-    [allReconciliations],
-  );
 
   return (
     <>

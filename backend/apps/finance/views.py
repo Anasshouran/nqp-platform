@@ -451,6 +451,26 @@ class ReconciliationViewSet(FinancePermissionMixin, viewsets.ModelViewSet):
             )
         return Response(success_response(data))
 
+    @action(detail=False, methods=['get'], url_path='totals')
+    def totals(self, request):
+        """Counts per ReconciliationStatus for the current user's scope.
+
+        Single-source equivalent of the client-side fetchAllRows() aggregation.
+        Goes through self.get_queryset() — port scoping + fail-closed.
+        """
+        from django.db.models import Count
+        from apps.finance.models import ReconciliationStatus
+
+        qs = self.get_queryset()
+        rows = qs.values('status').annotate(count=Count('id'))
+        totals = {row['status']: row['count'] for row in rows}
+
+        # Stable contract for the UI: every known status present, default 0.
+        for status_value in ReconciliationStatus.values:
+            totals.setdefault(status_value, 0)
+
+        return Response(success_response(totals))
+
     @action(detail=True, methods=['post'], url_path='seal')
     def seal(self, request, pk=None):
         """إغلاق التسوية: DRAFT → MATCHED/DISCREPANCY → RESOLVED."""
