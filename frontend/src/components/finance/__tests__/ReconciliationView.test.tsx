@@ -1,8 +1,9 @@
 /**
- * F6 — reconciliation totals come from one source:
+ * F6/F4b — reconciliation totals come from one source:
  *   - the total card uses `table.count`
- *   - the status cards use `table.fetchAllRows()`
- * The old duplicate `load()` helper no longer exists.
+ *   - the status cards use the server-side totals endpoint (one API call)
+ * The old duplicate `load()` helper and client-side `fetchAllRows()` loop
+ * no longer exist.
  *
  * F5c-i18n — four additional tests cover locale switching, the raw-code
  * `totals` keys (no more Arabic-label coupling), and locale-aware formatting.
@@ -22,6 +23,7 @@ vi.mock('../../../hooks/useServerTable', () => ({
 
 vi.mock('../../../api/endpoints/finance', () => ({
   getFinanceReconciliations: vi.fn(),
+  getFinanceReconciliationTotals: vi.fn(),
   createFinanceReconciliation: vi.fn(),
   getFinanceReconciliationPreview: vi.fn(),
   sealFinanceReconciliation: vi.fn(),
@@ -69,6 +71,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('ar');
   vi.mocked(useServerTable).mockReturnValue(tableValue as never);
   mockFetchAllRows.mockResolvedValue([]);
+  api.getFinanceReconciliationTotals.mockResolvedValue({ data: { data: {} } });
   api.createFinanceReconciliation.mockResolvedValue({ data: { data: {} } });
 });
 
@@ -80,17 +83,17 @@ describe('F6 — reconciliation totals', () => {
   it('uses table.count for the total card', async () => {
     render(<ReconciliationView />);
     expect(await screen.findByText('250')).toBeInTheDocument();
-    // Totals are refreshed exactly once on mount.
-    expect(mockFetchAllRows).toHaveBeenCalledTimes(1);
+    // Totals are refreshed exactly once on mount via the server-side endpoint.
+    expect(api.getFinanceReconciliationTotals).toHaveBeenCalledTimes(1);
   });
 
-  it('afterMutate calls refresh then fetchAllRows once each (no load())', async () => {
+  it('afterMutate calls refresh then reloadTotals (not fetchAllRows)', async () => {
     const user = userEvent.setup();
     render(<ReconciliationView />);
     await screen.findByText('250');
 
     mockRefresh.mockClear();
-    mockFetchAllRows.mockClear();
+    api.getFinanceReconciliationTotals.mockClear();
 
     await user.click(screen.getByRole('button', { name: /تسوية جديدة/ }));
     const dialog = await screen.findByRole('dialog');
@@ -98,9 +101,10 @@ describe('F6 — reconciliation totals', () => {
 
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalledTimes(1);
-      expect(mockFetchAllRows).toHaveBeenCalledTimes(1);
+      expect(api.getFinanceReconciliationTotals).toHaveBeenCalledTimes(1);
     });
-    // The legacy duplicate loader is gone: only the mocked table API exists.
+    // No client-side all-rows loop; the legacy duplicate loader is gone.
+    expect(mockFetchAllRows).not.toHaveBeenCalled();
     expect(api.getFinanceReconciliations).not.toHaveBeenCalled();
   });
 });
@@ -117,11 +121,9 @@ describe('ReconciliationView — i18n', () => {
   });
 
   it('uses raw status keys for totals (bug fix)', async () => {
-    mockFetchAllRows.mockResolvedValue([
-      { id: '1', status: 'MATCHED' },
-      { id: '2', status: 'MATCHED' },
-      { id: '3', status: 'DRAFT' },
-    ] as never);
+    api.getFinanceReconciliationTotals.mockResolvedValue({
+      data: { data: { MATCHED: 2, DRAFT: 1, DISCREPANCY: 0, RESOLVED: 0 } },
+    });
     await wrap('ar');
 
     const matchedLabel = await screen.findByText('مطابقة');
@@ -182,8 +184,8 @@ describe('ReconciliationView — real fetch contract (un-mocked useServerTable)'
     );
 
     await waitFor(() => {
-      // One call loads the visible page, one comes from `fetchAllRows()` for
-      // the stat cards — both must go through the same real endpoint.
+      // The real table hook loads the visible page; the stat cards use the
+      // dedicated totals endpoint instead of an all-rows loop.
       expect(getFinanceReconciliations).toHaveBeenCalled();
       expect(getFinanceReconciliations).toHaveBeenCalledWith(
         expect.objectContaining({ page: 1, page_size: 25 }),

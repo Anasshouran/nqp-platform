@@ -62,6 +62,9 @@ export const getFinanceReceiptPrint = (id: string) =>
 export const getFinanceReconciliations = (params?: Record<string, unknown>) =>
   apiClient.get<ApiResponse<PaginatedResponse<FinanceReconciliation>>>('/finance/reconciliations/', { params });
 
+export const getFinanceReconciliationTotals = () =>
+  apiClient.get<ApiResponse<Record<string, number>>>('/finance/reconciliations/totals/');
+
 export const createFinanceReconciliation = (payload: Record<string, unknown>) =>
   apiClient.post<ApiResponse<FinanceReconciliation>>('/finance/reconciliations/', payload);
 
