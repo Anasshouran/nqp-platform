@@ -3,7 +3,7 @@
  * All seven report endpoints (Promise.allSettled) are mocked with their real
  * envelope shape from `types/finance.ts`.
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import i18n from '../../../i18n';
 import ReportsView from '../ReportsView';
@@ -81,5 +81,27 @@ describe('ReportsView — i18n', () => {
     }) as never);
     await wrap('en');
     expect(await screen.findByText(/5 paid invoice/i)).toBeInTheDocument();
+  });
+
+  // --- F15 — Promise.allSettled must not hide a missing report endpoint ---
+  it('calls getFinanceSummary exactly once on mount', async () => {
+    await wrap('ar');
+    await waitFor(() => {
+      expect(financeApi.getFinanceSummary).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('calls getFinanceMonthly exactly once on mount', async () => {
+    await wrap('ar');
+    await waitFor(() => {
+      expect(financeApi.getFinanceMonthly).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('calls getFinanceMatrix exactly once on mount', async () => {
+    await wrap('ar');
+    await waitFor(() => {
+      expect(financeApi.getFinanceMatrix).toHaveBeenCalledTimes(1);
+    });
   });
 });

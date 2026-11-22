@@ -161,3 +161,33 @@ describe('ReconciliationView — i18n', () => {
     expect(document.body.textContent).not.toContain('١٬٠٠٠');
   });
 });
+
+describe('ReconciliationView — real fetch contract (un-mocked useServerTable)', () => {
+  it('calls getFinanceReconciliations through the real table hook', async () => {
+    vi.resetModules();
+    vi.doUnmock('../../../hooks/useServerTable');
+
+    // Re-import after resetModules: the dynamically loaded view receives a
+    // fresh copy of the mocked finance module.
+    const { getFinanceReconciliations } = await import('../../../api/endpoints/finance');
+    vi.mocked(getFinanceReconciliations).mockResolvedValue({
+      data: { data: { results: [], count: 0 } },
+    } as never);
+
+    const { default: RealReconciliationView } = await import('../ReconciliationView');
+    render(
+      <I18nextProvider i18n={i18n}>
+        <RealReconciliationView />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => {
+      // One call loads the visible page, one comes from `fetchAllRows()` for
+      // the stat cards — both must go through the same real endpoint.
+      expect(getFinanceReconciliations).toHaveBeenCalled();
+      expect(getFinanceReconciliations).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, page_size: 25 }),
+      );
+    });
+  });
+});
